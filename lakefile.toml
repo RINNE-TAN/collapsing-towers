@@ -1,0 +1,10 @@
+name = "collapsing-towers"
+version = "0.1.0"
+defaultTargets = ["collapsing-towers"]
+
+[[lean_lib]]
+name = "CollapsingTowers"
+
+[[lean_exe]]
+name = "collapsing-towers"
+root = "Main"
