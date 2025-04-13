@@ -30,7 +30,7 @@ inductive value : Expr -> Prop where
   | value_code : value (.Code e)
 
 inductive free : String -> Expr -> Prop where
-  | free_var : free x (.Var x)
+  | free_var : x = y -> free x (.Var y)
   | free_lam : x != f -> x != y -> free x e -> free x (.Lam f y e)
   | free_appL : free x f -> free x (.App f arg)
   | free_appR : free x arg -> free x (.App f arg)
@@ -206,7 +206,9 @@ def step₂ : step expr₂ expr₃ := by
     cases ihfree with
     | free_binaryL ihfree =>
       cases ihfree with
-      | free_code ihfree => admit
+      | free_code ihfree =>
+        cases ihfree with
+        | _ => contradiction
     | free_binaryR ihfree => apply ihfree
 
 def expr₄ : Expr :=
