@@ -1,4 +1,4 @@
 import CollapsingTowers
 
 def main : IO Unit :=
-  IO.println s!"Hello, {hello}!"
+  pure ()
