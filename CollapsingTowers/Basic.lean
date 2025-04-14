@@ -29,37 +29,43 @@ inductive value : Expr -> Prop where
   | value_cons : value head -> value tails -> value (.Cons head tails)
   | value_code : value (.Code e)
 
-inductive free : String -> Expr -> Prop where
-  | free_var : free x (.Var x)
-  | free_lam : x != f -> x != y -> free x e -> free x (.Lam f y e)
-  | free_appL : free x f -> free x (.App f arg)
-  | free_appR : free x arg -> free x (.App f arg)
-  | free_consL : free x head -> free x (.Cons head tails)
-  | free_consR : free x tails -> free x (.Cons head tails)
-  | free_letL : free x binds -> free x (.Let y binds e)
-  | free_letR : x != y -> free x e -> free x (.Let y binds e)
-  | free_ifC : free x condition -> free x (.If condition branch₀ branch₁)
-  | free_ifL : free x branch₀ -> free x (.If condition branch₀ branch₁)
-  | free_ifR : free x branch₁ -> free x (.If condition branch₀ branch₁)
-  | free_unary : free x e -> free x (.Unary op e)
-  | free_binaryL : free x e₀ -> free x (.Binary op e₀ e₁)
-  | free_binaryR : free x e₁ -> free x (.Binary op e₀ e₁)
-  | free_lift : free x e -> free x (.Lift e)
-  | free_runL : free x ctrl -> free x (.Run ctrl code)
-  | free_runR : free x code -> free x (.Run ctrl code)
-  | free_code : free x e -> free x (.Code e)
-  | free_reflect : free x e -> free x (.Reflect e)
-  | free_Lam𝕔 : x != f -> x != y -> free x e -> free x (.Lam𝕔 f y e)
-  | free_Let𝕔L : free x binds -> free x (.Let𝕔 y binds e)
-  | free_Let𝕔R : x != y -> free x e -> free x (.Let𝕔 y binds e)
+inductive occur : String -> Expr -> Prop where
+  | occur_var : occur x (.Var x)
+  | occur_lam₀ : occur f (.Lam f x e)
+  | occur_lam₁ : occur x (.Lam f x e)
+  | occur_lam₂ : occur x e -> occur x (.Lam f y e)
+  | occur_app₀ : occur x f -> occur x (.App f arg)
+  | occur_app₁ : occur x arg -> occur x (.App f arg)
+  | occur_cons₀ : occur x head -> occur x (.Cons head tails)
+  | occur_cons₁ : occur x tails -> occur x (.Cons head tails)
+  | occur_let₀ : occur x (.Let x binds e)
+  | occur_let₁ : occur x binds -> occur x (.Let y binds e)
+  | occur_let₂ : occur x e -> occur x (.Let y binds e)
+  | occur_if₀ : occur x condition -> occur x (.If condition branch₀ branch₁)
+  | occur_if₁ : occur x branch₀ -> occur x (.If condition branch₀ branch₁)
+  | occur_if₂ : occur x branch₁ -> occur x (.If condition branch₀ branch₁)
+  | occur_unary : occur x e -> occur x (.Unary op e)
+  | occur_binary₀ : occur x e₀ -> occur x (.Binary op e₀ e₁)
+  | occur_binary₁ : occur x e₁ -> occur x (.Binary op e₀ e₁)
+  | occur_lift : occur x e -> occur x (.Lift e)
+  | occur_run₀ : occur x ctrl -> occur x (.Run ctrl code)
+  | occur_run₁ : occur x code -> occur x (.Run ctrl code)
+  | occur_code : occur x e -> occur x (.Code e)
+  | occur_reflect : occur x e -> occur x (.Reflect e)
+  | occur_lam𝕔₀ : occur f (.Lam𝕔 f x e)
+  | occur_lam𝕔₁ : occur x (.Lam𝕔 f x e)
+  | occur_lam𝕔₂ : occur x e -> occur x (.Lam𝕔 f y e)
+  | occur_let𝕔₀ : occur x (.Let𝕔 x binds e)
+  | occur_let𝕔₁ : occur x binds -> occur x (.Let𝕔 y binds e)
+  | occur_let𝕔₂ : occur x e -> occur x (.Let𝕔 y binds e)
 
 abbrev Ctx :=
   Expr -> Expr
 
 notation:max a "⟦" b "⟧" => a b
 
-inductive freeΓ : String -> Ctx -> Prop where
-  | freeΓ : ¬free x e -> free x Γ⟦e⟧ -> freeΓ x Γ
+inductive occurΓ : String -> Ctx -> Prop where
+  | occurΓ : ¬occur x e -> occur x Γ⟦e⟧ -> occurΓ x Γ
 
 inductive ctx𝔹 : Ctx -> Prop where
   | ctx𝔹_consL : ctx𝔹 (fun X => .Cons X tails)
@@ -147,7 +153,7 @@ inductive step : Expr -> Expr -> Prop where
   | step_run₁ : ctx𝕄 M -> value v -> v = .Lam _ _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run₂ : ctx𝕄 M -> value v -> v = .Cons _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run𝕔 : ctx𝕄 M -> step M⟦.Run (.Code ctrl) (.Code code)⟧ M⟦.Reflect (.Run ctrl code)⟧
-  | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬freeΓ x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
+  | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬occurΓ x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
   | step_let𝕔 : ctx𝕄 M -> step M⟦.Let𝕔 x binds (.Code e)⟧ M⟦.Code (.Let x binds e)⟧
 
 inductive mulit : Expr -> Expr -> Prop where
@@ -198,16 +204,16 @@ def step₂ : step expr₂ expr₃ := by
   apply
     (step.step_reflect (ctxℙ.ctxℙ_ℝ ctxℝ.ctxℝ_liftLam𝕔 ctxℙ.ctxℙ_hole)
       (ctx𝔼.ctx𝔼_𝔹 (ctx𝔹.ctx𝔹_binaryR value.value_code) ctx𝔼.ctx𝔼_hole))
-  intro hfreeCtx
-  cases hfreeCtx with
-  | freeΓ ihbind ihfree =>
-    apply ihbind
-    simp at ihfree
-    cases ihfree with
-    | free_binaryL ihfree =>
-      cases ihfree with
-      | free_code ihfree => admit
-    | free_binaryR ihfree => apply ihfree
+  intro hOccurΓ
+  cases hOccurΓ with
+  | occurΓ ihNotOccur ihOccur =>
+    apply ihNotOccur
+    simp at ihOccur
+    cases ihOccur with
+    | occur_binary₀ ihOccur =>
+      cases ihOccur with
+      | occur_code ihOccur => admit
+    | occur_binary₁ ihOccur => apply ihOccur
 
 def expr₄ : Expr :=
   .Lift
@@ -230,12 +236,12 @@ def step₄ : step expr₄ expr₅ := by
   rw [expr₅]
   apply
     (step.step_reflect (ctxℙ.ctxℙ_ℝ ctxℝ.ctxℝ_liftLam𝕔 (ctxℙ.ctxℙ_ℝ ctxℝ.ctxℝ_Let𝕔 ctxℙ.ctxℙ_hole)) (ctx𝔼.ctx𝔼_hole))
-  intro hfreeCtx
-  cases hfreeCtx with
-  | freeΓ ihbind ihfree =>
-    apply ihbind
-    simp at ihfree
-    apply ihfree
+  intro hOccurΓ
+  cases hOccurΓ with
+  | occurΓ ihNotOccur ihOccur =>
+    apply ihNotOccur
+    simp at ihOccur
+    apply ihOccur
 
 def expr₆ : Expr :=
   .Lift
@@ -280,12 +286,12 @@ def step₈ : step expr₈ expr₉ := by
   rw [expr₈]
   rw [expr₉]
   apply (step.step_reflect ctxℙ.ctxℙ_hole ctx𝔼.ctx𝔼_hole)
-  intro hfreeCtx
-  cases hfreeCtx with
-  | freeΓ ihbind ihfree =>
-    apply ihbind
-    simp at ihfree
-    apply ihfree
+  intro hOccurΓ
+  cases hOccurΓ with
+  | occurΓ ihNotOccur ihOccur =>
+    apply ihNotOccur
+    simp at ihOccur
+    apply ihOccur
 
 def exprₓ : Expr :=
   .Code
