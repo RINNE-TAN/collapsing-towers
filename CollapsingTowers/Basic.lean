@@ -30,7 +30,7 @@ inductive value : Expr -> Prop where
   | value_code : value (.Code e)
 
 inductive free : String -> Expr -> Prop where
-  | free_var : x = y -> free x (.Var y)
+  | free_var : free x (.Var x)
   | free_lam : x != f -> x != y -> free x e -> free x (.Lam f y e)
   | free_appL : free x f -> free x (.App f arg)
   | free_appR : free x arg -> free x (.App f arg)
@@ -58,8 +58,8 @@ abbrev Ctx :=
 
 notation:max a "⟦" b "⟧" => a b
 
-inductive freeCtx : String -> Ctx -> Prop where
-  | freeCtx : ¬free x e -> free x Γ⟦e⟧ -> freeCtx x Γ
+inductive freeΓ : String -> Ctx -> Prop where
+  | freeΓ : ¬free x e -> free x Γ⟦e⟧ -> freeΓ x Γ
 
 inductive ctx𝔹 : Ctx -> Prop where
   | ctx𝔹_consL : ctx𝔹 (fun X => .Cons X tails)
@@ -121,7 +121,7 @@ def subst (x : String) (v : Expr) (e : Expr) : Expr :=
 
 inductive step : Expr -> Expr -> Prop where
   | step_letβ : ctx𝕄 M -> value v -> step M⟦.Let x v e⟧ M⟦subst x v e⟧
-  | step_appβ : ctx𝕄 M -> value v -> step M⟦.Let x v e⟧ M⟦subst x v e⟧
+  | step_appβ : ctx𝕄 M -> value v -> step M⟦.App (.Lam f x e) v⟧ M⟦subst x v (subst f (.Lam f x e) e)⟧
   | step_app𝕔 : ctx𝕄 M -> step M⟦.App (.Code f) (.Code arg)⟧ M⟦.Reflect (.App f arg)⟧
   | step_ifnz : ctx𝕄 M -> n != 0 -> step M⟦.If (.Lit n) branch₀ branch₁⟧ M⟦branch₀⟧
   | step_ifz : ctx𝕄 M -> step M⟦.If (.Lit 0) branch₀ branch₁⟧ M⟦branch₁⟧
@@ -147,7 +147,7 @@ inductive step : Expr -> Expr -> Prop where
   | step_run₁ : ctx𝕄 M -> value v -> v = .Lam _ _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run₂ : ctx𝕄 M -> value v -> v = .Cons _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run𝕔 : ctx𝕄 M -> step M⟦.Run (.Code ctrl) (.Code code)⟧ M⟦.Reflect (.Run ctrl code)⟧
-  | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬freeCtx x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
+  | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬freeΓ x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
   | step_let𝕔 : ctx𝕄 M -> step M⟦.Let𝕔 x binds (.Code e)⟧ M⟦.Code (.Let x binds e)⟧
 
 inductive mulit : Expr -> Expr -> Prop where
@@ -200,15 +200,13 @@ def step₂ : step expr₂ expr₃ := by
       (ctx𝔼.ctx𝔼_𝔹 (ctx𝔹.ctx𝔹_binaryR value.value_code) ctx𝔼.ctx𝔼_hole))
   intro hfreeCtx
   cases hfreeCtx with
-  | freeCtx ihbind ihfree =>
+  | freeΓ ihbind ihfree =>
     apply ihbind
     simp at ihfree
     cases ihfree with
     | free_binaryL ihfree =>
       cases ihfree with
-      | free_code ihfree =>
-        cases ihfree with
-        | _ => contradiction
+      | free_code ihfree => admit
     | free_binaryR ihfree => apply ihfree
 
 def expr₄ : Expr :=
@@ -234,7 +232,7 @@ def step₄ : step expr₄ expr₅ := by
     (step.step_reflect (ctxℙ.ctxℙ_ℝ ctxℝ.ctxℝ_liftLam𝕔 (ctxℙ.ctxℙ_ℝ ctxℝ.ctxℝ_Let𝕔 ctxℙ.ctxℙ_hole)) (ctx𝔼.ctx𝔼_hole))
   intro hfreeCtx
   cases hfreeCtx with
-  | freeCtx ihbind ihfree =>
+  | freeΓ ihbind ihfree =>
     apply ihbind
     simp at ihfree
     apply ihfree
@@ -284,7 +282,7 @@ def step₈ : step expr₈ expr₉ := by
   apply (step.step_reflect ctxℙ.ctxℙ_hole ctx𝔼.ctx𝔼_hole)
   intro hfreeCtx
   cases hfreeCtx with
-  | freeCtx ihbind ihfree =>
+  | freeΓ ihbind ihfree =>
     apply ihbind
     simp at ihfree
     apply ihfree
