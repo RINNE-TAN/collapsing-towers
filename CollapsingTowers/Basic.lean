@@ -79,7 +79,6 @@ inductive ctx𝔹 : Ctx -> Prop where
   | ctx𝔹_binaryR : value v -> ctx𝔹 (fun X => .Binary op v X)
   | ctx𝔹_lift : ctx𝔹 (fun X => .Lift X)
   | ctx𝔹_run : ctx𝔹 (fun X => .Run X code)
-  | ctx𝔹_reflect : ctx𝔹 (fun X => .Reflect X)
 
 inductive ctxℝ : Ctx -> Prop where
   | ctxℝ_liftLam𝕔 : ctxℝ (fun X => .Lift (.Lam𝕔 f x X))
