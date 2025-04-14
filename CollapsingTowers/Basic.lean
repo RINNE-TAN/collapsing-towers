@@ -143,7 +143,7 @@ inductive step : Expr -> Expr -> Prop where
   | step_lit : ctx𝕄 M -> step M⟦.Lift (.Lit n)⟧ M⟦.Code (.Lit n)⟧
   | step_cons : ctx𝕄 M -> step M⟦.Lift (.Cons (.Code head) (.Code tails))⟧ M⟦.Reflect (.Cons head tails)⟧
   |
-  step_lam {M f arg e} :
+  step_lam :
     ctx𝕄 M ->
       step M⟦.Lift (.Lam f arg e)⟧ M⟦.Lift (.Lam𝕔 f arg (subst arg (.Code (.Var arg)) (subst f (.Code (.Var f)) e)))⟧
   | step_lam𝕔 : ctx𝕄 M -> step M⟦.Lift (.Lam𝕔 f arg (.Code e))⟧ M⟦.Reflect (.Lam f arg e)⟧
@@ -211,7 +211,13 @@ def step₂ : step expr₂ expr₃ := by
     cases ihOccur with
     | occur_binary₀ ihOccur =>
       cases ihOccur with
-      | occur_code ihOccur => admit
+      | occur_code ihOccur =>
+        generalize eqx : "x" = x
+        generalize eqx₁ : "x₁" = x₁
+        rw [eqx, eqx₁] at ihOccur
+        cases ihOccur
+        rw [← eqx] at eqx₁
+        contradiction
     | occur_binary₁ ihOccur => apply ihOccur
 
 def expr₄ : Expr :=
