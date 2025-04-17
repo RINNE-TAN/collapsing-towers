@@ -1,6 +1,5 @@
 
 inductive UnaryOp : Type where
-  | IsNum
 
 inductive BinaryOp : Type where
   | Plus
@@ -11,7 +10,6 @@ inductive Expr : Type where
   | Lit (i : Int)
   | Lam (f : String) (x : String) (e : Expr)
   | App (f : Expr) (arg : Expr)
-  | Cons (head : Expr) (tails : Expr)
   | Let (x : String) (binds : Expr) (e : Expr)
   | If (condition : Expr) (branch₀ : Expr) (branch₁ : Expr)
   | Unary (op : UnaryOp) (e : Expr)
@@ -26,7 +24,6 @@ inductive Expr : Type where
 inductive value : Expr -> Prop where
   | value_lit : value (.Lit i)
   | value_lam : value (.Lam f x e)
-  | value_cons : value head -> value tails -> value (.Cons head tails)
   | value_code : value (.Code e)
 
 inductive occur : String -> Expr -> Prop where
@@ -36,8 +33,6 @@ inductive occur : String -> Expr -> Prop where
   | occur_lam₂ : occur x e -> occur x (.Lam f y e)
   | occur_app₀ : occur x f -> occur x (.App f arg)
   | occur_app₁ : occur x arg -> occur x (.App f arg)
-  | occur_cons₀ : occur x head -> occur x (.Cons head tails)
-  | occur_cons₁ : occur x tails -> occur x (.Cons head tails)
   | occur_let₀ : occur x (.Let x binds e)
   | occur_let₁ : occur x binds -> occur x (.Let y binds e)
   | occur_let₂ : occur x e -> occur x (.Let y binds e)
@@ -68,8 +63,6 @@ inductive occurΓ : String -> Ctx -> Prop where
   | occurΓ : ¬occur x e -> occur x Γ⟦e⟧ -> occurΓ x Γ
 
 inductive ctx𝔹 : Ctx -> Prop where
-  | ctx𝔹_consL : ctx𝔹 (fun X => .Cons X tails)
-  | ctx𝔹_consR : value v -> ctx𝔹 (fun X => .Cons v X)
   | ctx𝔹_let : ctx𝔹 (fun X => .Let x X e)
   | ctx𝔹_appL : ctx𝔹 (fun X => .App X arg)
   | ctx𝔹_appR : value v -> ctx𝔹 (fun X => .App v X)
@@ -112,7 +105,6 @@ def subst (x : String) (v : Expr) (e : Expr) : Expr :=
   | .Lit i => .Lit i
   | .Lam f y e => if x == f || x == y then .Lam f y e else .Lam f y (subst x v e)
   | .App f arg => .App (subst x v f) (subst x v arg)
-  | .Cons head tails => .Cons (subst x v head) (subst x v tails)
   | .Let y binds e => if x == y then .Let y binds e else .Let y binds (subst x v e)
   | .If condition branch₀ branch₁ => .If (subst x v condition) (subst x v branch₀) (subst x v branch₁)
   | .Unary op e => .Unary op (subst x v e)
@@ -133,15 +125,10 @@ inductive step : Expr -> Expr -> Prop where
   |
   step_if𝕔 :
     ctx𝕄 M -> step M⟦.If (.Code condition) (.Code branch₀) (.Code branch₁)⟧ M⟦.Reflect (.If condiction branch₀ branch₁)⟧
-  | step_isNum : ctx𝕄 M -> value v -> v = .Lit n -> step M⟦.Unary .IsNum v⟧ M⟦(.Lit 1)⟧
-  | step_notNum₀ : ctx𝕄 M -> value v -> v = .Lam f arg e -> step M⟦.Unary .IsNum v⟧ M⟦(.Lit 0)⟧
-  | step_notNum₁ : ctx𝕄 M -> value v -> v = .Cons head tails -> step M⟦.Unary .IsNum v⟧ M⟦(.Lit 0)⟧
-  | step_isNum𝕔 : ctx𝕄 M -> step M⟦.Unary .IsNum (.Code e)⟧ M⟦(.Reflect (.Unary .IsNum e))⟧
   | step_plus : ctx𝕄 M -> step M⟦.Binary .Plus (.Lit n₀) (.Lit n₁)⟧ M⟦.Lit (n₀ + n₁)⟧
   | step_times : ctx𝕄 M -> step M⟦.Binary .Times (.Lit n₀) (.Lit n₁)⟧ M⟦.Lit (n₀ * n₁)⟧
   | step_binary𝕔 : ctx𝕄 M -> step M⟦.Binary op (.Code e₀) (.Code e₁)⟧ M⟦.Reflect (.Binary op e₀ e₁)⟧
   | step_lit : ctx𝕄 M -> step M⟦.Lift (.Lit n)⟧ M⟦.Code (.Lit n)⟧
-  | step_cons : ctx𝕄 M -> step M⟦.Lift (.Cons (.Code head) (.Code tails))⟧ M⟦.Reflect (.Cons head tails)⟧
   |
   step_lam :
     ctx𝕄 M ->
@@ -150,7 +137,6 @@ inductive step : Expr -> Expr -> Prop where
   | step_code : ctx𝕄 M -> step M⟦.Lift (.Code e)⟧ M⟦.Reflect (.Lift e)⟧
   | step_run₀ : ctx𝕄 M -> value v -> v = .Lit _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run₁ : ctx𝕄 M -> value v -> v = .Lam _ _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
-  | step_run₂ : ctx𝕄 M -> value v -> v = .Cons _ _ -> step M⟦.Run v (.Code code)⟧ M⟦code⟧
   | step_run𝕔 : ctx𝕄 M -> step M⟦.Run (.Code ctrl) (.Code code)⟧ M⟦.Reflect (.Run ctrl code)⟧
   | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬occurΓ x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
   | step_let𝕔 : ctx𝕄 M -> step M⟦.Let𝕔 x binds (.Code e)⟧ M⟦.Code (.Let x binds e)⟧

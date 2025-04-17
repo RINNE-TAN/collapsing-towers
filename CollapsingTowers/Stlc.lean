@@ -1,11 +1,13 @@
 
 inductive Expr : Type where
-  | Var (x : String)
-  | Lam (x : String) (e : Expr)
+  | Var (x : Nat)
+  | Lam (e : Expr)
   | App (f : Expr) (arg : Expr)
+  | Unit
 
 inductive value : Expr -> Prop where
-  | value_lam : value (.Lam x e)
+  | value_lam : value (.Lam e)
+  | value_unit : value .Unit
 
 abbrev Ctx :=
   Expr -> Expr
@@ -20,14 +22,16 @@ inductive ctx𝕄 : Ctx -> Prop where
   | ctx𝕄_hole : ctx𝕄 id
   | ctx𝕄_𝔹 : ctx𝔹 B -> ctx𝕄 M -> ctx𝕄 (B ∘ M)
 
-def subst (x : String) (v : Expr) (e : Expr) : Expr :=
+@[simp]
+def subst (n : Nat) (v : Expr) (e : Expr) : Expr :=
   match e with
-  | .Var y => if x == y then v else .Var y
-  | .Lam y e => if x == y then .Lam y e else .Lam y (subst x v e)
-  | .App f arg => .App (subst x v f) (subst x v arg)
+  | .Var x => if x == n then v else if x > n then .Var (x - 1) else .Var x
+  | .Lam e => .Lam (subst (n + 1) v e)
+  | .App f arg => .App (subst n v f) (subst n v arg)
+  | .Unit => .Unit
 
 inductive step : Expr -> Expr -> Prop where
-  | step_appβ : ctx𝕄 M -> value v -> step M⟦.App (.Lam x e) v⟧ M⟦subst x v e⟧
+  | step_appβ : ctx𝕄 M -> value v -> step M⟦.App (.Lam e) v⟧ M⟦subst 0 v e⟧
 
 theorem ctx𝔹_not_value : ctx𝔹 B -> ¬value B⟦e⟧ := by
   intros HB Hvalue
@@ -45,7 +49,7 @@ theorem ctx𝔹_eq : ctx𝔹 B₀ -> ctx𝔹 B₁ -> ¬value e₀ -> ¬value e�
     induction HB₁ with
     | ctx𝔹_appL =>
       simp at HEq
-      rw [And.left HEq, And.right HEq]
+      rw [HEq.left, HEq.right]
       constructor
       rfl
       rfl
@@ -53,7 +57,7 @@ theorem ctx𝔹_eq : ctx𝔹 B₀ -> ctx𝔹 B₁ -> ¬value e₀ -> ¬value e�
       simp at HEq
       exfalso
       apply HnotV₀
-      rw [And.left HEq]
+      rw [HEq.left]
       apply HV
   | ctx𝔹_appR HV =>
     simp at HEq
@@ -62,11 +66,11 @@ theorem ctx𝔹_eq : ctx𝔹 B₀ -> ctx𝔹 B₁ -> ¬value e₀ -> ¬value e�
       simp at HEq
       exfalso
       apply HnotV₁
-      rw [← And.left HEq]
+      rw [← HEq.left]
       apply HV
     | ctx𝔹_appR HV =>
       simp at HEq
-      rw [And.left HEq, And.right HEq]
+      rw [HEq.left, HEq.right]
       constructor
       rfl
       rfl
@@ -96,22 +100,22 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
   by
   intros He₀e₁
   induction He₀e₁ with
-  | @step_appβ M₀ v₀ x₀ e₀ HM₀ HV₀ =>
-    generalize HEq : M₀⟦.App (.Lam x₀ e₀) v₀⟧ = expr₀
+  | @step_appβ M₀ v₀ e₀ HM₀ HV₀ =>
+    generalize HEq : M₀⟦.App (.Lam e₀) v₀⟧ = expr₀
     intros He₁e₂
     induction He₁e₂ with
-    | @step_appβ M₁ v₁ x₁ e₁ HM₁ HV₁ =>
+    | @step_appβ M₁ v₁ e₁ HM₁ HV₁ =>
       induction HM₀ generalizing M₁ with
       | ctx𝕄_hole =>
         cases HM₁ with
         | ctx𝕄_hole =>
           simp at *
-          rw [HEq.left.left, HEq.left.right, HEq.right]
+          rw [HEq.left, HEq.right]
         | ctx𝕄_𝔹 HB HM₁ =>
           cases HB with
           | ctx𝔹_appL =>
             simp at *
-            have HV₀ : value (.Lam x₀ e₀) := by constructor
+            have HV₀ : value (.Lam e₀) := by constructor
             rw [HEq.left] at HV₀
             have HId := ctx𝕄_value HM₁ HV₀
             rw [HId.left] at HV₀
@@ -128,7 +132,7 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           cases HB₀ with
           | ctx𝔹_appL =>
             simp at *
-            have HV₁ : value (.Lam x₁ e₁) := by constructor
+            have HV₁ : value (.Lam e₁) := by constructor
             rw [← HEq.left] at HV₁
             have HId := ctx𝕄_value HM₀ HV₁
             rw [HId.left] at HV₁
@@ -141,13 +145,13 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
             nomatch HV₁
         | @ctx𝕄_𝔹 _ M₁ HB₁ HM₁ =>
           simp at *
-          have notV₀ : ¬value (M₀⟦.App (.Lam x₀ e₀) v₀⟧) :=
+          have notV₀ : ¬value (M₀⟦.App (.Lam e₀) v₀⟧) :=
             by
             apply ctx𝕄_not_value
             apply HM₀
             intro HV
             nomatch HV
-          have notV₁ : ¬value (M₁⟦.App (.Lam x₁ e₁) v₁⟧) :=
+          have notV₁ : ¬value (M₁⟦.App (.Lam e₁) v₁⟧) :=
             by
             apply ctx𝕄_not_value
             apply HM₁
@@ -157,3 +161,49 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           rw [HEq.left]
           have HEq := IHM₀ HM₁ HEq.right
           rw [HEq]
+
+inductive Ty : Type where
+  | ty_unit
+  | ty_fun : Ty -> Ty -> Ty
+
+abbrev TyCtx :=
+  List Ty
+
+inductive hasTy : TyCtx -> Expr -> Ty -> Prop
+  | hasTy_var : Γ[x]? = some τ -> hasTy Γ (.Var x) τ
+  | hasTy_lam : hasTy (τ₀ :: Γ) e τ₁ -> hasTy Γ (.Lam e) (.ty_fun τ₀ τ₁)
+  | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.App f arg) τ₁
+  | hasTy_unit : hasTy Γ .Unit .ty_unit
+
+theorem subst_hasTy : hasTy [] v τ₀ -> hasTy (τ₀ :: Γ) e τ₁ -> hasTy Γ (subst 0 v e) τ₁ :=
+  by
+  intros HhasTyV HhasTyE
+  cases HhasTyE with
+  | @hasTy_var _ x _ Hlookup =>
+    cases x with
+    | zero =>
+      simp at *
+      rw [← Hlookup]
+      admit
+    | succ =>
+      simp at *
+      constructor
+      apply Hlookup
+  | hasTy_lam => admit
+  | hasTy_app => admit
+  | hasTy_unit => admit
+
+theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
+  by
+  intro Hstep
+  cases Hstep with
+  | step_appβ HM HV =>
+    induction HM with
+    | ctx𝕄_hole =>
+      simp
+      intro HhasTy
+      cases HhasTy with
+      | hasTy_app HhasTyF HhasTyArg =>
+        cases HhasTyF with
+        | hasTy_lam => admit
+    | ctx𝕄_𝔹 => admit
