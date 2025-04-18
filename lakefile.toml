@@ -8,3 +8,7 @@ name = "CollapsingTowers"
 [[lean_exe]]
 name = "collapsing-towers"
 root = "Main"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"

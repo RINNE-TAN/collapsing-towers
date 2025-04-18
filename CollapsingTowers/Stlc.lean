@@ -1,4 +1,5 @@
 
+import Mathlib.Data.Finset.Basic
 inductive Expr : Type where
   | bvar (i : Nat)
   | fvar (x : String)
@@ -190,12 +191,6 @@ inductive Ty : Type where
 abbrev TyCtx :=
   List (String × Ty)
 
-structure Finset (α : Type) where
-  elements : List α
-  nodup : elements.Nodup
-
-instance [BEq α] : Membership α (Finset α) where mem s x := x ∈ s.elements
-
 @[simp]
 def lookup (Γ : TyCtx) (x : String) : Option Ty :=
   match Γ with
@@ -206,6 +201,11 @@ def lookup (Γ : TyCtx) (x : String) : Option Ty :=
 def in_context (x : String) : TyCtx → Prop
   | [] => False
   | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
+
+@[simp]
+def context_terms : TyCtx → (Finset String)
+  | [] => ∅
+  | ((x, _) :: Γ) => { x } ∪ (context_terms Γ)
 
 inductive ok : TyCtx → Prop where
   | ok_nil : ok []
@@ -219,6 +219,14 @@ inductive hasTy : TyCtx -> Expr -> Ty -> Prop
       (∀ x, x ∉ L -> hasTy ((x, τ₀) :: Γ) (open₀ (.fvar x) e) τ₁) -> hasTy Γ (.lam e) (.ty_fun τ₀ τ₁)
   | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.app f arg) τ₁
   | hasTy_unit : hasTy Γ .unit .ty_unit
+
+theorem context_terms_iff_in_list : x ∈ context_terms Γ ↔ in_context x Γ :=
+  by
+  induction Γ
+  case nil => simp
+  case cons _ _ IH =>
+    simp
+    rw [IH]
 
 theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ Γ₁) e τ :=
   by
@@ -247,16 +255,19 @@ theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ 
             apply HokTailsΓ₀
             apply Hlookup
             apply HokTailsΓ
-  | hasTy_lam L _ IHhasTyE =>
-    constructor
+  | @hasTy_lam _ Γ₀ _ _ L _
+    IHhasTyE =>
+    apply hasTy.hasTy_lam (L ∪ context_terms (Γ₀ ++ Γ₁))
     intro x HnotInL
+    simp at HnotInL
     apply IHhasTyE
-    apply HnotInL
+    apply HnotInL.left
     constructor
     apply HokΓ
-    intro HinCtx
-    apply HnotInL
-    admit
+    intro HinΓ
+    apply HnotInL.right
+    apply (context_terms_iff_in_list.mpr)
+    apply HinΓ
   | hasTy_app _ _ IHhasTyF IHhasTyArg =>
     constructor
     apply IHhasTyF
