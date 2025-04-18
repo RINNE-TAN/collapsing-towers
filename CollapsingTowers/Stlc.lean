@@ -1,13 +1,40 @@
 
 inductive Expr : Type where
-  | Var (x : Nat)
-  | Lam (e : Expr)
-  | App (f : Expr) (arg : Expr)
-  | Unit
+  | bvar (i : Nat)
+  | fvar (x : String)
+  | lam (e : Expr)
+  | app (f : Expr) (arg : Expr)
+  | unit
+
+@[simp]
+def subst (x : String) (v : Expr) : Expr -> Expr
+  | .bvar i => .bvar i
+  | .fvar y => if x == y then v else .fvar y
+  | .lam e => .lam (subst x v e)
+  | .app f arg => .app (subst x v f) (subst x v arg)
+  | .unit => .unit
+
+@[simp]
+def openRec (n : Nat) (v : Expr) : Expr -> Expr
+  | .bvar i => if n == i then v else .bvar i
+  | .fvar x => .fvar x
+  | .lam e => .lam (openRec (n + 1) v e)
+  | .app f arg => .app (openRec n v f) (openRec n v arg)
+  | .unit => .unit
+
+@[simp]
+def open₀ (v : Expr) : Expr -> Expr :=
+  openRec 0 v
+
+inductive lc : Expr -> Prop where
+  | lc_fvar : lc (.fvar x)
+  | lc_lam : lc (open₀ e x) -> lc (.lam e)
+  | lc_app : lc f -> lc arg -> lc (.app f arg)
+  | lc_unit : lc .unit
 
 inductive value : Expr -> Prop where
-  | value_lam : value (.Lam e)
-  | value_unit : value .Unit
+  | value_lam : value (.lam e)
+  | value_unit : value .unit
 
 abbrev Ctx :=
   Expr -> Expr
@@ -15,24 +42,17 @@ abbrev Ctx :=
 notation:max a "⟦" b "⟧" => a b
 
 inductive ctx𝔹 : Ctx -> Prop where
-  | ctx𝔹_appL : ctx𝔹 (fun X => .App X arg)
-  | ctx𝔹_appR : value v -> ctx𝔹 (fun X => .App v X)
+  | ctx𝔹_appL : lc arg -> ctx𝔹 (fun X => .app X arg)
+  | ctx𝔹_appR : value v -> ctx𝔹 (fun X => .app v X)
 
 inductive ctx𝕄 : Ctx -> Prop where
   | ctx𝕄_hole : ctx𝕄 id
   | ctx𝕄_𝔹 : ctx𝔹 B -> ctx𝕄 M -> ctx𝕄 (B ∘ M)
 
-@[simp]
-def subst (n : Nat) (v : Expr) (e : Expr) : Expr :=
-  match e with
-  | .Var x => if x == n then v else if x > n then .Var (x - 1) else .Var x
-  | .Lam e => .Lam (subst (n + 1) v e)
-  | .App f arg => .App (subst n v f) (subst n v arg)
-  | .Unit => .Unit
-
 inductive step : Expr -> Expr -> Prop where
-  | step_appβ : ctx𝕄 M -> value v -> step M⟦.App (.Lam e) v⟧ M⟦subst 0 v e⟧
+  | step_appβ : ctx𝕄 M -> lc (.lam e) -> value v -> step M⟦.app (.lam e) v⟧ M⟦open₀ e v⟧
 
+-- deterministic
 theorem ctx𝔹_not_value : ctx𝔹 B -> ¬value B⟦e⟧ := by
   intros HB Hvalue
   induction HB with
@@ -100,11 +120,11 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
   by
   intros He₀e₁
   induction He₀e₁ with
-  | @step_appβ M₀ v₀ e₀ HM₀ HV₀ =>
-    generalize HEq : M₀⟦.App (.Lam e₀) v₀⟧ = expr₀
+  | @step_appβ M₀ e₀ v₀ HM₀ _ HV₀ =>
+    generalize HEq : M₀⟦.app (.lam e₀) v₀⟧ = expr₀
     intros He₁e₂
     induction He₁e₂ with
-    | @step_appβ M₁ v₁ e₁ HM₁ HV₁ =>
+    | @step_appβ M₁ e₁ v₁ HM₁ _ HV₁ =>
       induction HM₀ generalizing M₁ with
       | ctx𝕄_hole =>
         cases HM₁ with
@@ -115,7 +135,7 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           cases HB with
           | ctx𝔹_appL =>
             simp at *
-            have HV₀ : value (.Lam e₀) := by constructor
+            have HV₀ : value (.lam e₀) := by constructor
             rw [HEq.left] at HV₀
             have HId := ctx𝕄_value HM₁ HV₀
             rw [HId.left] at HV₀
@@ -132,7 +152,7 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           cases HB₀ with
           | ctx𝔹_appL =>
             simp at *
-            have HV₁ : value (.Lam e₁) := by constructor
+            have HV₁ : value (.lam e₁) := by constructor
             rw [← HEq.left] at HV₁
             have HId := ctx𝕄_value HM₀ HV₁
             rw [HId.left] at HV₁
@@ -145,13 +165,13 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
             nomatch HV₁
         | @ctx𝕄_𝔹 _ M₁ HB₁ HM₁ =>
           simp at *
-          have notV₀ : ¬value (M₀⟦.App (.Lam e₀) v₀⟧) :=
+          have notV₀ : ¬value (M₀⟦.app (.lam e₀) v₀⟧) :=
             by
             apply ctx𝕄_not_value
             apply HM₀
             intro HV
             nomatch HV
-          have notV₁ : ¬value (M₁⟦.App (.Lam e₁) v₁⟧) :=
+          have notV₁ : ¬value (M₁⟦.app (.lam e₁) v₁⟧) :=
             by
             apply ctx𝕄_not_value
             apply HM₁
@@ -162,36 +182,88 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           have HEq := IHM₀ HM₁ HEq.right
           rw [HEq]
 
+-- typing
 inductive Ty : Type where
   | ty_unit
   | ty_fun : Ty -> Ty -> Ty
 
 abbrev TyCtx :=
-  List Ty
+  List (String × Ty)
+
+structure Finset (α : Type) where
+  elements : List α
+  nodup : elements.Nodup
+
+instance [BEq α] : Membership α (Finset α) where mem s x := x ∈ s.elements
+
+@[simp]
+def lookup (Γ : TyCtx) (x : String) : Option Ty :=
+  match Γ with
+  | [] => none
+  | (y, τ) :: Γ => if x = y then some τ else lookup Γ x
+
+@[simp]
+def in_context (x : String) : TyCtx → Prop
+  | [] => False
+  | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
+
+inductive ok : TyCtx → Prop where
+  | ok_nil : ok []
+  | ok_cons : ok Γ → ¬(in_context x Γ) → ok ((x, τ) :: Γ)
 
 inductive hasTy : TyCtx -> Expr -> Ty -> Prop
-  | hasTy_var : Γ[x]? = some τ -> hasTy Γ (.Var x) τ
-  | hasTy_lam : hasTy (τ₀ :: Γ) e τ₁ -> hasTy Γ (.Lam e) (.ty_fun τ₀ τ₁)
-  | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.App f arg) τ₁
-  | hasTy_unit : hasTy Γ .Unit .ty_unit
+  | hasTy_var : ok Γ -> lookup Γ x = some τ -> hasTy Γ (.fvar x) τ
+  |
+  hasTy_lam :
+    (L : Finset String) ->
+      (∀ x, x ∉ L -> hasTy ((x, τ₀) :: Γ) (open₀ (.fvar x) e) τ₁) -> hasTy Γ (.lam e) (.ty_fun τ₀ τ₁)
+  | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.app f arg) τ₁
+  | hasTy_unit : hasTy Γ .unit .ty_unit
 
-theorem subst_hasTy : hasTy [] v τ₀ -> hasTy (τ₀ :: Γ) e τ₁ -> hasTy Γ (subst 0 v e) τ₁ :=
+theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ Γ₁) e τ :=
   by
-  intros HhasTyV HhasTyE
-  cases HhasTyE with
-  | @hasTy_var _ x _ Hlookup =>
-    cases x with
-    | zero =>
+  intro HhasTy HokΓ
+  induction HhasTy with
+  | @hasTy_var Γ₀ x _ HokΓ₀ Hlookup =>
+    constructor
+    apply HokΓ
+    induction Γ₀ with
+    | nil => simp at *
+    | cons head tails IHtails =>
       simp at *
-      rw [← Hlookup]
-      admit
-    | succ =>
-      simp at *
-      constructor
-      apply Hlookup
-  | hasTy_lam => admit
-  | hasTy_app => admit
-  | hasTy_unit => admit
+      if HEq : x = head.fst then
+        rw [HEq] at Hlookup
+        rw [HEq]
+        simp at *
+        apply Hlookup
+      else
+        cases HokΓ₀ with
+        | ok_cons HokTailsΓ₀ =>
+          cases HokΓ with
+          | ok_cons HokTailsΓ =>
+            rw [if_neg HEq] at Hlookup
+            rw [if_neg HEq]
+            apply IHtails
+            apply HokTailsΓ₀
+            apply Hlookup
+            apply HokTailsΓ
+  | hasTy_lam L _ IHhasTyE =>
+    constructor
+    intro x HnotInL
+    apply IHhasTyE
+    apply HnotInL
+    constructor
+    apply HokΓ
+    intro HinCtx
+    apply HnotInL
+    admit
+  | hasTy_app _ _ IHhasTyF IHhasTyArg =>
+    constructor
+    apply IHhasTyF
+    apply HokΓ
+    apply IHhasTyArg
+    apply HokΓ
+  | hasTy_unit => constructor
 
 theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
   by
@@ -205,5 +277,7 @@ theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
       cases HhasTy with
       | hasTy_app HhasTyF HhasTyArg =>
         cases HhasTyF with
-        | hasTy_lam => admit
+        | hasTy_lam =>
+          simp at *
+          admit
     | ctx𝕄_𝔹 => admit
