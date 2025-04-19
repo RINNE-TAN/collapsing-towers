@@ -1,5 +1,6 @@
 
 import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Fintype.EquivFin
 import CollapsingTowers.Stlc.Basic
 import CollapsingTowers.Stlc.OpenClose
 import CollapsingTowers.Stlc.SmallStep
@@ -8,21 +9,21 @@ inductive Ty : Type where
   | ty_fun : Ty -> Ty -> Ty
 
 abbrev TyCtx :=
-  List (String × Ty)
+  List (ℕ × Ty)
 
 @[simp]
-def lookup (Γ : TyCtx) (x : String) : Option Ty :=
+def lookup (Γ : TyCtx) (x : ℕ) : Option Ty :=
   match Γ with
   | [] => none
   | (y, τ) :: Γ => if x = y then some τ else lookup Γ x
 
 @[simp]
-def in_context (x : String) : TyCtx → Prop
+def in_context (x : ℕ) : TyCtx → Prop
   | [] => False
   | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
 
 @[simp]
-def context_terms : TyCtx → (Finset String)
+def context_terms : TyCtx → (Finset ℕ)
   | [] => ∅
   | ((x, _) :: Γ) => { x } ∪ (context_terms Γ)
 
@@ -34,8 +35,7 @@ inductive hasTy : TyCtx -> Expr -> Ty -> Prop
   | hasTy_var : ok Γ -> lookup Γ x = some τ -> hasTy Γ (.fvar x) τ
   |
   hasTy_lam :
-    (L : Finset String) ->
-      (∀ x, x ∉ L -> hasTy ((x, τ₀) :: Γ) (open₀ (.fvar x) e) τ₁) -> hasTy Γ (.lam e) (.ty_fun τ₀ τ₁)
+    (L : Finset ℕ) -> (∀ x, x ∉ L -> hasTy ((x, τ₀) :: Γ) (open₀ (.fvar x) e) τ₁) -> hasTy Γ (.lam e) (.ty_fun τ₀ τ₁)
   | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.app f arg) τ₁
   | hasTy_unit : hasTy Γ .unit .ty_unit
 
@@ -95,19 +95,28 @@ theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ 
     apply HokΓ
   | hasTy_unit => constructor
 
+theorem pick_fresh (e : Expr) (L : Finset ℕ) : ∃ x, x ∉ (L ∪ fv e) := by apply Infinite.exists_not_mem_finset (L ∪ fv e)
+
+theorem hasTy_fresh :
+    fresh ∉ fv e -> hasTy [] v τ₀ -> hasTy [(fresh, τ₀)] (open₀ (Expr.fvar fresh) e) τ₁ -> hasTy [] (open₀ v e) τ₁ :=
+  by
+  intro Hfresh HhasTyV HhasTyOpen
+  admit
+
 theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
   by
   intro Hstep
   cases Hstep with
-  | step_appβ HM HV =>
+  | @step_appβ _ e _ HM Hlc HV =>
     induction HM with
     | ctx𝕄_hole =>
-      simp
       intro HhasTy
       cases HhasTy with
-      | hasTy_app HhasTyF HhasTyArg =>
-        cases HhasTyF with
-        | hasTy_lam =>
-          simp at *
+      | hasTy_app HhasTyBody HhasTyV =>
+        cases HhasTyBody with
+        | hasTy_lam L HhasTyE =>
+          obtain ⟨fresh, Hfresh⟩ := pick_fresh e L
+          simp at Hfresh
+          have HhasTyE := HhasTyE fresh Hfresh.left
           admit
     | ctx𝕄_𝔹 => admit

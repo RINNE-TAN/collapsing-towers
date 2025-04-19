@@ -15,7 +15,7 @@ inductive ctx𝕄 : Ctx -> Prop where
   | ctx𝕄_𝔹 : ctx𝔹 B -> ctx𝕄 M -> ctx𝕄 (B ∘ M)
 
 inductive step : Expr -> Expr -> Prop where
-  | step_appβ : ctx𝕄 M -> lc (.lam e) -> value v -> step M⟦.app (.lam e) v⟧ M⟦open₀ e v⟧
+  | step_appβ : ctx𝕄 M -> lc (.lam e) -> value v -> step M⟦.app (.lam e) v⟧ M⟦open₀ v e⟧
 
 inductive mulit : Expr -> Expr -> Prop where
   | multi_stop : mulit e e
