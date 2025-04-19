@@ -1,42 +1,6 @@
 
-import Mathlib.Data.Finset.Basic
-inductive Expr : Type where
-  | bvar (i : Nat)
-  | fvar (x : String)
-  | lam (e : Expr)
-  | app (f : Expr) (arg : Expr)
-  | unit
-
-@[simp]
-def subst (x : String) (v : Expr) : Expr -> Expr
-  | .bvar i => .bvar i
-  | .fvar y => if x == y then v else .fvar y
-  | .lam e => .lam (subst x v e)
-  | .app f arg => .app (subst x v f) (subst x v arg)
-  | .unit => .unit
-
-@[simp]
-def openRec (n : Nat) (v : Expr) : Expr -> Expr
-  | .bvar i => if n == i then v else .bvar i
-  | .fvar x => .fvar x
-  | .lam e => .lam (openRec (n + 1) v e)
-  | .app f arg => .app (openRec n v f) (openRec n v arg)
-  | .unit => .unit
-
-@[simp]
-def open₀ (v : Expr) : Expr -> Expr :=
-  openRec 0 v
-
-inductive lc : Expr -> Prop where
-  | lc_fvar : lc (.fvar x)
-  | lc_lam : lc (open₀ e x) -> lc (.lam e)
-  | lc_app : lc f -> lc arg -> lc (.app f arg)
-  | lc_unit : lc .unit
-
-inductive value : Expr -> Prop where
-  | value_lam : value (.lam e)
-  | value_unit : value .unit
-
+import CollapsingTowers.Stlc.Basic
+import CollapsingTowers.Stlc.OpenClose
 abbrev Ctx :=
   Expr -> Expr
 
@@ -53,7 +17,10 @@ inductive ctx𝕄 : Ctx -> Prop where
 inductive step : Expr -> Expr -> Prop where
   | step_appβ : ctx𝕄 M -> lc (.lam e) -> value v -> step M⟦.app (.lam e) v⟧ M⟦open₀ e v⟧
 
--- deterministic
+inductive mulit : Expr -> Expr -> Prop where
+  | multi_stop : mulit e e
+  | multi_step : step e₀ e₁ -> mulit e₁ e₂ -> mulit e₀ e₂
+
 theorem ctx𝔹_not_value : ctx𝔹 B -> ¬value B⟦e⟧ := by
   intros HB Hvalue
   induction HB with
@@ -182,113 +149,3 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           rw [HEq.left]
           have HEq := IHM₀ HM₁ HEq.right
           rw [HEq]
-
--- typing
-inductive Ty : Type where
-  | ty_unit
-  | ty_fun : Ty -> Ty -> Ty
-
-abbrev TyCtx :=
-  List (String × Ty)
-
-@[simp]
-def lookup (Γ : TyCtx) (x : String) : Option Ty :=
-  match Γ with
-  | [] => none
-  | (y, τ) :: Γ => if x = y then some τ else lookup Γ x
-
-@[simp]
-def in_context (x : String) : TyCtx → Prop
-  | [] => False
-  | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
-
-@[simp]
-def context_terms : TyCtx → (Finset String)
-  | [] => ∅
-  | ((x, _) :: Γ) => { x } ∪ (context_terms Γ)
-
-inductive ok : TyCtx → Prop where
-  | ok_nil : ok []
-  | ok_cons : ok Γ → ¬(in_context x Γ) → ok ((x, τ) :: Γ)
-
-inductive hasTy : TyCtx -> Expr -> Ty -> Prop
-  | hasTy_var : ok Γ -> lookup Γ x = some τ -> hasTy Γ (.fvar x) τ
-  |
-  hasTy_lam :
-    (L : Finset String) ->
-      (∀ x, x ∉ L -> hasTy ((x, τ₀) :: Γ) (open₀ (.fvar x) e) τ₁) -> hasTy Γ (.lam e) (.ty_fun τ₀ τ₁)
-  | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.app f arg) τ₁
-  | hasTy_unit : hasTy Γ .unit .ty_unit
-
-theorem context_terms_iff_in_list : x ∈ context_terms Γ ↔ in_context x Γ :=
-  by
-  induction Γ
-  case nil => simp
-  case cons _ _ IH =>
-    simp
-    rw [IH]
-
-theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ Γ₁) e τ :=
-  by
-  intro HhasTy HokΓ
-  induction HhasTy with
-  | @hasTy_var Γ₀ x _ HokΓ₀ Hlookup =>
-    constructor
-    apply HokΓ
-    induction Γ₀ with
-    | nil => simp at *
-    | cons head tails IHtails =>
-      simp at *
-      if HEq : x = head.fst then
-        rw [HEq] at Hlookup
-        rw [HEq]
-        simp at *
-        apply Hlookup
-      else
-        cases HokΓ₀ with
-        | ok_cons HokTailsΓ₀ =>
-          cases HokΓ with
-          | ok_cons HokTailsΓ =>
-            rw [if_neg HEq] at Hlookup
-            rw [if_neg HEq]
-            apply IHtails
-            apply HokTailsΓ₀
-            apply Hlookup
-            apply HokTailsΓ
-  | @hasTy_lam _ Γ₀ _ _ L _
-    IHhasTyE =>
-    apply hasTy.hasTy_lam (L ∪ context_terms (Γ₀ ++ Γ₁))
-    intro x HnotInL
-    simp at HnotInL
-    apply IHhasTyE
-    apply HnotInL.left
-    constructor
-    apply HokΓ
-    intro HinΓ
-    apply HnotInL.right
-    apply (context_terms_iff_in_list.mpr)
-    apply HinΓ
-  | hasTy_app _ _ IHhasTyF IHhasTyArg =>
-    constructor
-    apply IHhasTyF
-    apply HokΓ
-    apply IHhasTyArg
-    apply HokΓ
-  | hasTy_unit => constructor
-
-theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
-  by
-  intro Hstep
-  cases Hstep with
-  | step_appβ HM HV =>
-    induction HM with
-    | ctx𝕄_hole =>
-      simp
-      intro HhasTy
-      cases HhasTy with
-      | hasTy_app HhasTyF HhasTyArg =>
-        cases HhasTyF with
-        | hasTy_lam =>
-          simp at *
-          admit
-    | ctx𝕄_𝔹 => admit
