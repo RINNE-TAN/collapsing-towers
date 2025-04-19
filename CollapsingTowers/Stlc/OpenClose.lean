@@ -1,7 +1,7 @@
 
 import CollapsingTowers.Stlc.Basic
 @[simp]
-def subst (x : String) (v : Expr) : Expr -> Expr
+def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .bvar i => .bvar i
   | .fvar y => if x == y then v else .fvar y
   | .lam e => .lam (subst x v e)
@@ -9,7 +9,7 @@ def subst (x : String) (v : Expr) : Expr -> Expr
   | .unit => .unit
 
 @[simp]
-def openRec (n : Nat) (v : Expr) : Expr -> Expr
+def openRec (n : ℕ) (v : Expr) : Expr -> Expr
   | .bvar i => if n == i then v else .bvar i
   | .fvar x => .fvar x
   | .lam e => .lam (openRec (n + 1) v e)
@@ -22,6 +22,6 @@ def open₀ (v : Expr) : Expr -> Expr :=
 
 inductive lc : Expr -> Prop where
   | lc_fvar : lc (.fvar x)
-  | lc_lam : lc (open₀ e x) -> lc (.lam e)
+  | lc_lam : lc (open₀ (.fvar x) e) -> lc (.lam e)
   | lc_app : lc f -> lc arg -> lc (.app f arg)
   | lc_unit : lc .unit
