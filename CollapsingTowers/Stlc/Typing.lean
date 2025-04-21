@@ -97,25 +97,58 @@ theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ 
 
 theorem pick_fresh (e : Expr) (L : Finset ℕ) : ∃ x, x ∉ (L ∪ fv e) := by apply Infinite.exists_not_mem_finset (L ∪ fv e)
 
+theorem typing_subst : hasTy ((x, τ₀) :: Γ) e τ₁ -> hasTy Γ v τ₀ -> hasTy Γ (subst x v e) τ₁ :=
+  by
+  generalize EqΓ : (x, τ₀) :: Γ = Γ₁
+  intros HhasTyE HhasTyV
+  induction HhasTyE with
+  | hasTy_lam L _ IHhasTyE =>
+    simp at *
+    constructor
+    admit
+    admit
+  | _ => admit
+
+theorem typing_ctx𝔹 : ctx𝔹 B -> (∀ τ₀, hasTy [] e₀ τ₀ -> hasTy [] e₁ τ₀) -> hasTy [] (B e₀) τ₁ -> hasTy [] (B e₁) τ₁ :=
+  by
+  intro HB HhasTyHead HhasTyB
+  induction HB with
+  | ctx𝔹_appL Hlc =>
+    cases HhasTyB with
+    | hasTy_app HhasTyF HhasTyArg =>
+      constructor
+      apply HhasTyHead
+      apply HhasTyF
+      apply HhasTyArg
+  | ctx𝔹_appR HValue =>
+    cases HhasTyB with
+    | hasTy_app HhasTyF HhasTyArg =>
+      simp at *
+      constructor
+      apply HhasTyF
+      apply HhasTyHead
+      apply HhasTyArg
+
 theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
   by
   intro Hstep
   cases Hstep with
   | @step_appβ _ e v HM Hlc HV =>
     clear Hlc
-    induction HM with
+    induction HM generalizing τ with
     | ctx𝕄_hole =>
       intro HhasTyApp
       cases HhasTyApp with
       | hasTy_app HhasTyLam hasTyV =>
         cases HhasTyLam with
         | hasTy_lam L HhasTyE =>
-          induction e generalizing τ L with
-          | bvar i => admit
-          | fvar x => admit
-          | app f arg IHf IHarg => admit
-          | lam _ IHe => admit
-          | unit =>
-            simp at *
-            admit
-    | ctx𝕄_𝔹 => admit
+          obtain ⟨fresh, Hfresh⟩ := pick_fresh e L
+          simp at Hfresh
+          have HEq : subst fresh v (open₀ (Expr.fvar fresh) e) = open₀ v e := subst_intro Hfresh.right
+          rw [← HEq]
+          apply typing_subst (HhasTyE fresh Hfresh.left) hasTyV
+    | ctx𝕄_𝔹 HB _ IHHasTyM =>
+      simp at *
+      apply typing_ctx𝔹
+      apply HB
+      apply IHHasTyM
