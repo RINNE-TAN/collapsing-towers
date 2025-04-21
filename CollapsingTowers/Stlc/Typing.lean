@@ -97,17 +97,71 @@ theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ 
 
 theorem pick_fresh (e : Expr) (L : Finset ℕ) : ∃ x, x ∉ (L ∪ fv e) := by apply Infinite.exists_not_mem_finset (L ∪ fv e)
 
-theorem typing_subst : hasTy ((x, τ₀) :: Γ) e τ₁ -> hasTy Γ v τ₀ -> hasTy Γ (subst x v e) τ₁ :=
-  by
-  generalize EqΓ : (x, τ₀) :: Γ = Γ₁
-  intros HhasTyE HhasTyV
+theorem typing_regular : hasTy Γ e τ -> lc e := by
+  intro HhasTyE
   induction HhasTyE with
-  | hasTy_lam L _ IHhasTyE =>
-    simp at *
+  | hasTy_var => constructor
+  | hasTy_lam L _ IHe =>
     constructor
-    admit
-    admit
-  | _ => admit
+    intro fresh
+    intro Hfresh
+    apply IHe
+    apply Hfresh
+  | hasTy_app _ _ IHf IHarg =>
+    constructor
+    apply IHf
+    apply IHarg
+  | hasTy_unit => constructor
+
+theorem typing_subst_strengthened :
+    hasTy Γ e τ₁ -> Γ = Δ ++ (z, τ₀) :: Φ -> hasTy Φ v τ₀ -> hasTy (Δ ++ Φ) (subst z v e) τ₁ :=
+  by
+  intro HhasTyE HEqΓ HhasTyV
+  induction HhasTyE generalizing Δ with
+  | @hasTy_var _ x =>
+    if HEqx : z = x then
+      rw [HEqx]
+      simp
+      admit
+    else
+      simp
+      rw [if_neg HEqx]
+      constructor
+      admit
+      admit
+  | hasTy_app _ _ IHf IHarg =>
+    simp
+    constructor
+    apply IHf
+    apply HEqΓ
+    apply IHarg
+    apply HEqΓ
+  | @hasTy_lam τ₁ _ e _ L _ IHe =>
+    simp
+    apply hasTy.hasTy_lam (L ∪ { z })
+    intro fresh Hfresh
+    simp at *
+    rw [← subst_open_var]
+    rw [← List.nil_append ((fresh, τ₁) :: (Δ ++ Φ)), List.append_cons, List.nil_append, ← List.append_assoc]
+    apply IHe
+    apply Hfresh.left
+    rw [HEqΓ]
+    simp
+    intro HEqfresh
+    apply Hfresh.right
+    rw [HEqfresh]
+    apply typing_regular
+    apply HhasTyV
+  | hasTy_unit => constructor
+
+theorem typing_subst : hasTy ((z, τ₀) :: Φ) e τ₁ -> hasTy Φ v τ₀ -> hasTy Φ (subst z v e) τ₁ :=
+  by
+  intro HhasTyE HhasTyV
+  rw [← List.nil_append Φ]
+  apply typing_subst_strengthened
+  apply HhasTyE
+  rfl
+  apply HhasTyV
 
 theorem typing_ctx𝔹 : ctx𝔹 B -> (∀ τ₀, hasTy [] e₀ τ₀ -> hasTy [] e₁ τ₀) -> hasTy [] (B e₀) τ₁ -> hasTy [] (B e₁) τ₁ :=
   by

@@ -1,4 +1,6 @@
 
+import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Fintype.EquivFin
 import CollapsingTowers.Stlc.Basic
 @[simp]
 def subst (x : ℕ) (v : Expr) : Expr -> Expr
@@ -22,7 +24,7 @@ def open₀ (v : Expr) : Expr -> Expr :=
 
 inductive lc : Expr -> Prop where
   | lc_fvar : lc (.fvar x)
-  | lc_lam : lc (open₀ (.fvar x) e) -> lc (.lam e)
+  | lc_lam : (L : Finset ℕ) -> (∀ x, x ∉ L -> lc (open₀ (.fvar x) e)) -> lc (.lam e)
   | lc_app : lc f -> lc arg -> lc (.app f arg)
   | lc_unit : lc .unit
 
@@ -75,4 +77,54 @@ theorem subst_intro : x ∉ fv e -> subst x v (openRec n (.fvar x) e) = openRec 
     apply Hnotfv.left
     apply IHarg
     apply Hnotfv.right
+  | unit => simp
+
+theorem open_lc : lc e -> e = openRec n (.fvar y) e := by
+  intro Hlc
+  induction Hlc generalizing n with
+  | lc_fvar => simp
+  | lc_lam L _ IHe =>
+    simp at *
+    have ⟨fresh, Hfresh⟩ : ∃ x : ℕ, x ∉ L := by exact Infinite.exists_not_mem_finset L
+    have IHe := @IHe fresh Hfresh
+    admit
+  | lc_app _ _ IHf IHarg =>
+    simp at *
+    constructor
+    apply IHf
+    apply IHarg
+  | lc_unit => simp
+
+theorem subst_open_var : ¬x = y -> lc v -> subst x v (openRec n (.fvar y) e) = openRec n (.fvar y) (subst x v e) :=
+  by
+  intro HNe Hlc
+  induction e generalizing n with
+  | fvar x₀ =>
+    if HEq : x = x₀ then
+      rw [HEq]
+      simp
+      apply open_lc
+      apply Hlc
+    else
+      simp
+      rw [if_neg HEq]
+      simp
+  | bvar i =>
+    if HEq : n = i then
+      rw [HEq]
+      simp
+      intro
+      contradiction
+    else
+      simp
+      rw [if_neg HEq]
+      simp
+  | lam _ IHe =>
+    simp at *
+    apply IHe
+  | app _ _ IHf IHarg =>
+    simp at *
+    constructor
+    apply IHf
+    apply IHarg
   | unit => simp
