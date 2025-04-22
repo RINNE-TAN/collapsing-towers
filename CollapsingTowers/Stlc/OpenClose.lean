@@ -28,6 +28,10 @@ inductive lc : Expr -> Prop where
   | lc_app : lc f -> lc arg -> lc (.app f arg)
   | lc_unit : lc .unit
 
+inductive value : Expr -> Prop where
+  | value_lam : lc (.lam e) -> value (.lam e)
+  | value_unit : value .unit
+
 theorem subst_fresh : x ∉ fv e -> subst x v e = e := by
   intro Hnotfv
   induction e with
@@ -164,3 +168,9 @@ theorem subst_open_var : x ≠ y -> lc v -> subst x v (openRec n (.fvar y) e) = 
     apply IHf
     apply IHarg
   | unit => simp
+
+theorem value_lc : value v -> lc v := by
+  intro HV
+  induction HV with
+  | value_lam Hlc => apply Hlc
+  | value_unit => constructor

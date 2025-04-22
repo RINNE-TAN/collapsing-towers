@@ -39,6 +39,10 @@ inductive hasTy : TyCtx -> Expr -> Ty -> Prop
   | hasTy_app : hasTy Γ f (.ty_fun τ₀ τ₁) -> hasTy Γ arg τ₀ -> hasTy Γ (.app f arg) τ₁
   | hasTy_unit : hasTy Γ .unit .ty_unit
 
+@[simp]
+def stuck (e₀ : Expr) : Prop :=
+  ¬(∃ e₁, step e₀ e₁) /\ ¬value e₀
+
 theorem context_terms_iff_in_list : x ∈ context_terms Γ ↔ in_context x Γ :=
   by
   induction Γ
@@ -184,23 +188,79 @@ theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
       apply HB
       apply IHHasTyM
 
+theorem multi_preservation : multi e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
+  by
+  intro Hmulti HhasTye₀
+  induction Hmulti with
+  | multi_stop => apply HhasTye₀
+  | multi_step Hstep _ IHHasTy =>
+    apply IHHasTy
+    apply preservation
+    apply Hstep
+    apply HhasTye₀
+
 theorem progress : hasTy [] e₀ τ -> value e₀ \/ ∃ e₁, step e₀ e₁ :=
   by
   generalize HEqΓ : [] = Γ
   intro HhasTye₀
   induction HhasTye₀ with
-  | hasTy_app _ _ IHf IHarg =>
+  | hasTy_var Hok Hlookup =>
+    rw [← HEqΓ] at Hlookup
+    contradiction
+  | hasTy_lam L HhasTyE =>
+    left
+    constructor
+    constructor
+    intro fresh Hfresh
+    apply typing_regular
+    apply HhasTyE fresh Hfresh
+  | @hasTy_app _ f₀ _ _ arg₀ HhasTyF HhasTyArg IHf IHarg =>
     right
     cases IHf HEqΓ with
     | inl HvalueF =>
       cases IHarg HEqΓ with
-      | inl HvalueArg => admit
-      | inr HstepArg => admit
+      | inl HvalueArg =>
+        cases HvalueF with
+        | value_lam Hlc =>
+          constructor
+          apply (step.step_appβ ctx𝕄.ctx𝕄_hole)
+          apply Hlc
+          apply HvalueArg
+        | value_unit => nomatch HhasTyF
+      | inr HstepArg =>
+        obtain ⟨arg₁, HstepArg⟩ := HstepArg
+        constructor
+        apply step_in_ctx𝔹 (ctx𝔹.ctx𝔹_appR _)
+        apply HstepArg
+        apply HvalueF
     | inr HstepF =>
       cases IHarg HEqΓ with
-      | inl HvalueArg => admit
-      | inr HstepArg => admit
+      | inl HvalueArg =>
+        obtain ⟨f₁, HstepF⟩ := HstepF
+        constructor
+        apply step_in_ctx𝔹 (ctx𝔹.ctx𝔹_appL _)
+        apply HstepF
+        apply value_lc
+        apply HvalueArg
+      | inr =>
+        obtain ⟨f₁, HstepF⟩ := HstepF
+        constructor
+        apply step_in_ctx𝔹 (ctx𝔹.ctx𝔹_appL _)
+        apply HstepF
+        apply typing_regular
+        apply HhasTyArg
   | hasTy_unit =>
     left
     constructor
-  | _ => admit
+
+theorem soundness : multi e₀ e₁ -> hasTy [] e₀ τ -> ¬stuck e₁ :=
+  by
+  intro Hmulti HhasTye₀
+  simp
+  intro HNstep
+  cases progress (multi_preservation Hmulti HhasTye₀) with
+  | inl HV => apply HV
+  | inr Hstep =>
+    obtain ⟨e₂, Hstep⟩ := Hstep
+    have HNstep := HNstep e₂
+    contradiction

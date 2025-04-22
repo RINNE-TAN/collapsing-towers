@@ -17,9 +17,9 @@ inductive ctx𝕄 : Ctx -> Prop where
 inductive step : Expr -> Expr -> Prop where
   | step_appβ : ctx𝕄 M -> lc (.lam e) -> value v -> step M⟦.app (.lam e) v⟧ M⟦open₀ v e⟧
 
-inductive mulit : Expr -> Expr -> Prop where
-  | multi_stop : mulit e e
-  | multi_step : step e₀ e₁ -> mulit e₁ e₂ -> mulit e₀ e₂
+inductive multi : Expr -> Expr -> Prop where
+  | multi_stop : multi e e
+  | multi_step : step e₀ e₁ -> multi e₁ e₂ -> multi e₀ e₂
 
 theorem ctx𝔹_not_value : ctx𝔹 B -> ¬value B⟦e⟧ := by
   intros HB Hvalue
@@ -88,11 +88,12 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
   by
   intros He₀e₁
   induction He₀e₁ with
-  | @step_appβ M₀ e₀ v₀ HM₀ _ HV₀ =>
+  | @step_appβ M₀ e₀ v₀ HM₀ Hlce₀
+    HV₀ =>
     generalize HEq : M₀⟦.app (.lam e₀) v₀⟧ = expr₀
     intros He₁e₂
     induction He₁e₂ with
-    | @step_appβ M₁ e₁ v₁ HM₁ _ HV₁ =>
+    | @step_appβ M₁ e₁ v₁ HM₁ Hlce₁ HV₁ =>
       induction HM₀ generalizing M₁ with
       | ctx𝕄_hole =>
         cases HM₁ with
@@ -103,7 +104,9 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           cases HB with
           | ctx𝔹_appL =>
             simp at *
-            have HV₀ : value (.lam e₀) := by constructor
+            have HV₀ : value (.lam e₀) := by
+              constructor
+              apply Hlce₀
             rw [HEq.left] at HV₀
             have HId := ctx𝕄_value HM₁ HV₀
             rw [HId.left] at HV₀
@@ -120,7 +123,9 @@ theorem step_deterministic : step expr₀ expr₁ -> step expr₀ expr₂ -> exp
           cases HB₀ with
           | ctx𝔹_appL =>
             simp at *
-            have HV₁ : value (.lam e₁) := by constructor
+            have HV₁ : value (.lam e₁) := by
+              constructor
+              apply Hlce₁
             rw [← HEq.left] at HV₁
             have HId := ctx𝕄_value HM₀ HV₁
             rw [HId.left] at HV₁
@@ -156,6 +161,22 @@ theorem step_not_value : step e₀ e₁ -> ¬value e₀ :=
   cases Hstep with
   | step_appβ HM _ _ => nomatch (ctx𝕄_value HM Hvalue).right
 
+theorem ctx_comp : (f g : Ctx) -> f (g e) = (f ∘ g) e := by simp
+
+theorem step_in_ctx𝔹 : ctx𝔹 B -> step e₀ e₁ -> step B⟦e₀⟧ B⟦e₁⟧ :=
+  by
+  intro HB Hstep
+  cases Hstep with
+  | @step_appβ M e v HM Hlc Hvalue =>
+    rw [ctx_comp B M]
+    rw [ctx_comp B M]
+    constructor
+    constructor
+    apply HB
+    apply HM
+    apply Hlc
+    apply Hvalue
+
 theorem step_in_ctx𝕄 : ctx𝕄 M -> step e₀ e₁ -> step M⟦e₀⟧ M⟦e₁⟧ :=
   by
   intro HM Hstep
@@ -165,12 +186,6 @@ theorem step_in_ctx𝕄 : ctx𝕄 M -> step e₀ e₁ -> step M⟦e₀⟧ M⟦e�
     apply Hstep
   | ctx𝕄_𝔹 HB _ IHB =>
     simp
-    admit
-
-theorem step_in_ctx𝔹 : ctx𝔹 B -> step e₀ e₁ -> step B⟦e₀⟧ B⟦e₁⟧ :=
-  by
-  intro HB Hstep
-  cases Hstep with
-  | @step_appβ M e v HM Hlc Hvalue =>
-    simp
-    admit
+    apply step_in_ctx𝔹
+    apply HB
+    apply IHB

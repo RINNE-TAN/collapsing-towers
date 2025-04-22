@@ -141,21 +141,9 @@ inductive step : Expr -> Expr -> Prop where
   | step_reflect : ctxℙ P -> ctx𝔼 E -> ¬occurΓ x E -> step P⟦E⟦.Reflect e⟧⟧ P⟦.Let𝕔 x e E⟦.Code (.Var x)⟧⟧
   | step_let𝕔 : ctx𝕄 M -> step M⟦.Let𝕔 x binds (.Code e)⟧ M⟦.Code (.Let x binds e)⟧
 
-inductive mulit : Expr -> Expr -> Prop where
-  | multi_stop : mulit e e
-  | multi_step : step e₀ e₁ -> mulit e₁ e₂ -> mulit e₀ e₂
-
-theorem mulit_trans : mulit e₀ e₁ -> mulit e₁ e₂ -> mulit e₀ e₂ :=
-  by
-  intro me₀e₁
-  induction me₀e₁ with
-  | multi_stop => simp
-  | multi_step se₀e₃ _ ih =>
-    intro me₁e₂
-    constructor
-    apply se₀e₃
-    apply ih
-    apply me₁e₂
+inductive multi : Expr -> Expr -> Prop where
+  | multi_stop : multi e e
+  | multi_step : step e₀ e₁ -> multi e₁ e₂ -> multi e₀ e₂
 
 def expr₀ : Expr :=
   .Lift (.Lam "f" "x" (.Binary .Plus (.Var "x") (.Binary .Times (.Var "x") (.Var "x"))))
@@ -297,7 +285,7 @@ def step₉ : step expr₉ exprₓ := by
   rw [exprₓ]
   apply (step.step_let𝕔 ctx𝕄.ctx𝕄_hole)
 
-theorem eval_expr₀ : mulit expr₀ exprₓ := by
+theorem eval_expr₀ : multi expr₀ exprₓ := by
   constructor
   apply step₀
   constructor
