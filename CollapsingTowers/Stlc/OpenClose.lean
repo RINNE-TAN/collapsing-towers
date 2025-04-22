@@ -79,15 +79,51 @@ theorem subst_intro : x ∉ fv e -> subst x v (openRec n (.fvar x) e) = openRec 
     apply Hnotfv.right
   | unit => simp
 
+theorem open_lc_nested : j ≠ k -> openRec j v e = openRec k u (openRec j v e) -> e = openRec k u e :=
+  by
+  intro HNe HEqOpen
+  induction e generalizing j k with
+  | bvar i =>
+    if HEq₀ : j = i then
+      rw [HEq₀] at HEqOpen
+      rw [← HEq₀]
+      symm at HNe
+      simp at *
+      rw [if_neg HNe]
+    else
+      simp at HEqOpen
+      rw [if_neg HEq₀] at HEqOpen
+      apply HEqOpen
+  | fvar x => simp
+  | lam _ IHe =>
+    simp
+    apply @IHe (j + 1)
+    simp
+    apply HNe
+    simp at HEqOpen
+    apply HEqOpen
+  | app _ _ IHf IHarg =>
+    simp at *
+    constructor
+    apply IHf
+    apply HNe
+    apply HEqOpen.left
+    apply IHarg
+    apply HNe
+    apply HEqOpen.right
+  | unit => simp
+
 theorem open_lc : lc e -> e = openRec n (.fvar y) e := by
   intro Hlc
   induction Hlc generalizing n with
   | lc_fvar => simp
   | lc_lam L _ IHe =>
     simp at *
-    have ⟨fresh, Hfresh⟩ : ∃ x : ℕ, x ∉ L := by exact Infinite.exists_not_mem_finset L
-    have IHe := @IHe fresh Hfresh
-    admit
+    have ⟨_, Hfresh⟩ : ∃ x : ℕ, x ∉ L := by exact Infinite.exists_not_mem_finset L
+    apply @open_lc_nested 0
+    simp
+    apply IHe
+    apply Hfresh
   | lc_app _ _ IHf IHarg =>
     simp at *
     constructor
@@ -95,7 +131,7 @@ theorem open_lc : lc e -> e = openRec n (.fvar y) e := by
     apply IHarg
   | lc_unit => simp
 
-theorem subst_open_var : ¬x = y -> lc v -> subst x v (openRec n (.fvar y) e) = openRec n (.fvar y) (subst x v e) :=
+theorem subst_open_var : x ≠ y -> lc v -> subst x v (openRec n (.fvar y) e) = openRec n (.fvar y) (subst x v e) :=
   by
   intro HNe Hlc
   induction e generalizing n with

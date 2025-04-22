@@ -47,46 +47,24 @@ theorem context_terms_iff_in_list : x ∈ context_terms Γ ↔ in_context x Γ :
     simp
     rw [IH]
 
-theorem hasTy_mono : hasTy Γ₀ e τ -> ok (Γ₀ ++ Γ₁) -> hasTy (Γ₀ ++ Γ₁) e τ :=
+theorem hasTy_mono : hasTy Γ e τ -> ok (Φ ++ Γ ++ Δ) -> hasTy (Φ ++ Γ ++ Δ) e τ :=
   by
   intro HhasTy HokΓ
-  induction HhasTy with
-  | @hasTy_var Γ₀ x _ HokΓ₀ Hlookup =>
+  induction HhasTy generalizing Φ with
+  | @hasTy_var Γ x _ HokΓ₀ Hlookup =>
     constructor
     apply HokΓ
-    induction Γ₀ with
+    induction Γ generalizing Φ with
     | nil => simp at *
     | cons head tails IHtails =>
       simp at *
-      if HEq : x = head.fst then
-        rw [HEq] at Hlookup
-        rw [HEq]
-        simp at *
-        apply Hlookup
-      else
-        cases HokΓ₀ with
-        | ok_cons HokTailsΓ₀ =>
-          cases HokΓ with
-          | ok_cons HokTailsΓ =>
-            rw [if_neg HEq] at Hlookup
-            rw [if_neg HEq]
-            apply IHtails
-            apply HokTailsΓ₀
-            apply Hlookup
-            apply HokTailsΓ
-  | @hasTy_lam _ Γ₀ _ _ L _
+      admit
+  | @hasTy_lam _ Γ _ _ L _
     IHhasTyE =>
-    apply hasTy.hasTy_lam (L ∪ context_terms (Γ₀ ++ Γ₁))
+    apply hasTy.hasTy_lam (L ∪ context_terms (Γ ++ Δ))
     intro x HnotInL
     simp at HnotInL
-    apply IHhasTyE
-    apply HnotInL.left
-    constructor
-    apply HokΓ
-    intro HinΓ
-    apply HnotInL.right
-    apply (context_terms_iff_in_list.mpr)
-    apply HinΓ
+    admit
   | hasTy_app _ _ IHhasTyF IHhasTyArg =>
     constructor
     apply IHhasTyF
@@ -118,16 +96,15 @@ theorem typing_subst_strengthened :
   by
   intro HhasTyE HEqΓ HhasTyV
   induction HhasTyE generalizing Δ with
-  | @hasTy_var _ x =>
+  | @hasTy_var Γ x τ HokΓ Hlookup =>
     if HEqx : z = x then
       rw [HEqx]
       simp
+      rw [← List.append_nil (Δ ++ Φ)]
       admit
     else
       simp
       rw [if_neg HEqx]
-      constructor
-      admit
       admit
   | hasTy_app _ _ IHf IHarg =>
     simp
@@ -206,3 +183,24 @@ theorem preservation : step e₀ e₁ -> hasTy [] e₀ τ -> hasTy [] e₁ τ :=
       apply typing_ctx𝔹
       apply HB
       apply IHHasTyM
+
+theorem progress : hasTy [] e₀ τ -> value e₀ \/ ∃ e₁, step e₀ e₁ :=
+  by
+  generalize HEqΓ : [] = Γ
+  intro HhasTye₀
+  induction HhasTye₀ with
+  | hasTy_app _ _ IHf IHarg =>
+    right
+    cases IHf HEqΓ with
+    | inl HvalueF =>
+      cases IHarg HEqΓ with
+      | inl HvalueArg => admit
+      | inr HstepArg => admit
+    | inr HstepF =>
+      cases IHarg HEqΓ with
+      | inl HvalueArg => admit
+      | inr HstepArg => admit
+  | hasTy_unit =>
+    left
+    constructor
+  | _ => admit

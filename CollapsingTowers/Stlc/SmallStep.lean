@@ -155,3 +155,22 @@ theorem step_not_value : step e₀ e₁ -> ¬value e₀ :=
   intro Hstep Hvalue
   cases Hstep with
   | step_appβ HM _ _ => nomatch (ctx𝕄_value HM Hvalue).right
+
+theorem step_in_ctx𝕄 : ctx𝕄 M -> step e₀ e₁ -> step M⟦e₀⟧ M⟦e₁⟧ :=
+  by
+  intro HM Hstep
+  induction HM with
+  | ctx𝕄_hole =>
+    simp
+    apply Hstep
+  | ctx𝕄_𝔹 HB _ IHB =>
+    simp
+    admit
+
+theorem step_in_ctx𝔹 : ctx𝔹 B -> step e₀ e₁ -> step B⟦e₀⟧ B⟦e₁⟧ :=
+  by
+  intro HB Hstep
+  cases Hstep with
+  | @step_appβ M e v HM Hlc Hvalue =>
+    simp
+    admit
