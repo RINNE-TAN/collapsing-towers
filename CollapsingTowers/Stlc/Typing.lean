@@ -4,33 +4,7 @@ import Mathlib.Data.Fintype.EquivFin
 import CollapsingTowers.Stlc.Basic
 import CollapsingTowers.Stlc.OpenClose
 import CollapsingTowers.Stlc.SmallStep
-inductive Ty : Type where
-  | ty_unit
-  | ty_fun : Ty -> Ty -> Ty
-
-abbrev TyCtx :=
-  List (ℕ × Ty)
-
-@[simp]
-def lookup (Γ : TyCtx) (x : ℕ) : Option Ty :=
-  match Γ with
-  | [] => none
-  | (y, τ) :: Γ => if x = y then some τ else lookup Γ x
-
-@[simp]
-def in_context (x : ℕ) : TyCtx → Prop
-  | [] => False
-  | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
-
-@[simp]
-def context_terms : TyCtx → (Finset ℕ)
-  | [] => ∅
-  | ((x, _) :: Γ) => { x } ∪ (context_terms Γ)
-
-inductive ok : TyCtx → Prop where
-  | ok_nil : ok []
-  | ok_cons : ok Γ → ¬(in_context x Γ) → ok ((x, τ) :: Γ)
-
+import CollapsingTowers.Stlc.Context
 inductive hasTy : TyCtx -> Expr -> Ty -> Prop
   | hasTy_var : ok Γ -> lookup Γ x = some τ -> hasTy Γ (.fvar x) τ
   |
@@ -43,38 +17,41 @@ inductive hasTy : TyCtx -> Expr -> Ty -> Prop
 def stuck (e₀ : Expr) : Prop :=
   ¬(∃ e₁, step e₀ e₁) /\ ¬value e₀
 
-theorem context_terms_iff_in_list : x ∈ context_terms Γ ↔ in_context x Γ :=
+theorem hasTy_mono : hasTy Γ e τ -> Γ = Φ ++ Δ -> ok (Φ ++ Ψ ++ Δ) -> hasTy (Φ ++ Ψ ++ Δ) e τ :=
   by
-  induction Γ
-  case nil => simp
-  case cons _ _ IH =>
-    simp
-    rw [IH]
-
-theorem hasTy_mono : hasTy Γ e τ -> ok (Φ ++ Γ ++ Δ) -> hasTy (Φ ++ Γ ++ Δ) e τ :=
-  by
-  intro HhasTy HokΓ
+  intro HhasTy HEqΓ Hok
   induction HhasTy generalizing Φ with
-  | @hasTy_var Γ x _ HokΓ₀ Hlookup =>
+  | hasTy_var HokLocal Hlookup =>
     constructor
-    apply HokΓ
-    induction Γ generalizing Φ with
-    | nil => simp at *
-    | cons head tails IHtails =>
-      simp at *
-      admit
-  | @hasTy_lam _ Γ _ _ L _
-    IHhasTyE =>
-    apply hasTy.hasTy_lam (L ∪ context_terms (Γ ++ Δ))
-    intro x HnotInL
-    simp at HnotInL
-    admit
-  | hasTy_app _ _ IHhasTyF IHhasTyArg =>
+    apply Hok
+    apply lookup_extend
+    rw [← HEqΓ]
+    apply Hlookup
+    apply Hok
+  | hasTy_lam L _ IHe =>
+    apply hasTy.hasTy_lam (L ∪ context_terms (Φ ++ Ψ ++ Δ))
+    intro fresh Hfresh
+    simp at Hfresh
+    rw [← List.cons_append, ← List.cons_append]
+    apply IHe
+    apply Hfresh.left
+    simp
+    apply HEqΓ
     constructor
-    apply IHhasTyF
-    apply HokΓ
-    apply IHhasTyArg
-    apply HokΓ
+    apply Hok
+    intro HInΓ
+    apply Hfresh.right
+    apply context_terms_iff_in_list.mpr
+    simp at HInΓ
+    apply HInΓ
+  | hasTy_app _ _ IHf IHarg =>
+    constructor
+    apply IHf
+    apply HEqΓ
+    apply Hok
+    apply IHarg
+    apply HEqΓ
+    apply Hok
   | hasTy_unit => constructor
 
 theorem pick_fresh (e : Expr) (L : Finset ℕ) : ∃ x, x ∉ (L ∪ fv e) := by apply Infinite.exists_not_mem_finset (L ∪ fv e)
@@ -102,14 +79,49 @@ theorem typing_subst_strengthened :
   induction HhasTyE generalizing Δ with
   | @hasTy_var Γ x τ HokΓ Hlookup =>
     if HEqx : z = x then
-      rw [HEqx]
+      rw [← HEqx]
+      rw [← HEqx] at Hlookup
+      have HlookupEq : lookup Γ z = some τ₀ := by
+        rw [HEqΓ]
+        rw [← List.nil_append Δ]
+        apply lookup_extend
+        simp
+        simp
+        rw [← HEqΓ]
+        apply HokΓ
+      rw [List.append_cons] at HEqΓ
+      rw [HEqΓ] at HokΓ
+      rw [Hlookup] at HlookupEq
+      simp at HlookupEq
+      rw [HlookupEq]
       simp
-      rw [← List.append_nil (Δ ++ Φ)]
-      admit
+      rw [← List.append_nil Δ]
+      apply @hasTy_mono (Δ ++ Φ)
+      rw [← List.nil_append Δ]
+      apply hasTy_mono
+      apply HhasTyV
+      rfl
+      simp
+      apply ok_shrink
+      apply HokΓ
+      rfl
+      simp
+      apply ok_shrink
+      apply HokΓ
     else
       simp
       rw [if_neg HEqx]
-      admit
+      rw [List.append_cons] at HEqΓ
+      rw [HEqΓ] at HokΓ
+      rw [HEqΓ] at Hlookup
+      constructor
+      apply ok_shrink
+      apply HokΓ
+      apply lookup_shrink
+      apply Hlookup
+      intro HEq
+      apply HEqx
+      rw [HEq]
   | hasTy_app _ _ IHf IHarg =>
     simp
     constructor

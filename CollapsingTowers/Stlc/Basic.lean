@@ -7,6 +7,10 @@ inductive Expr : Type where
   | app (f : Expr) (arg : Expr)
   | unit
 
+inductive Ty : Type where
+  | ty_unit
+  | ty_fun : Ty -> Ty -> Ty
+
 @[simp]
 def fv : Expr → Finset ℕ
   | .bvar _ => ∅
