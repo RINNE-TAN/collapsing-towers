@@ -15,7 +15,7 @@ def in_context (x : ℕ) : TyCtx → Prop
   | ((y, _) :: Γ) => (x = y) ∨ (in_context x Γ)
 
 @[simp]
-def context_terms : TyCtx → (Finset ℕ)
+def context_terms : TyCtx → Finset ℕ
   | [] => ∅
   | ((x, _) :: Γ) => { x } ∪ (context_terms Γ)
 
