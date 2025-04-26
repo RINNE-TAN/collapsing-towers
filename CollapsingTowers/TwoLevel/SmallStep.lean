@@ -11,7 +11,6 @@ inductive ctx𝔹 : Ctx -> Prop where
   | app₁R : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
   | app₂L : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
   | app₂R : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
-  | reflect : ctx𝔹 (fun X => .reflect X)
 
 inductive ctxℝ : Ctx -> Prop where
   | lam𝕔 : ctxℝ (fun X => .lam𝕔 X)
@@ -40,3 +39,7 @@ inductive step : Expr -> Expr -> Prop where
   | app₁ : ∀ M e v, ctx𝕄 M -> lc (.lam₁ e) -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦open₀ v e⟧
   | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
   | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
+  |
+  lam₂ :
+    ∀ M e x, ctx𝕄 M -> x ∉ fv e -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ x (subst x (.code (.fvar x)) (open₀ (.fvar x) e)))⟧
+  | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧

@@ -50,6 +50,25 @@ def opening (i : ℕ) (v : Expr) : Expr -> Expr
 def open₀ (v : Expr) : Expr -> Expr :=
   opening 0 v
 
+@[simp]
+def closing (i : ℕ) (x : ℕ) : Expr -> Expr
+  | .bvar j => .bvar j
+  | .fvar y => if x == y then .bvar i else .fvar y
+  | .lam₁ e => .lam₁ (closing (i + 1) x e)
+  | .lam₂ e => .lam₂ (closing (i + 1) x e)
+  | .app₁ f arg => .app₁ (closing i x f) (closing i x arg)
+  | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ n
+  | .code e => .code (closing i x e)
+  | .reflect e => .reflect (closing i x e)
+  | .lam𝕔 e => .lam𝕔 (closing (i + 1) x e)
+  | .let𝕔 b e => .let𝕔 (closing i x b) (closing (i + 1) x e)
+
+@[simp]
+def close₀ (x : ℕ) : Expr -> Expr :=
+  closing 0 x
+
 inductive lc : Expr -> Prop where
   | fvar : ∀ x, lc (.fvar x)
   | lam₁ : ∀ x e, lc (open₀ (.fvar x) e) -> lc (.lam₁ e)
