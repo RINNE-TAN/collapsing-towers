@@ -7,10 +7,10 @@ abbrev Ctx :=
 notation:max a "⟦" b "⟧" => a b
 
 inductive ctx𝔹 : Ctx -> Prop where
-  | app₁L : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₁ X arg)
-  | app₁R : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
-  | app₂L : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
-  | app₂R : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
+  | appl₁ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₁ X arg)
+  | appr₁ : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
+  | appl₂ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
+  | appr₂ : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
 
 inductive ctxℝ : Ctx -> Prop where
   | lam𝕔 : ctxℝ (fun X => .lam𝕔 X)
@@ -31,8 +31,8 @@ mutual
     | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ Q -> ctxℙ (B ∘ Q)
     | consℝ : ∀ R P, ctxℝ R -> ctxℙ P -> ctxℙ (R ∘ P)
   inductive ctxℚ : Ctx -> Prop where
-    | ctxℚ_𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ Q -> ctxℚ (B ∘ Q)
-    | ctxℚ_ℝ : ∀ R P, ctxℝ R -> ctxℙ P -> ctxℚ (R ∘ P)
+    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ Q -> ctxℚ (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ R -> ctxℙ P -> ctxℚ (R ∘ P)
 end
 
 inductive step : Expr -> Expr -> Prop where
