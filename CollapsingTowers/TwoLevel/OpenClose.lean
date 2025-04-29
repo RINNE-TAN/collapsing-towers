@@ -12,6 +12,8 @@ def fv : Expr → Finset ℕ
   | .app₂ f arg => fv f ∪ fv arg
   | .lit₁ _ => ∅
   | .lit₂ _ => ∅
+  | .plus₁ l r => fv l ∪ fv r
+  | .plus₂ l r => fv l ∪ fv r
   | .code e => fv e
   | .reflect e => fv e
   | .lam𝕔 e => fv e
@@ -32,6 +34,8 @@ def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .app₂ f arg => .app₂ (subst x v f) (subst x v arg)
   | .lit₁ n => .lit₁ n
   | .lit₂ n => .lit₂ n
+  | .plus₁ l r => .plus₁ (subst x v l) (subst x v r)
+  | .plus₂ l r => .plus₂ (subst x v l) (subst x v r)
   | .code e => .code (subst x v e)
   | .reflect e => .reflect (subst x v e)
   | .lam𝕔 e => .lam𝕔 (subst x v e)
@@ -48,6 +52,8 @@ def opening (i : ℕ) (x : ℕ) : Expr -> Expr
   | .app₂ f arg => .app₂ (opening i x f) (opening i x arg)
   | .lit₁ n => .lit₁ n
   | .lit₂ n => .lit₂ n
+  | .plus₁ l r => .plus₁ (opening i x l) (opening i x r)
+  | .plus₂ l r => .plus₂ (opening i x l) (opening i x r)
   | .code e => .code (opening i x e)
   | .reflect e => .reflect (opening i x e)
   | .lam𝕔 e => .lam𝕔 (opening (i + 1) x e)
@@ -68,6 +74,8 @@ def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
   | .lit₁ n => .lit₁ n
   | .lit₂ n => .lit₂ n
+  | .plus₁ l r => .plus₁ (closing i x l) (closing i x r)
+  | .plus₂ l r => .plus₂ (closing i x l) (closing i x r)
   | .code e => .code (closing i x e)
   | .reflect e => .reflect (closing i x e)
   | .lam𝕔 e => .lam𝕔 (closing (i + 1) x e)
@@ -86,6 +94,8 @@ inductive lc : Expr -> Prop where
   | app₂ : ∀ f arg, lc f -> lc arg -> lc (.app₂ f arg)
   | lit₁ : ∀ n, lc (.lit₁ n)
   | lit₂ : ∀ n, lc (.lit₂ n)
+  | plus₁ : ∀ l r, lc l -> lc r -> lc (.plus₁ l r)
+  | plus₂ : ∀ l r, lc l -> lc r -> lc (.plus₂ l r)
   | code : ∀ e, lc e -> lc (.code e)
   | reflect : ∀ e, lc e -> lc (.reflect e)
   | lam𝕔 : ∀ e x, lc (open₀ x e) -> lc (.lam𝕔 e)

@@ -9,6 +9,8 @@ inductive Expr : Type where
   | app₂ (f : Expr) (arg : Expr)
   | lit₁ (n : ℕ)
   | lit₂ (n : ℕ)
+  | plus₁ (l : Expr) (r : Expr)
+  | plus₂ (l : Expr) (r : Expr)
   | code (e : Expr)
   | reflect (e : Expr)
   | lam𝕔 (e : Expr)

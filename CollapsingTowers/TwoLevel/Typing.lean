@@ -19,6 +19,8 @@ inductive typing : Env -> Expr -> Ty -> Prop where
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓, typing Γ f (.arrow τ𝕒 τ𝕓) -> typing Γ arg τ𝕒 -> typing Γ (.app₁ f arg) τ𝕓
   |
   app₂ : ∀ Γ f arg τ𝕒 τ𝕓, typing Γ f (.rep (.arrow τ𝕒 τ𝕓)) -> typing Γ arg (.rep τ𝕒) -> typing Γ (.app₂ f arg) (.rep τ𝕓)
+  | plus₁ : ∀ Γ l r, typing Γ l .nat -> typing Γ r .nat -> typing Γ (.plus₁ l r) .nat
+  | plus₂ : ∀ Γ l r, typing Γ l (.rep .nat) -> typing Γ r (.rep .nat) -> typing Γ (.plus₂ l r) (.rep .nat)
   | lit₁ : ∀ Γ n, typing Γ (.lit₁ n) .nat
   | lit₂ : ∀ Γ n, typing Γ (.lit₂ n) (.rep .nat)
   | code : ∀ Γ e τ, typing Γ e τ -> typing Γ (.code e) (.rep τ)

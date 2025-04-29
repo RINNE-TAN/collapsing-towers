@@ -12,6 +12,10 @@ inductive ctx𝔹 : Ctx -> Prop where
   | appr₁ : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
   | appl₂ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
   | appr₂ : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
+  | plusl₁ : ∀ r, lc r -> ctx𝔹 (fun X => .plus₁ X r)
+  | plusr₁ : ∀ v, value v -> ctx𝔹 (fun X => .plus₁ v X)
+  | plusl₂ : ∀ r, lc r -> ctx𝔹 (fun X => .plus₂ X r)
+  | plusr₂ : ∀ v, value v -> ctx𝔹 (fun X => .plus₂ v X)
   | lets : ∀ e x, lc (open₀ x e) -> ctx𝔹 (fun X => .lets X e)
 
 inductive ctxℝ : Ctx -> Prop where
@@ -42,6 +46,8 @@ inductive step : Expr -> Expr -> Prop where
   |
   app₁ : ∀ M e v x, ctx𝕄 M -> lc (.lam₁ e) -> value v -> x ∉ fv e -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦subst x v (open₀ x e)⟧
   | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
+  | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
+  | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
   | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
   | lam₂ : ∀ M e x, ctx𝕄 M -> x ∉ fv e -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ x (subst x (.code (.fvar x)) (open₀ x e)))⟧
   | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
