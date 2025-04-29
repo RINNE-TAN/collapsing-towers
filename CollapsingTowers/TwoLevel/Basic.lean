@@ -12,6 +12,7 @@ inductive Expr : Type where
   | code (e : Expr)
   | reflect (e : Expr)
   | lam𝕔 (e : Expr)
+  | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
 
 inductive Ty : Type where

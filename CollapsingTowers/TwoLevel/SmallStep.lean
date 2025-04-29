@@ -1,4 +1,5 @@
 
+import Mathlib.Data.Finset.Basic
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
 abbrev Ctx :=
@@ -11,10 +12,11 @@ inductive ctx𝔹 : Ctx -> Prop where
   | appr₁ : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
   | appl₂ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
   | appr₂ : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
+  | lets : ∀ e x, lc (open₀ x e) -> ctx𝔹 (fun X => .lets X e)
 
 inductive ctxℝ : Ctx -> Prop where
-  | lam𝕔 : ctxℝ (fun X => .lam𝕔 X)
-  | let𝕔 : ∀ e, ctxℝ (fun X => .let𝕔 e X)
+  | lam𝕔 : ∀ x, ctxℝ (fun X => .lam𝕔 (close₀ x X))
+  | let𝕔 : ∀ b x, lc b -> ctxℝ (fun X => .let𝕔 b (close₀ x X))
 
 inductive ctx𝕄 : Ctx -> Prop where
   | hole : ctx𝕄 id
@@ -36,10 +38,12 @@ mutual
 end
 
 inductive step : Expr -> Expr -> Prop where
-  | app₁ : ∀ M e v, ctx𝕄 M -> lc (.lam₁ e) -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦open₀ v e⟧
+  | lets : ∀ M e v x, ctx𝕄 M -> lc (.lets v e) -> value v -> x ∉ fv e -> step M⟦.lets v e⟧ M⟦subst x v (open₀ x e)⟧
+  |
+  app₁ : ∀ M e v x, ctx𝕄 M -> lc (.lam₁ e) -> value v -> x ∉ fv e -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦subst x v (open₀ x e)⟧
   | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
   | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
-  |
-  lam₂ :
-    ∀ M e x, ctx𝕄 M -> x ∉ fv e -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ x (subst x (.code (.fvar x)) (open₀ (.fvar x) e)))⟧
+  | lam₂ : ∀ M e x, ctx𝕄 M -> x ∉ fv e -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ x (subst x (.code (.fvar x)) (open₀ x e)))⟧
   | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
+  | reflect : ∀ P E b, ctxℙ P -> ctx𝔼 E -> lc b -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+  | let𝕔 : ∀ M b e, ctx𝕄 M -> step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
