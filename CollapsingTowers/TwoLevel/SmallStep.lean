@@ -43,8 +43,7 @@ end
 
 inductive step : Expr -> Expr -> Prop where
   | lets : ∀ M e v x, ctx𝕄 M -> lc (.lets v e) -> value v -> x ∉ fv e -> step M⟦.lets v e⟧ M⟦subst x v (open₀ x e)⟧
-  |
-  app₁ : ∀ M e v x, ctx𝕄 M -> lc (.lam₁ e) -> value v -> x ∉ fv e -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦subst x v (open₀ x e)⟧
+  | app₁ : ∀ M e v x, ctx𝕄 M -> lc (.lam₁ e) -> value v -> x ∉ fv e -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦subst x v (open₀ x e)⟧
   | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
   | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
   | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
