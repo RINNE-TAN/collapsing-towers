@@ -63,7 +63,8 @@ inductive step : Expr -> Expr -> Prop where
     step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
   | lam₂ : ∀ M e, ctx𝕄 M ->
     --x ∉ fv e ->
-    step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ 0 (subst 0 (.code (.fvar 0)) (open₀ 0 e)))⟧
+    --step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ 0 (subst 0 (.code (.fvar 0)) (open₀ 0 e)))⟧
+    step M⟦.lam₂ e⟧ M⟦.lam𝕔 (closeCode e 0)⟧
   | lam𝕔 : ∀ M e, ctx𝕄 M ->
     step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
   | reflect : ∀ P E b,

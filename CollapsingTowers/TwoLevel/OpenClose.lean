@@ -103,6 +103,29 @@ inductive lc : Expr -> Prop where
   | lets : ∀ b e x, lc b -> lc (open₀ x e) -> lc (.lets b e)
   | let𝕔 : ∀ b e x, lc b -> lc (open₀ x e) -> lc (.let𝕔 b e)
 
+@[simp]
+def closeCode (e: Expr) (i: ℕ) : Expr :=
+  match e with
+  | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
+  | .fvar x => .fvar x
+  | .lam₁ e => .lam₁ (closeCode e (i + 1))
+  | .lam₂ e => .lam₂ (closeCode e (i + 1))
+  | .app₁ f arg => .app₁ (closeCode f i) (closeCode arg i)
+  | .app₂ f arg => .app₂ (closeCode f i) (closeCode arg i)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ n
+  | .plus₁ l r => .plus₁ (closeCode l i) (closeCode r i)
+  | .plus₂ l r => .plus₂ (closeCode l i) (closeCode r i)
+  | .code e => .code (closeCode e i)
+  | .reflect e => .reflect (closeCode e i)
+  | .lam𝕔 e => .lam𝕔 (closeCode e (i + 1))
+  | .lets b e => .lets (closeCode b i) (closeCode e (i + 1))
+  | .let𝕔 b e => .let𝕔 (closeCode b i) (closeCode e (i + 1))
+
+example :
+  closeCode (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) 0 =
+  (.app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1)))) := by simp
+
 inductive value : Expr -> Prop where
   | lam : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
   | lit : ∀ n, value (.lit₁ n)
