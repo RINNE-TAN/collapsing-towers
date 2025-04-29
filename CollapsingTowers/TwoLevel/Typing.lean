@@ -2,14 +2,12 @@
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Env
-abbrev Env :=
-  List Ty
 
 @[simp]
-def binds (x : ℕ) (τ : Ty) (Γ : Env) :=
+def binds (x : ℕ) (τ : Ty) (Γ : TEnv) :=
   indexr x Γ = some τ
 
-inductive typing : Env -> Expr -> Ty -> Prop where
+inductive typing : TEnv -> Expr -> Ty -> Prop where
   | fvar : ∀ Γ x τ,
     binds x τ Γ -> typing Γ (.fvar x) τ
   | lam₁ : ∀ Γ e τ𝕒 τ𝕓,

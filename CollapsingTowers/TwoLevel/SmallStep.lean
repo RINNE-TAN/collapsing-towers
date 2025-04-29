@@ -2,8 +2,9 @@
 import Mathlib.Data.Finset.Basic
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
-abbrev Ctx :=
-  Expr -> Expr
+import CollapsingTowers.TwoLevel.Env
+
+abbrev Ctx := Expr -> Expr
 
 notation:max a "⟦" b "⟧" => a b
 
@@ -42,13 +43,35 @@ mutual
 end
 
 inductive step : Expr -> Expr -> Prop where
-  | lets : ∀ M e v x, ctx𝕄 M -> lc (.lets v e) -> value v -> x ∉ fv e -> step M⟦.lets v e⟧ M⟦subst x v (open₀ x e)⟧
-  | app₁ : ∀ M e v x, ctx𝕄 M -> lc (.lam₁ e) -> value v -> x ∉ fv e -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦subst x v (open₀ x e)⟧
-  | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
-  | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
-  | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
-  | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
-  | lam₂ : ∀ M e x, ctx𝕄 M -> x ∉ fv e -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ x (subst x (.code (.fvar x)) (open₀ x e)))⟧
-  | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
-  | reflect : ∀ P E b, ctxℙ P -> ctx𝔼 E -> lc b -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
-  | let𝕔 : ∀ M b e, ctx𝕄 M -> step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
+  | lets : ∀ M e v, ctx𝕄 M ->
+    --lc (.lets v e) ->
+    value v ->
+    --x ∉ fv e ->
+    step M⟦.lets v e⟧ M⟦openSubst v e⟧
+  | app₁ : ∀ M e v, ctx𝕄 M ->
+    --lc (.lam₁ e) ->
+    value v ->
+    --x ∉ fv e ->
+    step M⟦.app₁ (.lam₁ e) v⟧ M⟦openSubst v e⟧
+  | app₂ : ∀ M f arg, ctx𝕄 M ->
+    step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
+  | plus₁ : ∀ M l r, ctx𝕄 M ->
+    step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
+  | plus₂ : ∀ M l r, ctx𝕄 M ->
+    step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
+  | lit₂ : ∀ M n, ctx𝕄 M ->
+    step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
+  | lam₂ : ∀ M e, ctx𝕄 M ->
+    --x ∉ fv e ->
+    step M⟦.lam₂ e⟧ M⟦.lam𝕔 (close₀ 0 (subst 0 (.code (.fvar 0)) (open₀ 0 e)))⟧
+  | lam𝕔 : ∀ M e, ctx𝕄 M ->
+    step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
+  | reflect : ∀ P E b,
+    ctxℙ P -> ctx𝔼 E ->
+    step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+  | let𝕔 : ∀ M b e, ctx𝕄 M ->
+    step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
+
+inductive stepn : Expr → Expr → Prop
+| refl  : ∀ e, stepn e e
+| multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
