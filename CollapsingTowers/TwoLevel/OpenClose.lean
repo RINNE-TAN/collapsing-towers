@@ -27,7 +27,7 @@ def fresh (e : Expr) : ℕ :=
 @[simp]
 def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .bvar i => .bvar i
-  | .fvar y => if x == y then v else .fvar y
+  | .fvar y => if x = y then v else .fvar y
   | .lam₁ e => .lam₁ (subst x v e)
   | .lam₂ e => .lam₂ (subst x v e)
   | .app₁ f arg => .app₁ (subst x v f) (subst x v arg)
@@ -42,9 +42,10 @@ def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .lets b e => .lets (subst x v b) (subst x v e)
   | .let𝕔 b e => .let𝕔 (subst x v b) (subst x v e)
 
+-- opening i t1 t2 = [i -> t1]t2
 @[simp]
 def opening (i : ℕ) (x : Expr) : Expr -> Expr
-  | .bvar j => if j == i then x else .bvar j
+  | .bvar j => if j = i then x else .bvar j
   | .fvar x => .fvar x
   | .lam₁ e => .lam₁ (opening (i + 1) x e)
   | .lam₂ e => .lam₂ (opening (i + 1) x e)
@@ -70,96 +71,20 @@ def open_subst (tgt : Expr) (within : Expr) :=
 
 theorem subst_intro : ∀ x e v i, x ∉ fv e -> subst x v (opening i (.fvar x) e) = opening i v e :=
   by
-  intros x e v i Hclosed
-  induction e generalizing i with
-  | bvar j =>
-    if HEq : j = i then
-      rw [HEq]
-      simp
-    else
-      simp
-      repeat rw [if_neg HEq]
-      rfl
-  | fvar =>
-    simp at *
-    intro
-    contradiction
-  | lam₁ _ IHe =>
-    simp at *
-    apply IHe
-    apply Hclosed
-  | lam₂ _ IHe =>
-    simp at *
-    apply IHe
-    apply Hclosed
-  | app₁ _ _ IHf IHarg =>
-    simp at *
-    constructor
-    { apply IHf
-      apply Hclosed.left
-    }
-    { apply IHarg
-      apply Hclosed.right
-    }
-  | app₂ _ _ IHf IHarg =>
-    simp at *
-    constructor
-    { apply IHf
-      apply Hclosed.left
-    }
-    { apply IHarg
-      apply Hclosed.right
-    }
-  | lit₁ => simp
-  | lit₂ => simp
-  | plus₁ _ _ IHl IHr =>
-    simp at *
-    constructor
-    { apply IHl
-      apply Hclosed.left
-    }
-    { apply IHr
-      apply Hclosed.right
-    }
-  | plus₂ _ _ IHl IHr =>
-    simp at *
-    constructor
-    { apply IHl
-      apply Hclosed.left
-    }
-    { apply IHr
-      apply Hclosed.right
-    }
-  | code _ IHe =>
-    simp at *
-    apply IHe
-    apply Hclosed
-  | reflect _ IHe =>
-    simp at *
-    apply IHe
-    apply Hclosed
-  | lam𝕔 _ IHe =>
-    simp at *
-    apply IHe
-    apply Hclosed
-  | lets _ _ IHb IHe =>
-    simp at *
-    constructor
-    { apply IHb
-      apply Hclosed.left
-    }
-    { apply IHe
-      apply Hclosed.right
-    }
-  | let𝕔 _ _ IHb IHe =>
-    simp at *
-    constructor
-    { apply IHb
-      apply Hclosed.left
-    }
-    { apply IHe
-      apply Hclosed.right
-    }
+  intros x e; induction e <;> intros v i Hclosed <;> simp at *
+  case bvar j => by_cases HEq : j = i; simp [HEq]; simp [if_neg HEq]
+  case fvar => intro; contradiction
+  case lam₁ _ IHe
+  | lam₂ _ IHe
+  | code _ IHe
+  | reflect _ IHe
+  | lam𝕔 _ IHe => apply IHe; apply Hclosed
+  case app₁ _ _ ih1 ih2
+  | app₂ _ _ ih1 ih2
+  | plus₁ _ _ ih1 ih2
+  | plus₂ _ _ ih1 ih2
+  | lets _ _ ih1 ih2
+  | let𝕔 _ _ ih1 ih2 => constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
 
 theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = open_subst v e :=
   by
@@ -319,6 +244,25 @@ lemma open_closed': ∀ t n m,
   case lets _ _ ih1 ih2
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
+
+lemma closedb_opening_id: ∀ t1 t2 n,
+  closedb_at t1 n -> opening n t2 t1 = t1 := by
+  intros t1; induction t1 <;> intros t2 n h <;> simp
+  case bvar x => intro xn; simp at h; omega
+  case lam₁ t ih
+     | lam₂ t ih =>
+    simp at h; apply ih; assumption
+  case code _ ih
+     | reflect _ ih
+     | lam𝕔 _ ih =>
+    simp at *; apply ih; apply h
+  case app₁ t1 t2 ih1 ih2
+     | app₂ t1 t2 ih1 ih2
+     | plus₁ _ _ ih1 ih2
+     | plus₂ _ _ ih1 ih2
+     | lets _ _ ih1 ih2
+     | let𝕔 _ _ ih1 ih2 =>
+    apply And.intro; apply ih1; apply h.1; apply ih2; apply h.2
 
 @[simp]
 def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
