@@ -43,8 +43,8 @@ mutual
 end
 
 inductive step : Expr -> Expr -> Prop where
-  | lets : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.lets v e⟧ M⟦openSubst v e⟧
-  | app₁ : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦openSubst v e⟧
+  | lets : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.lets v e⟧ M⟦open_subst v e⟧
+  | app₁ : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦open_subst v e⟧
   | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
   | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
   | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧

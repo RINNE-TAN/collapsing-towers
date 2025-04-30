@@ -10,7 +10,7 @@ import CollapsingTowers.TwoLevel.Typing
 def valType : Expr → Ty → Prop
   | .lam₁ t2, .arrow τ1 τ2 =>
     ∀ v1, valType v1 τ1 ∧ lc v1 →
-    ∃ v2, stepn (openSubst v1 t2) v2 ∧ valType v2 τ2
+    ∃ v2, stepn (open_subst v1 t2) v2 ∧ valType v2 τ2
   | .lit₁ _, .nat => true
   | .code e, .rep τ =>
     ∃ v, stepn e v ∧ valType v τ
@@ -24,9 +24,9 @@ def expType (e : Expr) (τ : Ty) : Prop :=
 def envType (Δ : VEnv) (Γ : TEnv) : Prop :=
   Δ.length = Γ.length ∧ ∀ τ x, binds x τ Γ → ∃ v, indexr x Δ = some v ∧ lc v ∧ valType v τ
 
-theorem envTypeMt : envType [] [] := by simp
+theorem envType.empty : envType [] [] := by simp
 
-theorem envTypeExtend : ∀ Δ Γ v τ,
+theorem envType.extend : ∀ Δ Γ v τ,
   envType Δ Γ → lc v → valType v τ → envType (v :: Δ) (τ :: Γ) := by
   intros Δ Γ v τ henv hcl hv; simp; simp at henv
   apply And.intro
@@ -37,7 +37,7 @@ theorem envTypeExtend : ∀ Δ Γ v τ,
     . rw [if_neg hx] at bd; rw [hlen]; rw [if_neg hx]
       apply h; assumption
 
-theorem envTypeClosed : ∀ Δ Γ,
+theorem envType.closed : ∀ Δ Γ,
   envType Δ Γ → (∀ x t1, indexr x Δ = some t1 → lc t1) := by
   intros Δ Γ henv; rcases henv with ⟨hlen, h⟩; intros x t1 hidx
   have hx : (x < Δ.length) := by apply indexrSome'; exists t1
@@ -72,7 +72,7 @@ def substF (Δ : VEnv) (t : Expr) : Expr :=
 def semType (Γ : TEnv) (t : Expr) (τ : Ty) : Prop :=
   ∀ Δ, lc t → envType Δ Γ → expType (substF Δ t) τ
 
-lemma substF_closedb_at: ∀ t Δ n,
+lemma substF.closedb_at: ∀ t Δ n,
   (forall x t1, indexr x Δ = some t1 -> closedb_at t1 0) ->
   (closedb_at t n) -> (closedb_at (substF Δ t) n) := by
   intros t; induction t <;> intros E n hidx hcl <;> simp

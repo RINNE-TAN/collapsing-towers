@@ -65,7 +65,7 @@ def open₀ (i : ℕ) : Expr -> Expr :=
   opening 0 (.fvar i)
 
 @[simp]
-def openSubst (tgt : Expr) (within : Expr) :=
+def open_subst (tgt : Expr) (within : Expr) :=
   opening 0 tgt within
 
 theorem subst_intro : ∀ x e v i, x ∉ fv e -> subst x v (opening i (.fvar x) e) = opening i v e :=
@@ -161,7 +161,7 @@ theorem subst_intro : ∀ x e v i, x ∉ fv e -> subst x v (opening i (.fvar x) 
       apply Hclosed.right
     }
 
-theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = openSubst v e :=
+theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = open_subst v e :=
   by
   intros _ _ _ Hclosed
   apply subst_intro
