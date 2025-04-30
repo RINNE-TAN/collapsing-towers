@@ -71,3 +71,53 @@ def substF (Δ : VEnv) (t : Expr) : Expr :=
 @[simp]
 def semType (Γ : TEnv) (t : Expr) (τ : Ty) : Prop :=
   ∀ Δ, lc t → envType Δ Γ → expType (substF Δ t) τ
+
+lemma substF_closedb_at: ∀ t Δ n,
+  (forall x t1, indexr x Δ = some t1 -> closedb_at t1 0) ->
+  (closedb_at t n) -> (closedb_at (substF Δ t) n) := by
+  intros t; induction t <;> intros E n hidx hcl <;> simp
+  case bvar x => simp at hcl; assumption
+  case fvar x =>
+    generalize h : indexr x E = v
+    cases v <;> simp
+    case some v => apply closedb_inc; apply hidx; apply h; omega
+  case lam₁ t ih
+     | lam₂ t ih
+     | code e1 ih
+     | reflect e1 ih
+     | lam𝕔 e1 ih =>
+    apply ih; apply hidx; simp at hcl; assumption
+  case app₁ t1 t2 ih1 ih2
+     | app₂ t1 t2 ih1 ih2
+     | plus₁ e1 e2 ih1 ih2
+     | plus₂ e1 e2 ih1 ih2
+     | lets e1 e2 ih1 ih2
+     | let𝕔 e1 e2 ih1 ih2 =>
+    rcases hcl with ⟨hcl1, hcl2⟩
+    apply And.intro
+    . apply ih1; assumption; assumption
+    . apply ih2; assumption; assumption
+
+-- compatibility lemmas
+
+lemma semType.fvar: ∀ Γ x τ, binds x τ Γ → semType Γ (.fvar x) τ := by
+  intros Γ x τ bd Δ hcl henv; simp;
+  rcases henv with ⟨_, h⟩;
+  have ⟨v, hrv, semv⟩ := h τ x bd;
+  exists v; rw [hrv]; simp; constructor; constructor; apply semv
+
+lemma semType.lam₁: ∀ Γ e τ1 τ2,
+  semType (τ1 :: Γ) (open₀ Γ.length e) τ2 →
+  Γ.length ∉ fv e ->
+  semType Γ (.lam₁ e) (.arrow τ1 τ2) := by
+  intros Γ e τ1 τ2 hsem hfr Δ hcl henv
+  exists (substF Δ (.lam₁ e));
+  constructor; apply stepn.refl
+  constructor; sorry
+  sorry
+
+lemma semType.lam₂: ∀ Γ e τ1 τ2,
+  semType (.rep τ1 :: Γ) (open₀ Γ.length e) τ2 →
+  Γ.length ∉ fv e ->
+  semType Γ (.lam₂ e) (.rep (.arrow τ1 τ2)) := by
+  sorry

@@ -12,11 +12,13 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ (.fvar x) τ
   | lam₁ : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
-    Γ.length ∉ fv e ->
+    --Γ.length ∉ fv e ->
+    closed_at e Γ.length ->
     typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
   | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
     typing (.rep τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
-    Γ.length ∉ fv e ->
+    --Γ.length ∉ fv e ->
+    closed_at e Γ.length ->
     typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
     typing Γ f (.arrow τ𝕒 τ𝕓) ->
@@ -51,20 +53,18 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
-    Γ.length ∉ fv e ->
+    --Γ.length ∉ fv e ->
+    closed_at e Γ.length ->
     typing Γ (.lets b e) τ𝕓
   | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
-    Γ.length ∉ fv e ->
+    --Γ.length ∉ fv e ->
+    closed_at e Γ.length ->
     typing Γ (.let𝕔 b e) (.rep τ𝕓)
 
-example : typing [] (.lam₁ (.bvar 0)) (.arrow .nat .nat) := by apply typing.lam₁; simp; apply typing.fvar; simp; simp
+example : typing [] (.lam₁ (.bvar 0)) (.arrow .nat .nat) :=
+  by apply typing.lam₁; apply typing.fvar; simp; simp
 
 example : typing [] (.lam₂ (.bvar 0)) (.rep (.arrow .nat .nat)) :=
-  by
-  apply typing.lam₂
-  simp
-  apply typing.fvar
-  simp
-  simp
+  by apply typing.lam₂; simp; apply typing.fvar; simp; simp
