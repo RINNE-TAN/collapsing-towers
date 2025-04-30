@@ -13,3 +13,13 @@ fmt:
 		echo "Skip:   $$file:"; \
 	  fi; \
 	done
+fmt-all:
+	@for file in $(SRCS); do \
+	    echo "Format: $$file:"; \
+		sed -i 's/^import/-- import/' $$file; \
+		sed -i 's/\blemma\b/theorem/g' $$file; \
+		lean --run script/Reformat.lean $$file | sponge $$file; \
+		sed -i 's/^-- import/import/' $$file; \
+		sed -i 's/[[:space:]]\+$$//' $$file; \
+		sed -i -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba' $$file; \
+	done

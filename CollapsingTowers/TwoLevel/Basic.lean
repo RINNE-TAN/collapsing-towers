@@ -1,6 +1,5 @@
 
 import Mathlib.Data.Nat.Basic
-
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
@@ -23,5 +22,8 @@ inductive Ty : Type where
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
   | rep (τ : Ty)
 
-abbrev TEnv := List Ty
-abbrev VEnv := List Expr
+abbrev TEnv :=
+  List Ty
+
+abbrev VEnv :=
+  List Expr

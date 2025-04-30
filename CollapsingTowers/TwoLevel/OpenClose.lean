@@ -61,10 +61,12 @@ def opening (i : ℕ) (x : Expr) : Expr -> Expr
   | .let𝕔 b e => .let𝕔 (opening i x b) (opening (i + 1) x e)
 
 @[simp]
-def open₀ (i: ℕ): Expr -> Expr := opening 0 (.fvar i)
+def open₀ (i : ℕ) : Expr -> Expr :=
+  opening 0 (.fvar i)
 
 @[simp]
-def openSubst (tgt: Expr) (within: Expr) := opening 0 tgt within
+def openSubst (tgt : Expr) (within : Expr) :=
+  opening 0 tgt within
 
 @[simp]
 def closing (i : ℕ) (x : ℕ) : Expr -> Expr
@@ -85,7 +87,8 @@ def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .let𝕔 b e => .let𝕔 (closing i x b) (closing (i + 1) x e)
 
 @[simp]
-def close₀ : ℕ -> Expr -> Expr := closing 0
+def close₀ : ℕ -> Expr -> Expr :=
+  closing 0
 
 inductive lc : Expr -> Prop where
   | fvar : ∀ x, lc (.fvar x)
@@ -104,7 +107,7 @@ inductive lc : Expr -> Prop where
   | let𝕔 : ∀ b e x, lc b -> lc (open₀ x e) -> lc (.let𝕔 b e)
 
 @[simp]
-def closeCode (e: Expr) (i: ℕ) : Expr :=
+def closeCode (e : Expr) (i : ℕ) : Expr :=
   match e with
   | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
   | .fvar x => .fvar x
@@ -122,9 +125,8 @@ def closeCode (e: Expr) (i: ℕ) : Expr :=
   | .lets b e => .lets (closeCode b i) (closeCode e (i + 1))
   | .let𝕔 b e => .let𝕔 (closeCode b i) (closeCode e (i + 1))
 
-example :
-  closeCode (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) 0 =
-  (.app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1)))) := by simp
+example : closeCode (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) 0 = (.app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1)))) := by
+  simp
 
 inductive value : Expr -> Prop where
   | lam : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
