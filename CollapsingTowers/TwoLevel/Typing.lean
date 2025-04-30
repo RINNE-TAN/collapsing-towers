@@ -34,3 +34,9 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     ∀ Γ b e τ𝕒 τ𝕓,
       typing Γ b τ𝕒 ->
         typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) -> Γ.length ∉ fv e -> typing Γ (.let𝕔 b e) (.rep τ𝕓)
+
+example : typing [] (.lam₁ (.bvar 0)) (.arrow .nat .nat) := by
+  apply typing.lam₁; simp; apply typing.fvar; simp; simp
+
+example : typing [] (.lam₂ (.bvar 0)) (.rep (.arrow .nat .nat)) := by
+  apply typing.lam₂; simp; apply typing.fvar; simp; simp
