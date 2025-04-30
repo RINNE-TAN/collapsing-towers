@@ -49,7 +49,7 @@ inductive step : Expr -> Expr -> Prop where
   | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
   | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
   | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
-  | lam₂ : ∀ M e, ctx𝕄 M -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (closeCode e 0)⟧
+  | lam₂ : ∀ M e, ctx𝕄 M -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (map𝕔₀ e)⟧
   | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
   | reflect : ∀ P E b, ctxℙ P -> ctx𝔼 E -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
   | let𝕔 : ∀ M b e, ctx𝕄 M -> step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
