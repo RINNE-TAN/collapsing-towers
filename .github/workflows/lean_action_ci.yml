@@ -12,3 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
+      - name: Install sponge
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y moreutils
+      - name: format diff
+        run: |
+          make fmt-all
+          git diff --exit-code
