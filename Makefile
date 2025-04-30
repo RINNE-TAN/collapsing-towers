@@ -2,24 +2,39 @@ SRCS = $(shell find CollapsingTowers -type f -name "*.lean")
 fmt:
 	@for file in $(SRCS); do \
 	  if git status --short $$file | grep -q .; then \
-	    echo "Format: $$file:"; \
-		sed -i 's/^import/-- import/' $$file; \
-		sed -i 's/\blemma\b/theorem/g' $$file; \
-		lean --run script/Reformat.lean $$file | sponge $$file; \
-		sed -i 's/^-- import/import/' $$file; \
-		sed -i 's/[[:space:]]\+$$//' $$file; \
-		sed -i -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba' $$file; \
+		cp $$file $$file.tmp; \
+		sed -i 's/^import/-- import/'  $$file.tmp; \
+		sed -i 's/\blemma\b/theorem/g'  $$file.tmp; \
+		lean --run script/Reformat.lean  $$file.tmp | sponge  $$file.tmp; \
+		sed -i 's/^-- import/import/'  $$file.tmp; \
+		sed -i 's/[[:space:]]\+$$//'  $$file.tmp; \
+		sed -i -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba'  $$file.tmp; \
+		if diff -q $$file.tmp $$file > /dev/null; then \
+			echo "Skip:   $$file:"; \
+			rm $$file.tmp; \
+	  	else \
+			echo "Format: $$file:"; \
+			mv $$file.tmp $$file; \
+	  	fi; \
 	  else \
 		echo "Skip:   $$file:"; \
 	  fi; \
 	done
+
 fmt-all:
 	@for file in $(SRCS); do \
-	    echo "Format: $$file:"; \
-		sed -i 's/^import/-- import/' $$file; \
-		sed -i 's/\blemma\b/theorem/g' $$file; \
-		lean --run script/Reformat.lean $$file | sponge $$file; \
-		sed -i 's/^-- import/import/' $$file; \
-		sed -i 's/[[:space:]]\+$$//' $$file; \
-		sed -i -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba' $$file; \
+		cp $$file $$file.tmp; \
+		sed -i 's/^import/-- import/'  $$file.tmp; \
+		sed -i 's/\blemma\b/theorem/g'  $$file.tmp; \
+		lean --run script/Reformat.lean  $$file.tmp | sponge  $$file.tmp; \
+		sed -i 's/^-- import/import/'  $$file.tmp; \
+		sed -i 's/[[:space:]]\+$$//'  $$file.tmp; \
+		sed -i -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba'  $$file.tmp; \
+		if diff -q $$file.tmp $$file > /dev/null; then \
+			echo "Skip:   $$file:"; \
+			rm $$file.tmp; \
+	  	else \
+			echo "Format: $$file:"; \
+			mv $$file.tmp $$file; \
+	  	fi; \
 	done
