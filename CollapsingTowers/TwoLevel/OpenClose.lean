@@ -273,7 +273,7 @@ lemma closedb_inc: ∀ t n n1,
 
 lemma open_closed : ∀ t n m,
   closedb_at (opening m (.fvar n) t) m →
-  closedb_at t (m+1) := by
+  closedb_at t (m + 1) := by
   intros t; induction t <;> intros n m h <;> simp
   case bvar x =>
     by_cases hx: (x = m)
@@ -283,7 +283,7 @@ lemma open_closed : ∀ t n m,
       . simp at h; rw [if_neg hx] at h; simp at h; omega
   case lam₁ t ih
      | lam₂ t ih =>
-    apply ih n (m+1); simp at h; assumption
+    apply ih n (m + 1); simp at h; assumption
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih =>
@@ -295,10 +295,10 @@ lemma open_closed : ∀ t n m,
     apply And.intro; apply ih1 n m h.1; apply ih2 n m h.2
   case lets _ _ ih1 ih2
      | let𝕔 _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n (m+1) h.2
+    apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
 lemma open_closed': ∀ t n m,
-    closedb_at t (m+1) → closedb_at (opening m (.fvar n) t) m := by
+    closedb_at t (m + 1) → closedb_at (opening m (.fvar n) t) m := by
   intros t; induction t <;> intros n m h <;> simp
   case bvar x =>
     by_cases hx: (x = m)
@@ -306,7 +306,7 @@ lemma open_closed': ∀ t n m,
     . rw [if_neg hx]; simp at h; simp; omega
   case lam₁ t ih
      | lam₂ t ih =>
-    apply ih n (m+1); simp at h; assumption
+    apply ih n (m + 1); simp at h; assumption
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih =>
@@ -318,7 +318,7 @@ lemma open_closed': ∀ t n m,
     apply And.intro; apply ih1 n m h.1; apply ih2 n m h.2
   case lets _ _ ih1 ih2
      | let𝕔 _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n (m+1) h.2
+    apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
 @[simp]
 def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
