@@ -4,11 +4,16 @@ import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Env
+import CollapsingTowers.TwoLevel.Typing
+
 @[simp]
 def valType : Expr → Ty → Prop
-  | .lam₁ t2, .arrow τ1 τ2 => ∀ v1, valType v1 τ1 ∧ lc v1 → ∃ v2, stepn (openSubst v1 t2) v2 ∧ valType v2 τ2
-  | .lit₁ _, .nat => True
-  | .code e, .rep τ => ∃ v, stepn e v ∧ valType v τ
+  | .lam₁ t2, .arrow τ1 τ2 =>
+    ∀ v1, valType v1 τ1 ∧ lc v1 →
+    ∃ v2, stepn (openSubst v1 t2) v2 ∧ valType v2 τ2
+  | .lit₁ _, .nat => true
+  | .code e, .rep τ =>
+    ∃ v, stepn e v ∧ valType v τ
   | _, _ => false
 
 @[simp]
@@ -16,16 +21,13 @@ def expType (e : Expr) (τ : Ty) : Prop :=
   ∃ v, stepn e v ∧ lc v ∧ valType v τ
 
 @[simp]
-def binds x τ (Γ : TEnv) :=
-  (indexr x Γ = some τ)
-
-@[simp]
 def envType (Δ : VEnv) (Γ : TEnv) : Prop :=
   Δ.length = Γ.length ∧ ∀ τ x, binds x τ Γ → ∃ v, indexr x Δ = some v ∧ lc v ∧ valType v τ
 
 theorem envTypeMt : envType [] [] := by simp
 
-theorem envTypeExtend : ∀ Δ Γ v τ, envType Δ Γ → lc v → valType v τ → envType (v :: Δ) (τ :: Γ) :=
+theorem envTypeExtend : ∀ Δ Γ v τ,
+  envType Δ Γ → lc v → valType v τ → envType (v :: Δ) (τ :: Γ) :=
   by
   intros Δ Γ v τ henv hcl hv; simp; simp at henv
   apply And.intro
@@ -36,7 +38,8 @@ theorem envTypeExtend : ∀ Δ Γ v τ, envType Δ Γ → lc v → valType v τ 
     . rw [if_neg hx] at bd; rw [hlen]; rw [if_neg hx]
       apply h; assumption
 
-theorem envTypeClosed : ∀ Δ Γ, envType Δ Γ → (∀ x t1, indexr x Δ = some t1 → lc t1) := by sorry
+theorem envTypeClosed : ∀ Δ Γ,
+  envType Δ Γ → (∀ x t1, indexr x Δ = some t1 → lc t1) := by sorry
 
 @[simp]
 def substF (Δ : VEnv) (t : Expr) : Expr :=
