@@ -27,8 +27,7 @@ def envType (Δ : VEnv) (Γ : TEnv) : Prop :=
 theorem envTypeMt : envType [] [] := by simp
 
 theorem envTypeExtend : ∀ Δ Γ v τ,
-  envType Δ Γ → lc v → valType v τ → envType (v :: Δ) (τ :: Γ) :=
-  by
+  envType Δ Γ → lc v → valType v τ → envType (v :: Δ) (τ :: Γ) := by
   intros Δ Γ v τ henv hcl hv; simp; simp at henv
   apply And.intro
   . apply henv.1
@@ -39,7 +38,13 @@ theorem envTypeExtend : ∀ Δ Γ v τ,
       apply h; assumption
 
 theorem envTypeClosed : ∀ Δ Γ,
-  envType Δ Γ → (∀ x t1, indexr x Δ = some t1 → lc t1) := by sorry
+  envType Δ Γ → (∀ x t1, indexr x Δ = some t1 → lc t1) := by
+  intros Δ Γ henv; rcases henv with ⟨hlen, h⟩; intros x t1 hidx
+  have hx : (x < Δ.length) := by apply indexrSome'; exists t1
+  rw [hlen] at hx; have hidx' := indexrSome Γ x hx
+  rcases hidx' with ⟨τ, hidx'⟩
+  have ⟨t2, hidx'', hval⟩  := h τ x hidx'
+  rcases hval with ⟨hcl, _⟩; rw [hidx] at hidx''; cases hidx''; assumption
 
 @[simp]
 def substF (Δ : VEnv) (t : Expr) : Expr :=

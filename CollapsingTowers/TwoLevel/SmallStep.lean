@@ -58,6 +58,19 @@ inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
   | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
 
+-- Examples:
+
+/--
+lam₂ x. x +₂ (x +₂ x)
+→⋆
+code {
+  lets f = lam₁ x.
+    lets y = x + x in
+    lets z = x + y in z
+  in f
+}
+-/
+
 def x₀ : Expr :=
   .fvar 0
 
