@@ -57,3 +57,104 @@ inductive step : Expr -> Expr -> Prop where
 inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
   | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
+
+def x₀ : Expr :=
+  .fvar 0
+
+def x₁ : Expr :=
+  .fvar 1
+
+def x₂ : Expr :=
+  .fvar 2
+
+def x₃ : Expr :=
+  .fvar 3
+
+def expr₀ : Expr :=
+  .lam₂ (close₀ 0 (.plus₂ x₀ (.plus₂ x₀ x₀)))
+
+def expr₁ : Expr :=
+  .lam𝕔 (close₀ 0 (.plus₂ (.code x₀) (.plus₂ (.code x₀) (.code x₀))))
+
+def expr₂ : Expr :=
+  .lam𝕔 (close₀ 0 (.plus₂ (.code x₀) (.reflect (.plus₁ x₀ x₀))))
+
+def expr₃ : Expr :=
+  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.plus₂ (.code x₀) (.code x₁)))))
+
+def expr₄ : Expr :=
+  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.reflect (.plus₁ x₀ x₁)))))
+
+def expr₅ : Expr :=
+  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.let𝕔 (.plus₁ x₀ x₁) (close₀ 2 (.code x₂))))))
+
+def expr₆ : Expr :=
+  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.code (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+
+def expr₇ : Expr :=
+  .lam𝕔 (close₀ 0 (.code (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+
+def expr₈ : Expr :=
+  .reflect (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+
+def expr₉ : Expr :=
+  .let𝕔 (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
+
+def expr𝕩 : Expr :=
+  .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
+
+example : step expr₀ expr₁ := by
+  rw [expr₀]
+  rw [expr₁]
+  apply step.lam₂ _ _ ctx𝕄.hole
+
+example : step expr₁ expr₂ := by
+  rw [expr₁]
+  rw [expr₂]
+  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
+  repeat constructor
+
+example : step expr₂ expr₃ := by
+  rw [expr₂]
+  rw [expr₃]
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ (ctxℝ.lam𝕔 _) ctxℙ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  repeat constructor
+
+example : step expr₃ expr₄ := by
+  rw [expr₃]
+  rw [expr₄]
+  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+
+example : step expr₄ expr₅ := by
+  rw [expr₄]
+  rw [expr₅]
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ (ctxℝ.lam𝕔 _) (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙ.hole)) ctx𝔼.hole
+
+example : step expr₅ expr₆ := by
+  rw [expr₅]
+  rw [expr₆]
+  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+
+example : step expr₆ expr₇ := by
+  rw [expr₆]
+  rw [expr₇]
+  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) ctx𝕄.hole)
+
+example : step expr₇ expr₈ := by
+  rw [expr₇]
+  rw [expr₈]
+  rw [x₀]
+  rw [x₁]
+  rw [x₂]
+  simp
+  apply step.lam𝕔 _ _ ctx𝕄.hole
+
+example : step expr₈ expr₉ := by
+  rw [expr₈]
+  rw [expr₉]
+  apply step.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
+
+example : step expr₉ expr𝕩 := by
+  rw [expr₉]
+  rw [expr𝕩]
+  apply step.let𝕔 _ _ _ ctx𝕄.hole
