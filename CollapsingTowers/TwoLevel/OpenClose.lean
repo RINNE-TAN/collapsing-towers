@@ -68,6 +68,105 @@ def open₀ (i : ℕ) : Expr -> Expr :=
 def openSubst (tgt : Expr) (within : Expr) :=
   opening 0 tgt within
 
+theorem subst_intro : ∀ x e v n, x ∉ fv e -> subst x v (opening n (.fvar x) e) = opening n v e :=
+  by
+  intros x e v n Hclosed
+  induction e generalizing n with
+  | bvar i =>
+    if HEq : i = n then
+      rw [HEq]
+      simp
+    else
+      simp
+      repeat rw [if_neg HEq]
+      rfl
+  | fvar =>
+    simp at *
+    intro
+    contradiction
+  | lam₁ _ IHe =>
+    simp at *
+    apply IHe
+    apply Hclosed
+  | lam₂ _ IHe =>
+    simp at *
+    apply IHe
+    apply Hclosed
+  | app₁ _ _ IHf IHarg =>
+    simp at *
+    constructor
+    { apply IHf
+      apply Hclosed.left
+    }
+    { apply IHarg
+      apply Hclosed.right
+    }
+  | app₂ _ _ IHf IHarg =>
+    simp at *
+    constructor
+    { apply IHf
+      apply Hclosed.left
+    }
+    { apply IHarg
+      apply Hclosed.right
+    }
+  | lit₁ => simp
+  | lit₂ => simp
+  | plus₁ _ _ IHl IHr =>
+    simp at *
+    constructor
+    { apply IHl
+      apply Hclosed.left
+    }
+    { apply IHr
+      apply Hclosed.right
+    }
+  | plus₂ _ _ IHl IHr =>
+    simp at *
+    constructor
+    { apply IHl
+      apply Hclosed.left
+    }
+    { apply IHr
+      apply Hclosed.right
+    }
+  | code _ IHe =>
+    simp at *
+    apply IHe
+    apply Hclosed
+  | reflect _ IHe =>
+    simp at *
+    apply IHe
+    apply Hclosed
+  | lam𝕔 _ IHe =>
+    simp at *
+    apply IHe
+    apply Hclosed
+  | lets _ _ IHb IHe =>
+    simp at *
+    constructor
+    { apply IHb
+      apply Hclosed.left
+    }
+    { apply IHe
+      apply Hclosed.right
+    }
+  | let𝕔 _ _ IHb IHe =>
+    simp at *
+    constructor
+    { apply IHb
+      apply Hclosed.left
+    }
+    { apply IHe
+      apply Hclosed.right
+    }
+
+theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = openSubst v e :=
+  by
+  intros _ _ _ Hclosed
+  apply subst_intro
+  apply Hclosed
+
 @[simp]
 def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .bvar j => .bvar j
