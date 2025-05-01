@@ -226,4 +226,32 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
       apply HR
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
-  | reflect => admit
+  | reflect P E e HP HE Hlc =>
+    generalize HeqΓ : [] = Γ
+    generalize HEqlvl : 0 = lvl
+    have Hlength : Γ.length = lvl := by
+      rw [← HeqΓ, ← HEqlvl]
+      simp
+    rw [← HEqlvl]
+    rw [HEqlvl] at HP
+    clear HEqlvl
+    clear HeqΓ
+    induction HP generalizing τ Γ with
+    | hole =>
+      simp
+      admit
+    | holeℝ _ HR =>
+      apply preservationℝ
+      rw [Hlength]; apply HR
+      apply lc_ctx𝔼; apply HE; apply Hlc
+      admit
+    | cons𝔹 _ _ HB _ IHM =>
+      simp; apply preservation𝔹
+      apply HB
+      intro; apply IHM; apply Hlength
+    | consℝ _ _ HR HP IHM =>
+      rw [← Hlength] at HR IHM; simp; apply preservationℝ
+      apply HR
+      apply lc_ctxℙ; apply HP
+      apply lc_ctx𝔼; apply HE; apply Hlc
+      intros _ _; apply IHM; rfl

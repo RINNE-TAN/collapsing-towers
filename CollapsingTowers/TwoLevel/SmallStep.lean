@@ -67,13 +67,27 @@ inductive ctx𝔼 : Ctx -> Prop where
   | hole : ctx𝔼 id
   | cons𝔹 : ∀ B E, ctx𝔹 B -> ctx𝔼 E -> ctx𝔼 (B ∘ E)
 
-mutual
-  inductive ctxℙ : ℕ -> Ctx -> Prop where
-    | hole : ctxℙ 0 id
-    | holeℝ : ∀ R, ctxℝ lvl R -> ctxℙ lvl R
-    | cons𝔹 : ∀ B P, ctx𝔹 B -> ctxℙ (lvl + 1) P -> ctxℙ (lvl + 1) (B ∘ P)
-    | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℙ lvl (R ∘ P)
-end
+theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
+  by
+  intros _ _ HE Hlc
+  induction HE with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+
+inductive ctxℙ : ℕ -> Ctx -> Prop where
+  | hole : ctxℙ 0 id
+  | holeℝ : ∀ R, ctxℝ lvl R -> ctxℙ lvl R
+  | cons𝔹 : ∀ B P, ctx𝔹 B -> ctxℙ (lvl + 1) P -> ctxℙ (lvl + 1) (B ∘ P)
+  | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℙ lvl (R ∘ P)
+
+theorem lc_ctxℙ : ∀ P e n, ctxℙ n P -> lc e -> lc P⟦e⟧ :=
+  by
+  intros _ _ _ HM Hlc
+  induction HM with
+  | hole => apply Hlc
+  | holeℝ _ HR => apply lc_ctxℝ; apply HR; apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 
 inductive head𝕄 : Expr -> Expr -> Prop where
   | lets : ∀ e v, value v -> head𝕄 (.lets v e) (open_subst v e)
@@ -88,7 +102,7 @@ inductive head𝕄 : Expr -> Expr -> Prop where
 
 inductive step : Expr -> Expr -> Prop where
   | step𝕄 : ∀ M e₀ e₁, ctx𝕄 0 M -> lc e₀ -> head𝕄 e₀ e₁ -> step M⟦e₀⟧ M⟦e₁⟧
-  | reflect : ∀ P E b, ctxℙ 0 P -> ctx𝔼 E -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+  | reflect : ∀ P E b, ctxℙ 0 P -> ctx𝔼 E -> lc b -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
 
 inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
@@ -205,6 +219,7 @@ example : step expr₈ expr₉ := by
   rw [expr₈]
   rw [expr₉]
   apply step.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
+  repeat constructor
 
 example : step expr₉ expr𝕩 := by
   rw [expr₉]
