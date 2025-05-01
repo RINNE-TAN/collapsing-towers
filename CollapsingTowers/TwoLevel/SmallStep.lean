@@ -64,17 +64,15 @@ theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 
 inductive ctx𝔼 : Ctx -> Prop where
-  | hole : ctx𝔼 (fun X => X)
+  | hole : ctx𝔼 id
   | cons𝔹 : ∀ B E, ctx𝔹 B -> ctx𝔼 E -> ctx𝔼 (B ∘ E)
 
 mutual
   inductive ctxℙ : ℕ -> Ctx -> Prop where
-    | hole : ctxℙ lvl (fun X => X)
-    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ lvl Q -> ctxℙ lvl (B ∘ Q)
+    | hole : ctxℙ 0 id
+    | holeℝ : ∀ R, ctxℝ lvl R -> ctxℙ lvl R
+    | cons𝔹 : ∀ B P, ctx𝔹 B -> ctxℙ (lvl + 1) P -> ctxℙ (lvl + 1) (B ∘ P)
     | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℙ lvl (R ∘ P)
-  inductive ctxℚ : ℕ -> Ctx -> Prop where
-    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ lvl Q -> ctxℚ lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℚ lvl (R ∘ P)
 end
 
 inductive head𝕄 : Expr -> Expr -> Prop where
@@ -166,7 +164,7 @@ example : step expr₁ expr₂ := by
 example : step expr₂ expr₃ := by
   rw [expr₂]
   rw [expr₃]
-  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 ctxℙ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  apply step.reflect _ _ _ (ctxℙ.holeℝ _ ctxℝ.lam𝕔) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
   repeat constructor
 
 example : step expr₃ expr₄ := by
@@ -178,7 +176,7 @@ example : step expr₃ expr₄ := by
 example : step expr₄ expr₅ := by
   rw [expr₄]
   rw [expr₅]
-  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙ.hole)) ctx𝔼.hole
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.holeℝ _ (ctxℝ.let𝕔 _ _))) ctx𝔼.hole
   repeat constructor
 
 example : step expr₅ expr₆ := by
