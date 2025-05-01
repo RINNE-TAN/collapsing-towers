@@ -47,7 +47,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ (.reflect e) (.rep τ)
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
-    Γ.length ∉ fv e ->
+    closed_at e Γ.length ->
     typing Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
@@ -69,43 +69,36 @@ example : typing [] expr₁ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₁, x₀]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₂ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₂, x₀]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₃ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₃, x₀, x₁]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₄ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₄, x₀, x₁]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₅ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₅, x₀, x₁, x₂]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₆ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₆, x₀, x₁, x₂]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₇ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₇, x₀, x₁, x₂]
   repeat constructor
-  repeat simp
 
 example : typing [] expr₈ (.rep (.arrow .nat .nat)) :=
   by
@@ -151,3 +144,42 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
     apply IH₀
     apply open_closed
     apply IH₁
+
+theorem preservationℝ :
+    ∀ R e₀ e₁, ctxℝ R -> (∀ Γ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> (∀ Γ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ) :=
+  by
+  intro _ _ _ HR Hτe _ _ HτR
+  cases HR with
+  | lam𝕔 =>
+    cases HτR
+    constructor
+    admit
+    admit
+  | let𝕔 => admit
+
+theorem preservation𝔹 :
+    ∀ B e₀ e₁, ctx𝔹 B -> (∀ Γ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> (∀ Γ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ) :=
+  by
+  intro _ _ _ HB Hτe _ _ HτB
+  cases HB
+  all_goals
+    cases HτB
+    next H₀ H₁ H₂ =>
+      constructor
+      repeat
+        first
+        | apply Hτe
+        | apply H₀
+        | apply H₁
+        | apply H₂
+
+theorem preservation : ∀ Γ e₀ e₁ τ, step e₀ e₁ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+  by
+  intro Γ e₀ e₁ τ Hstep
+  cases Hstep with
+  | lets _ e v HM Hvalue =>
+    induction HM generalizing Γ τ with
+    | hole => admit
+    | cons𝔹 _ _ HB _ IHM => simp; apply preservation𝔹; apply HB; apply IHM
+    | consℝ _ _ HR _ IHM => simp; apply preservationℝ; apply HR; apply IHM
+  | _ => admit
