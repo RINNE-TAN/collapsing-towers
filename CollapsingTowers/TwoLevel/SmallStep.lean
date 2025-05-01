@@ -19,48 +19,46 @@ inductive ctx𝔹 : Ctx -> Prop where
   | plusr₂ : ∀ v, value v -> ctx𝔹 (fun X => .plus₂ v X)
   | lets : ∀ e, ctx𝔹 (fun X => .lets X e)
 
-inductive ctxℝ : Ctx -> Prop where
-  | lam𝕔 : ∀ x, ctxℝ (fun X => .lam𝕔 (close₀ x X))
-  | let𝕔 : ∀ b x, ctxℝ (fun X => .let𝕔 b (close₀ x X))
+inductive ctxℝ : ℕ -> Ctx -> Prop where
+  | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
+  | let𝕔 : ∀ b, ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
 
-inductive ctx𝕄 : Ctx -> Prop where
-  | hole : ctx𝕄 id
-  | cons𝔹 : ∀ B M, ctx𝔹 B -> ctx𝕄 M -> ctx𝕄 (B ∘ M)
-  | consℝ : ∀ R M, ctxℝ R -> ctx𝕄 M -> ctx𝕄 (R ∘ M)
+inductive ctx𝕄 : ℕ -> Ctx -> Prop where
+  | hole : ctx𝕄 lvl id
+  | cons𝔹 : ∀ B M, ctx𝔹 B -> ctx𝕄 lvl M -> ctx𝕄 lvl (B ∘ M)
+  | consℝ : ∀ R M, ctxℝ lvl R -> ctx𝕄 (lvl + 1) M -> ctx𝕄 lvl (R ∘ M)
 
 inductive ctx𝔼 : Ctx -> Prop where
   | hole : ctx𝔼 (fun X => X)
   | cons𝔹 : ∀ B E, ctx𝔹 B -> ctx𝔼 E -> ctx𝔼 (B ∘ E)
 
 mutual
-  inductive ctxℙ : Ctx -> Prop where
-    | hole : ctxℙ (fun X => X)
-    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ Q -> ctxℙ (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ R -> ctxℙ P -> ctxℙ (R ∘ P)
-  inductive ctxℚ : Ctx -> Prop where
-    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ Q -> ctxℚ (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ R -> ctxℙ P -> ctxℚ (R ∘ P)
+  inductive ctxℙ : ℕ -> Ctx -> Prop where
+    | hole : ctxℙ lvl (fun X => X)
+    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ lvl Q -> ctxℙ lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℙ lvl (R ∘ P)
+  inductive ctxℚ : ℕ -> Ctx -> Prop where
+    | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℚ lvl Q -> ctxℚ lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℚ lvl (R ∘ P)
 end
 
 inductive step : Expr -> Expr -> Prop where
-  | lets : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.lets v e⟧ M⟦open_subst v e⟧
-  | app₁ : ∀ M e v, ctx𝕄 M -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦open_subst v e⟧
-  | app₂ : ∀ M f arg, ctx𝕄 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
-  | plus₁ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
-  | plus₂ : ∀ M l r, ctx𝕄 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
-  | lit₂ : ∀ M n, ctx𝕄 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
-  | lam₂ : ∀ M e, ctx𝕄 M -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (map𝕔₀ e)⟧
-  | lam𝕔 : ∀ M e, ctx𝕄 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
-  | reflect : ∀ P E b, ctxℙ P -> ctx𝔼 E -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
-  | let𝕔 : ∀ M b e, ctx𝕄 M -> step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
+  | lets : ∀ M e v, ctx𝕄 0 M -> value v -> step M⟦.lets v e⟧ M⟦open_subst v e⟧
+  | app₁ : ∀ M e v, ctx𝕄 0 M -> value v -> step M⟦.app₁ (.lam₁ e) v⟧ M⟦open_subst v e⟧
+  | app₂ : ∀ M f arg, ctx𝕄 0 M -> step M⟦.app₂ (.code f) (.code arg)⟧ M⟦.reflect (.app₁ f arg)⟧
+  | plus₁ : ∀ M l r, ctx𝕄 0 M -> step M⟦.plus₁ (.lit₁ l) (.lit₁ r)⟧ M⟦.lit₁ (l + r)⟧
+  | plus₂ : ∀ M l r, ctx𝕄 0 M -> step M⟦.plus₂ (.code l) (.code r)⟧ M⟦.reflect (.plus₁ l r)⟧
+  | lit₂ : ∀ M n, ctx𝕄 0 M -> step M⟦.lit₂ n⟧ M⟦.code (.lit₁ n)⟧
+  | lam₂ : ∀ M e, ctx𝕄 0 M -> step M⟦.lam₂ e⟧ M⟦.lam𝕔 (map𝕔₀ e)⟧
+  | lam𝕔 : ∀ M e, ctx𝕄 0 M -> step M⟦.lam𝕔 (.code e)⟧ M⟦.reflect (.lam₁ e)⟧
+  | reflect : ∀ P E b, ctxℙ 0 P -> ctx𝔼 E -> step P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+  | let𝕔 : ∀ M b e, ctx𝕄 0 M -> step M⟦.let𝕔 b (.code e)⟧ M⟦.code (.lets b e)⟧
 
 inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
   | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
 
--- Examples:
-
-/--
+/-- Examples:
 lam₂ x. x +₂ (x +₂ x)
 →⋆
 code {
@@ -70,7 +68,6 @@ code {
   in f
 }
 -/
-
 def x₀ : Expr :=
   .fvar 0
 
@@ -124,34 +121,34 @@ example : step expr₀ expr₁ := by
 example : step expr₁ expr₂ := by
   rw [expr₁]
   rw [expr₂]
-  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
+  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
   repeat constructor
 
 example : step expr₂ expr₃ := by
   rw [expr₂]
   rw [expr₃]
-  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ (ctxℝ.lam𝕔 _) ctxℙ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 ctxℙ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
   repeat constructor
 
 example : step expr₃ expr₄ := by
   rw [expr₃]
   rw [expr₄]
-  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  apply step.plus₂ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _) ctx𝕄.hole))
 
 example : step expr₄ expr₅ := by
   rw [expr₄]
   rw [expr₅]
-  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ (ctxℝ.lam𝕔 _) (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙ.hole)) ctx𝔼.hole
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _) ctxℙ.hole)) ctx𝔼.hole
 
 example : step expr₅ expr₆ := by
   rw [expr₅]
   rw [expr₆]
-  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _) ctx𝕄.hole))
 
 example : step expr₆ expr₇ := by
   rw [expr₆]
   rw [expr₇]
-  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ (ctxℝ.lam𝕔 _) ctx𝕄.hole)
+  apply step.let𝕔 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 ctx𝕄.hole)
 
 example : step expr₇ expr₈ := by
   rw [expr₇]

@@ -146,9 +146,11 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
     apply IH₁
 
 theorem preservationℝ :
-    ∀ R e₀ e₁, ctxℝ R -> (∀ Γ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> (∀ Γ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ) :=
+    ∀ Γ R e₀ e₁,
+      ctxℝ Γ.length R ->
+        (∀ τ𝕒 τ𝕓, typing (τ𝕒 :: Γ) e₀ τ𝕓 -> typing (τ𝕒 :: Γ) e₁ τ𝕓) -> (∀ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ) :=
   by
-  intro _ _ _ HR Hτe _ _ HτR
+  intro _ _ _ _ HR Hτe _ HτR
   cases HR with
   | lam𝕔 =>
     cases HτR
@@ -158,9 +160,9 @@ theorem preservationℝ :
   | let𝕔 => admit
 
 theorem preservation𝔹 :
-    ∀ B e₀ e₁, ctx𝔹 B -> (∀ Γ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> (∀ Γ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ) :=
+    ∀ Γ B e₀ e₁, ctx𝔹 B -> (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> (∀ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ) :=
   by
-  intro _ _ _ HB Hτe _ _ HτB
+  intro _ _ _ _ HB Hτe _ HτB
   cases HB
   all_goals
     cases HτB
@@ -173,13 +175,21 @@ theorem preservation𝔹 :
         | apply H₁
         | apply H₂
 
-theorem preservation : ∀ Γ e₀ e₁ τ, step e₀ e₁ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
-  intro Γ e₀ e₁ τ Hstep
+  intro e₀ e₁ τ Hstep
   cases Hstep with
   | lets _ e v HM Hvalue =>
-    induction HM generalizing Γ τ with
+    generalize HeqΓ : [] = Γ
+    generalize HEqlvl : 0 = lvl
+    have Hlength : Γ.length = lvl := by
+      rw [← HeqΓ, ← HEqlvl]
+      simp
+    rw [HEqlvl] at HM
+    clear HEqlvl
+    clear HeqΓ
+    induction HM generalizing τ Γ with
     | hole => admit
-    | cons𝔹 _ _ HB _ IHM => simp; apply preservation𝔹; apply HB; apply IHM
-    | consℝ _ _ HR _ IHM => simp; apply preservationℝ; apply HR; apply IHM
+    | cons𝔹 _ _ HB _ IHM => simp; apply preservation𝔹; apply HB; intro τ; apply IHM; apply Hlength
+    | consℝ _ _ HR _ IHM => rw [← Hlength] at HR IHM; simp; apply preservationℝ; apply HR; intros τ𝕒 τ𝕓; apply IHM; rfl
   | _ => admit
