@@ -121,3 +121,33 @@ example : typing [] expr𝕩 (.rep (.arrow .nat .nat)) :=
   by
   rw [expr𝕩, x₀, x₁, x₂]
   repeat constructor
+
+theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
+  by
+  intros Γ e τ Htyping
+  induction Htyping with
+  | fvar
+  | lit₁
+  | lit₂ =>
+    constructor
+  | lam₁ _ _ _ _ _ _ IHe
+  | lam₂ _ _ _ _ _ _ IHe
+  | lam𝕔 _ _ _ _ _ _ IHe =>
+    apply open_closed
+    apply IHe
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁
+  | app₂ _ _ _ _ _ _ _ IH₀ IH₁
+  | plus₁ _ _ _ _ _ IH₀ IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀
+    apply IH₁
+  | code _ _ _ _ IH
+  | reflect _ _ _ _ IH =>
+    apply IH
+  | lets _ _ _ _ _ _ _ _ IH₀ IH₁
+  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀
+    apply open_closed
+    apply IH₁
