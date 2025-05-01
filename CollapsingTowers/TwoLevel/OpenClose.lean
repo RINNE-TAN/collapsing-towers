@@ -264,6 +264,39 @@ lemma closedb_opening_id: ∀ t1 t2 n,
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1; apply h.1; apply ih2; apply h.2
 
+lemma open_close_id : ∀ i e x, closedb_at e i -> opening i (.fvar x) (closing i x e) = e :=
+  by
+  intros i e x Hlc
+  induction e generalizing i with
+  | bvar j =>
+    simp
+    intro HEq
+    rw [HEq] at Hlc
+    simp at Hlc
+  | fvar y =>
+    simp
+    by_cases HEq : x = y
+    . rw [HEq]; simp
+    . rw [if_neg HEq]; simp
+  | lam₁ _ IHe
+  | lam₂ _ IHe
+  | lam𝕔 _ IHe
+  | code _ IHe
+  | reflect _ IHe =>
+    simp; apply IHe; apply Hlc
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hlc.left
+    apply IH₁; apply Hlc.right
+  | lit₁| lit₂ => rfl
+
+lemma open_close_id₀ : ∀ e x, lc e -> open₀ x (close₀ x e) = e := by apply open_close_id
+
 @[simp]
 def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   match e with
