@@ -9,24 +9,59 @@ abbrev Ctx :=
 notation:max a "⟦" b "⟧" => a b
 
 inductive ctx𝔹 : Ctx -> Prop where
-  | appl₁ : ∀ arg, ctx𝔹 (fun X => .app₁ X arg)
+  | appl₁ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₁ X arg)
   | appr₁ : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
-  | appl₂ : ∀ arg, ctx𝔹 (fun X => .app₂ X arg)
+  | appl₂ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₂ X arg)
   | appr₂ : ∀ v, value v -> ctx𝔹 (fun X => .app₂ v X)
-  | plusl₁ : ∀ r, ctx𝔹 (fun X => .plus₁ X r)
+  | plusl₁ : ∀ r, lc r -> ctx𝔹 (fun X => .plus₁ X r)
   | plusr₁ : ∀ v, value v -> ctx𝔹 (fun X => .plus₁ v X)
-  | plusl₂ : ∀ r, ctx𝔹 (fun X => .plus₂ X r)
+  | plusl₂ : ∀ r, lc r -> ctx𝔹 (fun X => .plus₂ X r)
   | plusr₂ : ∀ v, value v -> ctx𝔹 (fun X => .plus₂ v X)
-  | lets : ∀ e, ctx𝔹 (fun X => .lets X e)
+  | lets : ∀ e, closedb_at e 1 -> ctx𝔹 (fun X => .lets X e)
+
+theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
+  by
+  intros B e HB Hlc
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | plusl₁ _ IH
+  | plusl₂ _ IH
+  | lets _ IH => constructor; apply Hlc; apply IH
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue
+  | plusr₁ _ Hvalue
+  | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
 
 inductive ctxℝ : ℕ -> Ctx -> Prop where
   | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
-  | let𝕔 : ∀ b, ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
+  | let𝕔 : ∀ b, lc b -> ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
+
+theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
+  by
+  intros R e n HR Hlc
+  induction HR with
+  | lam𝕔 =>
+    apply close_closedb; omega
+    apply closedb_inc; apply Hlc; omega
+  | let𝕔 _ Hlcb =>
+    constructor
+    apply Hlcb
+    apply close_closedb; omega
+    apply closedb_inc; apply Hlc; omega
 
 inductive ctx𝕄 : ℕ -> Ctx -> Prop where
   | hole : ctx𝕄 lvl id
   | cons𝔹 : ∀ B M, ctx𝔹 B -> ctx𝕄 lvl M -> ctx𝕄 lvl (B ∘ M)
   | consℝ : ∀ R M, ctxℝ lvl R -> ctx𝕄 (lvl + 1) M -> ctx𝕄 lvl (R ∘ M)
+
+theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
+  by
+  intros _ _ _ HM Hlc
+  induction HM with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 
 inductive ctx𝔼 : Ctx -> Prop where
   | hole : ctx𝔼 (fun X => X)
@@ -137,18 +172,19 @@ example : step expr₂ expr₃ := by
 example : step expr₃ expr₄ := by
   rw [expr₃]
   rw [expr₄]
-  apply step.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _) ctx𝕄.hole))
+  apply step.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
   repeat constructor
 
 example : step expr₄ expr₅ := by
   rw [expr₄]
   rw [expr₅]
-  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _) ctxℙ.hole)) ctx𝔼.hole
+  apply step.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙ.hole)) ctx𝔼.hole
+  repeat constructor
 
 example : step expr₅ expr₆ := by
   rw [expr₅]
   rw [expr₆]
-  apply step.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _) ctx𝕄.hole))
+  apply step.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
   repeat constructor
 
 example : step expr₆ expr₇ := by

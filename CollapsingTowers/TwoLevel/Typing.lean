@@ -121,29 +121,36 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   induction Htyping with
   | fvar
   | lit₁
-  | lit₂ =>
-    constructor
+  | lit₂ => constructor
   | lam₁ _ _ _ _ _ _ IHe
   | lam₂ _ _ _ _ _ _ IHe
-  | lam𝕔 _ _ _ _ _ _ IHe =>
-    apply open_closed
-    apply IHe
+  | lam𝕔 _ _ _ _ _ _ IHe => apply open_closed; apply IHe
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
-  | plus₂ _ _ _ _ _ IH₀ IH₁ =>
-    constructor
-    apply IH₀
-    apply IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH =>
-    apply IH
+  | reflect _ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
-  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ =>
-    constructor
-    apply IH₀
-    apply open_closed
-    apply IH₁
+  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closed; apply IH₁
+
+theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
+  by
+  intros Γ e τ Htyping
+  induction Htyping with
+  | fvar _ _ τ Hbind => simp at *; apply indexrSome'; exists τ
+  | lam₁ _ _ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH
+  | lam𝕔 _ _ _ _ _ IH
+  | code _ _ _ _ IH
+  | reflect _ _ _ _ IH => apply IH
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁
+  | app₂ _ _ _ _ _ _ _ IH₀ IH₁
+  | plus₁ _ _ _ _ _ IH₀ IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
+  | lets _ _ _ _ _ _ _ IH₀ IH₁
+  | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
+  | lit₁| lit₂ => constructor
 
 theorem preservationℝ :
     ∀ Γ R e₀ e₁,
@@ -151,27 +158,46 @@ theorem preservationℝ :
         lc e₀ ->
           (∀ τ𝕒 τ𝕓, typing (τ𝕒 :: Γ) e₀ τ𝕓 -> typing (τ𝕒 :: Γ) e₁ τ𝕓) -> ∀ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ :=
   by
-  intro _ _ _ _ HR _ Hτe _ HτR
+  intro Γ _ e₀ e₁ HR Hlc HτMap _ Hτe₀
   cases HR with
   | lam𝕔 =>
-    cases HτR
-    constructor
-    admit
-    admit
-  | let𝕔 => admit
+    cases Hτe₀ with
+    | lam𝕔 _ _ _ _ Hτe₀ =>
+      have Hopen_close_e₀ := open_close_id₀ e₀ Γ.length Hlc
+      rw [Hopen_close_e₀] at Hτe₀
+      have Hτe₁ := HτMap _ _ Hτe₀
+      have Hopen_close_e₀ := open_close_id₀ e₁ Γ.length (typing_regular _ _ _ Hτe₁)
+      constructor
+      rw [Hopen_close_e₀]
+      apply Hτe₁
+      apply close_closed
+      apply typing_closed _ _ _ Hτe₁
+  | let𝕔 =>
+    cases Hτe₀ with
+    | let𝕔 _ _ _ _ _ Hτb Hτe₀ =>
+      have Hopen_close_e₀ := open_close_id₀ e₀ Γ.length Hlc
+      rw [Hopen_close_e₀] at Hτe₀
+      have Hτe₁ := HτMap _ _ Hτe₀
+      have Hopen_close_e₀ := open_close_id₀ e₁ Γ.length (typing_regular _ _ _ Hτe₁)
+      constructor
+      apply Hτb
+      rw [Hopen_close_e₀]
+      apply Hτe₁
+      apply close_closed
+      apply typing_closed _ _ _ Hτe₁
 
 theorem preservation𝔹 :
     ∀ Γ B e₀ e₁, ctx𝔹 B -> (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> ∀ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ :=
   by
-  intro _ _ _ _ HB Hτe _ HτB
+  intro _ _ _ _ HB HτMap _ Hτe₀
   cases HB
   all_goals
-    cases HτB
+    cases Hτe₀
     next H₀ H₁ H₂ =>
       constructor
       repeat
         first
-        | apply Hτe
+        | apply HτMap
         | apply H₀
         | apply H₁
         | apply H₂
@@ -195,9 +221,9 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
       simp; apply preservation𝔹
       apply HB
       intro; apply IHM; apply Hlength
-    | consℝ _ _ HR _ IHM =>
+    | consℝ _ _ HR HM IHM =>
       rw [← Hlength] at HR IHM; simp; apply preservationℝ
       apply HR
-      admit
+      apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
-  | _ => admit
+  | reflect => admit

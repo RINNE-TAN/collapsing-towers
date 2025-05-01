@@ -245,6 +245,48 @@ lemma open_closed': ∀ t n m,
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
+theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e) x :=
+  by
+  intros e x i
+  induction e generalizing i with
+  | fvar y =>
+    by_cases HEq : x = y
+    . rw [HEq]; simp
+    . simp; rw [if_neg HEq]; simp; omega
+  | bvar => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH => apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    intro Hclose; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => simp
+
+theorem close_closedb : ∀ e x i j, j < i -> closedb_at e i → closedb_at (closing j x e) i :=
+  by
+  intros e x i j Hlt
+  induction e generalizing i j with
+  | fvar y =>
+    by_cases HEq : x = y
+    . rw [HEq]; simp; omega
+    . simp; rw [if_neg HEq]; simp
+  | bvar => simp
+  | lam₁ _ IH| lam₂ _ IH| lam𝕔 _ IH| code _ IH| reflect _ IH => apply IH; omega
+  | app₁ _ _ IH₀ IH₁| app₂ _ _ IH₀ IH₁| plus₁ _ _ IH₀ IH₁| plus₂ _ _ IH₀ IH₁| lets _ _ IH₀ IH₁| let𝕔 _ _ IH₀
+    IH₁ =>
+    intro Hclose; constructor
+    apply IH₀; omega; apply Hclose.left
+    apply IH₁; omega; apply Hclose.right
+  | lit₁| lit₂ => simp
+
 lemma closedb_opening_id: ∀ t1 t2 n,
   closedb_at t1 n -> opening n t2 t1 = t1 := by
   intros t1; induction t1 <;> intros t2 n h <;> simp
@@ -316,14 +358,21 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .lets b e => .lets (maping𝕔 b i) (maping𝕔 e (i + 1))
   | .let𝕔 b e => .let𝕔 (maping𝕔 b i) (maping𝕔 e (i + 1))
 
+inductive value : Expr -> Prop where
+  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
+  | lit₁ : ∀ n, value (.lit₁ n)
+  | code : ∀ e, lc e -> value (.code e)
+
+theorem value_lc : ∀ e, value e -> lc e := by
+  intro e Hvalue
+  cases Hvalue with
+  | lam₁ _ Hclose => apply Hclose
+  | lit₁ => constructor
+  | code _ Hclose => apply Hclose
+
 @[simp]
 def map𝕔₀ (e : Expr) : Expr :=
   maping𝕔 e 0
-
-inductive value : Expr -> Prop where
-  | lam : ∀ e, closedb_at (.lam₁ e) 0 -> value (.lam₁ e)
-  | lit : ∀ n, value (.lit₁ n)
-  | code : ∀ e, closedb_at e 0 -> value (.code e)
 
 example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1))) := by simp
 
