@@ -56,9 +56,9 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ (.lets b e) τ𝕓
   | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
-    typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
+    typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
-    typing Γ (.let𝕔 b e) (.rep τ𝕓)
+    typing Γ (.let𝕔 b e) τ𝕓
 
 example : typing [] expr₀ (.rep (.arrow .nat .nat)) :=
   by
@@ -202,11 +202,21 @@ theorem preservation𝔹 :
         | apply H₁
         | apply H₂
 
+theorem preservation_reflect :
+    ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
+  by
+  intros Γ E b τ HE Hlc Hτr
+  admit
+
+theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+  by
+  admit
+
 theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
   intro e₀ e₁ τ Hstep
   cases Hstep with
-  | step𝕄 _ _ _ HM Hlc =>
+  | step𝕄 _ _ _ HM Hlc Hhead𝕄 =>
     generalize HeqΓ : [] = Γ
     generalize HEqlvl : 0 = lvl
     have Hlength : Γ.length = lvl := by
@@ -216,7 +226,7 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
     clear HEqlvl
     clear HeqΓ
     induction HM generalizing τ Γ with
-    | hole => admit
+    | hole => apply preservation_head𝕄; apply Hhead𝕄; apply Hlc
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB
@@ -237,14 +247,12 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
     clear HEqlvl
     clear HeqΓ
     induction HP generalizing τ Γ with
-    | hole =>
-      simp
-      admit
+    | hole => apply preservation_reflect; apply HE; apply Hlc
     | holeℝ _ HR =>
       apply preservationℝ
       rw [Hlength]; apply HR
       apply lc_ctx𝔼; apply HE; apply Hlc
-      admit
+      intros _ _; apply preservation_reflect; apply HE; apply Hlc
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB
