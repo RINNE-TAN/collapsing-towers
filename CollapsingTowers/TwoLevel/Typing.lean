@@ -7,6 +7,18 @@ import CollapsingTowers.TwoLevel.Env
 def binds (x : ℕ) (τ : Ty) (Γ : TEnv) :=
   indexr x Γ = some τ
 
+theorem binds_extend : ∀ Γ Δ x τ, binds x τ Γ -> binds x τ (Δ ++ Γ) :=
+  by
+  intros Γ Δ x τ Hbinds
+  induction Δ with
+  | nil => apply Hbinds
+  | cons head tails IHtails =>
+    simp
+    by_cases Hx : x = tails.length + Γ.length
+    . have Hx : x < Γ.length := by apply indexrSome'; exists τ
+      omega
+    . rw [if_neg Hx]; apply IHtails
+
 inductive typing : TEnv -> Expr -> Ty -> Prop where
   | fvar : ∀ Γ x τ,
     binds x τ Γ ->
@@ -152,6 +164,36 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
   | lit₁| lit₂ => constructor
 
+theorem typing_extend : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
+  by
+  intros Γ Δ e τ Hτ
+  induction Hτ generalizing Δ with
+  | fvar _ _ _ Hbinds => constructor; apply binds_extend; apply Hbinds
+  | _ => admit
+
+theorem typing𝔹 : ∀ Γ B e τ, ctx𝔹 B -> typing Γ (B e) τ -> ∃ τ, typing Γ e τ :=
+  by
+  intros Γ B e τ HB
+  cases HB
+  all_goals
+    intro Hτ; cases Hτ
+    next H₀ H₁ H₂ =>
+      constructor
+      first
+      | apply H₀
+      | apply H₁
+      | apply H₂
+
+theorem typing𝔼 : ∀ Γ E e τ, ctx𝔼 E -> typing Γ (E e) τ -> ∃ τ, typing Γ e τ :=
+  by
+  intros _ _ _ τ HE
+  induction HE generalizing τ with
+  | hole => intro; exists τ
+  | cons𝔹 _ _ HB HE IH =>
+    intro Hτ
+    have ⟨τ, Hτ⟩ := typing𝔹 _ _ _ _ HB Hτ
+    apply IH; apply Hτ
+
 theorem preservationℝ :
     ∀ Γ R e₀ e₁,
       ctxℝ Γ.length R ->
@@ -205,10 +247,13 @@ theorem preservation𝔹 :
 theorem preservation_reflect :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
-  intros Γ E b τ HE Hlc Hτr
+  intros _ _ _ _ HE Hlc Hτr
+  have ⟨_, Hτr⟩ := typing𝔼 _ _ _ _ HE Hτr
+  cases Hτr with
+  | reflect _ _ τ Hτb =>
   constructor
-  admit
-  rw [open_ctx𝔼_map _ _ _ HE]; simp; admit
+  apply Hτb
+  rw [open_ctx𝔼_map _ _ _ HE]; simp
   admit
   admit
 
