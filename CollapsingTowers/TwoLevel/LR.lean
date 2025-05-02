@@ -167,7 +167,23 @@ lemma semType.lam₂: ∀ Γ e τ1 τ2,
   intros Γ e τ1 τ2 hsem hfr Δ hcl henv
   unfold semType at hsem
   unfold expType at *
-  have var : Expr := .fvar (Γ.length)
-  have Δ' := var::Δ
-  have Γ' := τ1.rep :: Γ
+  have var : Expr := (.code (.bvar 0))
+  have Δ' : VEnv := var::Δ
+  have Γ' : TEnv := τ1.rep :: Γ
+  have henv' := envType.extend Δ Γ var (.rep τ1) henv (sorry)
   sorry
+
+lemma semType.app₁: ∀ Γ f t τ1 τ2,
+  semType Γ f (.arrow τ1 τ2) →
+  semType Γ t τ1 →
+  semType Γ (.app₁ f t) τ2 := by
+  intros Γ f t τ1 τ2 hsemf hsemt Δ hcl henv
+  rcases hcl  with ⟨hclf, hclt⟩
+  rcases hsemf Δ hclf henv with ⟨fv, hfv, clfv, semfv⟩
+  rcases hsemt Δ hclt henv with ⟨tv, htv, cltv, semtv⟩
+  unfold valType at semfv; cases fv <;> simp at semfv;
+  case _ ft =>
+  have ⟨v2, v2st, semv2⟩ := semfv tv semtv cltv
+  exists v2; apply And.intro;
+  . simp; sorry
+  . assumption
