@@ -206,6 +206,10 @@ theorem preservation_reflect :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
   intros Γ E b τ HE Hlc Hτr
+  constructor
+  admit
+  rw [open_ctx𝔼_map _ _ _ HE]; simp; admit
+  admit
   admit
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=

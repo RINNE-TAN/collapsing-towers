@@ -33,6 +33,20 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
 
+theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
+  by
+  intros B e x HB
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | plusl₁ _ IH
+  | plusl₂ _ IH
+  | lets _ IH => simp; apply closedb_opening_id; apply IH
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue
+  | plusr₁ _ Hvalue
+  | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
+
 inductive ctxℝ : ℕ -> Ctx -> Prop where
   | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
   | let𝕔 : ∀ b, lc b -> ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
@@ -73,6 +87,15 @@ theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
   induction HE with
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+
+theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
+  by
+  intros _ _ _ HE
+  induction HE with
+  | hole => rfl
+  | cons𝔹 _ _ HB _ IH =>
+    simp at *; rw [← IH]
+    apply open_ctx𝔹_map; apply HB
 
 inductive ctxℙ : ℕ -> Ctx -> Prop where
   | hole : ctxℙ 0 id

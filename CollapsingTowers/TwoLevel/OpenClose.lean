@@ -62,8 +62,8 @@ def opening (i : ℕ) (x : Expr) : Expr -> Expr
   | .let𝕔 b e => .let𝕔 (opening i x b) (opening (i + 1) x e)
 
 @[simp]
-def open₀ (i : ℕ) : Expr -> Expr :=
-  opening 0 (.fvar i)
+def open₀ (x : ℕ) : Expr -> Expr :=
+  opening 0 (.fvar x)
 
 @[simp]
 def open_subst (tgt : Expr) (within : Expr) :=
