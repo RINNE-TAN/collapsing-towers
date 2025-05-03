@@ -268,7 +268,7 @@ theorem preservation_reflect :
     simp
     apply typing_unique; apply Hτb; apply Hτrb
 
-theorem preservation𝔼_reflect :
+theorem preservation_head𝔼 :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
   intros _ _ _ _ HE Hlc Hτr
@@ -282,7 +282,8 @@ theorem preservation𝔼_reflect :
     intro; apply preservation_reflect
     rw [← List.singleton_append]; apply typing_extend; apply Hτb
     rw [← List.singleton_append]; apply typing_extend; apply Hτr
-    admit
+    apply close_at𝔼; apply HE
+    apply typing_closed; apply Hτr; constructor
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
@@ -323,12 +324,12 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
     clear HEqlvl
     clear HeqΓ
     induction HP generalizing τ Γ with
-    | hole => apply preservation𝔼_reflect; apply HE; apply Hlc
+    | hole => apply preservation_head𝔼; apply HE; apply Hlc
     | holeℝ _ HR =>
       apply preservationℝ
       rw [Hlength]; apply HR
       apply lc_ctx𝔼; apply HE; apply Hlc
-      intros _ _; apply preservation𝔼_reflect; apply HE; apply Hlc
+      intros _ _; apply preservation_head𝔼; apply HE; apply Hlc
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB

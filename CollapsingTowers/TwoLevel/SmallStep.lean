@@ -33,6 +33,15 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
 
+theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
+  by
+  intros _ _ _ _ HB He₀ He₁
+  cases HB with
+  | appl₁ | appl₂ | plusl₁ | plusl₂ | lets =>
+    constructor; apply He₁; apply He₀.right
+  | appr₁ | appr₂ | plusr₁ | plusr₂ =>
+    constructor; apply He₀.left; apply He₁
+
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
   intros B e x HB
@@ -87,6 +96,19 @@ theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
   induction HE with
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+
+theorem close_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₁ x -> closed_at E⟦e₁⟧ x :=
+  by
+  intros _ _ _ _ HE He₀ He₁
+  induction HE with
+  | hole => apply He₁
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply close_at𝔹; apply HB; apply He₀
+    apply IH; cases HB <;> simp at He₀
+    repeat
+      first
+      | apply He₀.left
+      | apply He₀.right
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by
