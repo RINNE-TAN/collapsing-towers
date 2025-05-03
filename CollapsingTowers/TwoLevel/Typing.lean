@@ -127,6 +127,9 @@ example : typing [] expr𝕩 (.rep (.arrow .nat .nat)) :=
   rw [expr𝕩, x₀, x₁, x₂]
   repeat constructor
 
+theorem typing_unique : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕒 -> typing Γ e τ𝕓 -> τ𝕒 = τ𝕓 :=
+  by admit
+
 theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   by
   intros Γ e τ Htyping
@@ -244,18 +247,42 @@ theorem preservation𝔹 :
         | apply H₁
         | apply H₂
 
+theorem preservation𝔼 :
+    ∀ Γ E e₀ e₁, ctx𝔼 E -> (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> ∀ τ, typing Γ (E e₀) τ -> typing Γ (E e₁) τ :=
+  by
+  intro _ _ _ _ HE HτMap τ Hτe₀
+  induction HE generalizing τ with
+  | hole => apply HτMap; apply Hτe₀
+  | cons𝔹 _ _ HB _ IHM =>
+    simp; apply preservation𝔹
+    apply HB
+    intro _; apply IHM; apply Hτe₀
+
 theorem preservation_reflect :
+    ∀ Γ b τ𝕒 τ𝕓, typing (τ𝕒 :: Γ) b τ𝕒 -> typing (τ𝕒 :: Γ) (.reflect b) τ𝕓 -> typing (τ𝕒 :: Γ) (.code (.fvar Γ.length)) τ𝕓 := by
+  intros Γ b τ𝕒 τ𝕓 Hτb Hτr
+  cases Hτr with
+  | reflect _ _ _ Hτrb =>
+    constructor
+    constructor
+    simp
+    apply typing_unique; apply Hτb; apply Hτrb
+
+theorem preservation𝔼_reflect :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
   intros _ _ _ _ HE Hlc Hτr
   have ⟨_, Hτr⟩ := typing𝔼 _ _ _ _ HE Hτr
   cases Hτr with
   | reflect _ _ τ Hτb =>
-  constructor
-  apply Hτb
-  rw [open_ctx𝔼_map _ _ _ HE]; simp
-  admit
-  admit
+    constructor
+    apply Hτb
+    rw [open_ctx𝔼_map _ _ _ HE]
+    apply preservation𝔼; apply HE
+    intro; apply preservation_reflect
+    rw [← List.singleton_append]; apply typing_extend; apply Hτb
+    rw [← List.singleton_append]; apply typing_extend; apply Hτr
+    admit
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
@@ -296,12 +323,12 @@ theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> 
     clear HEqlvl
     clear HeqΓ
     induction HP generalizing τ Γ with
-    | hole => apply preservation_reflect; apply HE; apply Hlc
+    | hole => apply preservation𝔼_reflect; apply HE; apply Hlc
     | holeℝ _ HR =>
       apply preservationℝ
       rw [Hlength]; apply HR
       apply lc_ctx𝔼; apply HE; apply Hlc
-      intros _ _; apply preservation_reflect; apply HE; apply Hlc
+      intros _ _; apply preservation𝔼_reflect; apply HE; apply Hlc
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB
