@@ -119,8 +119,33 @@ theorem preservation_maping :
     ∀ Γ v e τ𝕒 τ𝕓 τ𝕔, typing (τ𝕔 :: Γ) e τ𝕓 -> typing (τ𝕒 :: Γ) v τ𝕔 -> typing (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
   admit
 
+theorem preservation_opening :
+    ∀ Γ v₀ v₁ i e τ𝕒 τ𝕓,
+      typing Γ v₀ τ𝕒 -> typing Γ v₁ τ𝕒 -> typing Γ (opening i v₀ e) τ𝕓 -> typing Γ (opening i v₁ e) τ𝕓 :=
+  by admit
+
 theorem preservation_subst :
-    ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 := by admit
+    ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 :=
+  by
+  intros Γ v e τ𝕒 τ𝕓 Hv
+  generalize EqΓ : τ𝕒 :: Γ = Δ
+  intro He
+  induction He generalizing Γ τ𝕒 with
+  | fvar _ x _ Hbind =>
+    rw [← EqΓ] at Hbind
+    simp at Hbind
+    by_cases HEq : Γ.length = x
+    . rw [HEq]; rw [HEq] at Hbind; simp at *; rw [← Hbind]; apply Hv
+    . simp; rw [if_neg HEq]; rw [if_neg HEq] at Hbind; constructor; apply Hbind
+  | lam₁ =>
+    constructor
+    admit
+    admit
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hv; apply EqΓ
+    apply IH₁; apply Hv; apply EqΓ
+  | _ => admit
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
