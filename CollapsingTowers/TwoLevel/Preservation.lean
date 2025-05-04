@@ -115,7 +115,71 @@ theorem preservation_head𝔼 :
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
 
-theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ := by admit
+theorem preservation_subst :
+    ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 := by admit
+
+theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+  by
+  intros Γ e₀ e₁ τ Hhead Hlc Hτ
+  induction Hhead with
+  | lets =>
+    cases Hτ
+    next Hτv Hclose Hτe =>
+      simp; rw [← subst_intro]
+      apply preservation_subst
+      apply Hτv; apply Hτe; apply Hclose
+  | app₁ =>
+    cases Hτ
+    next Hτv Hτf =>
+      cases Hτf
+      next Hclose Hτe =>
+        simp; rw [← subst_intro]
+        apply preservation_subst
+        apply Hτv; apply Hτe; apply Hclose
+  | app₂ =>
+    cases Hτ
+    next Hτf𝕔 Hτarg𝕔 =>
+      cases Hτf𝕔
+      next Hτf =>
+        cases Hτarg𝕔
+        next Hτarg =>
+          repeat constructor
+          apply Hτf; apply Hτarg
+  | plus₁ => cases Hτ; constructor
+  | plus₂ =>
+    cases Hτ
+    next Hl𝕔 Hr𝕔 =>
+      cases Hl𝕔
+      next Hl =>
+        cases Hr𝕔
+        next Hr =>
+          repeat constructor
+          apply Hl; apply Hr
+  | lit₂ => cases Hτ; repeat constructor
+  | lam₂ =>
+    cases Hτ
+    next Hclose Hτe =>
+      rw [← map𝕔₀_intro]
+      constructor
+      simp; rw [open_close_id]
+      admit
+      admit
+      admit
+      apply Hclose
+  | lam𝕔 =>
+    cases Hτ
+    next Hτe𝕔 =>
+      cases Hτe𝕔
+      next Hclose Hτe =>
+        repeat constructor
+        apply Hτe; apply Hclose
+  | let𝕔 =>
+    cases Hτ
+    next Hτv Hclose Hτe𝕔 =>
+      cases Hτe𝕔
+      next Hτe =>
+        repeat constructor
+        apply Hτv; apply Hτe; apply Hclose
 
 theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by

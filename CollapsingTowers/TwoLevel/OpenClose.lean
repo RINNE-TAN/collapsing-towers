@@ -69,29 +69,6 @@ def open₀ (x : ℕ) : Expr -> Expr :=
 def open_subst (tgt : Expr) (within : Expr) :=
   opening 0 tgt within
 
-theorem subst_intro : ∀ x e v i, x ∉ fv e -> subst x v (opening i (.fvar x) e) = opening i v e :=
-  by
-  intros x e; induction e <;> intros v i Hclosed <;> simp at *
-  case bvar j => by_cases HEq : j = i; simp [HEq]; simp [if_neg HEq]
-  case fvar => intro; contradiction
-  case lam₁ _ IHe
-  | lam₂ _ IHe
-  | code _ IHe
-  | reflect _ IHe
-  | lam𝕔 _ IHe => apply IHe; apply Hclosed
-  case app₁ _ _ ih1 ih2
-  | app₂ _ _ ih1 ih2
-  | plus₁ _ _ ih1 ih2
-  | plus₂ _ _ ih1 ih2
-  | lets _ _ ih1 ih2
-  | let𝕔 _ _ ih1 ih2 => constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
-
-theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = open_subst v e :=
-  by
-  intros _ _ _ Hclosed
-  apply subst_intro
-  apply Hclosed
-
 @[simp]
 def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .bvar j => .bvar j
@@ -174,6 +151,29 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
 
 @[simp]
 def lc e := closedb_at e 0
+
+lemma subst_intro : ∀ x e v i, closed_at e x -> subst x v (opening i (.fvar x) e) = opening i v e :=
+  by
+  intros x e; induction e <;> intros v i Hclosed <;> simp at *
+  case bvar j => by_cases HEq : j = i; simp [HEq]; simp [if_neg HEq]
+  case fvar => omega
+  case lam₁ _ IHe
+  | lam₂ _ IHe
+  | code _ IHe
+  | reflect _ IHe
+  | lam𝕔 _ IHe => apply IHe; apply Hclosed
+  case app₁ _ _ ih1 ih2
+  | app₂ _ _ ih1 ih2
+  | plus₁ _ _ ih1 ih2
+  | plus₂ _ _ ih1 ih2
+  | lets _ _ ih1 ih2
+  | let𝕔 _ _ ih1 ih2 => constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
+
+lemma openSubst_intro : ∀ x e v, closed_at e x -> subst x v (open₀ x e) = open_subst v e :=
+  by
+  intros _ _ _ Hclosed
+  apply subst_intro
+  apply Hclosed
 
 lemma closedb_inc: ∀ t n n1,
     closedb_at t n -> n <= n1 ->
@@ -386,12 +386,12 @@ def map𝕔₀ (e : Expr) : Expr :=
 example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ .nat (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ .nat (.code (.bvar 1))) := by simp
 
 theorem maping𝕔_intro :
-    ∀ x e i, x ∉ fv e -> closing i x (subst x (.code (.fvar x)) (opening i (.fvar x) e)) = maping𝕔 e i :=
+    ∀ x e i, closed_at e x -> closing i x (subst x (.code (.fvar x)) (opening i (.fvar x) e)) = maping𝕔 e i :=
   by
   intros x e i Hclosed
   induction e generalizing i with
   | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
-  | fvar => simp at *; repeat rw [if_neg Hclosed]; simp; apply Hclosed
+  | fvar y => simp at *; by_cases HEq : x = y; omega; rw [if_neg HEq]; simp; apply HEq
   | lam₁ _ _ ih
   | lam₂ _ _ ih
   | code _ ih
@@ -408,7 +408,7 @@ theorem maping𝕔_intro :
   | lit₁ => simp
   | lit₂ => simp
 
-theorem map𝕔₀_intro : ∀ x e, x ∉ fv e -> close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=
+theorem map𝕔₀_intro : ∀ x e, closed_at e x -> close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=
   by
   intro _ _ Hclose
   apply maping𝕔_intro
