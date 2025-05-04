@@ -168,7 +168,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
       simp; rw [open_close_id]
       apply preservation_maping; apply Hτe; repeat constructor; ; simp
       apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
-      apply close_closed; apply subst_closed_at; simp; admit
+      apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
       apply Hclose
   | lam𝕔 =>
     cases Hτ

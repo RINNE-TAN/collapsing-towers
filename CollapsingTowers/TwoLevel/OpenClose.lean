@@ -327,6 +327,31 @@ theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x
     apply IH₁; apply Hclose.right
   | lit₁| lit₂ => simp
 
+theorem open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) e) (x + 1) :=
+  by
+  intros e x i
+  induction e generalizing i with
+  | fvar y => simp; omega
+  | bvar j =>
+    by_cases HEq : j = i
+    . rw [HEq]; simp
+    . simp; rw [if_neg HEq]; simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH => apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    intro Hclose; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => simp
+
 theorem close_closedb : ∀ e x i j, j < i -> closedb_at e i → closedb_at (closing j x e) i :=
   by
   intros e x i j Hlt
