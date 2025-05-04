@@ -26,11 +26,11 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lam₁ : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
-    typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
+    typing Γ (.lam₁ τ𝕒 e) (.arrow τ𝕒 τ𝕓)
   | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
     typing (.rep τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
-    typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing Γ (.lam₂ (.rep τ𝕒) e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
     typing Γ f (.arrow τ𝕒 τ𝕓) ->
     typing Γ arg τ𝕒 ->
@@ -60,7 +60,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
-    typing Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing Γ (.lam𝕔 τ𝕒 e) (.rep (.arrow τ𝕒 τ𝕓))
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->

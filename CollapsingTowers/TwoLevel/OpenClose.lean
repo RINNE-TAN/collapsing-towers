@@ -6,8 +6,8 @@ import Mathlib.Data.Finset.Max
 def fv : Expr → Finset ℕ
   | .bvar _ => ∅
   | .fvar y => { y }
-  | .lam₁ e => fv e
-  | .lam₂ e => fv e
+  | .lam₁ _ e => fv e
+  | .lam₂ _ e => fv e
   | .app₁ f arg => fv f ∪ fv arg
   | .app₂ f arg => fv f ∪ fv arg
   | .lit₁ _ => ∅
@@ -16,7 +16,7 @@ def fv : Expr → Finset ℕ
   | .plus₂ l r => fv l ∪ fv r
   | .code e => fv e
   | .reflect e => fv e
-  | .lam𝕔 e => fv e
+  | .lam𝕔 _ e => fv e
   | .lets b e => fv b ∪ fv e
   | .let𝕔 b e => fv b ∪ fv e
 
@@ -28,8 +28,8 @@ def fresh (e : Expr) : ℕ :=
 def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .bvar i => .bvar i
   | .fvar y => if x = y then v else .fvar y
-  | .lam₁ e => .lam₁ (subst x v e)
-  | .lam₂ e => .lam₂ (subst x v e)
+  | .lam₁ τ e => .lam₁ τ (subst x v e)
+  | .lam₂ τ e => .lam₂ τ (subst x v e)
   | .app₁ f arg => .app₁ (subst x v f) (subst x v arg)
   | .app₂ f arg => .app₂ (subst x v f) (subst x v arg)
   | .lit₁ n => .lit₁ n
@@ -38,7 +38,7 @@ def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .plus₂ l r => .plus₂ (subst x v l) (subst x v r)
   | .code e => .code (subst x v e)
   | .reflect e => .reflect (subst x v e)
-  | .lam𝕔 e => .lam𝕔 (subst x v e)
+  | .lam𝕔 τ e => .lam𝕔 τ (subst x v e)
   | .lets b e => .lets (subst x v b) (subst x v e)
   | .let𝕔 b e => .let𝕔 (subst x v b) (subst x v e)
 
@@ -47,8 +47,8 @@ def subst (x : ℕ) (v : Expr) : Expr -> Expr
 def opening (i : ℕ) (x : Expr) : Expr -> Expr
   | .bvar j => if j = i then x else .bvar j
   | .fvar x => .fvar x
-  | .lam₁ e => .lam₁ (opening (i + 1) x e)
-  | .lam₂ e => .lam₂ (opening (i + 1) x e)
+  | .lam₁ τ e => .lam₁ τ (opening (i + 1) x e)
+  | .lam₂ τ e => .lam₂ τ (opening (i + 1) x e)
   | .app₁ f arg => .app₁ (opening i x f) (opening i x arg)
   | .app₂ f arg => .app₂ (opening i x f) (opening i x arg)
   | .lit₁ n => .lit₁ n
@@ -57,7 +57,7 @@ def opening (i : ℕ) (x : Expr) : Expr -> Expr
   | .plus₂ l r => .plus₂ (opening i x l) (opening i x r)
   | .code e => .code (opening i x e)
   | .reflect e => .reflect (opening i x e)
-  | .lam𝕔 e => .lam𝕔 (opening (i + 1) x e)
+  | .lam𝕔 τ e => .lam𝕔 τ (opening (i + 1) x e)
   | .lets b e => .lets (opening i x b) (opening (i + 1) x e)
   | .let𝕔 b e => .let𝕔 (opening i x b) (opening (i + 1) x e)
 
@@ -96,8 +96,8 @@ theorem openSubst_intro : ∀ x e v, x ∉ fv e -> subst x v (open₀ x e) = ope
 def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .bvar j => .bvar j
   | .fvar y => if x == y then .bvar i else .fvar y
-  | .lam₁ e => .lam₁ (closing (i + 1) x e)
-  | .lam₂ e => .lam₂ (closing (i + 1) x e)
+  | .lam₁ τ e => .lam₁ τ (closing (i + 1) x e)
+  | .lam₂ τ e => .lam₂ τ (closing (i + 1) x e)
   | .app₁ f arg => .app₁ (closing i x f) (closing i x arg)
   | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
   | .lit₁ n => .lit₁ n
@@ -106,7 +106,7 @@ def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .plus₂ l r => .plus₂ (closing i x l) (closing i x r)
   | .code e => .code (closing i x e)
   | .reflect e => .reflect (closing i x e)
-  | .lam𝕔 e => .lam𝕔 (closing (i + 1) x e)
+  | .lam𝕔 τ e => .lam𝕔 τ (closing (i + 1) x e)
   | .lets b e => .lets (closing i x b) (closing (i + 1) x e)
   | .let𝕔 b e => .let𝕔 (closing i x b) (closing (i + 1) x e)
 
@@ -138,8 +138,8 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   match e with
   | .bvar _ => true
   | .fvar x => x < f
-  | .lam₁ e => closed_at e f
-  | .lam₂ e => closed_at e f
+  | .lam₁ _ e => closed_at e f
+  | .lam₂ _ e => closed_at e f
   | .app₁ e1 e2 => closed_at e1 f ∧ closed_at e2 f
   | .app₂ e1 e2 => closed_at e1 f ∧ closed_at e2 f
   | .lit₁ _ => true
@@ -148,7 +148,7 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   | .plus₂ l r => closed_at l f ∧ closed_at r f
   | .code e => closed_at e f
   | .reflect e => closed_at e f
-  | .lam𝕔 e => closed_at e f
+  | .lam𝕔 _ e => closed_at e f
   | .lets b e => closed_at b f ∧ closed_at e f
   | .let𝕔 b e => closed_at b f ∧ closed_at e f
 
@@ -158,8 +158,8 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   match e with
   | .bvar x => x < b
   | .fvar _ => true
-  | .lam₁ e => closedb_at e (b + 1)
-  | .lam₂ e => closedb_at e (b + 1)
+  | .lam₁ _ e => closedb_at e (b + 1)
+  | .lam₂ _ e => closedb_at e (b + 1)
   | .app₁ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .app₂ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .lit₁ _ => true
@@ -168,7 +168,7 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .plus₂ l r => closedb_at l b ∧ closedb_at r b
   | .code e => closedb_at e b
   | .reflect e => closedb_at e b
-  | .lam𝕔 e => closedb_at e (b + 1)
+  | .lam𝕔 _ e => closedb_at e (b + 1)
   | .lets e1 e2 => closedb_at e1 b ∧ closedb_at e2 (b + 1)
   | .let𝕔 e1 e2 => closedb_at e1 b ∧ closedb_at e2 (b + 1)
 
@@ -254,9 +254,9 @@ theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x
     . rw [HEq]; simp
     . simp; rw [if_neg HEq]; simp; omega
   | bvar => simp
-  | lam₁ _ IH
-  | lam₂ _ IH
-  | lam𝕔 _ IH
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
   | code _ IH
   | reflect _ IH => apply IH
   | app₁ _ _ IH₀ IH₁
@@ -279,9 +279,18 @@ theorem close_closedb : ∀ e x i j, j < i -> closedb_at e i → closedb_at (clo
     . rw [HEq]; simp; omega
     . simp; rw [if_neg HEq]; simp
   | bvar => simp
-  | lam₁ _ IH| lam₂ _ IH| lam𝕔 _ IH| code _ IH| reflect _ IH => apply IH; omega
-  | app₁ _ _ IH₀ IH₁| app₂ _ _ IH₀ IH₁| plus₁ _ _ IH₀ IH₁| plus₂ _ _ IH₀ IH₁| lets _ _ IH₀ IH₁| let𝕔 _ _ IH₀
-    IH₁ =>
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH =>
+    apply IH; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
     intro Hclose; constructor
     apply IH₀; omega; apply Hclose.left
     apply IH₁; omega; apply Hclose.right
@@ -320,9 +329,9 @@ lemma open_close_id : ∀ i e x, closedb_at e i -> opening i (.fvar x) (closing 
     by_cases HEq : x = y
     . rw [HEq]; simp
     . rw [if_neg HEq]; simp
-  | lam₁ _ IHe
-  | lam₂ _ IHe
-  | lam𝕔 _ IHe
+  | lam₁ _ _ IHe
+  | lam₂ _ _ IHe
+  | lam𝕔 _ _ IHe
   | code _ IHe
   | reflect _ IHe =>
     simp; apply IHe; apply Hlc
@@ -344,8 +353,8 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   match e with
   | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
   | .fvar x => .fvar x
-  | .lam₁ e => .lam₁ (maping𝕔 e (i + 1))
-  | .lam₂ e => .lam₂ (maping𝕔 e (i + 1))
+  | .lam₁ τ e => .lam₁ τ (maping𝕔 e (i + 1))
+  | .lam₂ τ e => .lam₂ τ (maping𝕔 e (i + 1))
   | .app₁ f arg => .app₁ (maping𝕔 f i) (maping𝕔 arg i)
   | .app₂ f arg => .app₂ (maping𝕔 f i) (maping𝕔 arg i)
   | .lit₁ n => .lit₁ n
@@ -354,12 +363,12 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .plus₂ l r => .plus₂ (maping𝕔 l i) (maping𝕔 r i)
   | .code e => .code (maping𝕔 e i)
   | .reflect e => .reflect (maping𝕔 e i)
-  | .lam𝕔 e => .lam𝕔 (maping𝕔 e (i + 1))
+  | .lam𝕔 τ e => .lam𝕔 τ (maping𝕔 e (i + 1))
   | .lets b e => .lets (maping𝕔 b i) (maping𝕔 e (i + 1))
   | .let𝕔 b e => .let𝕔 (maping𝕔 b i) (maping𝕔 e (i + 1))
 
 inductive value : Expr -> Prop where
-  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
+  | lam₁ : ∀ e, lc (.lam₁ _ e) -> value (.lam₁ _ e)
   | lit₁ : ∀ n, value (.lit₁ n)
   | code : ∀ e, lc e -> value (.code e)
 
@@ -374,7 +383,7 @@ theorem value_lc : ∀ e, value e -> lc e := by
 def map𝕔₀ (e : Expr) : Expr :=
   maping𝕔 e 0
 
-example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1))) := by simp
+example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ .nat (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ .nat (.code (.bvar 1))) := by simp
 
 theorem maping𝕔_intro :
     ∀ x e i, x ∉ fv e -> closing i x (subst x (.code (.fvar x)) (opening i (.fvar x) e)) = maping𝕔 e i :=
@@ -383,11 +392,11 @@ theorem maping𝕔_intro :
   induction e generalizing i with
   | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
   | fvar => simp at *; repeat rw [if_neg Hclosed]; simp; apply Hclosed
-  | lam₁ _ ih
-  | lam₂ _ ih
+  | lam₁ _ _ ih
+  | lam₂ _ _ ih
   | code _ ih
   | reflect _ ih
-  | lam𝕔 _ ih =>
+  | lam𝕔 _ _ ih =>
     simp at *; apply ih; apply Hclosed
   | app₁ _ _ ih1 ih2
   | app₂ _ _ ih1 ih2
