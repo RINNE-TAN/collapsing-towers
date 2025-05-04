@@ -181,7 +181,7 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | lit₂ => constructor
   | lam₁ _ _ _ _ _ _ IHe
   | lam₂ _ _ _ _ _ _ IHe
-  | lam𝕔 _ _ _ _ _ _ IHe => apply open_closed; apply IHe
+  | lam𝕔 _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
@@ -189,7 +189,7 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
-  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closed; apply IH₁
+  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
 theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   by

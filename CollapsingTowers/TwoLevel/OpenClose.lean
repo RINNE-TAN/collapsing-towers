@@ -196,7 +196,64 @@ lemma closedb_inc: ∀ t n n1,
   case code t ih | reflect t ih =>
     apply ih; apply hcl; assumption
 
-lemma open_closed : ∀ t n m,
+lemma subst_closedb_at : ∀ x e v i, closedb_at v i -> closedb_at e i -> closedb_at (subst x v e) i :=
+  by
+  intros x e v i Hv He
+  induction e generalizing i with
+  | bvar => apply He
+  | fvar y =>
+    by_cases HEq : x = y
+    . rw [HEq]; simp; apply Hv
+    . simp; rw [if_neg HEq]; simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH =>
+    apply IH; apply closedb_inc; apply Hv; omega; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hv; apply He.left
+    apply IH₁; apply Hv; apply He.right
+  | lets _ _ IHb IHe
+  | let𝕔 _ _ IHb IHe =>
+    constructor
+    apply IHb; apply Hv; apply He.left
+    apply IHe; apply closedb_inc; apply Hv; omega; apply He.right
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH; apply Hv; apply He
+  | lit₁| lit₂ => simp
+
+lemma subst_closed_at : ∀ x e v y, closed_at v y -> closed_at e y -> closed_at (subst x v e) y :=
+  by
+  intros x e v y Hv He
+  induction e generalizing y with
+  | bvar => apply He
+  | fvar z =>
+    by_cases HEq : x = z
+    . rw [HEq]; simp; apply Hv
+    . simp; rw [if_neg HEq]; apply He
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH =>
+    apply IH; apply Hv; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hv; apply He.left
+    apply IH₁; apply Hv; apply He.right
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH; apply Hv; apply He
+  | lit₁| lit₂ => simp
+
+lemma open_closedb : ∀ t n m,
   closedb_at (opening m (.fvar n) t) m →
   closedb_at t (m + 1) := by
   intros t; induction t <;> intros n m h <;> simp
@@ -222,7 +279,7 @@ lemma open_closed : ∀ t n m,
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
-lemma open_closed': ∀ t n m,
+lemma open_closedb': ∀ t n m,
     closedb_at t (m + 1) → closedb_at (opening m (.fvar n) t) m := by
   intros t; induction t <;> intros n m h <;> simp
   case bvar x =>

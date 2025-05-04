@@ -149,7 +149,7 @@ lemma semType.lam₁: ∀ Γ e τ1 τ2,
   intros Γ e τ1 τ2 hsem hfr Δ hcl henv
   exists (substF Δ (.lam₁ τ1 e));
   constructor; apply stepn.refl
-  have hcl' := open_closed' e (Γ.length) 0 hcl
+  have hcl' := open_closedb' e (Γ.length) 0 hcl
   constructor; apply substF.closedb_at; apply envType.closed; assumption; assumption
   simp; intros v1 hv1 hclv1;
   have henv' := envType.extend Δ Γ v1 τ1 henv hclv1 hv1

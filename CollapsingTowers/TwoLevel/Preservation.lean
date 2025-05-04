@@ -115,6 +115,10 @@ theorem preservation_head𝔼 :
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
 
+theorem preservation_maping :
+    ∀ Γ v e τ𝕒 τ𝕓 τ𝕔, typing (τ𝕔 :: Γ) e τ𝕓 -> typing (τ𝕒 :: Γ) v τ𝕔 -> typing (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
+  admit
+
 theorem preservation_subst :
     ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 := by admit
 
@@ -162,9 +166,9 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
       rw [← map𝕔₀_intro]
       constructor
       simp; rw [open_close_id]
-      admit
-      admit
-      admit
+      apply preservation_maping; apply Hτe; repeat constructor; ; simp
+      apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
+      apply close_closed; apply subst_closed_at; simp; admit
       apply Hclose
   | lam𝕔 =>
     cases Hτ
