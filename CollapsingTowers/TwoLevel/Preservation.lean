@@ -110,8 +110,8 @@ theorem preservation_head𝔼 :
     rw [open_ctx𝔼_map _ _ _ HE]
     apply preservation𝔼; apply HE
     intro; apply preservation_reflect
-    rw [← List.singleton_append]; apply typing_extend; apply Hτb
-    rw [← List.singleton_append]; apply typing_extend; apply Hτr
+    apply typing_extend_single; apply Hτb
+    apply typing_extend_single; apply Hτr
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
 
@@ -137,8 +137,11 @@ theorem preservation_subst :
     by_cases HEq : Γ.length = x
     . rw [HEq]; rw [HEq] at Hbind; simp at *; rw [← Hbind]; apply Hv
     . simp; rw [if_neg HEq]; rw [if_neg HEq] at Hbind; constructor; apply Hbind
-  | lam₁ =>
+  | lam₁ _ _ _ _ _ Hclose IH =>
     constructor
+    rw [subst_closed_id]
+    admit
+    admit
     admit
     admit
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁ =>

@@ -169,6 +169,33 @@ lemma subst_intro : ∀ x e v i, closed_at e x -> subst x v (opening i (.fvar x)
   | lets _ _ ih1 ih2
   | let𝕔 _ _ ih1 ih2 => constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
 
+lemma subst_closed_id : ∀ x e v, closed_at e x -> closed_at v x -> subst x v e = e :=
+  by
+  intros x e v He Hv
+  induction e with
+  | bvar => simp
+  | fvar => simp at *; omega
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH =>
+    simp; apply IH; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply He.left
+    apply IH₁; apply He.right
+  | lets _ _ IHb IHe
+  | let𝕔 _ _ IHb IHe =>
+    simp; constructor
+    apply IHb; apply He.left
+    apply IHe; apply He.right
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH; apply He
+  | lit₁| lit₂ => simp
+
 lemma openSubst_intro : ∀ x e v, closed_at e x -> subst x v (open₀ x e) = open_subst v e :=
   by
   intros _ _ _ Hclosed
