@@ -36,7 +36,7 @@ theorem envType.extend : ∀ Δ Γ v τ,
   apply And.intro
   . apply henv.1
   . intros τ1 x bd; rcases henv with ⟨hlen, h⟩
-    by_cases hx : (x = Γ.length)
+    by_cases hx : Γ.length = x
     . rw [hx] at bd; simp at bd; rw [hlen]; simp [hx]; rw [<- bd];
       apply And.intro; assumption; assumption
     . rw [if_neg hx] at bd; rw [hlen]; rw [if_neg hx]
@@ -114,7 +114,7 @@ lemma substF_opening_comm: ∀ t t1 Δ n, closed_at t Δ.length →
   case fvar x =>
     have h' := indexrSome Δ x h
     rcases h' with ⟨v, hidx⟩; rw [hidx]; simp;
-    have hx : ¬(x = Δ.length) := by simp at h; omega
+    have hx : ¬(Δ.length = x) := by simp at h; omega
     rw [if_neg hx]; simp;
     rw [closedb_opening_id]; apply closedb_inc; apply hc; apply hidx; omega
   case lam₁ t ih

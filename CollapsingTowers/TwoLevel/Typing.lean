@@ -14,7 +14,7 @@ theorem binds_extend : ∀ Γ Δ x τ, binds x τ Γ -> binds x τ (Δ ++ Γ) :=
   | nil => apply Hbinds
   | cons head tails IHtails =>
     simp
-    by_cases Hx : x = tails.length + Γ.length
+    by_cases Hx : tails.length + Γ.length = x
     . have Hx : x < Γ.length := by apply indexrSome'; exists τ
       omega
     . rw [if_neg Hx]; apply IHtails
