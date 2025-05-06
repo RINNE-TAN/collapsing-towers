@@ -522,3 +522,52 @@ theorem map𝕔₀_intro : ∀ x e, closed_at e x -> close₀ x (subst x (.code 
   intro _ _ Hclose
   apply maping𝕔_intro
   apply Hclose
+
+@[simp]
+def shiftl_at (x : ℕ) (n : ℕ) : Expr -> Expr
+  | .bvar i => .bvar i
+  | .fvar y => if x <= y then .fvar (y + n) else .fvar y
+  | .lam₁ τ e => .lam₁ τ (shiftl_at x n e)
+  | .lam₂ τ e => .lam₂ τ (shiftl_at x n e)
+  | .app₁ f arg => .app₁ (shiftl_at x n f) (shiftl_at x n arg)
+  | .app₂ f arg => .app₂ (shiftl_at x n f) (shiftl_at x n arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ n
+  | .plus₁ l r => .plus₁ (shiftl_at x n l) (shiftl_at x n r)
+  | .plus₂ l r => .plus₂ (shiftl_at x n l) (shiftl_at x n r)
+  | .code e => .code (shiftl_at x n e)
+  | .reflect e => .reflect (shiftl_at x n e)
+  | .lam𝕔 τ e => .lam𝕔 τ (shiftl_at x n e)
+  | .lets b e => .lets (shiftl_at x n b) (shiftl_at x n e)
+  | .let𝕔 b e => .let𝕔 (shiftl_at x n b) (shiftl_at x n e)
+
+theorem shiftl_opening :
+    ∀ x y e n i, x <= y -> shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
+  by
+  intros x y e n i HLe
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . rw [HEq]; simp; omega
+    . simp; rw [if_neg HEq]; rw [if_neg HEq]; rfl
+  | fvar z =>
+    by_cases HLe : x <= z
+    . simp; rw [if_pos HLe]; rfl
+    . simp; rw [if_neg HLe]; rfl
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor; apply IH₀; apply IH₁
+  | lit₁| lit₂ => simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH
+
+theorem shiftl_open₀ : ∀ x y e n, x <= y -> shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
+  intros _ _ _ _; apply shiftl_opening

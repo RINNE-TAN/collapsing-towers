@@ -209,6 +209,26 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
   | lit₁| lit₂ => constructor
 
+theorem typing_extend_single_strengthened :
+    ∀ Γ Ψ Δ Φ e τ, typing Γ e τ -> Γ = Ψ ++ Φ -> typing (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
+  by
+  intros Γ Ψ Δ Φ e τ Hτ HEqΓ
+  induction Hτ generalizing Ψ with
+  | lam₁ _ _ _ _ _ Hclose IH
+  | lam₂ _ _ _ _ _ Hclose IH
+  | lam𝕔 _ _ _ _ _ Hclose IH =>
+    rw [HEqΓ] at IH
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀] at IH
+    rw [List.length_append, Nat.add_right_comm] at IH
+    constructor
+    rw [← List.cons_append, ← List.cons_append]
+    rw [List.length_append, List.length_append]
+    apply IH; rfl
+    admit
+    simp
+  | _ => admit
+
 theorem typing_extend_single : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
   by
   admit
