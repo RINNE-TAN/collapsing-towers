@@ -571,3 +571,54 @@ theorem shiftl_opening :
 
 theorem shiftl_open₀ : ∀ x y e n, x <= y -> shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
   intros _ _ _ _; apply shiftl_opening
+
+theorem shiftl_closed_at :
+    ∀ x y e n, closed_at e x -> closed_at (shiftl_at y n e) (x + n) :=
+  by
+  intros x y e n Hclose
+  induction e with
+  | bvar j => simp
+  | fvar z =>
+    by_cases HLe : y <= z
+    . simp; rw [if_pos HLe]; simp; apply Hclose
+    . simp; rw [if_neg HLe]; simp at *; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH; apply Hclose
+
+theorem shiftl_id :
+    ∀ x e n, closed_at e x -> shiftl_at x n e = e :=
+  by
+  intros x e n
+  induction e with
+  | bvar j => simp
+  | fvar y => simp; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    intro Hclose; simp; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH

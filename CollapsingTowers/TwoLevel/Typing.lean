@@ -209,11 +209,18 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
   | lit₁| lit₂ => constructor
 
-theorem typing_extend_single_strengthened :
+theorem typing_extend_strengthened :
     ∀ Γ Ψ Δ Φ e τ, typing Γ e τ -> Γ = Ψ ++ Φ -> typing (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
   by
   intros Γ Ψ Δ Φ e τ Hτ HEqΓ
   induction Hτ generalizing Ψ with
+  | fvar _ x _ Hbind =>
+    rw [HEqΓ] at Hbind
+    by_cases HLe : Φ.length <= x
+    . simp; rw [if_pos HLe]; constructor
+      admit
+    . simp; rw [if_neg HLe]; constructor
+      admit
   | lam₁ _ _ _ _ _ Hclose IH
   | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
@@ -222,20 +229,47 @@ theorem typing_extend_single_strengthened :
     rw [shiftl_open₀] at IH
     rw [List.length_append, Nat.add_right_comm] at IH
     constructor
-    rw [← List.cons_append, ← List.cons_append]
-    rw [List.length_append, List.length_append]
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
     apply IH; rfl
-    admit
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
     simp
-  | _ => admit
-
-theorem typing_extend_single : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
-  by
-  admit
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁
+  | app₂ _ _ _ _ _ _ _ IH₀ IH₁
+  | plus₁ _ _ _ _ _ IH₀ IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HEqΓ
+    apply IH₁; apply HEqΓ
+  | lit₁| lit₂ => constructor
+  | code _ _ _ _ IH
+  | reflect _ _ _ _ IH =>
+    constructor; apply IH; apply HEqΓ
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe
+  | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>
+    rw [HEqΓ] at IHe
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀] at IHe
+    rw [List.length_append, Nat.add_right_comm] at IHe
+    constructor
+    apply IHb; apply HEqΓ
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IHe; rfl
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
+    simp
 
 theorem typing_extend : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
   by
   intros Γ Δ e τ Hτ
-  induction Hτ generalizing Δ with
-  | fvar _ _ _ Hbinds => constructor; apply binds_extend; apply Hbinds
-  | _ => admit
+  rw [← List.nil_append Δ]
+  rw [← shiftl_id _ e]
+  apply typing_extend_strengthened
+  apply Hτ; rfl
+  apply typing_closed; apply Hτ
+
+theorem typing_extend_single : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
+  by
+  intros Γ e τ𝕒
+  rw [← List.singleton_append]
+  apply typing_extend
