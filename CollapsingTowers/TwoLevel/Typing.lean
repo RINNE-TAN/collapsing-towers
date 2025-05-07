@@ -19,6 +19,45 @@ theorem binds_extend : ∀ Γ Δ x τ, binds x τ Γ -> binds x τ (Δ ++ Γ) :=
       omega
     . rw [if_neg Hx]; apply IHtails
 
+theorem binds_extendr : ∀ Γ Δ x τ, binds x τ Γ -> binds (x + Δ.length) τ (Γ ++ Δ) :=
+  by
+  intros Γ Δ x τ
+  induction Γ with
+  | nil => simp
+  | cons head tails IHtails =>
+    simp
+    by_cases HEq : tails.length = x
+    . repeat rw [if_pos HEq]; simp
+    . repeat rw [if_neg HEq]
+      apply IHtails
+
+theorem binds_shrink : ∀ Γ Δ x τ, x < Γ.length -> binds x τ (Δ ++ Γ) -> binds x τ Γ :=
+  by
+  intros Γ Δ x τ HLt
+  induction Δ with
+  | nil => simp
+  | cons head tails IHtails =>
+    intro Hbinds; apply IHtails
+    simp at *
+    have HNe : tails.length + Γ.length ≠ x := by omega
+    rw [if_neg HNe] at Hbinds
+    apply Hbinds
+
+theorem binds_shrinkr : ∀ Γ Δ x τ, binds (x + Δ.length) τ (Γ ++ Δ) -> binds x τ Γ :=
+  by
+  intros Γ Δ x τ
+  induction Γ with
+  | nil =>
+    simp; intro Hindexr
+    have : x + Δ.length < Δ.length := by apply indexrSome'; exists τ
+    omega
+  | cons head tails IHtails =>
+    simp
+    by_cases HEq : tails.length = x
+    . repeat rw [if_pos HEq]; simp
+    . repeat rw [if_neg HEq]
+      apply IHtails
+
 inductive typing : TEnv -> Expr -> Ty -> Prop where
   | fvar : ∀ Γ x τ,
     binds x τ Γ ->
@@ -214,13 +253,19 @@ theorem typing_extend_strengthened :
   by
   intros Γ Ψ Δ Φ e τ Hτ HEqΓ
   induction Hτ generalizing Ψ with
-  | fvar _ x _ Hbind =>
-    rw [HEqΓ] at Hbind
+  | fvar _ x _ Hbinds =>
+    rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
-    . simp; rw [if_pos HLe]; constructor
-      admit
-    . simp; rw [if_neg HLe]; constructor
-      admit
+    . simp only [shiftl_at]; rw [if_pos HLe]; constructor
+      rw [← Nat.add_sub_of_le HLe]
+      rw [← Nat.add_sub_of_le HLe] at Hbinds
+      rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
+      rw [Nat.add_comm] at Hbinds
+      repeat apply binds_extendr
+      apply binds_shrinkr; apply Hbinds
+    . simp only [shiftl_at]; rw [if_neg HLe]; constructor
+      apply binds_extend; apply binds_shrink
+      omega; apply Hbinds
   | lam₁ _ _ _ _ _ Hclose IH
   | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
