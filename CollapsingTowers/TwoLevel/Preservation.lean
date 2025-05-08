@@ -1,4 +1,5 @@
 
+import Mathlib.Tactic
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Typing
@@ -126,8 +127,42 @@ theorem preservation_subst_strengthened :
   by
   intros Γ Δ Φ v e τ𝕒 τ𝕓 Hτe HEqΓ Hτv
   induction Hτe generalizing Δ with
-  | fvar => admit
-  | lam₁ _ _ _ _ _ Hclose IH =>
+  | fvar _ x _ Hbinds =>
+    rw [HEqΓ] at Hbinds
+    cases Hx : compare Φ.length x with
+    | lt =>
+      rw [compare_lt_iff_lt] at Hx
+      simp; rw [if_neg (Nat.ne_of_lt Hx)]
+      simp; rw [if_pos Hx]
+      constructor
+      have Hx : Φ.length <= x - 1 := by omega
+      rw [← Nat.add_sub_of_le Hx, Nat.add_comm]
+      apply binds_extendr
+      rw [← Nat.sub_add_eq, Nat.add_comm]
+      apply binds_shrinkr _ (τ𝕒 :: Φ)
+      rw [List.length_cons, Nat.sub_add_cancel]
+      apply Hbinds; omega
+    | eq =>
+      rw [compare_eq_iff_eq] at Hx
+      rw [← Hx] at Hbinds
+      apply binds_shrink at Hbinds
+      simp at Hbinds; rw [← Hbinds]
+      simp; rw [if_pos Hx]
+      rw [shiftr_id]
+      apply typing_extend; apply Hτv
+      apply closed_inc; apply typing_closed
+      apply Hτv; omega
+      simp
+    | gt =>
+      rw [compare_gt_iff_gt] at Hx
+      simp; rw [if_neg (Nat.ne_of_gt Hx)]
+      simp; rw [if_neg (Nat.not_lt_of_gt Hx)]
+      constructor
+      apply binds_extend; apply binds_shrink
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds
+  | lam₁ _ _ _ _ _ Hclose IH
+  | lam₂ _ _ _ _ _ Hclose IH
+  | lam𝕔 _ _ _ _ _ Hclose IH =>
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
     rw [subst_open₀_comm] at IH
@@ -154,8 +189,15 @@ theorem preservation_subst_strengthened :
 theorem preservation_subst :
     ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 :=
   by
-  intros Γ v e τ𝕒 τ𝕓 Hv
-  admit
+  intros Γ v e τ𝕒 τ𝕓 Hv He
+  have H := preservation_subst_strengthened (τ𝕒 :: Γ) [] Γ v e τ𝕒 τ𝕓
+  simp at H
+  have H := H He Hv
+  rw [shiftr_id] at H
+  apply H
+  apply subst_closed_at
+  apply closed_inc; apply typing_closed; apply Hv; omega
+  rw [← List.length_cons]; apply typing_closed; apply He
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by

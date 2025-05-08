@@ -812,3 +812,27 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x -> closed_at (shiftr_at x e
   | code _ IH
   | reflect _ IH =>
     simp; apply IH; apply Hclose
+
+theorem shiftr_id :
+    ∀ x e, closed_at e (x + 1) -> shiftr_at x e = e :=
+  by
+  intros x e
+  induction e with
+  | bvar j => simp
+  | fvar y => simp; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    intro Hclose; simp; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => simp
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH
