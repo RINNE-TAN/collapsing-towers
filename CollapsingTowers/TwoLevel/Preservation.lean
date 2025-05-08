@@ -163,10 +163,8 @@ theorem preservation_subst_strengthened :
   | lam₁ _ _ _ _ _ Hclose IH
   | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
-    rw [HEqΓ] at IH
-    rw [HEqΓ] at Hclose
-    rw [subst_open₀_comm] at IH
-    rw [shiftr_open₀] at IH
+    rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
+    rw [subst_open₀_comm, shiftr_open₀] at IH
     simp at IH
     constructor
     simp; rw [← List.cons_append]; apply IH; rfl
@@ -184,20 +182,52 @@ theorem preservation_subst_strengthened :
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
-  | _ => admit
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe
+  | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>
+    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
+    rw [subst_open₀_comm, shiftr_open₀] at IHe
+    simp at IHb; simp at IHe
+    constructor
+    apply IHb
+    simp; rw [← List.cons_append]; apply IHe; rfl
+    cases Δ with
+    | nil =>
+      simp at *; apply shiftr_closed_at_id
+      apply subst_closed_at_dec
+      apply typing_closed; apply Hτv
+      apply Hclose
+    | cons =>
+      simp at *; apply shiftr_closed_at; omega
+      apply subst_closed_at
+      apply closed_inc; apply typing_closed; apply Hτv; omega
+      apply Hclose
+    simp; omega
+    simp; omega
+    apply typing_regular; apply Hτv
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁
+  | app₂ _ _ _ _ _ _ _ IH₀ IH₁
+  | plus₁ _ _ _ _ _ IH₀ IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HEqΓ
+    apply IH₁; apply HEqΓ
+  | code _ _ _ _ IH
+  | reflect _ _ _ _ IH =>
+    constructor; apply IH; apply HEqΓ
+  | lit₁| lit₂ => constructor
 
 theorem preservation_subst :
     ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 :=
   by
-  intros Γ v e τ𝕒 τ𝕓 Hv He
+  intros Γ v e τ𝕒 τ𝕓 Hτv Hτe
   have H := preservation_subst_strengthened (τ𝕒 :: Γ) [] Γ v e τ𝕒 τ𝕓
   simp at H
-  have H := H He Hv
+  have H := H Hτe Hτv
   rw [shiftr_id] at H
   apply H
   apply subst_closed_at
-  apply closed_inc; apply typing_closed; apply Hv; omega
-  rw [← List.length_cons]; apply typing_closed; apply He
+  apply closed_inc; apply typing_closed; apply Hτv; omega
+  rw [← List.length_cons]; apply typing_closed; apply Hτe
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
