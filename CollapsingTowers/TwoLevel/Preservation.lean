@@ -138,7 +138,9 @@ theorem preservation_subst_strengthened :
     cases Δ with
     | nil =>
       simp at *; apply shiftr_closed_at_id
-      admit
+      apply subst_closed_at_dec
+      apply typing_closed; apply Hτv
+      apply Hclose
     | cons =>
       simp at *; apply shiftr_closed_at; omega
       apply subst_closed_at

@@ -303,6 +303,33 @@ lemma subst_closed_at : ∀ x e v y, closed_at v y -> closed_at e y -> closed_at
     simp; apply IH; apply Hv; apply He
   | lit₁| lit₂ => simp
 
+lemma subst_closed_at_dec : ∀ x e v, closed_at v x -> closed_at e (x + 1) -> closed_at (subst x v e) x :=
+  by
+  intros x e v Hv He
+  induction e with
+  | bvar => apply He
+  | fvar z =>
+    by_cases HEq : x = z
+    . rw [← HEq]; simp; apply Hv
+    . simp; rw [if_neg HEq]; simp at *; omega
+  | lam₁ _ _ IH
+  | lam₂ _ _ IH
+  | lam𝕔 _ _ IH =>
+    apply IH; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply He.left
+    apply IH₁; apply He.right
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH; apply He
+  | lit₁| lit₂ => simp
+
 lemma open_closedb : ∀ t n m,
   closedb_at (opening m (.fvar n) t) m →
   closedb_at t (m + 1) := by
