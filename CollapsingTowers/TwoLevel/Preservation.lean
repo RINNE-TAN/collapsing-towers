@@ -3,6 +3,98 @@ import Mathlib.Tactic
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Typing
+theorem pick𝔼 :
+    ∀ Γ E e τ𝕓, ctx𝔼 E -> typing Γ (E e) τ𝕓 -> ∃ τ𝕒, typing Γ e τ𝕒 /\ typing (τ𝕒 :: Γ) (E (.fvar Γ.length)) τ𝕓 :=
+  by
+  intros Γ E e τ𝕓 HE Hτ
+  induction HE generalizing τ𝕓 with
+  | hole =>
+    exists τ𝕓; constructor
+    apply Hτ; constructor; simp
+  | cons𝔹 _ _ HB _ IHE =>
+    cases HB with
+    | appl₁ =>
+      cases Hτ with
+      | app₁ _ _ _ _ _ HτX Hτarg =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
+        apply typing_extend_single; apply Hτarg
+    | appr₁ =>
+      cases Hτ with
+      | app₁ _ _ _ _ _ Hτv HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor
+        apply typing_extend_single; apply Hτv
+        apply Hτ𝔼
+    | appl₂ =>
+      cases Hτ with
+      | app₂ _ _ _ _ _ HτX Hτarg =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
+        apply typing_extend_single; apply Hτarg
+    | appr₂ =>
+      cases Hτ with
+      | app₂ _ _ _ _ _ Hτv HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor
+        apply typing_extend_single; apply Hτv
+        apply Hτ𝔼
+    | plusl₁ =>
+      cases Hτ with
+      | plus₁ _ _ _ HτX Hτr =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
+        apply typing_extend_single; apply Hτr
+    | plusr₁ =>
+      cases Hτ with
+      | plus₁ _ _ _ Hτv HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor
+        apply typing_extend_single; apply Hτv
+        apply Hτ𝔼
+    | plusl₂ =>
+      cases Hτ with
+      | plus₂ _ _ _ HτX Hτr =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
+        apply typing_extend_single; apply Hτr
+    | plusr₂ =>
+      cases Hτ with
+      | plus₂ _ _ _ Hτv HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor
+        apply typing_extend_single; apply Hτv
+        apply Hτ𝔼
+    | lets e =>
+      cases Hτ with
+      | lets _ _ _ _ _ Hτe HτX Hclose =>
+        have ⟨τ, Hτe, Hτ𝔼⟩ := IHE _ Hτe
+        exists τ
+        constructor; apply Hτe
+        constructor; apply Hτ𝔼
+        rw [List.length_cons, ← shiftl_id Γ.length e 1, ← shiftl_open₀]
+        rw [← List.singleton_append, List.append_cons]
+        apply typing_extend_strengthened
+        apply HτX; rfl
+        omega; apply Hclose
+        apply closed_inc; apply Hclose; simp
+
 theorem typing𝔹 : ∀ Γ B e τ, ctx𝔹 B -> typing Γ (B e) τ -> ∃ τ, typing Γ e τ :=
   by
   intros Γ B e τ HB
@@ -103,16 +195,12 @@ theorem preservation_head𝔼 :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
   intros _ _ _ _ HE Hlc Hτr
-  have ⟨_, Hτr⟩ := typing𝔼 _ _ _ _ HE Hτr
+  have ⟨_, Hτr, Hτ𝔼⟩ := pick𝔼 _ _ _ _ HE Hτr
   cases Hτr with
   | reflect _ _ τ Hτb =>
-    constructor
-    apply Hτb
+    constructor; apply Hτb
     rw [open_ctx𝔼_map _ _ _ HE]
-    apply preservation𝔼; apply HE
-    intro; apply preservation_reflect
-    apply typing_extend_single; apply Hτb
-    apply typing_extend_single; apply Hτr
+    admit
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
 
