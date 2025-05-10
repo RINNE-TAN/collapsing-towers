@@ -11,8 +11,7 @@ def wf (e : Expr) : Prop := closedb_at e 0 ∧ closed_at e 0
 
 @[simp]
 def valType : Expr → Ty → Prop
-  | .lam₁ τ1' t2, .arrow τ1 τ2 =>
-    τ1' = τ1 →
+  | .lam₁ t2, .arrow τ1 τ2 =>
     ∀ v1, valType v1 τ1 ∧ lc v1 →
     ∃ v2, stepn (open_subst v1 t2) v2 ∧ closedb_at v2 0 ∧ valType v2 τ2
   | .lit₁ _, .nat => true
@@ -59,8 +58,8 @@ def substF (Δ : VEnv) (t : Expr) : Expr :=
     match indexr x Δ with
     | none => t
     | some t' => t'
-  | .lam₁ τ t1 => .lam₁ τ (substF Δ t1)
-  | .lam₂ τ t1 => .lam₂ τ (substF Δ t1)
+  | .lam₁ t1 => .lam₁ (substF Δ t1)
+  | .lam₂ t1 => .lam₂ (substF Δ t1)
   | .app₁ t11 t12 => .app₁ (substF Δ t11) (substF Δ t12)
   | .app₂ t11 t12 => .app₂ (substF Δ t11) (substF Δ t12)
   | .lit₁ _ => t
@@ -69,7 +68,7 @@ def substF (Δ : VEnv) (t : Expr) : Expr :=
   | .plus₂ t1 t2 => .plus₂ (substF Δ t1) (substF Δ t2)
   | .code t1 => .code (substF Δ t1)
   | .reflect t1 => .reflect (substF Δ t1)
-  | .lam𝕔 τ t1 => .lam𝕔 τ (substF Δ t1)
+  | .lam𝕔 t1 => .lam𝕔 (substF Δ t1)
   | .lets t1 t2 => .lets (substF Δ t1) (substF Δ t2)
   | .let𝕔 t1 t2 => .let𝕔 (substF Δ t1) (substF Δ t2)
 
@@ -145,9 +144,9 @@ lemma semType.fvar: ∀ Γ x τ, binds x τ Γ → semType Γ (.fvar x) τ := by
 lemma semType.lam₁: ∀ Γ e τ1 τ2,
   semType (τ1 :: Γ) (open₀ Γ.length e) τ2 →
   closed_at e Γ.length →
-  semType Γ (.lam₁ τ1 e) (.arrow τ1 τ2) := by
+  semType Γ (.lam₁ e) (.arrow τ1 τ2) := by
   intros Γ e τ1 τ2 hsem hfr Δ hcl henv
-  exists (substF Δ (.lam₁ τ1 e));
+  exists (substF Δ (.lam₁ e));
   constructor; apply stepn.refl
   have hcl' := open_closedb' e (Γ.length) 0 hcl
   constructor; apply substF.closedb_at; apply envType.closed; assumption; assumption
@@ -164,7 +163,7 @@ lemma semType.lam₁: ∀ Γ e τ1 τ2,
 lemma semType.lam₂: ∀ Γ e τ1 τ2,
   semType (.rep τ1 :: Γ) (open₀ Γ.length e) τ2 →
   closed_at e Γ.length →
-  semType Γ (.lam₂ (.rep τ) e) (.rep (.arrow τ1 τ2)) := by
+  semType Γ (.lam₂ e) (.rep (.arrow τ1 τ2)) := by
   intros Γ e τ1 τ2 hsem hfr Δ hcl henv
   unfold semType at hsem
   unfold expType at *

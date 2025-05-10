@@ -65,11 +65,11 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lam₁ : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
-    typing Γ (.lam₁ τ𝕒 e) (.arrow τ𝕒 τ𝕓)
+    typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
   | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
     typing (.rep τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
-    typing Γ (.lam₂ (.rep τ𝕒) e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
     typing Γ f (.arrow τ𝕒 τ𝕓) ->
     typing Γ arg τ𝕒 ->
@@ -99,7 +99,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
-    typing Γ (.lam𝕔 τ𝕒 e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
@@ -165,51 +165,6 @@ example : typing [] expr𝕩 (.rep (.arrow .nat .nat)) :=
   by
   rw [expr𝕩, x₀, x₁, x₂]
   repeat constructor
-
-theorem typing_unique : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕒 -> typing Γ e τ𝕓 -> τ𝕒 = τ𝕓 :=
-  by
-  intros Γ e τ𝕒 τ𝕓 Hτ𝕒 Hτ𝕓
-  induction Hτ𝕒 generalizing τ𝕓 with
-  | fvar _ _ _ IHbind =>
-    cases Hτ𝕓
-    next _ Hbind =>
-      apply Option.some.inj
-      rw [← Hbind]; rw [← IHbind]
-  | app₁ _ _ _ _ _ _ _ IHf _ =>
-    cases Hτ𝕓
-    next Hf =>
-      apply And.right; apply Ty.arrow.inj
-      apply IHf; apply Hf
-  | app₂ _ _ _ _ _ _ _ IHf _ =>
-    cases Hτ𝕓
-    next Hf _ =>
-      simp; apply And.right; apply Ty.arrow.inj; apply Ty.rep.inj
-      apply IHf; apply Hf
-  | plus₁| plus₂| lit₁| lit₂ =>
-    cases Hτ𝕓; rfl
-  | lam₁ _ _ _ _ _ _ IHe =>
-    cases Hτ𝕓
-    next He =>
-      simp
-      apply IHe; apply He
-  | lam₂ _ _ _ _ _ _ IHe
-  | lam𝕔 _ _ _ _ _ _ IHe =>
-    cases Hτ𝕓
-    next He =>
-      simp; apply Ty.rep.inj
-      apply IHe; apply He
-  | code _ _ _ _ IHe
-  | reflect _ _ _ _ IHe =>
-    cases Hτ𝕓
-    next He =>
-      simp
-      apply IHe; apply He
-  | lets _ _ _ _ _ _ _ _ IHb IHe
-  | let𝕔 _ _ _ _ _ _ _ _ IHb IHe =>
-    cases Hτ𝕓
-    next Hb _ He =>
-      apply IHe; rw [IHb]
-      apply He; apply Hb
 
 theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   by

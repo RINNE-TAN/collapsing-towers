@@ -8,8 +8,8 @@ inductive Ty : Type where
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
-  | lam₁ (τ : Ty) (e : Expr)
-  | lam₂ (τ : Ty) (e : Expr)
+  | lam₁ (e : Expr)
+  | lam₂ (e : Expr)
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
   | lit₁ (n : ℕ)
@@ -18,7 +18,7 @@ inductive Expr : Type where
   | plus₂ (l : Expr) (r : Expr)
   | code (e : Expr)
   | reflect (e : Expr)
-  | lam𝕔 (τ : Ty) (e : Expr)
+  | lam𝕔 (e : Expr)
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
 

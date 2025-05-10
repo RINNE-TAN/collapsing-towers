@@ -95,29 +95,6 @@ theorem pick𝔼 :
         omega; apply Hclose
         apply closed_inc; apply Hclose; simp
 
-theorem typing𝔹 : ∀ Γ B e τ, ctx𝔹 B -> typing Γ (B e) τ -> ∃ τ, typing Γ e τ :=
-  by
-  intros Γ B e τ HB
-  cases HB
-  all_goals
-    intro Hτ; cases Hτ
-    next H₀ H₁ H₂ =>
-      constructor
-      first
-      | apply H₀
-      | apply H₁
-      | apply H₂
-
-theorem typing𝔼 : ∀ Γ E e τ, ctx𝔼 E -> typing Γ (E e) τ -> ∃ τ, typing Γ e τ :=
-  by
-  intros _ _ _ τ HE
-  induction HE generalizing τ with
-  | hole => intro; exists τ
-  | cons𝔹 _ _ HB HE IH =>
-    intro Hτ
-    have ⟨τ, Hτ⟩ := typing𝔹 _ _ _ _ HB Hτ
-    apply IH; apply Hτ
-
 theorem preservationℝ :
     ∀ Γ R e₀ e₁,
       ctxℝ Γ.length R ->
@@ -167,17 +144,6 @@ theorem preservation𝔹 :
         | apply H₀
         | apply H₁
         | apply H₂
-
-theorem preservation𝔼 :
-    ∀ Γ E e₀ e₁, ctx𝔼 E -> (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> ∀ τ, typing Γ (E e₀) τ -> typing Γ (E e₁) τ :=
-  by
-  intro _ _ _ _ HE HτMap τ Hτe₀
-  induction HE generalizing τ with
-  | hole => apply HτMap; apply Hτe₀
-  | cons𝔹 _ _ HB _ IHM =>
-    simp; apply preservation𝔹
-    apply HB
-    intro _; apply IHM; apply Hτe₀
 
 theorem preservation_maping_strengthened :
     ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
@@ -260,18 +226,6 @@ theorem preservation_maping :
   intros Γ v e τ𝕒 τ𝕓 τ𝕔
   rw [← List.nil_append (τ𝕔 :: Γ), ← List.nil_append (τ𝕒 :: Γ)]
   apply preservation_maping_strengthened
-
-theorem preservation_reflect :
-    ∀ Γ b τ𝕒 τ𝕓,
-      typing (τ𝕒 :: Γ) b τ𝕒 -> typing (τ𝕒 :: Γ) (.reflect b) τ𝕓 -> typing (τ𝕒 :: Γ) (.code (.fvar Γ.length)) τ𝕓 :=
-  by
-  intros Γ b τ𝕒 τ𝕓 Hτb Hτr
-  cases Hτr with
-  | reflect _ _ _ Hτrb =>
-    constructor
-    constructor
-    simp
-    apply typing_unique; apply Hτb; apply Hτrb
 
 theorem preservation_head𝔼 :
     ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
@@ -438,7 +392,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
   | lit₂ => cases Hτ; repeat constructor
   | lam₂ =>
     cases Hτ
-    next Hclose Hτe =>
+    next Hτe Hclose =>
       rw [← map𝕔₀_intro]
       constructor
       simp; rw [open_close_id]
@@ -448,7 +402,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
       apply Hclose
   | lam𝕔 =>
     cases Hτ
-    next Hτe𝕔 =>
+    next Hτe𝕔 _ =>
       cases Hτe𝕔
       next Hclose Hτe =>
         repeat constructor
