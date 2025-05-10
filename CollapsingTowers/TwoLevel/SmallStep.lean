@@ -37,10 +37,19 @@ theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
-  | appl₁ | appl₂ | plusl₁ | plusl₂ | lets =>
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
     constructor; apply He₁; apply He₀.right
-  | appr₁ | appr₂ | plusr₁ | plusr₂ =>
+  | appr₁| appr₂| plusr₁| plusr₂ =>
     constructor; apply He₀.left; apply He₁
+
+theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HB He₀
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    simp; apply subst_closed_id; apply He₀.right
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    simp; apply subst_closed_id; apply He₀.left
 
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
@@ -109,6 +118,18 @@ theorem close_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -
       first
       | apply He₀.left
       | apply He₀.right
+
+theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> subst x v E⟦e₁⟧ = E⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HE He₀
+  induction HE with
+  | hole => simp
+  | cons𝔹 _ E HB _ IH =>
+    simp at *; rw [← IH]; apply subst𝔹
+    apply HB; apply He₀
+    cases HB with
+    | appl₁| appl₂| plusl₁| plusl₂| lets => apply He₀.left
+    | appr₁| appr₂| plusr₁| plusr₂ => apply He₀.right
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by

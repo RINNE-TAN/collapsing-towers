@@ -179,31 +179,6 @@ theorem preservation𝔼 :
     apply HB
     intro _; apply IHM; apply Hτe₀
 
-theorem preservation_reflect :
-    ∀ Γ b τ𝕒 τ𝕓,
-      typing (τ𝕒 :: Γ) b τ𝕒 -> typing (τ𝕒 :: Γ) (.reflect b) τ𝕓 -> typing (τ𝕒 :: Γ) (.code (.fvar Γ.length)) τ𝕓 :=
-  by
-  intros Γ b τ𝕒 τ𝕓 Hτb Hτr
-  cases Hτr with
-  | reflect _ _ _ Hτrb =>
-    constructor
-    constructor
-    simp
-    apply typing_unique; apply Hτb; apply Hτrb
-
-theorem preservation_head𝔼 :
-    ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
-  by
-  intros _ _ _ _ HE Hlc Hτr
-  have ⟨_, Hτr, Hτ𝔼⟩ := pick𝔼 _ _ _ _ HE Hτr
-  cases Hτr with
-  | reflect _ _ τ Hτb =>
-    constructor; apply Hτb
-    rw [open_ctx𝔼_map _ _ _ HE]
-    admit
-    apply close_at𝔼; apply HE
-    apply typing_closed; apply Hτr; constructor
-
 theorem preservation_maping_strengthened :
     ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
       typing (Δ ++ τ𝕔 :: Φ) e τ𝕓 -> typing (Δ ++ τ𝕒 :: Φ) v τ𝕔 -> typing (Δ ++ τ𝕒 :: Φ) (subst Φ.length v e) τ𝕓 :=
@@ -285,6 +260,34 @@ theorem preservation_maping :
   intros Γ v e τ𝕒 τ𝕓 τ𝕔
   rw [← List.nil_append (τ𝕔 :: Γ), ← List.nil_append (τ𝕒 :: Γ)]
   apply preservation_maping_strengthened
+
+theorem preservation_reflect :
+    ∀ Γ b τ𝕒 τ𝕓,
+      typing (τ𝕒 :: Γ) b τ𝕒 -> typing (τ𝕒 :: Γ) (.reflect b) τ𝕓 -> typing (τ𝕒 :: Γ) (.code (.fvar Γ.length)) τ𝕓 :=
+  by
+  intros Γ b τ𝕒 τ𝕓 Hτb Hτr
+  cases Hτr with
+  | reflect _ _ _ Hτrb =>
+    constructor
+    constructor
+    simp
+    apply typing_unique; apply Hτb; apply Hτrb
+
+theorem preservation_head𝔼 :
+    ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
+  by
+  intros Γ E b _ HE Hlc Hτr
+  have ⟨_, Hτr, Hτ𝔼⟩ := pick𝔼 _ _ _ _ HE Hτr
+  cases Hτr with
+  | reflect _ _ τ Hτb =>
+    constructor; apply Hτb
+    rw [open_ctx𝔼_map _ _ _ HE]; simp
+    have Hsubst : .code (.fvar Γ.length) = subst Γ.length (.code (.fvar Γ.length)) (.fvar Γ.length) := by simp
+    rw [Hsubst, ← subst𝔼 E (.reflect b)]
+    apply preservation_maping; apply Hτ𝔼; repeat constructor; ; simp
+    apply HE; apply typing_closed; apply Hτr
+    apply close_at𝔼; apply HE
+    apply typing_closed; apply Hτr; constructor
 
 theorem preservation_subst_strengthened :
     ∀ Γ Δ Φ v e τ𝕒 τ𝕓,
