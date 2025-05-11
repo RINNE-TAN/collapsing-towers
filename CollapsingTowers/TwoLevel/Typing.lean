@@ -1,6 +1,5 @@
 
-import CollapsingTowers.TwoLevel.Basic
-import CollapsingTowers.TwoLevel.OpenClose
+import CollapsingTowers.TwoLevel.Shift
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Env
 @[simp]
