@@ -1,7 +1,7 @@
 
 import Mathlib.Tactic
 import CollapsingTowers.TwoLevel.Typing
-theorem pick𝔼 :
+theorem decompose𝔼 :
     ∀ Γ E e τ𝕓, ctx𝔼 E -> typing Γ (E e) τ𝕓 -> ∃ τ𝕒, typing Γ e τ𝕒 /\ typing (τ𝕒 :: Γ) (E (.fvar Γ.length)) τ𝕓 :=
   by
   intros Γ E e τ𝕓 HE Hτ
@@ -18,7 +18,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
-        apply typing_extend_single; apply Hτarg
+        apply weakening1; apply Hτarg
     | appr₁ =>
       cases Hτ with
       | app₁ _ _ _ _ _ Hτv HτX =>
@@ -26,7 +26,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor
-        apply typing_extend_single; apply Hτv
+        apply weakening1; apply Hτv
         apply Hτ𝔼
     | appl₂ =>
       cases Hτ with
@@ -35,7 +35,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
-        apply typing_extend_single; apply Hτarg
+        apply weakening1; apply Hτarg
     | appr₂ =>
       cases Hτ with
       | app₂ _ _ _ _ _ Hτv HτX =>
@@ -43,7 +43,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor
-        apply typing_extend_single; apply Hτv
+        apply weakening1; apply Hτv
         apply Hτ𝔼
     | plusl₁ =>
       cases Hτ with
@@ -52,7 +52,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
-        apply typing_extend_single; apply Hτr
+        apply weakening1; apply Hτr
     | plusr₁ =>
       cases Hτ with
       | plus₁ _ _ _ Hτv HτX =>
@@ -60,7 +60,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor
-        apply typing_extend_single; apply Hτv
+        apply weakening1; apply Hτv
         apply Hτ𝔼
     | plusl₂ =>
       cases Hτ with
@@ -69,7 +69,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
-        apply typing_extend_single; apply Hτr
+        apply weakening1; apply Hτr
     | plusr₂ =>
       cases Hτ with
       | plus₂ _ _ _ Hτv HτX =>
@@ -77,7 +77,7 @@ theorem pick𝔼 :
         exists τ
         constructor; apply HτX
         constructor
-        apply typing_extend_single; apply Hτv
+        apply weakening1; apply Hτv
         apply Hτ𝔼
     | lets e =>
       cases Hτ with
@@ -88,16 +88,17 @@ theorem pick𝔼 :
         constructor; apply Hτ𝔼
         rw [List.length_cons, ← shiftl_id Γ.length e 1, ← shiftl_open₀]
         rw [← List.singleton_append, List.append_cons]
-        apply typing_extend_strengthened
+        apply weakening_strengthened
         apply HτX; rfl
         omega; apply Hclose
         apply closed_inc; apply Hclose; simp
 
 theorem preservationℝ :
-    ∀ Γ R e₀ e₁,
-      ctxℝ Γ.length R ->
-        lc e₀ ->
-          (∀ τ𝕒 τ𝕓, typing (τ𝕒 :: Γ) e₀ τ𝕓 -> typing (τ𝕒 :: Γ) e₁ τ𝕓) -> ∀ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ :=
+  ∀ Γ R e₀ e₁,
+  ctxℝ Γ.length R ->
+  lc e₀ ->
+  (∀ τ𝕒 τ𝕓, typing (τ𝕒 :: Γ) e₀ τ𝕓 -> typing (τ𝕒 :: Γ) e₁ τ𝕓) ->
+  ∀ τ, typing Γ (R e₀) τ -> typing Γ (R e₁) τ :=
   by
   intro Γ _ e₀ e₁ HR Hlc HτMap _ Hτe₀
   cases HR with
@@ -128,7 +129,9 @@ theorem preservationℝ :
       apply typing_closed _ _ _ Hτe₁
 
 theorem preservation𝔹 :
-    ∀ Γ B e₀ e₁, ctx𝔹 B -> (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) -> ∀ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ :=
+  ∀ Γ B e₀ e₁, ctx𝔹 B ->
+  (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) ->
+  ∀ τ, typing Γ (B e₀) τ -> typing Γ (B e₁) τ :=
   by
   intro _ _ _ _ HB HτMap _ Hτe₀
   cases HB
@@ -144,8 +147,10 @@ theorem preservation𝔹 :
         | apply H₂
 
 theorem preservation_maping_strengthened :
-    ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
-      typing (Δ ++ τ𝕔 :: Φ) e τ𝕓 -> typing (Δ ++ τ𝕒 :: Φ) v τ𝕔 -> typing (Δ ++ τ𝕒 :: Φ) (subst Φ.length v e) τ𝕓 :=
+  ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
+  typing (Δ ++ τ𝕔 :: Φ) e τ𝕓 ->
+  typing (Δ ++ τ𝕒 :: Φ) v τ𝕔 ->
+  typing (Δ ++ τ𝕒 :: Φ) (subst Φ.length v e) τ𝕓 :=
   by
   intros Δ Φ v e τ𝕒 τ𝕓 τ𝕔
   generalize HEqΓ : Δ ++ τ𝕔 :: Φ = Γ
@@ -186,7 +191,7 @@ theorem preservation_maping_strengthened :
     constructor
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
-    apply typing_extend_single; apply Hτv
+    apply weakening1; apply Hτv
     apply subst_closed_at
     apply typing_closed; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -201,7 +206,7 @@ theorem preservation_maping_strengthened :
     apply IHb; rfl; apply Hτv
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IHe; rfl
-    apply typing_extend_single; apply Hτv
+    apply weakening1; apply Hτv
     apply subst_closed_at
     apply typing_closed; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -220,16 +225,21 @@ theorem preservation_maping_strengthened :
   | lit₁| lit₂ => constructor
 
 theorem preservation_maping :
-    ∀ Γ v e τ𝕒 τ𝕓 τ𝕔, typing (τ𝕔 :: Γ) e τ𝕓 -> typing (τ𝕒 :: Γ) v τ𝕔 -> typing (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
+  ∀ Γ v e τ𝕒 τ𝕓 τ𝕔,
+  typing (τ𝕔 :: Γ) e τ𝕓 ->
+  typing (τ𝕒 :: Γ) v τ𝕔 ->
+  typing (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
   intros Γ v e τ𝕒 τ𝕓 τ𝕔
   rw [← List.nil_append (τ𝕔 :: Γ), ← List.nil_append (τ𝕒 :: Γ)]
   apply preservation_maping_strengthened
 
 theorem preservation_head𝔼 :
-    ∀ Γ E b τ, ctx𝔼 E -> lc b -> typing Γ (E (.reflect b)) τ -> typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
+  ∀ Γ E b τ, ctx𝔼 E -> lc b ->
+  typing Γ (E (.reflect b)) τ ->
+  typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
   intros Γ E b _ HE Hlc Hτr
-  have ⟨_, Hτr, Hτ𝔼⟩ := pick𝔼 _ _ _ _ HE Hτr
+  have ⟨_, Hτr, Hτ𝔼⟩ := decompose𝔼 _ _ _ _ HE Hτr
   cases Hτr with
   | reflect _ _ τ Hτb =>
     constructor; apply Hτb
@@ -242,9 +252,11 @@ theorem preservation_head𝔼 :
     apply typing_closed; apply Hτr; constructor
 
 theorem preservation_subst_strengthened :
-    ∀ Γ Δ Φ v e τ𝕒 τ𝕓,
-      typing Γ e τ𝕓 ->
-        Γ = Δ ++ τ𝕒 :: Φ -> typing Φ v τ𝕒 -> typing (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 :=
+  ∀ Γ Δ Φ v e τ𝕒 τ𝕓,
+  typing Γ e τ𝕓 ->
+  Γ = Δ ++ τ𝕒 :: Φ ->
+  typing Φ v τ𝕒 ->
+  typing (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 :=
   by
   intros Γ Δ Φ v e τ𝕒 τ𝕓 Hτe HEqΓ Hτv
   induction Hτe generalizing Δ with
@@ -270,7 +282,7 @@ theorem preservation_subst_strengthened :
       simp at Hbinds; rw [← Hbinds]
       simp; rw [if_pos Hx]
       rw [shiftr_id]
-      apply typing_extend; apply Hτv
+      apply weakening; apply Hτv
       apply closed_inc; apply typing_closed
       apply Hτv; omega
       simp

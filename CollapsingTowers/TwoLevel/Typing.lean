@@ -202,7 +202,7 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
   | lit₁| lit₂ => constructor
 
-theorem typing_extend_strengthened :
+theorem weakening_strengthened:
     ∀ Γ Ψ Δ Φ e τ, typing Γ e τ -> Γ = Ψ ++ Φ -> typing (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
   by
   intros Γ Ψ Δ Φ e τ Hτ HEqΓ
@@ -258,17 +258,17 @@ theorem typing_extend_strengthened :
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
     simp
 
-theorem typing_extend : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
+theorem weakening : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
   by
   intros Γ Δ e τ Hτ
   rw [← List.nil_append Δ]
   rw [← shiftl_id _ e]
-  apply typing_extend_strengthened
+  apply weakening_strengthened
   apply Hτ; rfl
   apply typing_closed; apply Hτ
 
-theorem typing_extend_single : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
+theorem weakening1 : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
   by
   intros Γ e τ𝕒
   rw [← List.singleton_append]
-  apply typing_extend
+  apply weakening
