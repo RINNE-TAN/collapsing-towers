@@ -443,13 +443,11 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
   | reflect P E e HP HE Hlc =>
+    generalize HPQ : ℙℚ.ℙ = PQ
+    simp at HP; rw [HPQ] at HP
+    clear HPQ
     induction HP generalizing τ Γ with
     | hole => apply preservation_head𝔼; apply HE; apply Hlc
-    | holeℝ _ HR =>
-      apply preservationℝ
-      rw [HEqlvl]; apply HR
-      apply lc_ctx𝔼; apply HE; apply Hlc
-      intros _ _; apply preservation_head𝔼; apply HE; apply Hlc
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB

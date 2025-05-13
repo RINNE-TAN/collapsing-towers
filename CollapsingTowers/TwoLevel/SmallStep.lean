@@ -140,18 +140,25 @@ theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open
     simp at *; rw [← IH]
     apply open_ctx𝔹_map; apply HB
 
-inductive ctxℙ : ℕ -> Ctx -> Prop where
-  | hole : ctxℙ 0 id
-  | holeℝ : ∀ R, ctxℝ lvl R -> ctxℙ lvl R
-  | cons𝔹 : ∀ B P, ctx𝔹 B -> ctxℙ (lvl + 1) P -> ctxℙ (lvl + 1) (B ∘ P)
-  | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙ (lvl + 1) P -> ctxℙ lvl (R ∘ P)
+inductive ℙℚ : Type where
+  | ℙ
+  | ℚ
+
+inductive ctxℙℚ : ℙℚ -> ℕ -> Ctx -> Prop where
+  | hole : ctxℙℚ .ℙ lvl id
+  | cons𝔹 : ∀ B PQ, ctx𝔹 B -> ctxℙℚ .ℚ lvl PQ -> ctxℙℚ flag lvl (B ∘ PQ)
+  | consℝ : ∀ R PQ, ctxℝ lvl R -> ctxℙℚ .ℙ (lvl + 1) PQ -> ctxℙℚ flag lvl (R ∘ PQ)
+
+@[simp]
+def ctxℙ : ℕ -> Ctx -> Prop := ctxℙℚ .ℙ
 
 theorem lc_ctxℙ : ∀ P e n, ctxℙ n P -> lc e -> lc P⟦e⟧ :=
   by
-  intros _ _ _ HM Hlc
-  induction HM with
+  simp; generalize HPQ : ℙℚ.ℙ = PQ
+  clear HPQ
+  intros _ _ _ HP Hlc
+  induction HP with
   | hole => apply Hlc
-  | holeℝ _ HR => apply lc_ctxℝ; apply HR; apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 
@@ -249,7 +256,7 @@ example : step expr₁ expr₂ := by
 example : step expr₂ expr₃ := by
   rw [expr₂]
   rw [expr₃]
-  apply step_lvl.reflect _ _ _ (ctxℙ.holeℝ _ ctxℝ.lam𝕔) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  apply step_lvl.reflect _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 ctxℙℚ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
   repeat constructor
 
 example : step expr₃ expr₄ := by
@@ -261,7 +268,7 @@ example : step expr₃ expr₄ := by
 example : step expr₄ expr₅ := by
   rw [expr₄]
   rw [expr₅]
-  apply step_lvl.reflect _ _ _ (ctxℙ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙ.holeℝ _ (ctxℝ.let𝕔 _ _))) ctx𝔼.hole
+  apply step_lvl.reflect _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙℚ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙℚ.hole)) ctx𝔼.hole
   repeat constructor
 
 example : step expr₅ expr₆ := by
@@ -289,7 +296,7 @@ example : step expr₇ expr₈ := by
 example : step expr₈ expr₉ := by
   rw [expr₈]
   rw [expr₉]
-  apply step_lvl.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
+  apply step_lvl.reflect _ _ _ ctxℙℚ.hole ctx𝔼.hole
   repeat constructor
 
 example : step expr₉ expr𝕩 := by

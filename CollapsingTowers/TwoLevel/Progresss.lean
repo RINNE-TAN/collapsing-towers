@@ -30,7 +30,7 @@ theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R -> step_lvl (lvl + 1) e₀ e
   | reflect P _ _ HP HE Hlc =>
     repeat rw [ctx_comp R P]
     apply step_lvl.reflect
-    apply ctxℙ.consℝ; apply HR; apply HP
+    apply ctxℙℚ.consℝ; apply HR; apply HP
     apply HE; apply Hlc
 
 theorem progress_rep :
