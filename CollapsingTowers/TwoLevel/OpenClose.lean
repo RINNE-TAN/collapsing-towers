@@ -483,6 +483,34 @@ lemma open_close_id : ∀ i e x, closedb_at e i -> opening i (.fvar x) (closing 
 
 lemma open_close_id₀ : ∀ e x, lc e -> open₀ x (close₀ x e) = e := by apply open_close_id
 
+lemma close_open_id : ∀ i e x, closed_at e x -> closing i x (opening i (.fvar x) e) = e :=
+  by
+  intros i e x Hclose
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp; rw [if_pos HEq]; simp; omega
+    . simp; rw [if_neg HEq]; simp
+  | fvar y => simp at *; omega
+  | lam₁ _ IHe
+  | lam₂ _ IHe
+  | lam𝕔 _ IHe
+  | code _ IHe
+  | reflect _ IHe =>
+    simp; apply IHe; apply Hclose
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| lit₂ => rfl
+
+lemma close_open_id₀ : ∀ e x, closed_at e x -> close₀ x (open₀ x e) = e := by apply close_open_id
+
 lemma subst_opening_comm :
     ∀ x y e v i, x ≠ y -> closedb_at v i -> subst x v (opening i (.fvar y) e) = opening i (.fvar y) (subst x v e) :=
   by

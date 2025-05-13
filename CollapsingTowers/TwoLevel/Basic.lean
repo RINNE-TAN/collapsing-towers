@@ -5,6 +5,22 @@ inductive Ty : Type where
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
   | rep (τ : Ty)
 
+@[simp]
+def wf₁ : Ty -> Prop
+  | .nat => true
+  | .arrow τ𝕒 τ𝕓 => wf₁ τ𝕒 /\ wf₁ τ𝕓
+  | .rep _ => false
+
+@[simp]
+def wf₂ : Ty -> Prop
+  | .nat => false
+  | .arrow τ𝕒 τ𝕓 => wf₂ τ𝕒 \/ wf₂ τ𝕓
+  | .rep τ => wf₁ τ
+
+@[simp]
+def wf (τ : Ty) : Prop :=
+  wf₁ τ \/ wf₂ τ
+
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
