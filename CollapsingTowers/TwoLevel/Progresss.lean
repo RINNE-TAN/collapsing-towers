@@ -58,7 +58,7 @@ theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R -> step_lvl (lvl + 1) e₀ e
     apply HE; apply Hlc
 
 theorem progress_rep :
-    ∀ Γ e₀ τ, typing Γ e₀ τ -> env_wfty₁ Γ -> wfty₂ τ -> (∃ e₁, e₀ = .code e₁) \/ (∃ e₁, step_lvl Γ.length e₀ e₁) :=
+    ∀ Γ e₀ τ, typing Γ e₀ τ -> env_wfty₁ Γ -> wfty₂ τ -> value e₀ \/ (∃ e₁, step_lvl Γ.length e₀ e₁) :=
   by
   intros Γ e₀ τ
   intros Hτ HwftyΓ Hwfty
@@ -71,19 +71,10 @@ theorem progress_rep :
     apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
     simp; apply open_closedb; apply typing_regular; apply Hτe
     apply head𝕄.lam₂
-  | app₁ _ _ _ _ _ Hf Harg IHf _ =>
+  | app₁ _ _ _ _ _ Hf Harg IHf IHarg =>
     right
     simp at IHf
-    cases IHf HwftyΓ (Or.inr Hwfty) with
-    | inl Hcode =>
-      have ⟨_, Hcode⟩ := Hcode
-      rw [Hcode] at Hf
-      nomatch Hf
-    | inr Hstep =>
-      have ⟨_, Hstep⟩ := Hstep
-      apply step𝔹 _ _ _ _ (ctx𝔹.appl₁ _ _)
-      apply Hstep
-      apply typing_regular; apply Harg
+    admit
   | app₂ _ _ _ _ _ Hf Harg IHf IHarg =>
     right
     simp at IHf IHarg
@@ -93,15 +84,10 @@ theorem progress_rep :
     rw [← close_open_id₀ e Γ.length]
     generalize HEqe : open₀ Γ.length e = e𝕠
     rw [HEqe] at IH Hτe
-    simp at IH
+    simp at IH Hwfty
     cases IH Hwfty.left HwftyΓ Hwfty.right with
-    | inl Hcode =>
-      have ⟨_, Hcode⟩ := Hcode
-      constructor
-      apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
-      simp; apply close_closedb; omega
-      apply closedb_inc; apply typing_regular; apply Hτe; omega
-      rw [Hcode]; apply head𝕄.lam𝕔
+    | inl Hvalue =>
+      admit
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor
