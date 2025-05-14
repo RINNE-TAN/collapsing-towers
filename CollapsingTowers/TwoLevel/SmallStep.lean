@@ -6,6 +6,10 @@ import CollapsingTowers.TwoLevel.Env
 abbrev Ctx :=
   Expr -> Expr
 
+theorem ctx_comp : (f g : Ctx) -> ∀ e, f (g e) = (f ∘ g) e := by simp
+
+theorem ctx_swap : (f : Ctx) -> ∀ e, f (id e) = id (f e) := by simp
+
 notation:max a "⟦" b "⟧" => a b
 
 inductive ctx𝔹 : Ctx -> Prop where
@@ -176,6 +180,54 @@ inductive head𝕄 : Expr -> Expr -> Prop where
 inductive step_lvl (lvl: ℕ) : Expr -> Expr -> Prop where
   | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl M⟦e₀⟧ M⟦e₁⟧
   | reflect : ∀ P E b, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+
+theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B -> step_lvl lvl e₀ e₁ -> ∃ e₂, step_lvl lvl (B e₀) e₂ :=
+  by
+  intros lvl B e₀ e₁ HB Hstep
+  cases Hstep with
+  | step𝕄 M _ _ HM Hlc Hhead =>
+    rw [ctx_comp B M]
+    constructor; apply step_lvl.step𝕄
+    apply ctx𝕄.cons𝔹; apply HB; apply HM
+    apply Hlc; apply Hhead
+  | reflect P E _ HP HE Hlc =>
+    cases HP with
+    | hole =>
+      constructor
+      rw [ctx_swap B, ctx_comp B E]
+      apply step_lvl.reflect
+      apply ctxℙℚ.hole
+      apply ctx𝔼.cons𝔹
+      apply HB; apply HE; apply Hlc
+    | cons𝔹 _ _ IHB HPQ =>
+      constructor
+      rw [ctx_comp B]
+      apply step_lvl.reflect
+      apply ctxℙℚ.cons𝔹; apply HB
+      apply ctxℙℚ.cons𝔹; apply IHB
+      apply HPQ; apply HE; apply Hlc
+    | consℝ _ _ HR HPQ =>
+      constructor
+      rw [ctx_comp B]
+      apply step_lvl.reflect
+      apply ctxℙℚ.cons𝔹; apply HB
+      apply ctxℙℚ.consℝ; apply HR
+      apply HPQ; apply HE; apply Hlc
+
+theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R -> step_lvl (lvl + 1) e₀ e₁ -> step_lvl lvl (R e₀) (R e₁) :=
+  by
+  intros lvl R e₀ e₁ HR Hstep
+  cases Hstep with
+  | step𝕄 M _ _ HM Hlc Hhead =>
+    repeat rw [ctx_comp R M]
+    apply step_lvl.step𝕄
+    apply ctx𝕄.consℝ; apply HR; apply HM
+    apply Hlc; apply Hhead
+  | reflect P _ _ HP HE Hlc =>
+    repeat rw [ctx_comp R P]
+    apply step_lvl.reflect
+    apply ctxℙℚ.consℝ; apply HR; apply HP
+    apply HE; apply Hlc
 
 @[simp]
 def step : Expr -> Expr -> Prop := step_lvl 0
