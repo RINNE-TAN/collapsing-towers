@@ -5,23 +5,6 @@ inductive Ty : Type where
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
   | rep (τ : Ty)
 
-@[simp]
-def wfty₁ : Ty -> Prop
-  | .nat => true
-  | .arrow τ𝕒 τ𝕓 => wfty₁ τ𝕒 /\ wfty₁ τ𝕓
-  | .rep _ => false
-
-mutual
-  @[simp]
-  def wfty₂ : Ty -> Prop
-    | .nat => false
-    | .arrow τ𝕒 τ𝕓 => (wfty₂ τ𝕒 /\ wfty τ𝕓) \/ (wfty τ𝕒 /\ wfty₂ τ𝕓)
-    | .rep τ => wfty₁ τ
-  @[simp]
-  def wfty (τ : Ty) : Prop :=
-    wfty₁ τ \/ wfty₂ τ
-end
-
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
@@ -38,6 +21,24 @@ inductive Expr : Type where
   | lam𝕔 (e : Expr)
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
+
+@[simp]
+def user_def : Expr -> Prop
+  | .bvar _ => true
+  | .lam₁ e => user_def e
+  | .lam₂ e => user_def e
+  | .app₁ f arg => user_def f ∧ user_def arg
+  | .app₂ f arg => user_def f ∧ user_def arg
+  | .lit₁ _ => true
+  | .lit₂ n => user_def n
+  | .plus₁ l r => user_def l ∧ user_def r
+  | .plus₂ l r => user_def l ∧ user_def r
+  | .lets b e => user_def b ∧ user_def e
+  | .fvar _ => false
+  | .code _ => false
+  | .reflect _ => false
+  | .lam𝕔 _ => false
+  | .let𝕔 _ _ => false
 
 abbrev TEnv :=
   List Ty

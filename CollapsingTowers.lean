@@ -4,6 +4,7 @@ import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.Env
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Shift
+import CollapsingTowers.TwoLevel.Neutral
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Typing
 import CollapsingTowers.TwoLevel.Progresss
