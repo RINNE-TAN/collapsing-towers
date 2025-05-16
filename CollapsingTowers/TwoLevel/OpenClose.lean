@@ -24,7 +24,7 @@ def opening (i : ℕ) (x : Expr) : Expr -> Expr
   | .bvar j => if j = i then x else .bvar j
   | .fvar x => .fvar x
   | .lam₁ e => .lam₁ (opening (i + 1) x e)
-  | .lam₂ e => .lam₂ (opening (i + 1) x e)
+  | .lam₂ e => .lam₂ (opening i x e)
   | .app₁ f arg => .app₁ (opening i x f) (opening i x arg)
   | .app₂ f arg => .app₂ (opening i x f) (opening i x arg)
   | .lit₁ n => .lit₁ n
@@ -50,7 +50,7 @@ def closing (i : ℕ) (x : ℕ) : Expr -> Expr
   | .bvar j => .bvar j
   | .fvar y => if x == y then .bvar i else .fvar y
   | .lam₁ e => .lam₁ (closing (i + 1) x e)
-  | .lam₂ e => .lam₂ (closing (i + 1) x e)
+  | .lam₂ e => .lam₂ (closing i x e)
   | .app₁ f arg => .app₁ (closing i x f) (closing i x arg)
   | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
   | .lit₁ n => .lit₁ n
@@ -94,7 +94,7 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .bvar x => x < b
   | .fvar _ => true
   | .lam₁ e => closedb_at e (b + 1)
-  | .lam₂ e => closedb_at e (b + 1)
+  | .lam₂ e => closedb_at e b
   | .app₁ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .app₂ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .lit₁ _ => true
@@ -317,13 +317,13 @@ lemma open_closedb : ∀ t n m,
     . by_cases hx': (x < m)
       . omega;
       . simp at h; rw [if_neg hx] at h; simp at h; omega
-  case lam₁ t ih
-     | lam₂ t ih =>
+  case lam₁ t ih =>
     apply ih n (m + 1); simp at h; assumption
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih
-     | lit₂ _ ih =>
+     | lit₂ _ ih
+     | lam₂ t ih =>
     simp at *; apply ih; apply h
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -341,13 +341,13 @@ lemma open_closedb': ∀ t n m,
     by_cases hx: (x = m)
     . simp [hx]
     . rw [if_neg hx]; simp at h; simp; omega
-  case lam₁ t ih
-     | lam₂ t ih =>
+  case lam₁ t ih =>
     apply ih n (m + 1); simp at h; assumption
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih
-     | lit₂ _ ih =>
+     | lit₂ _ ih
+     | lam₂ t ih =>
     simp at *; apply ih; apply h
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -566,7 +566,7 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
   | .fvar x => .fvar x
   | .lam₁ e => .lam₁ (maping𝕔 e (i + 1))
-  | .lam₂ e => .lam₂ (maping𝕔 e (i + 1))
+  | .lam₂ e => .lam₂ (maping𝕔 e i)
   | .app₁ f arg => .app₁ (maping𝕔 f i) (maping𝕔 arg i)
   | .app₂ f arg => .app₂ (maping𝕔 f i) (maping𝕔 arg i)
   | .lit₁ n => .lit₁ n

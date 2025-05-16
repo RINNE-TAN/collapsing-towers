@@ -163,16 +163,11 @@ lemma semType.lam₁: ∀ Γ e τ1 τ2,
   . assumption
 
 lemma semType.lam₂: ∀ Γ e τ1 τ2,
-  semType (.rep τ1 :: Γ) (open₀ Γ.length e) τ2 →
-  closed_at e Γ.length →
+  semType Γ e (.arrow (.rep τ1) (.rep τ2)) →
   semType Γ (.lam₂ e) (.rep (.arrow τ1 τ2)) := by
-  intros Γ e τ1 τ2 hsem hfr Δ hcl henv
+  intros Γ e τ1 τ2 hsem Δ hcl henv
   unfold semType at hsem
   unfold expType at *
-  have var : Expr := (.code (.bvar 0))
-  have Δ' : VEnv := var::Δ
-  have Γ' : TEnv := τ1.rep :: Γ
-  have henv' := envType.extend Δ Γ var (.rep τ1) henv (sorry)
   sorry
 
 lemma semType.app₁: ∀ Γ f t τ1 τ2,

@@ -99,6 +99,13 @@ theorem decompose𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
+    | lam₂ =>
+      cases Hτ with
+      | lam₂ _ _ _ _ HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
 
 theorem preservationℝ :
   ∀ Γ R e₀ e₁,
@@ -191,7 +198,6 @@ theorem preservation_maping_strengthened :
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds
   | lam₁ _ _ _ _ _ Hclose IH
-  | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IH
@@ -228,7 +234,8 @@ theorem preservation_maping_strengthened :
     apply IH₁; apply HEqΓ; apply Hτv
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH =>
+  | lit₂ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ; apply Hτv
   | lit₁ => constructor
 
@@ -302,7 +309,6 @@ theorem preservation_subst_strengthened :
       apply binds_extend; apply binds_shrink
       omega; rw [List.append_cons] at Hbinds; apply Hbinds
   | lam₁ _ _ _ _ _ Hclose IH
-  | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀] at IH
@@ -354,7 +360,8 @@ theorem preservation_subst_strengthened :
     apply IH₁; apply HEqΓ
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH =>
+  | lit₂ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
 
@@ -411,14 +418,16 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
   | lit₂ => cases Hτ; repeat constructor
   | lam₂ =>
     cases Hτ
-    next Hτe Hclose =>
-      rw [← map𝕔₀_intro]
-      constructor
-      simp; rw [open_close_id]
-      apply preservation_maping; apply Hτe; repeat constructor; ; simp
-      apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
-      apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
-      apply Hclose
+    next Hτ =>
+      cases Hτ
+      next Hclose Hτe =>
+        rw [← map𝕔₀_intro]
+        constructor
+        simp; rw [open_close_id]
+        apply preservation_maping; apply Hτe; repeat constructor; ; simp
+        apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
+        apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
+        apply Hclose
   | lam𝕔 =>
     cases Hτ
     next Hτe𝕔 _ =>

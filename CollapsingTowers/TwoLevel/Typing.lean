@@ -66,8 +66,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     closed_at e Γ.length ->
     typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
   | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
-    typing (.rep τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
-    closed_at e Γ.length ->
+    typing Γ e (.arrow (.rep τ𝕒) (.rep τ𝕓)) ->
     typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
     typing Γ f (.arrow τ𝕒 τ𝕓) ->
@@ -173,7 +172,6 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | fvar
   | lit₁=> constructor
   | lam₁ _ _ _ _ _ _ IHe
-  | lam₂ _ _ _ _ _ _ IHe
   | lam𝕔 _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
@@ -181,7 +179,8 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH => apply IH
+  | lit₂ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
@@ -223,7 +222,6 @@ theorem weakening_strengthened:
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds
   | lam₁ _ _ _ _ _ Hclose IH
-  | lam₂ _ _ _ _ _ Hclose IH
   | lam𝕔 _ _ _ _ _ Hclose IH =>
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
@@ -245,7 +243,8 @@ theorem weakening_strengthened:
   | lit₁ => constructor
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH =>
+  | lit₂ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lets _ _ _ _ _ _ _ Hclose IHb IHe
   | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>

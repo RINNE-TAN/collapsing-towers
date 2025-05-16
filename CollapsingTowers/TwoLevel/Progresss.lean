@@ -28,7 +28,7 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing Γ e₀ τ -> closed_at_c
     right
     simp at Hclose
     admit
-  | lam₂ _ _ _ _ Hτe Hclose IH =>
+  | lam₂ _ _ _ _ Hτe IH =>
     right
     admit
   | _ => admit
