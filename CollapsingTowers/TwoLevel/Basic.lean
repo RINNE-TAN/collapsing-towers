@@ -30,7 +30,7 @@ inductive Expr : Type where
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
   | lit₁ (n : ℕ)
-  | lit₂ (n : ℕ)
+  | lit₂ (n : Expr)
   | plus₁ (l : Expr) (r : Expr)
   | plus₂ (l : Expr) (r : Expr)
   | code (e : Expr)

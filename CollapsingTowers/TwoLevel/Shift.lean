@@ -11,7 +11,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr -> Expr
   | .app₁ f arg => .app₁ (shiftl_at x n f) (shiftl_at x n arg)
   | .app₂ f arg => .app₂ (shiftl_at x n f) (shiftl_at x n arg)
   | .lit₁ n => .lit₁ n
-  | .lit₂ n => .lit₂ n
+  | .lit₂ e => .lit₂ (shiftl_at x n e)
   | .plus₁ l r => .plus₁ (shiftl_at x n l) (shiftl_at x n r)
   | .plus₂ l r => .plus₂ (shiftl_at x n l) (shiftl_at x n r)
   | .code e => .code (shiftl_at x n e)
@@ -40,12 +40,13 @@ theorem shiftl_opening :
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH
 
 theorem shiftl_open₀ : ∀ x y e n, x <= y -> shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
@@ -70,12 +71,13 @@ theorem shiftl_closed_at :
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftl_id :
@@ -94,12 +96,13 @@ theorem shiftl_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH
 
 @[simp]
@@ -111,7 +114,7 @@ def shiftr_at (x : ℕ) : Expr -> Expr
   | .app₁ f arg => .app₁ (shiftr_at x f) (shiftr_at x arg)
   | .app₂ f arg => .app₂ (shiftr_at x f) (shiftr_at x arg)
   | .lit₁ n => .lit₁ n
-  | .lit₂ n => .lit₂ n
+  | .lit₂ n => .lit₂ (shiftr_at x n)
   | .plus₁ l r => .plus₁ (shiftr_at x l) (shiftr_at x r)
   | .plus₂ l r => .plus₂ (shiftr_at x l) (shiftr_at x r)
   | .code e => .code (shiftr_at x e)
@@ -140,12 +143,13 @@ theorem shiftr_opening :
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH
 
 theorem shiftr_open₀ : ∀ x y e, x < y -> shiftr_at x (open₀ y e) = open₀ (y - 1) (shiftr_at x e) :=
@@ -171,12 +175,13 @@ theorem shiftr_closed_at : ∀ x y e, y < x -> closed_at e (x + 1) -> closed_at 
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_closed_at_id : ∀ x e, closed_at e x -> closed_at (shiftr_at x e) x :=
@@ -197,12 +202,13 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x -> closed_at (shiftr_at x e
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_id :
@@ -221,10 +227,11 @@ theorem shiftr_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁| lit₂ => simp
+  | lit₁ => simp
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | lit₂ _ IH =>
     simp; apply IH

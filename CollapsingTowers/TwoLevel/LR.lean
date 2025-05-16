@@ -63,7 +63,7 @@ def substF (Δ : VEnv) (t : Expr) : Expr :=
   | .app₁ t11 t12 => .app₁ (substF Δ t11) (substF Δ t12)
   | .app₂ t11 t12 => .app₂ (substF Δ t11) (substF Δ t12)
   | .lit₁ _ => t
-  | .lit₂ _ => t
+  | .lit₂ n => .lit₂ (substF Δ n)
   | .plus₁ t1 t2 => .plus₁ (substF Δ t1) (substF Δ t2)
   | .plus₂ t1 t2 => .plus₂ (substF Δ t1) (substF Δ t2)
   | .code t1 => .code (substF Δ t1)
@@ -89,7 +89,8 @@ lemma substF.closedb_at: ∀ t Δ n,
      | lam₂ t ih
      | code e1 ih
      | reflect e1 ih
-     | lam𝕔 e1 ih =>
+     | lam𝕔 e1 ih
+     | lit₂ _ ih =>
     apply ih; apply hidx; simp at hcl; assumption
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -121,7 +122,8 @@ lemma substF_opening_comm: ∀ t t1 Δ n, closed_at t Δ.length →
     apply ih; simp at h; assumption; assumption
   case code _ ih
      | reflect _ ih
-     | lam𝕔 _ ih =>
+     | lam𝕔 _ ih
+     | lit₂ _ ih =>
     apply ih; assumption; assumption
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2

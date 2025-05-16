@@ -92,6 +92,13 @@ theorem decompose𝔼 :
         apply HτX; rfl
         omega; apply Hclose
         apply closed_inc; apply Hclose; simp
+    | lit₂ =>
+      cases Hτ with
+      | lit₂ _ _ HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
 
 theorem preservationℝ :
   ∀ Γ R e₀ e₁,
@@ -220,9 +227,10 @@ theorem preservation_maping_strengthened :
     apply IH₀; apply HEqΓ; apply Hτv
     apply IH₁; apply HEqΓ; apply Hτv
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH =>
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ; apply Hτv
-  | lit₁| lit₂ => constructor
+  | lit₁ => constructor
 
 theorem preservation_maping :
   ∀ Γ v e τ𝕒 τ𝕓 τ𝕔,
@@ -345,9 +353,10 @@ theorem preservation_subst_strengthened :
     apply IH₀; apply HEqΓ
     apply IH₁; apply HEqΓ
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH =>
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
-  | lit₁| lit₂ => constructor
+  | lit₁ => constructor
 
 theorem preservation_subst :
     ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 :=

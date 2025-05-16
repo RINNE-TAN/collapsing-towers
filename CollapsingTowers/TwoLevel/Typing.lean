@@ -88,6 +88,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lit₁ : ∀ Γ n,
     typing Γ (.lit₁ n) .nat
   | lit₂ : ∀ Γ n,
+    typing Γ n .nat ->
     typing Γ (.lit₂ n) (.rep .nat)
   | code : ∀ Γ e τ,
     typing Γ e τ ->
@@ -170,8 +171,7 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   intros Γ e τ Htyping
   induction Htyping with
   | fvar
-  | lit₁
-  | lit₂ => constructor
+  | lit₁=> constructor
   | lam₁ _ _ _ _ _ _ IHe
   | lam₂ _ _ _ _ _ _ IHe
   | lam𝕔 _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
@@ -180,7 +180,8 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | plus₁ _ _ _ _ _ IH₀ IH₁
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH => apply IH
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
@@ -193,14 +194,15 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | lam₂ _ _ _ _ _ IH
   | lam𝕔 _ _ _ _ _ IH
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH => apply IH
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH => apply IH
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | lets _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
-  | lit₁| lit₂ => constructor
+  | lit₁ => constructor
 
 theorem weakening_strengthened:
     ∀ Γ Ψ Δ Φ e τ, typing Γ e τ -> Γ = Ψ ++ Φ -> typing (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
@@ -240,9 +242,10 @@ theorem weakening_strengthened:
     constructor
     apply IH₀; apply HEqΓ
     apply IH₁; apply HEqΓ
-  | lit₁| lit₂ => constructor
+  | lit₁ => constructor
   | code _ _ _ _ IH
-  | reflect _ _ _ _ IH =>
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lets _ _ _ _ _ _ _ Hclose IHb IHe
   | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>

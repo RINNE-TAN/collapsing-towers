@@ -21,6 +21,7 @@ inductive ctx𝔹 : Ctx -> Prop where
   | plusr₁ : ∀ v, value v -> ctx𝔹 (fun X => .plus₁ v X)
   | plusl₂ : ∀ r, lc r -> ctx𝔹 (fun X => .plus₂ X r)
   | plusr₂ : ∀ v, value v -> ctx𝔹 (fun X => .plus₂ v X)
+  | lit₂ : ctx𝔹 (fun X => .lit₂ X)
   | lets : ∀ e, closedb_at e 1 -> ctx𝔹 (fun X => .lets X e)
 
 theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
@@ -36,6 +37,7 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
+  | lit₂ => apply Hlc
 
 theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
   by
@@ -45,6 +47,7 @@ theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -
     constructor; apply He₁; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     constructor; apply He₀.left; apply He₁
+  | lit₂ => apply He₁
 
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
@@ -54,6 +57,7 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x ->
     simp; apply subst_closed_id; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     simp; apply subst_closed_id; apply He₀.left
+  | lit₂ => simp
 
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
@@ -68,6 +72,7 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
+  | lit₂ => simp
 
 inductive ctxℝ : ℕ -> Ctx -> Prop where
   | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
@@ -122,6 +127,7 @@ theorem close_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -
       first
       | apply He₀.left
       | apply He₀.right
+      | apply He₀
 
 theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> subst x v E⟦e₁⟧ = E⟦subst x v e₁⟧ :=
   by
@@ -134,6 +140,7 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E -> closed_at E⟦e₀⟧ x ->
     cases HB with
     | appl₁| appl₂| plusl₁| plusl₂| lets => apply He₀.left
     | appr₁| appr₂| plusr₁| plusr₂ => apply He₀.right
+    | lit₂ => apply He₀
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by
@@ -172,7 +179,7 @@ inductive head𝕄 : Expr -> Expr -> Prop where
   | app₂ : ∀ f arg, head𝕄 (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
   | plus₁ : ∀ l r, head𝕄 (.plus₁ (.lit₁ l) (.lit₁ r)) (.lit₁ (l + r))
   | plus₂ : ∀ l r, head𝕄 (.plus₂ (.code l) (.code r)) (.reflect (.plus₁ l r))
-  | lit₂ : ∀ n, head𝕄 (.lit₂ n) (.code (.lit₁ n))
+  | lit₂ : ∀ n, head𝕄 (.lit₂ (.lit₁ n)) (.code (.lit₁ n))
   | lam₂ : ∀ e, head𝕄 (.lam₂ e) (.lam𝕔 (map𝕔₀ e))
   | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))
   | let𝕔 : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
