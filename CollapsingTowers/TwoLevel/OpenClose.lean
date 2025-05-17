@@ -385,6 +385,33 @@ theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x
     apply IH₁; apply Hclose.right
   | lit₁ => simp
 
+theorem open_subst_closed : ∀ x e v i, closed_at e x -> closed_at v x -> closed_at (opening i v e) x :=
+  by
+  intros x e v i He Hv
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; apply Hv
+    . rw [if_neg HEq]; simp
+  | fvar => apply He
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    apply IH; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply He.left
+    apply IH₁; apply He.right
+
 theorem open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) e) (x + 1) :=
   by
   intros e x i
@@ -625,3 +652,30 @@ theorem map𝕔₀_intro : ∀ x e, closed_at e x -> close₀ x (subst x (.code 
   intro _ _ Hclose
   apply maping𝕔_intro
   apply Hclose
+
+theorem maping𝕔_closed : ∀ x e i, closed_at e x -> closed_at (maping𝕔 e i) x :=
+  by
+  intros x e i He
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; apply He
+    . rw [if_neg HEq]; simp
+  | fvar => apply He
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    apply IH; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply He.left
+    apply IH₁; apply He.right

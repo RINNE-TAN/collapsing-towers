@@ -548,6 +548,21 @@ theorem preservation_subst :
   apply closed_inc; apply typing_closed; apply Hτv; omega
   rw [← List.length_cons]; apply typing_closed; apply Hτe
 
+theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀ -> neutral x e₁ :=
+  by
+  intros x e₀ e₁ Hhead HNeu
+  cases Hhead with
+  | lets =>
+    apply neutral_opening
+    apply HNeu.right; apply HNeu.left
+  | app₁ =>
+    apply neutral_opening
+    apply HNeu.left; apply HNeu.right
+  | app₂| plus₂| lit₂| lam𝕔| let𝕔 => apply HNeu
+  | plus₁ => simp
+  | lam₂ =>
+    apply maping𝕔_neutral; apply HNeu
+
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
   intros Γ e₀ e₁ τ Hhead Hlc Hτ
@@ -597,7 +612,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply preservation_maping; apply Hτe; repeat constructor; ; simp
         apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
         apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
-        rw [map𝕔₀_intro]; apply maping𝕔_neutral; apply Hclose
+        rw [map𝕔₀_intro]; apply maping𝕔_neutral_db; apply Hclose
         apply Hclose
   | lam𝕔 =>
     cases Hτ
@@ -623,9 +638,8 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
     induction HM generalizing τ Γ with
     | hole =>
       constructor
-      . admit
-      . apply preservation_head𝕄; apply Hhead𝕄
-        apply Hlc; apply Hτ.right
+      . apply neutral_head𝕄; apply Hhead𝕄; apply Hτ.left
+      . apply preservation_head𝕄; apply Hhead𝕄; apply Hlc; apply Hτ.right
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
       apply HB; intro; apply IHM;
