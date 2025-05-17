@@ -128,6 +128,7 @@ theorem preservationℝ :
       apply Hτe₁
       apply close_closed
       apply typing_closed _ _ _ Hτe₁
+      admit
   | let𝕔 =>
     cases Hτe₀ with
     | let𝕔 _ _ _ _ _ Hτb Hτe₀ =>
@@ -141,6 +142,7 @@ theorem preservationℝ :
       apply Hτe₁
       apply close_closed
       apply typing_closed _ _ _ Hτe₁
+      admit
 
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁, ctx𝔹 B ->
@@ -197,8 +199,7 @@ theorem preservation_maping_strengthened :
       constructor
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds
-  | lam₁ _ _ _ _ _ Hclose IH
-  | lam𝕔 _ _ _ _ _ Hclose IH =>
+  | lam₁ _ _ _ _ _ Hclose IH =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IH
     constructor
@@ -210,8 +211,20 @@ theorem preservation_maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing_regular; apply Hτv
-  | lets _ _ _ _ _ _ _ Hclose IHb IHe
-  | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>
+  | lam𝕔 _ _ _ _ _ Hclose _ IH =>
+    rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
+    rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IH
+    constructor
+    rw [← List.cons_append, List.length_append, List.length_cons]
+    apply IH; rfl
+    apply weakening1; apply Hτv
+    apply subst_closed_at
+    apply typing_closed; apply Hτv
+    rw [List.length_append, List.length_cons]; apply Hclose
+    admit
+    simp; omega
+    apply typing_regular; apply Hτv
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IHe
@@ -223,6 +236,21 @@ theorem preservation_maping_strengthened :
     apply subst_closed_at
     apply typing_closed; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
+    simp; omega
+    apply typing_regular; apply Hτv
+  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+    rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
+    rw [← HEqΓ] at IHb
+    rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IHe
+    constructor
+    apply IHb; rfl; apply Hτv
+    rw [← List.cons_append, List.length_append, List.length_cons]
+    apply IHe; rfl
+    apply weakening1; apply Hτv
+    apply subst_closed_at
+    apply typing_closed; apply Hτv
+    rw [List.length_append, List.length_cons]; apply Hclose
+    admit
     simp; omega
     apply typing_regular; apply Hτv
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
@@ -265,6 +293,7 @@ theorem preservation_head𝔼 :
     apply HE; apply typing_closed; apply Hτr
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
+    admit
 
 theorem preservation_subst_strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓,
@@ -308,8 +337,7 @@ theorem preservation_subst_strengthened :
       constructor
       apply binds_extend; apply binds_shrink
       omega; rw [List.append_cons] at Hbinds; apply Hbinds
-  | lam₁ _ _ _ _ _ Hclose IH
-  | lam𝕔 _ _ _ _ _ Hclose IH =>
+  | lam₁ _ _ _ _ _ Hclose IH =>
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀] at IH
     simp at IH
@@ -329,8 +357,28 @@ theorem preservation_subst_strengthened :
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
-  | lets _ _ _ _ _ _ _ Hclose IHb IHe
-  | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>
+  | lam𝕔 _ _ _ _ _ Hclose _ IH =>
+    rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
+    rw [subst_open₀_comm, shiftr_open₀] at IH
+    simp at IH
+    constructor
+    simp; rw [← List.cons_append]; apply IH; rfl
+    cases Δ with
+    | nil =>
+      simp at *; apply shiftr_closed_at_id
+      apply subst_closed_at_dec
+      apply typing_closed; apply Hτv
+      apply Hclose
+    | cons =>
+      simp at *; apply shiftr_closed_at; omega
+      apply subst_closed_at
+      apply closed_inc; apply typing_closed; apply Hτv; omega
+      apply Hclose
+    admit
+    simp; omega
+    simp; omega
+    apply typing_regular; apply Hτv
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
     rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀] at IHe
     simp at IHb; simp at IHe
@@ -348,6 +396,28 @@ theorem preservation_subst_strengthened :
       apply subst_closed_at
       apply closed_inc; apply typing_closed; apply Hτv; omega
       apply Hclose
+    simp; omega
+    simp; omega
+    apply typing_regular; apply Hτv
+  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
+    rw [subst_open₀_comm, shiftr_open₀] at IHe
+    simp at IHb; simp at IHe
+    constructor
+    apply IHb
+    simp; rw [← List.cons_append]; apply IHe; rfl
+    cases Δ with
+    | nil =>
+      simp at *; apply shiftr_closed_at_id
+      apply subst_closed_at_dec
+      apply typing_closed; apply Hτv
+      apply Hclose
+    | cons =>
+      simp at *; apply shiftr_closed_at; omega
+      apply subst_closed_at
+      apply closed_inc; apply typing_closed; apply Hτv; omega
+      apply Hclose
+    admit
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
@@ -427,6 +497,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply preservation_maping; apply Hτe; repeat constructor; ; simp
         apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
         apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
+        admit
         apply Hclose
   | lam𝕔 =>
     cases Hτ
@@ -437,7 +508,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply Hτe; apply Hclose
   | let𝕔 =>
     cases Hτ
-    next Hτv Hclose Hτe𝕔 =>
+    next Hτv _ Hclose Hτe𝕔 =>
       cases Hτe𝕔
       next Hτe =>
         repeat constructor

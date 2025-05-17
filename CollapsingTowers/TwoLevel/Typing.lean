@@ -98,6 +98,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
+    neutral_lc e ->
     typing Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
     typing Γ b τ𝕒 ->
@@ -108,6 +109,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ b τ𝕒 ->
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
+    neutral_lc e ->
     typing Γ (.let𝕔 b e) τ𝕓
 
 example : typing [] expr₀ (.rep (.arrow .nat .nat)) :=
@@ -172,7 +174,7 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | fvar
   | lit₁=> constructor
   | lam₁ _ _ _ _ _ _ IHe
-  | lam𝕔 _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
+  | lam𝕔 _ _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
@@ -182,7 +184,7 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | lit₂ _ _ _ IH
   | lam₂ _ _ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
-  | let𝕔 _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
+  | let𝕔 _ _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
 theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   by
@@ -200,7 +202,7 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | plus₁ _ _ _ _ _ IH₀ IH₁
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | lets _ _ _ _ _ _ _ IH₀ IH₁
-  | let𝕔 _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₁; apply IH₀
+  | let𝕔 _ _ _ _ _ _ _ IH₀ _ IH₁ => constructor; apply IH₁; apply IH₀
   | lit₁ => constructor
 
 theorem weakening_strengthened:
@@ -221,8 +223,7 @@ theorem weakening_strengthened:
     . simp only [shiftl_at]; rw [if_neg HLe]; constructor
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds
-  | lam₁ _ _ _ _ _ Hclose IH
-  | lam𝕔 _ _ _ _ _ Hclose IH =>
+  | lam₁ _ _ _ _ _ Hclose IH =>
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
     rw [shiftl_open₀] at IH
@@ -232,6 +233,18 @@ theorem weakening_strengthened:
     apply IH; rfl
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
+    simp
+  | lam𝕔 _ _ _ _ _ Hclose HNeu IH =>
+    rw [HEqΓ] at IH
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀] at IH
+    rw [List.length_append, Nat.add_right_comm] at IH
+    constructor
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IH; rfl
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
+    admit
     simp
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
@@ -246,8 +259,7 @@ theorem weakening_strengthened:
   | lit₂ _ _ _ IH
   | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
-  | lets _ _ _ _ _ _ _ Hclose IHb IHe
-  | let𝕔 _ _ _ _ _ _ _ Hclose IHb IHe =>
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
     rw [HEqΓ] at IHe
     rw [HEqΓ] at Hclose
     rw [shiftl_open₀] at IHe
@@ -258,6 +270,19 @@ theorem weakening_strengthened:
     apply IHe; rfl
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
+    simp
+  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+    rw [HEqΓ] at IHe
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀] at IHe
+    rw [List.length_append, Nat.add_right_comm] at IHe
+    constructor
+    apply IHb; apply HEqΓ
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IHe; rfl
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
+    admit
     simp
 
 theorem weakening : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
