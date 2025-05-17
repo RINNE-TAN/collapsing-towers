@@ -299,3 +299,15 @@ theorem weakening1 : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ�
   intros Γ e τ𝕒
   rw [← List.singleton_append]
   apply weakening
+
+@[simp]
+def typing_strengthened (Γ: TEnv) (e : Expr) (τ : Ty) : Prop :=
+  neutral Γ.length e /\ typing Γ e τ
+
+theorem typing_weakening_empty : ∀ e τ, typing [] e τ -> typing_strengthened [] e τ :=
+  by
+  intros e τ Hτ
+  constructor
+  apply closed_at_neutral; rw [← List.length_nil]
+  apply typing_closed; apply Hτ
+  apply Hτ

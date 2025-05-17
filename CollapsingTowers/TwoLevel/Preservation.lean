@@ -162,6 +162,103 @@ theorem preservation𝔹 :
         | apply H₁
         | apply H₂
 
+theorem preservation𝔹' :
+  ∀ Γ B e₀ e₁, ctx𝔹 B ->
+  (∀ τ, typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ) ->
+  ∀ τ, typing_strengthened Γ (B e₀) τ -> typing_strengthened Γ (B e₁) τ :=
+  by
+  intro _ _ _ _ HB IH _ Hτe₀
+  have ⟨HNeue₀, Hτe₀⟩ := Hτe₀
+  cases HB with
+  | appl₁ =>
+    cases Hτe₀ with
+    | app₁ _ _ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.left H₀
+      constructor
+      . constructor; apply HNeue₁; apply HNeue₀.right
+      . constructor; apply Hτe₁; apply H₁
+  | appr₁ =>
+    cases Hτe₀ with
+    | app₁ _ _ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.right H₁
+      constructor
+      . constructor; apply HNeue₀.left; apply HNeue₁
+      . constructor; apply H₀; apply Hτe₁
+  | appl₂ =>
+    cases Hτe₀ with
+    | app₂ _ _ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.left H₀
+      constructor
+      . constructor; apply HNeue₁; apply HNeue₀.right
+      . constructor; apply Hτe₁; apply H₁
+  | appr₂ =>
+    cases Hτe₀ with
+    | app₂ _ _ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.right H₁
+      constructor
+      . constructor; apply HNeue₀.left; apply HNeue₁
+      . constructor; apply H₀; apply Hτe₁
+  | plusl₁ =>
+    cases Hτe₀ with
+    | plus₁ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.left H₀
+      constructor
+      . constructor; apply HNeue₁; apply HNeue₀.right
+      . constructor; apply Hτe₁; apply H₁
+  | plusr₁ =>
+    cases Hτe₀ with
+    | plus₁ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.right H₁
+      constructor
+      . constructor; apply HNeue₀.left; apply HNeue₁
+      . constructor; apply H₀; apply Hτe₁
+  | plusl₂ =>
+    cases Hτe₀ with
+    | plus₂ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.left H₀
+      constructor
+      . constructor; apply HNeue₁; apply HNeue₀.right
+      . constructor; apply Hτe₁; apply H₁
+  | plusr₂ =>
+    cases Hτe₀ with
+    | plus₂ _ _ _ H₀ H₁ =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.right H₁
+      constructor
+      . constructor; apply HNeue₀.left; apply HNeue₁
+      . constructor; apply H₀; apply Hτe₁
+  | lit₂ =>
+    cases Hτe₀ with
+    | lit₂ _ _ H =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀ H
+      constructor
+      . apply HNeue₁
+      . constructor; apply Hτe₁
+  | lam₂ =>
+    cases Hτe₀ with
+    | lam₂ _ _ _ _ H =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀ H
+      constructor
+      . apply HNeue₁
+      . constructor; apply Hτe₁
+  | lets =>
+    cases Hτe₀ with
+    | lets _ _ _ _ _ Hb He Hclose =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀.left Hb
+      constructor
+      . constructor; apply HNeue₁; apply HNeue₀.right
+      . constructor; apply Hτe₁; apply He; apply Hclose
+
 theorem preservation_maping_strengthened :
   ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
   typing (Δ ++ τ𝕔 :: Φ) e τ𝕓 ->
@@ -560,10 +657,27 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, neutral Γ.length e₀ 
       intros _ _; apply IHM; rfl
       admit
 
+theorem preservation_strengthened' : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀ e₁ -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
+  by
+  intro Γ e₀ e₁ τ
+  generalize HEqlvl : Γ.length = lvl
+  intro Hstep Hτ; cases Hstep with
+  | step𝕄 _ _ _ HM Hlc Hhead𝕄 =>
+    induction HM generalizing τ Γ with
+    | hole =>
+      constructor
+      . admit
+      . apply preservation_head𝕄; apply Hhead𝕄
+        apply Hlc; apply Hτ.right
+    | cons𝔹 _ _ HB _ IHM =>
+      simp; apply preservation𝔹'
+      apply HB; intro; apply IHM;
+      apply HEqlvl; apply Hτ
+    | _ => admit
+  | _ => admit
+
 theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
   intros e₀ e₁ τ Hstep Hτ
-  apply preservation_strengthened
-  apply closed_at_neutral; rw [← List.length_nil]
-  apply typing_closed; apply Hτ
-  apply Hstep; apply Hτ
+  apply And.right; apply preservation_strengthened'
+  apply Hstep; apply typing_weakening_empty; apply Hτ
