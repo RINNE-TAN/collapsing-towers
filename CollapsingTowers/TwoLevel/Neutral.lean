@@ -247,3 +247,53 @@ theorem maping𝕔_neutral : ∀ e i, neutral_db i (maping𝕔 e i) :=
   | lam𝕔 _ IH
   | let𝕔 _ _ _ IH =>
     apply IH
+
+theorem neutral_closing : ∀ x e i, neutral (x + 1) e -> neutral x (closing i x e) :=
+  by
+  intros x e i HNeu
+  induction e generalizing i with
+  | bvar => simp
+  | fvar => nomatch HNeu
+  | lit₁ => simp
+  | code| reflect => apply close_closed; apply HNeu
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH =>
+    simp at *; apply IH; apply HNeu
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+  | let𝕔 _ _ _ IH =>
+    simp; constructor
+    apply close_closed; apply HNeu.left
+    apply IH; apply HNeu.right
+
+theorem neutral_db_closing : ∀ x e i, closedb_at e i -> neutral (x + 1) e -> neutral_db i (closing i x e) :=
+  by
+  intros x e i Hlc HNeu
+  induction e generalizing i with
+  | bvar => simp at *; omega
+  | fvar => nomatch HNeu
+  | lit₁ => simp
+  | code| reflect => simp
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH =>
+    simp at *; apply IH; apply Hlc; apply HNeu
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hlc.left; apply HNeu.left
+    apply IH₁; apply Hlc.right; apply HNeu.right
+  | let𝕔 _ _ _ IH =>
+    simp; apply IH; apply Hlc.right; apply HNeu.right

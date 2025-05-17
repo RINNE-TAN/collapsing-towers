@@ -144,6 +144,56 @@ theorem preservationℝ :
       apply typing_closed _ _ _ Hτe₁
       admit
 
+theorem preservationℝ' :
+  ∀ Γ R e₀ e₁,
+  ctxℝ Γ.length R ->
+  lc e₀ ->
+  (∀ τ𝕒 τ𝕓, typing_strengthened (τ𝕒 :: Γ) e₀ τ𝕓 -> typing_strengthened (τ𝕒 :: Γ) e₁ τ𝕓) ->
+  ∀ τ, typing_strengthened Γ (R e₀) τ -> typing_strengthened Γ (R e₁) τ :=
+  by
+  intro Γ _ e₀ e₁ HR Hlc IH _ Hτe₀
+  have ⟨HNeue₀, Hτe₀⟩ := Hτe₀
+  cases HR with
+  | lam𝕔 =>
+    cases Hτe₀ with
+    | lam𝕔 _ _ _ _ He _ HNeulc =>
+      simp at IH HNeue₀ HNeulc
+      have HNeue₀ := neutral_inc _ _ _ HNeue₀ HNeulc
+      rw [open_close_id₀] at He
+      rw [open_close_id] at HNeue₀
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ _ HNeue₀ He
+      constructor
+      . simp; apply neutral_closing; apply HNeue₁
+      . constructor
+        rw [open_close_id₀]; apply Hτe₁
+        apply typing_regular; apply Hτe₁
+        apply close_closed; apply typing_closed _ _ _ Hτe₁
+        apply neutral_db_closing
+        apply typing_regular; apply Hτe₁
+        apply HNeue₁
+      apply Hlc; apply Hlc
+  | let𝕔 =>
+    cases Hτe₀ with
+    | let𝕔 _ _ _ _ _ Hb He _ HNeulc =>
+      have ⟨HNeub, HNeue₀⟩ := HNeue₀
+      simp at IH HNeue₀ HNeulc
+      have HNeue₀ := neutral_inc _ _ _ HNeue₀ HNeulc
+      rw [open_close_id₀] at He
+      rw [open_close_id] at HNeue₀
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ _ HNeue₀ He
+      constructor
+      . constructor; apply HNeub
+        apply neutral_closing; apply HNeue₁
+      . constructor
+        apply Hb
+        rw [open_close_id₀]; apply Hτe₁
+        apply typing_regular; apply Hτe₁
+        apply close_closed; apply typing_closed _ _ _ Hτe₁
+        apply neutral_db_closing
+        apply typing_regular; apply Hτe₁
+        apply HNeue₁
+      apply Hlc; apply Hlc
+
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁, ctx𝔹 B ->
   (∀ τ, typing Γ e₀ τ -> typing Γ e₁ τ) ->
@@ -673,8 +723,32 @@ theorem preservation_strengthened' : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e�
       simp; apply preservation𝔹'
       apply HB; intro; apply IHM;
       apply HEqlvl; apply Hτ
-    | _ => admit
-  | _ => admit
+    | consℝ _ _ HR HM IHM =>
+      rw [← HEqlvl] at HR IHM; simp; apply preservationℝ'
+      apply HR
+      apply lc_ctx𝕄; apply HM; apply Hlc
+      intros _ _; apply IHM; rfl
+      apply Hτ
+  | reflect P E e HP HE Hlc =>
+    generalize HPQ : ℙℚ.ℙ = PQ
+    simp at HP; rw [HPQ] at HP
+    clear HPQ
+    induction HP generalizing τ Γ with
+    | hole =>
+      constructor
+      . admit
+      . apply preservation_head𝔼; apply HE; apply Hlc; apply Hτ.right
+    | cons𝔹 _ _ HB _ IHM =>
+      simp; apply preservation𝔹'
+      apply HB; intro; apply IHM
+      apply HEqlvl; apply Hτ
+    | consℝ _ _ HR HP IHM =>
+      rw [← HEqlvl] at HR IHM; simp; apply preservationℝ'
+      apply HR
+      apply lc_ctxℙ; apply HP
+      apply lc_ctx𝔼 _ (.reflect e); apply HE; apply Hlc
+      intros _ _; apply IHM; rfl
+      apply Hτ
 
 theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
