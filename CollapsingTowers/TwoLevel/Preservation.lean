@@ -295,7 +295,9 @@ theorem preservation_head𝔼 :
     apply HE; apply typing_closed; apply Hτr
     apply close_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
-    admit
+    apply neutral_db𝔼; apply HE
+    apply closedb_at_of_neutral_db
+    apply typing_regular; apply Hτr; simp
 
 theorem preservation_subst_strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓,

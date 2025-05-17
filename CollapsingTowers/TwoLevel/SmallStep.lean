@@ -66,6 +66,16 @@ theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -
     constructor; apply He₀.left; apply He₁
   | lit₂| lam₂ => apply He₁
 
+theorem neutral_db𝔹 : ∀ B e₀ e₁ i, ctx𝔹 B -> neutral_db i B⟦e₀⟧ -> neutral_db i e₁ -> neutral_db i B⟦e₁⟧ :=
+  by
+  intros _ _ _ _ HB He₀ He₁
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    constructor; apply He₁; apply He₀.right
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    constructor; apply He₀.left; apply He₁
+  | lit₂| lam₂ => apply He₁
+
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
   intros _ _ _ _ _ HB He₀
@@ -139,6 +149,20 @@ theorem close_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -
   | hole => apply He₁
   | cons𝔹 _ _ HB _ IH =>
     simp; apply close_at𝔹; apply HB; apply He₀
+    apply IH; cases HB <;> simp at He₀
+    repeat
+      first
+      | apply He₀.left
+      | apply He₀.right
+      | apply He₀
+
+theorem neutral_db𝔼 : ∀ E e₀ e₁ i, ctx𝔼 E -> neutral_db i E⟦e₀⟧ -> neutral_db i e₁ -> neutral_db i E⟦e₁⟧ :=
+  by
+  intros _ _ _ _ HE He₀ He₁
+  induction HE with
+  | hole => apply He₁
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply neutral_db𝔹; apply HB; apply He₀
     apply IH; cases HB <;> simp at He₀
     repeat
       first
