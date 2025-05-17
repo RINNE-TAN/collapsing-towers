@@ -457,7 +457,7 @@ theorem preservation_subst :
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
   intros Γ e₀ e₁ τ Hhead Hlc Hτ
-  induction Hhead with
+  cases Hhead with
   | lets =>
     cases Hτ
     next Hτv Hclose Hτe =>
@@ -503,7 +503,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply preservation_maping; apply Hτe; repeat constructor; ; simp
         apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
         apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
-        admit
+        rw [map𝕔₀_intro]; apply maping𝕔_neutral; apply Hclose
         apply Hclose
   | lam𝕔 =>
     cases Hτ

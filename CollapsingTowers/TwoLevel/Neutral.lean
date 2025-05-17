@@ -225,3 +225,25 @@ theorem subst_neutral_db :
   | let𝕔 _ _ _ IH =>
     apply IH; apply HNeuE
     apply closedb_inc; apply HNeuV; omega
+
+theorem maping𝕔_neutral : ∀ e i, neutral_db i (maping𝕔 e i) :=
+  by
+  intros e i
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; simp
+    . rw [if_neg HEq]; apply HEq
+  | fvar| lit₁| code| reflect => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor; apply IH₀; apply IH₁
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH
+  | let𝕔 _ _ _ IH =>
+    apply IH
