@@ -69,19 +69,43 @@ theorem closed_at_neutral : ∀ e, closed_at e 0 -> neutral 0 e :=
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH => simp at *; apply IH; apply Hclose
+  | lam𝕔 _ IH =>
+    simp at *; apply IH; apply Hclose
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁ =>
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lets _ _ IHb IHe =>
-    simp; constructor
-    apply IHb; apply Hclose.left
-    apply IHe; apply Hclose.right
-  | let𝕔 _ _ _ IHe =>
+  | let𝕔 _ _ _ IH =>
     simp; constructor
     apply Hclose.left
-    apply IHe; apply Hclose.right
+    apply IH; apply Hclose.right
+
+theorem neutral_inc : ∀ x e i, neutral x e -> neutral_db i e -> neutral (x + 1) (opening i (.fvar x) e) :=
+  by
+  intros x e i HNeu HNeulc
+  induction e generalizing i with
+  | bvar => simp at *; rw [if_neg HNeulc]; simp
+  | fvar => nomatch HNeu
+  | lit₁ => simp
+  | code| reflect => simp; apply open_closed; apply HNeu
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH =>
+    simp at *; apply IH; apply HNeu; apply HNeulc
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply HNeu.left; apply HNeulc.left
+    apply IH₁; apply HNeu.right; apply HNeulc.right
+  | let𝕔 _ _ _ IH =>
+    simp; constructor
+    apply open_closed; apply HNeu.left
+    apply IH; apply HNeu.right; apply HNeulc
