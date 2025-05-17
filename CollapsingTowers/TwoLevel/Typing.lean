@@ -306,7 +306,7 @@ def typing_strengthened (Γ: TEnv) (e : Expr) (τ : Ty) : Prop :=
 
 theorem typing_weakening_empty : ∀ e τ, typing [] e τ -> typing_strengthened [] e τ :=
   by
-  intros e τ Hτ
+  intros _ _ Hτ
   constructor
   apply closed_at_neutral; rw [← List.length_nil]
   apply typing_closed; apply Hτ
