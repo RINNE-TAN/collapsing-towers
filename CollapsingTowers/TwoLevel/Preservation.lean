@@ -211,7 +211,7 @@ theorem preservation_maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing_regular; apply Hτv
-  | lam𝕔 _ _ _ _ _ Hclose _ IH =>
+  | lam𝕔 _ _ _ _ _ Hclose HNeu IH =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IH
     constructor
@@ -221,7 +221,8 @@ theorem preservation_maping_strengthened :
     apply subst_closed_at
     apply typing_closed; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
-    admit
+    apply subst_neutral_db; apply HNeu
+    apply typing_regular; apply Hτv
     simp; omega
     apply typing_regular; apply Hτv
   | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
@@ -238,7 +239,7 @@ theorem preservation_maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing_regular; apply Hτv
-  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+  | let𝕔 _ _ _ _ _ _ _ Hclose HNeu IHb IHe =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IHe
@@ -250,7 +251,8 @@ theorem preservation_maping_strengthened :
     apply subst_closed_at
     apply typing_closed; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
-    admit
+    apply subst_neutral_db; apply HNeu
+    apply typing_regular; apply Hτv
     simp; omega
     apply typing_regular; apply Hτv
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
@@ -357,7 +359,7 @@ theorem preservation_subst_strengthened :
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
-  | lam𝕔 _ _ _ _ _ Hclose _ IH =>
+  | lam𝕔 _ _ _ _ _ Hclose HNeu IH =>
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀] at IH
     simp at IH
@@ -374,7 +376,9 @@ theorem preservation_subst_strengthened :
       apply subst_closed_at
       apply closed_inc; apply typing_closed; apply Hτv; omega
       apply Hclose
-    apply shiftr_neutral_db; admit
+    apply shiftr_neutral_db
+    apply subst_neutral_db; apply HNeu
+    apply typing_regular; apply Hτv
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
@@ -399,7 +403,7 @@ theorem preservation_subst_strengthened :
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
-  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+  | let𝕔 _ _ _ _ _ _ _ Hclose HNeu IHb IHe =>
     rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀] at IHe
     simp at IHb; simp at IHe
@@ -417,7 +421,9 @@ theorem preservation_subst_strengthened :
       apply subst_closed_at
       apply closed_inc; apply typing_closed; apply Hτv; omega
       apply Hclose
-    apply shiftr_neutral_db; admit
+    apply shiftr_neutral_db
+    apply subst_neutral_db; apply HNeu
+    apply typing_regular; apply Hτv
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv

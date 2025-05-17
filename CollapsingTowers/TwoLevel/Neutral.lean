@@ -170,3 +170,58 @@ theorem shiftr_neutral_db :
     simp; apply IH
   | code _ IH
   | reflect _ IH => simp
+
+theorem closedb_at_of_neutral_db : ∀ x e, closedb_at e x -> neutral_db x e :=
+  by
+  intros x e Hclose
+  induction e generalizing x with
+  | fvar => simp
+  | bvar => simp at *; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit₁| code| reflect => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lam𝕔 _ IH
+  | lit₂ _ IH =>
+    apply IH; apply Hclose
+  | let𝕔 _ _ _ IH =>
+    apply IH; apply Hclose.right
+
+theorem subst_neutral_db :
+  ∀ x y v e, neutral_db y e -> closedb_at v y -> neutral_db y (subst x v e) :=
+  by
+  intros x y v e HNeuE HNeuV
+  induction e generalizing y with
+  | bvar => apply HNeuE
+  | fvar z =>
+    simp; by_cases HEq : x = z
+    . rw [if_pos HEq]; apply closedb_at_of_neutral_db; apply HNeuV
+    . rw [if_neg HEq]; simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HNeuE.left; apply HNeuV
+    apply IH₁; apply HNeuE.right; apply HNeuV
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HNeuE.left; apply HNeuV
+    apply IH₁; apply HNeuE.right
+    apply closedb_inc; apply HNeuV; omega
+  | lit₁| code| reflect => simp
+  | lam₂ _ IH
+  | lit₂ _ IH =>
+    apply IH; apply HNeuE; apply HNeuV
+  | lam₁ _ IH
+  | lam𝕔 _ IH
+  | let𝕔 _ _ _ IH =>
+    apply IH; apply HNeuE
+    apply closedb_inc; apply HNeuV; omega
