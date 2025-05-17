@@ -443,11 +443,11 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         repeat constructor
         apply Hτv; apply Hτe; apply Hclose
 
-theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀ e₁ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, neutral Γ.length e₀ -> step_lvl Γ.length e₀ e₁ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
   intro Γ e₀ e₁ τ
   generalize HEqlvl : Γ.length = lvl
-  intro Hstep; cases Hstep with
+  intro HNeu Hstep; cases Hstep with
   | step𝕄 _ _ _ HM Hlc Hhead𝕄 =>
     induction HM generalizing τ Γ with
     | hole => apply preservation_head𝕄; apply Hhead𝕄; apply Hlc
@@ -455,11 +455,13 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       simp; apply preservation𝔹
       apply HB
       intro; apply IHM; apply HEqlvl
+      apply neutral_ctx𝔹; apply HB; apply HNeu
     | consℝ _ _ HR HM IHM =>
       rw [← HEqlvl] at HR IHM; simp; apply preservationℝ
       apply HR
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
+      admit
   | reflect P E e HP HE Hlc =>
     generalize HPQ : ℙℚ.ℙ = PQ
     simp at HP; rw [HPQ] at HP
@@ -470,14 +472,19 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       simp; apply preservation𝔹
       apply HB
       intro; apply IHM; apply HEqlvl
+      apply neutral_ctx𝔹; apply HB; apply HNeu
     | consℝ _ _ HR HP IHM =>
       rw [← HEqlvl] at HR IHM; simp; apply preservationℝ
       apply HR
       apply lc_ctxℙ; apply HP
       apply lc_ctx𝔼; apply HE; apply Hlc
       intros _ _; apply IHM; rfl
+      admit
 
 theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
-  rw [step, ← List.length_nil]
+  intros e₀ e₁ τ Hstep Hτ
   apply preservation_strengthened
+  apply closed_at_neutral; rw [← List.length_nil]
+  apply typing_closed; apply Hτ
+  apply Hstep; apply Hτ

@@ -2,6 +2,7 @@
 import Mathlib.Data.Finset.Basic
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
+import CollapsingTowers.TwoLevel.Neutral
 import CollapsingTowers.TwoLevel.Env
 abbrev Ctx :=
   Expr -> Expr
@@ -39,6 +40,21 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
   | lit₂| lam₂ => apply Hlc
+
+theorem neutral_ctx𝔹 : ∀ B e x, ctx𝔹 B -> neutral x B⟦e⟧ -> neutral x e :=
+  by
+  intros B e x HB HNeu
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | plusl₁ _ IH
+  | plusl₂ _ IH
+  | lets _ IH => apply HNeu.left
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue
+  | plusr₁ _ Hvalue
+  | plusr₂ _ Hvalue => apply HNeu.right
+  | lit₂| lam₂ => apply HNeu
 
 theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
   by
