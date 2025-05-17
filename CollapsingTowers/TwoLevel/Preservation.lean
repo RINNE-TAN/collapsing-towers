@@ -374,7 +374,7 @@ theorem preservation_subst_strengthened :
       apply subst_closed_at
       apply closed_inc; apply typing_closed; apply Hτv; omega
       apply Hclose
-    admit
+    apply shiftr_neutral_db; admit
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
@@ -417,7 +417,7 @@ theorem preservation_subst_strengthened :
       apply subst_closed_at
       apply closed_inc; apply typing_closed; apply Hτv; omega
       apply Hclose
-    admit
+    apply shiftr_neutral_db; admit
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv

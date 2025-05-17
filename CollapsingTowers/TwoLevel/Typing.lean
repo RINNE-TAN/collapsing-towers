@@ -244,7 +244,7 @@ theorem weakening_strengthened:
     apply IH; rfl
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
-    admit
+    apply shiftl_neutral_db; apply HNeu
     simp
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
@@ -271,7 +271,7 @@ theorem weakening_strengthened:
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
     simp
-  | let𝕔 _ _ _ _ _ _ _ Hclose _ IHb IHe =>
+  | let𝕔 _ _ _ _ _ _ _ Hclose HNeu IHb IHe =>
     rw [HEqΓ] at IHe
     rw [HEqΓ] at Hclose
     rw [shiftl_open₀] at IHe
@@ -282,7 +282,7 @@ theorem weakening_strengthened:
     apply IHe; rfl
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
-    admit
+    apply shiftl_neutral_db; apply HNeu
     simp
 
 theorem weakening : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=

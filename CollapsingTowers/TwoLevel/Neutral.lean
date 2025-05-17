@@ -1,6 +1,7 @@
 
 import CollapsingTowers.TwoLevel.Basic
 import CollapsingTowers.TwoLevel.OpenClose
+import CollapsingTowers.TwoLevel.Shift
 @[simp]
 def neutral (x : ℕ) : Expr -> Prop
   | .bvar _ => true
@@ -109,3 +110,63 @@ theorem neutral_inc : ∀ x e i, neutral x e -> neutral_db i e -> neutral (x + 1
     simp; constructor
     apply open_closed; apply HNeu.left
     apply IH; apply HNeu.right; apply HNeulc
+
+theorem shiftl_neutral_db :
+    ∀ x y e n, neutral_db y e -> neutral_db y (shiftl_at x n e) :=
+  by
+  intros x y e n
+  induction e generalizing y with
+  | bvar j => simp
+  | fvar z =>
+    simp; by_cases HLe : x <= z
+    . rw [if_pos HLe]; simp
+    . rw [if_neg HLe]; simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    intro HNeu; simp; constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+  | let𝕔 _ _ _ IHe =>
+    intro HNeu; simp
+    apply IHe; apply HNeu
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lam𝕔 _ IH
+  | lit₂ _ IH =>
+    simp; apply IH
+  | code _ IH
+  | reflect _ IH => simp
+
+theorem shiftr_neutral_db :
+    ∀ x y e, neutral_db y e -> neutral_db y (shiftr_at x e) :=
+  by
+  intros x y e
+  induction e generalizing y with
+  | bvar j => simp
+  | fvar z =>
+    simp; by_cases HLe : x < z
+    . rw [if_pos HLe]; simp
+    . rw [if_neg HLe]; simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    intro HNeu; simp; constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+  | let𝕔 _ _ _ IHe =>
+    intro HNeu; simp
+    apply IHe; apply HNeu
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lam𝕔 _ IH
+  | lit₂ _ IH =>
+    simp; apply IH
+  | code _ IH
+  | reflect _ IH => simp
