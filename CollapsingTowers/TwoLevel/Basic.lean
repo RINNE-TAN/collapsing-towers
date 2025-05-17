@@ -22,24 +22,6 @@ inductive Expr : Type where
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
 
-@[simp]
-def user_def : Expr -> Prop
-  | .bvar _ => true
-  | .lam₁ e => user_def e
-  | .lam₂ e => user_def e
-  | .app₁ f arg => user_def f ∧ user_def arg
-  | .app₂ f arg => user_def f ∧ user_def arg
-  | .lit₁ _ => true
-  | .lit₂ n => user_def n
-  | .plus₁ l r => user_def l ∧ user_def r
-  | .plus₂ l r => user_def l ∧ user_def r
-  | .lets b e => user_def b ∧ user_def e
-  | .fvar _ => false
-  | .code _ => false
-  | .reflect _ => false
-  | .lam𝕔 _ => false
-  | .let𝕔 _ _ => false
-
 abbrev TEnv :=
   List Ty
 
