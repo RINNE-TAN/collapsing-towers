@@ -385,7 +385,7 @@ theorem preservation_head𝔼 :
     rw [Hsubst, ← subst𝔼 E (.reflect b)]
     apply preservation_maping; apply Hτ𝔼; repeat constructor; ; simp
     apply HE; apply typing_closed; apply Hτr
-    apply close_at𝔼; apply HE
+    apply closed_at𝔼; apply HE
     apply typing_closed; apply Hτr; constructor
     apply neutral_db𝔼; apply HE
     apply closedb_at_of_neutral_db
@@ -657,7 +657,9 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
     induction HP generalizing τ Γ with
     | hole =>
       constructor
-      . admit
+      . constructor
+        . apply closed_at_decompose𝔼 _ _ _ HE (typing_closed _ _ _ Hτ.right)
+        . apply neutral𝔼; apply HE; apply Hτ.left; simp
       . apply preservation_head𝔼; apply HE; apply Hlc; apply Hτ.right
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹

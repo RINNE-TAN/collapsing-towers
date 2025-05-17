@@ -56,7 +56,17 @@ theorem neutral_ctx𝔹 : ∀ B e x, ctx𝔹 B -> neutral x B⟦e⟧ -> neutral 
   | plusr₂ _ Hvalue => apply HNeu.right
   | lit₂| lam₂ => apply HNeu
 
-theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
+theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₀ x :=
+  by
+  intros _ _ _ HB Hclose
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    apply Hclose.left
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    apply Hclose.right
+  | lit₂| lam₂ => apply Hclose
+
+theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
@@ -67,6 +77,16 @@ theorem close_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -
   | lit₂| lam₂ => apply He₁
 
 theorem neutral_db𝔹 : ∀ B e₀ e₁ i, ctx𝔹 B -> neutral_db i B⟦e₀⟧ -> neutral_db i e₁ -> neutral_db i B⟦e₁⟧ :=
+  by
+  intros _ _ _ _ HB He₀ He₁
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    constructor; apply He₁; apply He₀.right
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    constructor; apply He₀.left; apply He₁
+  | lit₂| lam₂ => apply He₁
+
+theorem neutral𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> neutral x B⟦e₀⟧ -> neutral x e₁ -> neutral x B⟦e₁⟧ :=
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
@@ -142,13 +162,22 @@ theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
 
-theorem close_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₁ x -> closed_at E⟦e₁⟧ x :=
+theorem closed_at_decompose𝔼 : ∀ E e₀ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₀ x :=
+  by
+  intros _ _ _ HE Hclose
+  induction HE with
+  | hole => apply Hclose
+  | cons𝔹 _ _ HB _ IH =>
+    apply IH; apply closed_at_decompose𝔹
+    apply HB; apply Hclose
+
+theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₁ x -> closed_at E⟦e₁⟧ x :=
   by
   intros _ _ _ _ HE He₀ He₁
   induction HE with
   | hole => apply He₁
   | cons𝔹 _ _ HB _ IH =>
-    simp; apply close_at𝔹; apply HB; apply He₀
+    simp; apply closed_at𝔹; apply HB; apply He₀
     apply IH; cases HB <;> simp at He₀
     repeat
       first
@@ -163,6 +192,20 @@ theorem neutral_db𝔼 : ∀ E e₀ e₁ i, ctx𝔼 E -> neutral_db i E⟦e₀�
   | hole => apply He₁
   | cons𝔹 _ _ HB _ IH =>
     simp; apply neutral_db𝔹; apply HB; apply He₀
+    apply IH; cases HB <;> simp at He₀
+    repeat
+      first
+      | apply He₀.left
+      | apply He₀.right
+      | apply He₀
+
+theorem neutral𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> neutral x E⟦e₀⟧ -> neutral x e₁ -> neutral x E⟦e₁⟧ :=
+  by
+  intros _ _ _ _ HE He₀ He₁
+  induction HE with
+  | hole => apply He₁
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply neutral𝔹; apply HB; apply He₀
     apply IH; cases HB <;> simp at He₀
     repeat
       first
