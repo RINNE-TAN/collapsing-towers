@@ -255,6 +255,58 @@ theorem maping𝕔_neutral_db : ∀ e i, neutral_db i (maping𝕔 e i) :=
   | let𝕔 _ _ _ IH =>
     apply IH
 
+theorem opening_neutral_db : ∀ e x i j, neutral_db i e -> neutral_db i (opening j (.fvar x) e) :=
+  by
+  intros e x i j He
+  induction e generalizing i j with
+  | bvar k =>
+    simp; by_cases HEq : k = j
+    . rw [if_pos HEq]; simp
+    . rw [if_neg HEq]; apply He
+  | fvar| lit₁| code| reflect => simp
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH
+  | let𝕔 _ _ _ IH =>
+    apply IH; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply He.left
+    apply IH₁; apply He.right
+
+theorem swapdb_neutral_db :
+  ∀ e i j,
+  neutral_db j e ->
+  neutral_db i (swapdb i j e) :=
+  by
+  intros e i j HNeu
+  induction e generalizing i j with
+  | bvar k =>
+    simp at *; rw [if_neg HNeu]
+    by_cases HEq : k = i
+    . rw [if_pos HEq]; simp; omega
+    . rw [if_neg HEq]; simp; omega
+  | fvar| lit₁| code| reflect => simp
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH
+  | let𝕔 _ _ _ IH =>
+    apply IH; apply HNeu
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+
 theorem maping𝕔_neutral : ∀ e x i, neutral x e -> neutral x (maping𝕔 e i) :=
   by
   intros e x i HNeu
@@ -364,3 +416,37 @@ theorem neutral_opening : ∀ x e v i, neutral x e -> neutral x v -> neutral x (
     apply open_subst_closed; apply He.left
     apply neutral_closed_at; apply Hv
     apply IH; apply He.right
+
+theorem swapdb_neutral : ∀ e x i j, neutral x e -> neutral x (swapdb i j e) :=
+  by
+  intros e x i j HNeu
+  induction e generalizing i j with
+  | bvar k =>
+    simp; by_cases HEq : k = i
+    . rw [if_pos HEq]; simp
+    . rw [if_neg HEq]
+      by_cases HEq : k = j
+      . rw [if_pos HEq]; simp
+      . rw [if_neg HEq]; simp
+  | fvar => nomatch HNeu
+  | lit₁ => simp
+  | code _ IH| reflect _ IH =>
+    apply swapdb_closed; apply HNeu
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH =>
+    simp at *
+    apply IH; apply HNeu
+  | let𝕔 _ _ _ IHe =>
+    constructor
+    apply swapdb_closed; apply HNeu.left
+    apply IHe; apply HNeu.right

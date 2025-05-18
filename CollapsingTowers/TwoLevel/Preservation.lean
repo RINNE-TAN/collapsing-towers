@@ -548,6 +548,30 @@ theorem preservation_subst :
   apply closed_inc; apply typing_closed; apply Hτv; omega
   rw [← List.length_cons]; apply typing_closed; apply Hτe
 
+theorem preservation_swap_strengthened :
+  ∀ Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓,
+  typing Γ e τ𝕓 ->
+  Γ = Δ ++ τ𝕒₀ :: τ𝕒₁ :: Φ ->
+  typing (Δ ++ τ𝕒₁ :: τ𝕒₀ :: Φ) (swap (Φ.length + 1) Φ.length e) τ𝕓 :=
+  by
+  intros Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ HEq
+  induction Hτ generalizing Δ with
+  | fvar _ x _ Hbinds =>
+    admit
+  | lam₁ _ _ _ _ _ Hclose IH =>
+    admit
+  | _ => admit
+
+theorem preservation_swap :
+  ∀ Γ e τ𝕒₀ τ𝕒₁ τ𝕓,
+  typing (τ𝕒₀ :: τ𝕒₁ :: Γ) e τ𝕓 ->
+  typing (τ𝕒₁ :: τ𝕒₀ :: Γ) (swap (Γ.length + 1) Γ.length e) τ𝕓 :=
+  by
+  intros Γ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ
+  rw [← List.nil_append (τ𝕒₁ :: τ𝕒₀ :: Γ)]
+  apply preservation_swap_strengthened
+  apply Hτ; simp
+
 theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀ -> neutral x e₁ :=
   by
   intros x e₀ e₁ Hhead HNeu
@@ -562,6 +586,10 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
   | plus₁| let𝕔_lit₁ => simp
   | lam₂ =>
     apply maping𝕔_neutral; apply HNeu
+  | let𝕔_lam₁ =>
+    constructor
+    apply HNeu.left
+    apply swapdb_neutral; apply HNeu.right
 
 theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
   by
@@ -633,6 +661,25 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
     next Hτ =>
       cases Hτ
       constructor
+  | let𝕔_lam₁ =>
+    cases Hτ with
+    | let𝕔 _ _ _ _ _ Hτb Hτe Hclose HNeu =>
+      cases Hτe with
+      | lam₁ _ _ _ _ Hτe =>
+        constructor
+        constructor
+        rw [closedb_opening_id]; apply weakening1; apply Hτb
+        apply Hlc.left
+        simp; rw [open_swap_comm]
+        apply preservation_swap; apply Hτe
+        apply closed_inc; apply Hclose; omega
+        apply Hclose
+        omega
+        apply open_closed; apply swapdb_closed; apply Hclose
+        apply opening_neutral_db; apply swapdb_neutral_db; apply HNeu
+        constructor
+        apply typing_closed; apply Hτb
+        apply swapdb_closed; apply Hclose
 
 theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀ e₁ -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
   by

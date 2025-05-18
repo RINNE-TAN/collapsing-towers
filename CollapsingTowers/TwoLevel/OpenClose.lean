@@ -679,3 +679,118 @@ theorem maping𝕔_closed : ∀ x e i, closed_at e x -> closed_at (maping𝕔 e 
     constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
+
+@[simp]
+def swapdb (i : ℕ) (j : ℕ) : Expr -> Expr
+  | .bvar k => if k = i then .bvar j else if k = j then .bvar i else .bvar k
+  | .fvar x => .fvar x
+  | .lam₁ e => .lam₁ (swapdb (i + 1) (j + 1) e)
+  | .lam₂ e => .lam₂ (swapdb i j e)
+  | .app₁ f arg => .app₁ (swapdb i j f) (swapdb i j arg)
+  | .app₂ f arg => .app₂ (swapdb i j f) (swapdb i j arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ (swapdb i j n)
+  | .plus₁ l r => .plus₁ (swapdb i j l) (swapdb i j r)
+  | .plus₂ l r => .plus₂ (swapdb i j l) (swapdb i j r)
+  | .code e => .code (swapdb i j e)
+  | .reflect e => .reflect (swapdb i j e)
+  | .lam𝕔 e => .lam𝕔 (swapdb (i + 1) (j + 1) e)
+  | .lets b e => .lets (swapdb i j b) (swapdb (i + 1) (j + 1) e)
+  | .let𝕔 b e => .let𝕔 (swapdb i j b) (swapdb (i + 1) (j + 1) e)
+
+theorem swapdb_closed : ∀ x e i j, closed_at e x -> closed_at (swapdb i j e) x :=
+  by
+  intros x e i j Hclose
+  induction e generalizing i j with
+  | bvar k =>
+    simp; by_cases HEq : k = i
+    . rw [if_pos HEq]; apply Hclose
+    . rw [if_neg HEq]
+      by_cases HEq : k = j
+      . rw [if_pos HEq]; apply Hclose
+      . rw [if_neg HEq]; simp
+  | fvar => apply Hclose
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    apply IH; apply Hclose
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+
+@[simp]
+def swap (x : ℕ) (y : ℕ) : Expr -> Expr
+  | .bvar k => .bvar k
+  | .fvar z => if z = x then .fvar y else if z = y then .fvar x else .fvar z
+  | .lam₁ e => .lam₁ (swap x y e)
+  | .lam₂ e => .lam₂ (swap x y e)
+  | .app₁ f arg => .app₁ (swap x y f) (swap x y arg)
+  | .app₂ f arg => .app₂ (swap x y f) (swap x y arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ (swap x y n)
+  | .plus₁ l r => .plus₁ (swap x y l) (swap x y r)
+  | .plus₂ l r => .plus₂ (swap x y l) (swap x y r)
+  | .code e => .code (swap x y e)
+  | .reflect e => .reflect (swap x y e)
+  | .lam𝕔 e => .lam𝕔 (swap x y e)
+  | .lets b e => .lets (swap x y b) (swap x y e)
+  | .let𝕔 b e => .let𝕔 (swap x y b) (swap x y e)
+
+theorem open_swap_comm :
+  ∀ i j x y e,
+  closed_at e x ->
+  closed_at e y ->
+  i ≠ j ->
+  opening i (.fvar x) (opening j (.fvar y) (swapdb i j e)) = swap x y (opening i (.fvar x) (opening j (.fvar y) e)) :=
+  by
+  intros i j x y e Hclosex Hclosey HNe
+  induction e generalizing i j with
+  | fvar =>
+    simp
+    rw [if_neg (Nat.ne_of_lt Hclosex)]
+    rw [if_neg (Nat.ne_of_lt Hclosey)]
+  | bvar k =>
+    simp; by_cases HEqj : k = j
+    . repeat rw [if_pos HEqj]
+      simp; by_cases HEqi : k = i
+      . omega
+      . repeat rw [if_neg HEqi]
+        simp; rw [if_neg HNe]
+        simp; by_cases HEq : y = x
+        . rw [if_pos HEq]; simp; omega
+        . rw [if_neg HEq]
+    . repeat rw [if_neg HEqj]
+      simp; by_cases HEqi : k = i
+      . repeat rw [if_pos HEqi]
+        simp
+      . repeat rw [if_neg HEqi]
+        simp; rw [if_neg HEqj]
+        simp; omega
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH
+    apply Hclosex; apply Hclosey; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclosex.left; apply Hclosey.left; omega
+    apply IH₁; apply Hclosex.right; apply Hclosey.right; omega
