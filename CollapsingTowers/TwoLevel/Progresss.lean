@@ -172,7 +172,19 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
     right
     rw [← close_open_id₀ e _ Hclose]
     cases IH₁ (neutral_inc _ _ _ HNeu.right HNeulc) with
-    | inl Hvalue => admit
+    | inl Hvalue =>
+      generalize HEqe : open₀ Γ.length e = e𝕠
+      rw [HEqe] at Hvalue H₁
+      cases Hvalue with
+      | code e Hlc =>
+        exists .code (.lets b (close₀ Γ.length e))
+        apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+        constructor
+        apply typing_regular; apply H₀
+        apply close_closedb; omega
+        apply closedb_inc; apply Hlc; omega
+        apply head𝕄.let𝕔
+      | _ => admit
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor
