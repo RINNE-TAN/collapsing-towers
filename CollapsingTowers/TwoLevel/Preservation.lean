@@ -559,7 +559,7 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
     apply neutral_opening
     apply HNeu.left; apply HNeu.right
   | app₂| plus₂| lit₂| lam𝕔| let𝕔 => apply HNeu
-  | plus₁ => simp
+  | plus₁| let𝕔_lit₁ => simp
   | lam₂ =>
     apply maping𝕔_neutral; apply HNeu
 
@@ -628,6 +628,11 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
       next Hτe =>
         repeat constructor
         apply Hτv; apply Hτe; apply Hclose
+  | let𝕔_lit₁ =>
+    cases Hτ
+    next Hτ =>
+      cases Hτ
+      constructor
 
 theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀ e₁ -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
   by
