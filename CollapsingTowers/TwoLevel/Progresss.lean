@@ -6,10 +6,10 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
   have ⟨HNeu, Hτ⟩ := H; clear H
   induction Hτ with
   | fvar => nomatch HNeu
-  | lam₁ _ _ _ _ Hτ =>
+  | lam₁ _ _ _ _ H =>
     left; constructor
-    apply open_closedb; apply typing_regular; apply Hτ
-  | lam₂ _ _ _ _ Hτ IH =>
+    apply open_closedb; apply typing_regular; apply H
+  | lam₂ _ _ _ _ H IH =>
     right
     cases IH HNeu with
     | inl Hvalue =>
@@ -18,30 +18,166 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
         exists .lam𝕔 (map𝕔₀ e)
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
         apply Hlc; apply head𝕄.lam₂
-      | _ => nomatch Hτ
+      | _ => nomatch H
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       apply step𝔹 _ _ _ _ ctx𝔹.lam₂; apply Hstep
-  | lam𝕔 Γ e _ _ Hτ Hclose HNeulc IH =>
+  | app₁ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ =>
+    right
+    cases IH₀ HNeu.left with
+    | inl Hvalue₀ =>
+      cases IH₁ HNeu.right with
+      | inl Hvalue₁ =>
+        cases Hvalue₀ with
+        | lam₁ e₀ Hlc₀ =>
+          exists open_subst e₁ e₀
+          apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+          constructor; apply Hlc₀; apply value_lc; apply Hvalue₁
+          apply head𝕄.app₁; apply Hvalue₁
+        | _ => nomatch H₀
+      | inr Hstep₁ =>
+        have ⟨_, Hstep₁⟩ := Hstep₁
+        apply step𝔹 _ _ _ _ (ctx𝔹.appr₁ _ _); apply Hstep₁
+        apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨_, Hstep₀⟩ := Hstep₀
+      apply step𝔹 _ _ _ _ (ctx𝔹.appl₁ _ _); apply Hstep₀
+      apply typing_regular; apply H₁
+  | app₂ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ =>
+    right
+    cases IH₀ HNeu.left with
+    | inl Hvalue₀ =>
+      cases IH₁ HNeu.right with
+      | inl Hvalue₁ =>
+        cases Hvalue₀ with
+        | code e₀ Hlc₀ =>
+          cases Hvalue₁ with
+          | code e₁ Hlc₁ =>
+            exists .reflect (.app₁ e₀ e₁)
+            apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+            constructor; apply Hlc₀; apply Hlc₁
+            apply head𝕄.app₂
+          | _ => nomatch H₁
+        | _ => nomatch H₀
+      | inr Hstep₁ =>
+        have ⟨_, Hstep₁⟩ := Hstep₁
+        apply step𝔹 _ _ _ _ (ctx𝔹.appr₂ _ _); apply Hstep₁
+        apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨_, Hstep₀⟩ := Hstep₀
+      apply step𝔹 _ _ _ _ (ctx𝔹.appl₂ _ _); apply Hstep₀
+      apply typing_regular; apply H₁
+  | plus₁ _ e₀ e₁ H₀ H₁ IH₀ IH₁ =>
+    right
+    cases IH₀ HNeu.left with
+    | inl Hvalue₀ =>
+      cases IH₁ HNeu.right with
+      | inl Hvalue₁ =>
+        cases Hvalue₀ with
+        | lit₁ e₀ =>
+          cases Hvalue₁ with
+          | lit₁ e₁ =>
+            exists .lit₁ (e₀ + e₁)
+            apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+            simp; apply head𝕄.plus₁
+          | _ => nomatch H₁
+        | _ => nomatch H₀
+      | inr Hstep₁ =>
+        have ⟨_, Hstep₁⟩ := Hstep₁
+        apply step𝔹 _ _ _ _ (ctx𝔹.plusr₁ _ _); apply Hstep₁
+        apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨_, Hstep₀⟩ := Hstep₀
+      apply step𝔹 _ _ _ _ (ctx𝔹.plusl₁ _ _); apply Hstep₀
+      apply typing_regular; apply H₁
+  | plus₂ _ e₀ e₁ H₀ H₁ IH₀ IH₁ =>
+    right
+    cases IH₀ HNeu.left with
+    | inl Hvalue₀ =>
+      cases IH₁ HNeu.right with
+      | inl Hvalue₁ =>
+        cases Hvalue₀ with
+        | code e₀ Hlc₀ =>
+          cases Hvalue₁ with
+          | code e₁ Hlc₁ =>
+            exists .reflect (.plus₁ e₀ e₁)
+            apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+            constructor; apply Hlc₀; apply Hlc₁
+            apply head𝕄.plus₂
+          | _ => nomatch H₁
+        | _ => nomatch H₀
+      | inr Hstep₁ =>
+        have ⟨_, Hstep₁⟩ := Hstep₁
+        apply step𝔹 _ _ _ _ (ctx𝔹.plusr₂ _ _); apply Hstep₁
+        apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨_, Hstep₀⟩ := Hstep₀
+      apply step𝔹 _ _ _ _ (ctx𝔹.plusl₂ _ _); apply Hstep₀
+      apply typing_regular; apply H₁
+  | lit₁ => left; constructor
+  | lit₂ _ _ H IH =>
+    right
+    cases IH HNeu with
+    | inl Hvalue =>
+      cases Hvalue with
+      | lit₁ e =>
+        exists .code (.lit₁ e)
+        apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+        simp; apply head𝕄.lit₂
+      | _ => nomatch H
+    | inr Hstep =>
+      have ⟨_, Hstep⟩ := Hstep
+      apply step𝔹 _ _ _ _ ctx𝔹.lit₂; apply Hstep
+  | code _ _ _ H =>
+    left; constructor
+    apply typing_regular; apply H
+  | reflect _ e _ H =>
+    right; constructor
+    apply step_lvl.reflect _ _ _ ctxℙℚ.hole ctx𝔼.hole
+    apply typing_regular; apply H
+  | lam𝕔 Γ e _ _ H Hclose HNeulc IH =>
     right
     rw [← close_open_id₀ e _ Hclose]
     cases IH (neutral_inc _ _ _ HNeu HNeulc) with
     | inl Hvalue =>
       generalize HEqe : open₀ Γ.length e = e𝕠
-      rw [HEqe] at Hvalue Hτ
+      rw [HEqe] at Hvalue H
       cases Hvalue with
       | code e Hlc =>
         exists .reflect (.lam₁ (close₀ Γ.length e))
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
         apply close_closedb; omega
         apply closedb_inc; apply Hlc; omega
-        constructor
-      | _ => nomatch Hτ
+        apply head𝕄.lam𝕔
+      | _ => nomatch H
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor
       apply stepℝ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
-  | _ => admit
+  | lets _ e₀ e₁ _ _ H₀ H₁ _ IH₀ IH₁ =>
+    right
+    cases IH₀ HNeu.left with
+    | inl Hvalue₀ =>
+      exists open_subst e₀ e₁
+      apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+      constructor
+      apply value_lc; apply Hvalue₀
+      apply open_closedb; apply typing_regular; apply H₁
+      apply head𝕄.lets; apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨_, Hstep₀⟩ := Hstep₀
+      apply step𝔹 _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
+      apply open_closedb; apply typing_regular; apply H₁
+  | let𝕔 Γ b e _ _ H₀ H₁ Hclose HNeulc _ IH₁ =>
+    right
+    rw [← close_open_id₀ e _ Hclose]
+    cases IH₁ (neutral_inc _ _ _ HNeu.right HNeulc) with
+    | inl Hvalue => admit
+    | inr Hstep =>
+      have ⟨_, Hstep⟩ := Hstep
+      constructor
+      apply stepℝ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
+      apply typing_regular; apply H₀
 
 theorem progress : ∀ e₀ τ, typing [] e₀ τ -> value e₀ \/ ∃ e₁, step e₀ e₁ :=
   by
