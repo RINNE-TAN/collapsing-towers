@@ -183,14 +183,14 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
         apply typing_regular; apply H₀
         apply close_closedb; omega
         apply closedb_inc; apply Hlc; omega
-        apply head𝕄.let𝕔
+        apply head𝕄.let𝕔₀
       | lit₁ e =>
         exists .lit₁ e
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
         constructor
         apply typing_regular; apply H₀
         simp
-        apply head𝕄.let𝕔_lit₁
+        apply head𝕄.let𝕔₁
       | lam₁ e Hlc =>
         exists .lam₁ (.let𝕔 b (swapdb 0 1 (closing 1 Γ.length e)))
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
@@ -198,7 +198,7 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
         apply typing_regular; apply H₀
         apply close_closedb; omega
         apply closedb_inc; apply Hlc; omega
-        apply head𝕄.let𝕔_lam₁
+        apply head𝕄.let𝕔₂
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor

@@ -20,7 +20,7 @@ theorem soundness : ∀ e₀ e₁ τ, stepn e₀ e₁ -> typing [] e₀ τ -> ¬
   intros e₀ e₁ τ Hstepn Hτ
   simp; intro HNorm
   cases progress _ _ (stepn_preservation _ _ _ Hstepn Hτ) with
-  | inl HV => apply HV
+  | inl Hvalue => apply Hvalue
   | inr Hstep =>
-    obtain ⟨e₂, Hstep⟩ := Hstep
+    have ⟨_, Hstep⟩ := Hstep
     exfalso; apply HNorm; apply Hstep

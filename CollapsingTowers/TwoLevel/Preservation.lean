@@ -678,11 +678,11 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
   | app₁ =>
     apply neutral_opening
     apply HNeu.left; apply HNeu.right
-  | app₂| plus₂| lit₂| lam𝕔| let𝕔 => apply HNeu
-  | plus₁| let𝕔_lit₁ => simp
+  | app₂| plus₂| lit₂| lam𝕔| let𝕔₀ => apply HNeu
+  | plus₁| let𝕔₁ => simp
   | lam₂ =>
     apply maping𝕔_neutral; apply HNeu
-  | let𝕔_lam₁ =>
+  | let𝕔₂ =>
     constructor
     apply HNeu.left
     apply swapdb_neutral; apply HNeu.right
@@ -745,19 +745,19 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
       next Hclose Hτe =>
         repeat constructor
         apply Hτe; apply Hclose
-  | let𝕔 =>
+  | let𝕔₀ =>
     cases Hτ
     next Hτv _ Hclose Hτe𝕔 =>
       cases Hτe𝕔
       next Hτe =>
         repeat constructor
         apply Hτv; apply Hτe; apply Hclose
-  | let𝕔_lit₁ =>
+  | let𝕔₁ =>
     cases Hτ
     next Hτ =>
       cases Hτ
       constructor
-  | let𝕔_lam₁ =>
+  | let𝕔₂ =>
     cases Hτ with
     | let𝕔 _ _ _ _ _ Hτb Hτe Hclose HNeu =>
       cases Hτe with
