@@ -9,4 +9,5 @@ import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Typing
 import CollapsingTowers.TwoLevel.Progresss
 import CollapsingTowers.TwoLevel.Preservation
+import CollapsingTowers.TwoLevel.Soundness
 import CollapsingTowers.TwoLevel.LR
