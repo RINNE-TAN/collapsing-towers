@@ -554,13 +554,109 @@ theorem preservation_swap_strengthened :
   Γ = Δ ++ τ𝕒₀ :: τ𝕒₁ :: Φ ->
   typing (Δ ++ τ𝕒₁ :: τ𝕒₀ :: Φ) (swap (Φ.length + 1) Φ.length e) τ𝕓 :=
   by
-  intros Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ HEq
+  intros Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ HEqΓ
   induction Hτ generalizing Δ with
   | fvar _ x _ Hbinds =>
-    admit
+    rw [HEqΓ] at Hbinds
+    simp; by_cases HEqΦ : x = Φ.length
+    . rw [HEqΦ]; rw [HEqΦ] at Hbinds
+      simp; constructor
+      apply binds_shrink at Hbinds
+      apply binds_extend
+      simp at *; apply Hbinds
+      simp; omega
+    . rw [if_neg HEqΦ]
+      by_cases HEqΦ₁ : x = Φ.length + 1
+      . rw [HEqΦ₁]; rw [HEqΦ₁] at Hbinds
+        simp; constructor
+        apply binds_shrink at Hbinds
+        apply binds_extend
+        simp at *; apply Hbinds
+        simp
+      . rw [if_neg HEqΦ₁]; by_cases HLe : Φ.length + 1 + 1 <= x
+        . constructor
+          repeat rw [← List.length_cons] at HLe
+          rw [← Nat.add_sub_of_le HLe, Nat.add_comm]
+          apply binds_extendr
+          apply binds_shrinkr _ (τ𝕒₀ :: τ𝕒₁ :: Φ)
+          simp; rw [Nat.sub_add_cancel]; apply Hbinds
+          simp at HLe; omega
+        . constructor
+          apply binds_shrink at Hbinds
+          apply binds_extend
+          simp at Hbinds; rw [if_neg (ne_comm.mp HEqΦ), if_neg (ne_comm.mp HEqΦ₁)] at Hbinds
+          simp; rw [if_neg (ne_comm.mp HEqΦ), if_neg (ne_comm.mp HEqΦ₁)]
+          apply Hbinds
+          simp; omega
   | lam₁ _ _ _ _ _ Hclose IH =>
-    admit
-  | _ => admit
+    rw [HEqΓ] at IH Hclose
+    rw [List.length_append, List.length_cons, List.length_cons] at IH
+    constructor
+    rw [open₀_swap_comm, ← List.cons_append]
+    rw [List.length_append, List.length_cons, List.length_cons]
+    apply IH; rfl
+    simp; omega
+    simp; omega
+    apply swap_closed
+    simp; omega
+    simp; omega
+    simp at *; apply Hclose
+  | lam𝕔 _ _ _ _ _ Hclose HNeu IH =>
+    rw [HEqΓ] at IH Hclose
+    rw [List.length_append, List.length_cons, List.length_cons] at IH
+    constructor
+    rw [open₀_swap_comm, ← List.cons_append]
+    rw [List.length_append, List.length_cons, List.length_cons]
+    apply IH; rfl
+    simp; omega
+    simp; omega
+    apply swap_closed
+    simp; omega
+    simp; omega
+    simp at *; apply Hclose
+    apply swap_neutraldb; apply HNeu
+  | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
+    rw [HEqΓ] at IHb IHe Hclose
+    rw [List.length_append, List.length_cons, List.length_cons] at IHe
+    constructor
+    apply IHb; rfl
+    rw [open₀_swap_comm, ← List.cons_append]
+    rw [List.length_append, List.length_cons, List.length_cons]
+    apply IHe; rfl
+    simp; omega
+    simp; omega
+    apply swap_closed
+    simp; omega
+    simp; omega
+    simp at *; apply Hclose
+  | let𝕔 _ _ _ _ _ _ _ Hclose HNeu IHb IHe =>
+    rw [HEqΓ] at IHb IHe Hclose
+    rw [List.length_append, List.length_cons, List.length_cons] at IHe
+    constructor
+    apply IHb; rfl
+    rw [open₀_swap_comm, ← List.cons_append]
+    rw [List.length_append, List.length_cons, List.length_cons]
+    apply IHe; rfl
+    simp; omega
+    simp; omega
+    apply swap_closed
+    simp; omega
+    simp; omega
+    simp at *; apply Hclose
+    apply swap_neutraldb; apply HNeu
+  | app₁ _ _ _ _ _ _ _ IH₀ IH₁
+  | app₂ _ _ _ _ _ _ _ IH₀ IH₁
+  | plus₁ _ _ _ _ _ IH₀ IH₁
+  | plus₂ _ _ _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HEqΓ
+    apply IH₁; apply HEqΓ
+  | code _ _ _ _ IH
+  | reflect _ _ _ _ IH
+  | lit₂ _ _ _ IH
+  | lam₂ _ _ _ _ _ IH =>
+    constructor; apply IH; apply HEqΓ
+  | lit₁ => constructor
 
 theorem preservation_swap :
   ∀ Γ e τ𝕒₀ τ𝕒₁ τ𝕓,
@@ -670,7 +766,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         constructor
         rw [closedb_opening_id]; apply weakening1; apply Hτb
         apply Hlc.left
-        simp; rw [open_swap_comm]
+        simp; rw [open_swapdb_comm]
         apply preservation_swap; apply Hτe
         apply closed_inc; apply Hclose; omega
         apply Hclose

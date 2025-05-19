@@ -746,7 +746,7 @@ def swap (x : ℕ) (y : ℕ) : Expr -> Expr
   | .lets b e => .lets (swap x y b) (swap x y e)
   | .let𝕔 b e => .let𝕔 (swap x y b) (swap x y e)
 
-theorem open_swap_comm :
+theorem open_swapdb_comm :
   ∀ i j x y e,
   closed_at e x ->
   closed_at e y ->
@@ -794,3 +794,81 @@ theorem open_swap_comm :
     simp; constructor
     apply IH₀; apply Hclosex.left; apply Hclosey.left; omega
     apply IH₁; apply Hclosex.right; apply Hclosey.right; omega
+
+theorem open_swap_comm :
+  ∀ i x y z e,
+  z ≠ x ->
+  z ≠ y ->
+  opening i (.fvar z) (swap x y e) = swap x y (opening i (.fvar z) e) :=
+  by
+  intros i x y z e HNex HNey
+  induction e generalizing i with
+  | fvar k =>
+    simp; by_cases HEqx : k = x
+    . rw [if_pos HEqx]; simp
+    . rw [if_neg HEqx]
+      by_cases HEqy : k = y
+      . rw [if_pos HEqy]; simp
+      . rw [if_neg HEqy]; simp
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]
+      simp; rw [if_neg HNex, if_neg HNey]
+    . rw [if_neg HEq]; simp
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+
+theorem open₀_swap_comm :
+  ∀ x y z e,
+  z ≠ x ->
+  z ≠ y ->
+  open₀ z (swap x y e) = swap x y (open₀ z e) := by apply open_swap_comm
+
+theorem swap_closed :
+  ∀ x y z e,
+  x < z ->
+  y < z ->
+  closed_at e z ->
+  closed_at (swap x y e) z :=
+  by
+  intros x y z e HLex HLty Hclose
+  induction e with
+  | bvar => simp
+  | fvar k =>
+    simp; by_cases HEqx : k = x
+    . rw [if_pos HEqx]; simp; omega
+    . rw [if_neg HEqx]
+      by_cases HEqy : k = y
+      . rw [if_pos HEqy]; simp; omega
+      . rw [if_neg HEqy]; apply Hclose
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH =>
+    apply IH; apply Hclose
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right

@@ -450,3 +450,34 @@ theorem swapdb_neutral : ∀ e x i j, neutral x e -> neutral x (swapdb i j e) :=
     constructor
     apply swapdb_closed; apply HNeu.left
     apply IHe; apply HNeu.right
+
+theorem swap_neutraldb : ∀ e i x y, neutral_db i e -> neutral_db i (swap x y e) :=
+  by
+  intros e i x y HNeu
+  induction e generalizing i with
+  | bvar j => apply HNeu
+  | fvar z =>
+    simp; by_cases HEqx : z = x
+    . rw [if_pos HEqx]; simp
+    . rw [if_neg HEqx]
+      by_cases HEqy : z = y
+      . rw [if_pos HEqy]; simp
+      . rw [if_neg HEqy]; simp
+  | lit₁ => simp
+  | code| reflect => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply HNeu.left
+    apply IH₁; apply HNeu.right
+  | lam₂ _ IH
+  | lit₂ _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH =>
+    simp at *
+    apply IH; apply HNeu
+  | let𝕔 _ _ _ IHe =>
+    apply IHe; apply HNeu
