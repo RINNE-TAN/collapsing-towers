@@ -1,7 +1,7 @@
 
 import CollapsingTowers.TwoLevel.Typing
 theorem progress_strengthened :
-    ∀ Γ st₀ e₀ τ, typing_strengthened Γ e₀ τ -> value e₀ \/ ∃ st₁ e₁, step_lvl Γ.length (st₀, e₀) (st₁, e₁) :=
+    ∀ Γ st₀ e₀ τ, typing_strengthened st₀.length Γ e₀ τ -> value e₀ \/ ∃ st₁ e₁, step_lvl Γ.length (st₀, e₀) (st₁, e₁) :=
   by
   intros Γ st₀ e₀ τ H
   have ⟨HNeu, Hτ⟩ := H; clear H
@@ -206,7 +206,7 @@ theorem progress_strengthened :
       apply stepℝ _ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
 
-theorem progress : ∀ st₀ e₀ τ, typing [] e₀ τ -> value e₀ \/ ∃ st₁ e₁, step (st₀, e₀) (st₁, e₁) :=
+theorem progress : ∀ st₀ e₀ τ, typing st₀.length [] e₀ τ -> value e₀ \/ ∃ st₁ e₁, step (st₀, e₀) (st₁, e₁) :=
   by
   intros _ _ _ Hτ
   rw [step, ← List.length_nil]

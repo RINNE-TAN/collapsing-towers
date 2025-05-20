@@ -5,7 +5,7 @@ import CollapsingTowers.TwoLevel.Preservation
 def stuck (st₀ : Store) (e₀ : Expr) : Prop :=
   ¬(∃ st₁ e₁, step (st₀, e₀) (st₁, e₁)) /\ ¬value e₀
 
-theorem stepn_preservation : ∀ st₀ st₁ e₀ e₁ τ, stepn (st₀, e₀) (st₁, e₁) -> typing [] e₀ τ -> typing [] e₁ τ :=
+theorem stepn_preservation : ∀ st₀ st₁ e₀ e₁ τ, stepn (st₀, e₀) (st₁, e₁) -> typing st₀.length [] e₀ τ -> typing st₁.length [] e₁ τ :=
   by
   intro st₀ st₁ e₀ e₁ τ Hstepn Hτ
   generalize HEq₀ : (st₀, e₀) = E₀
@@ -14,17 +14,17 @@ theorem stepn_preservation : ∀ st₀ st₁ e₀ e₁ τ, stepn (st₀, e₀) (
   induction Hstepn generalizing st₀ st₁ e₀ e₁ with
   | refl =>
     simp at HEq₁ HEq₀
-    rw [HEq₁.right]
-    rw [HEq₀.right] at Hτ
+    rw [HEq₁.left, HEq₁.right]
+    rw [HEq₀.left, HEq₀.right] at Hτ
     apply Hτ
   | multi _ _ _ _ _ _ _ Hstep IHτ =>
     simp at HEq₁ HEq₀
-    rw [HEq₁.right]
-    rw [HEq₀.right] at Hτ
+    rw [HEq₁.left, HEq₁.right]
+    rw [HEq₀.left, HEq₀.right] at Hτ
     apply preservation; apply Hstep
     apply IHτ; apply Hτ; repeat rfl
 
-theorem soundness : ∀ st₀ st₁ e₀ e₁ τ, stepn (st₀, e₀) (st₁, e₁) -> typing [] e₀ τ -> ¬stuck st₁ e₁ :=
+theorem soundness : ∀ st₀ st₁ e₀ e₁ τ, stepn (st₀, e₀) (st₁, e₁) -> typing st₀.length [] e₀ τ -> ¬stuck st₁ e₁ :=
   by
   intros st₀ st₁ e₀ e₁ τ Hstepn Hτ
   simp; intro HNorm

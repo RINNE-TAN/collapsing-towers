@@ -57,119 +57,119 @@ theorem binds_shrinkr : ∀ Γ Δ x τ, binds (x + Δ.length) τ (Γ ++ Δ) -> b
     . repeat rw [if_neg HEq]
       apply IHtails
 
-inductive typing : TEnv -> Expr -> Ty -> Prop where
+inductive typing (size: ℕ) : TEnv -> Expr -> Ty -> Prop where
   | fvar : ∀ Γ x τ,
     binds x τ Γ ->
-    typing Γ (.fvar x) τ
+    typing size Γ (.fvar x) τ
   | lam₁ : ∀ Γ e τ𝕒 τ𝕓,
-    typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
+    typing size (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
-    typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
+    typing size Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
   | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
-    typing Γ e (.arrow (.rep τ𝕒) (.rep τ𝕓)) ->
-    typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing size Γ e (.arrow (.rep τ𝕒) (.rep τ𝕓)) ->
+    typing size Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
-    typing Γ f (.arrow τ𝕒 τ𝕓) ->
-    typing Γ arg τ𝕒 ->
-    typing Γ (.app₁ f arg) τ𝕓
+    typing size Γ f (.arrow τ𝕒 τ𝕓) ->
+    typing size Γ arg τ𝕒 ->
+    typing size Γ (.app₁ f arg) τ𝕓
   | app₂ : ∀ Γ f arg τ𝕒 τ𝕓,
-    typing Γ f (.rep (.arrow τ𝕒 τ𝕓)) ->
-    typing Γ arg (.rep τ𝕒) ->
-    typing Γ (.app₂ f arg) (.rep τ𝕓)
+    typing size Γ f (.rep (.arrow τ𝕒 τ𝕓)) ->
+    typing size Γ arg (.rep τ𝕒) ->
+    typing size Γ (.app₂ f arg) (.rep τ𝕓)
   | plus₁ : ∀ Γ l r,
-    typing Γ l .nat ->
-    typing Γ r .nat ->
-    typing Γ (.plus₁ l r) .nat
+    typing size Γ l .nat ->
+    typing size Γ r .nat ->
+    typing size Γ (.plus₁ l r) .nat
   | plus₂ : ∀ Γ l r,
-    typing Γ l (.rep .nat) ->
-    typing Γ r (.rep .nat) ->
-    typing Γ (.plus₂ l r) (.rep .nat)
+    typing size Γ l (.rep .nat) ->
+    typing size Γ r (.rep .nat) ->
+    typing size Γ (.plus₂ l r) (.rep .nat)
   | lit₁ : ∀ Γ n,
-    typing Γ (.lit₁ n) .nat
+    typing size Γ (.lit₁ n) .nat
   | lit₂ : ∀ Γ n,
-    typing Γ n .nat ->
-    typing Γ (.lit₂ n) (.rep .nat)
+    typing size Γ n .nat ->
+    typing size Γ (.lit₂ n) (.rep .nat)
   | code : ∀ Γ e τ,
-    typing Γ e τ ->
-    typing Γ (.code e) (.rep τ)
+    typing size Γ e τ ->
+    typing size Γ (.code e) (.rep τ)
   | reflect : ∀ Γ e τ,
-    typing Γ e τ ->
-    typing Γ (.reflect e) (.rep τ)
+    typing size Γ e τ ->
+    typing size Γ (.reflect e) (.rep τ)
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
-    typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
+    typing size (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->
     closed_at e Γ.length ->
     neutral_lc e ->
-    typing Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing size Γ (.lam𝕔 e) (.rep (.arrow τ𝕒 τ𝕓))
   | lets : ∀ Γ b e τ𝕒 τ𝕓,
-    typing Γ b τ𝕒 ->
-    typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
+    typing size Γ b τ𝕒 ->
+    typing size (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
-    typing Γ (.lets b e) τ𝕓
+    typing size Γ (.lets b e) τ𝕓
   | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓,
-    typing Γ b τ𝕒 ->
-    typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
+    typing size Γ b τ𝕒 ->
+    typing size (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
     neutral_lc e ->
-    typing Γ (.let𝕔 b e) τ𝕓
+    typing size Γ (.let𝕔 b e) τ𝕓
 
-example : typing [] expr₀ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₀ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₀, x₀]
   repeat constructor
 
-example : typing [] expr₁ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₁ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₁, x₀]
   repeat constructor
 
-example : typing [] expr₂ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₂ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₂, x₀]
   repeat constructor
 
-example : typing [] expr₃ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₃ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₃, x₀, x₁]
   repeat constructor
 
-example : typing [] expr₄ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₄ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₄, x₀, x₁]
   repeat constructor
 
-example : typing [] expr₅ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₅ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₅, x₀, x₁, x₂]
   repeat constructor
 
-example : typing [] expr₆ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₆ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₆, x₀, x₁, x₂]
   repeat constructor
 
-example : typing [] expr₇ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₇ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₇, x₀, x₁, x₂]
   repeat constructor
 
-example : typing [] expr₈ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₈ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₈, x₀, x₁, x₂]
   repeat constructor
 
-example : typing [] expr₉ (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr₉ (.rep (.arrow .nat .nat)) :=
   by
   rw [expr₉, x₀, x₁, x₂]
   repeat constructor
 
-example : typing [] expr𝕩 (.rep (.arrow .nat .nat)) :=
+example : typing 0 [] expr𝕩 (.rep (.arrow .nat .nat)) :=
   by
   rw [expr𝕩, x₀, x₁, x₂]
   repeat constructor
 
-theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
+theorem typing_regular : ∀ size Γ e τ, typing size Γ e τ -> lc e :=
   by
-  intros Γ e τ Htyping
+  intros size Γ e τ Htyping
   induction Htyping with
   | fvar
   | lit₁=> constructor
@@ -186,9 +186,9 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
-theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
+theorem typing_closed : ∀ size Γ e τ, typing size Γ e τ -> closed_at e Γ.length :=
   by
-  intros Γ e τ Htyping
+  intros size Γ e τ Htyping
   induction Htyping with
   | fvar _ _ τ Hbind => simp at *; apply indexrSome'; exists τ
   | lam₁ _ _ _ _ _ IH
@@ -206,9 +206,9 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   | lit₁ => constructor
 
 theorem weakening_strengthened:
-    ∀ Γ Ψ Δ Φ e τ, typing Γ e τ -> Γ = Ψ ++ Φ -> typing (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
+    ∀ size Γ Ψ Δ Φ e τ, typing size Γ e τ -> Γ = Ψ ++ Φ -> typing size (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
   by
-  intros Γ Ψ Δ Φ e τ Hτ HEqΓ
+  intros size Γ Ψ Δ Φ e τ Hτ HEqΓ
   induction Hτ generalizing Ψ with
   | fvar _ x _ Hbinds =>
     rw [HEqΓ] at Hbinds
@@ -285,28 +285,28 @@ theorem weakening_strengthened:
     apply shiftl_neutral_db; apply HNeu
     simp
 
-theorem weakening : ∀ Γ Δ e τ, typing Γ e τ -> typing (Δ ++ Γ) e τ :=
+theorem weakening : ∀ size Γ Δ e τ, typing size Γ e τ -> typing size (Δ ++ Γ) e τ :=
   by
-  intros Γ Δ e τ Hτ
+  intros size Γ Δ e τ Hτ
   rw [← List.nil_append Δ]
   rw [← shiftl_id _ e]
   apply weakening_strengthened
   apply Hτ; rfl
   apply typing_closed; apply Hτ
 
-theorem weakening1 : ∀ Γ e τ𝕒 τ𝕓, typing Γ e τ𝕓 -> typing (τ𝕒 :: Γ) e τ𝕓 :=
+theorem weakening1 : ∀ size Γ e τ𝕒 τ𝕓, typing size Γ e τ𝕓 -> typing size (τ𝕒 :: Γ) e τ𝕓 :=
   by
-  intros Γ e τ𝕒
+  intros size Γ e τ𝕒
   rw [← List.singleton_append]
   apply weakening
 
 @[simp]
-def typing_strengthened (Γ: TEnv) (e : Expr) (τ : Ty) : Prop :=
-  neutral Γ.length e /\ typing Γ e τ
+def typing_strengthened (size : ℕ) (Γ: TEnv) (e : Expr) (τ : Ty) : Prop :=
+  neutral Γ.length e /\ typing size Γ e τ
 
-theorem typing_weakening_empty : ∀ e τ, typing [] e τ -> typing_strengthened [] e τ :=
+theorem typing_weakening_empty : ∀ size e τ, typing size [] e τ -> typing_strengthened size [] e τ :=
   by
-  intros _ _ Hτ
+  intros _ _ _ Hτ
   constructor
   apply closed_at_neutral; rw [← List.length_nil]
   apply typing_closed; apply Hτ

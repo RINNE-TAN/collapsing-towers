@@ -2,9 +2,12 @@
 import Mathlib.Tactic
 import CollapsingTowers.TwoLevel.Typing
 theorem decompose𝔼 :
-    ∀ Γ E e τ𝕓, ctx𝔼 E -> typing Γ (E e) τ𝕓 -> ∃ τ𝕒, typing Γ e τ𝕒 /\ typing (τ𝕒 :: Γ) (E (.fvar Γ.length)) τ𝕓 :=
+    ∀ size Γ E e τ𝕓,
+    ctx𝔼 E ->
+    typing size Γ (E e) τ𝕓 ->
+    ∃ τ𝕒, typing size Γ e τ𝕒 /\ typing size (τ𝕒 :: Γ) (E (.fvar Γ.length)) τ𝕓 :=
   by
-  intros Γ E e τ𝕓 HE Hτ
+  intros size Γ E e τ𝕓 HE Hτ
   induction HE generalizing τ𝕓 with
   | hole =>
     exists τ𝕓; constructor
@@ -108,13 +111,13 @@ theorem decompose𝔼 :
         constructor; apply Hτ𝔼
 
 theorem preservationℝ :
-  ∀ Γ R e₀ e₁,
+  ∀ size Γ R e₀ e₁,
   ctxℝ Γ.length R ->
   lc e₀ ->
-  (∀ τ𝕒 τ𝕓, typing_strengthened (τ𝕒 :: Γ) e₀ τ𝕓 -> typing_strengthened (τ𝕒 :: Γ) e₁ τ𝕓) ->
-  ∀ τ, typing_strengthened Γ (R e₀) τ -> typing_strengthened Γ (R e₁) τ :=
+  (∀ τ𝕒 τ𝕓, typing_strengthened size (τ𝕒 :: Γ) e₀ τ𝕓 -> typing_strengthened size (τ𝕒 :: Γ) e₁ τ𝕓) ->
+  ∀ τ, typing_strengthened size Γ (R e₀) τ -> typing_strengthened size Γ (R e₁) τ :=
   by
-  intro Γ _ e₀ e₁ HR Hlc IH _ Hτe₀
+  intro size Γ _ e₀ e₁ HR Hlc IH _ Hτe₀
   have ⟨HNeue₀, Hτe₀⟩ := Hτe₀
   cases HR with
   | lam𝕔 =>
@@ -130,7 +133,7 @@ theorem preservationℝ :
       . constructor
         rw [open_close_id₀]; apply Hτe₁
         apply typing_regular; apply Hτe₁
-        apply close_closed; apply typing_closed _ _ _ Hτe₁
+        apply close_closed; apply typing_closed _ _ _ _ Hτe₁
         apply neutral_db_closing
         apply typing_regular; apply Hτe₁
         apply HNeue₁
@@ -151,18 +154,18 @@ theorem preservationℝ :
         apply Hb
         rw [open_close_id₀]; apply Hτe₁
         apply typing_regular; apply Hτe₁
-        apply close_closed; apply typing_closed _ _ _ Hτe₁
+        apply close_closed; apply typing_closed _ _ _ _ Hτe₁
         apply neutral_db_closing
         apply typing_regular; apply Hτe₁
         apply HNeue₁
       apply Hlc; apply Hlc
 
 theorem preservation𝔹 :
-  ∀ Γ B e₀ e₁, ctx𝔹 B ->
-  (∀ τ, typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ) ->
-  ∀ τ, typing_strengthened Γ (B e₀) τ -> typing_strengthened Γ (B e₁) τ :=
+  ∀ size Γ B e₀ e₁, ctx𝔹 B ->
+  (∀ τ, typing_strengthened size Γ e₀ τ -> typing_strengthened size Γ e₁ τ) ->
+  ∀ τ, typing_strengthened size Γ (B e₀) τ -> typing_strengthened size Γ (B e₁) τ :=
   by
-  intro _ _ _ _ HB IH _ Hτe₀
+  intro _ _ _ _ _ HB IH _ Hτe₀
   have ⟨HNeue₀, Hτe₀⟩ := Hτe₀
   cases HB with
   | appl₁ =>
@@ -255,12 +258,12 @@ theorem preservation𝔹 :
       . constructor; apply Hτe₁; apply He; apply Hclose
 
 theorem preservation_maping_strengthened :
-  ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
-  typing (Δ ++ τ𝕔 :: Φ) e τ𝕓 ->
-  typing (Δ ++ τ𝕒 :: Φ) v τ𝕔 ->
-  typing (Δ ++ τ𝕒 :: Φ) (subst Φ.length v e) τ𝕓 :=
+  ∀ size Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
+  typing size (Δ ++ τ𝕔 :: Φ) e τ𝕓 ->
+  typing size (Δ ++ τ𝕒 :: Φ) v τ𝕔 ->
+  typing size (Δ ++ τ𝕒 :: Φ) (subst Φ.length v e) τ𝕓 :=
   by
-  intros Δ Φ v e τ𝕒 τ𝕓 τ𝕔
+  intros size Δ Φ v e τ𝕒 τ𝕓 τ𝕔
   generalize HEqΓ : Δ ++ τ𝕔 :: Φ = Γ
   intros Hτe Hτv
   induction Hτe generalizing Δ with
@@ -362,21 +365,21 @@ theorem preservation_maping_strengthened :
   | lit₁ => constructor
 
 theorem preservation_maping :
-  ∀ Γ v e τ𝕒 τ𝕓 τ𝕔,
-  typing (τ𝕔 :: Γ) e τ𝕓 ->
-  typing (τ𝕒 :: Γ) v τ𝕔 ->
-  typing (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
-  intros Γ v e τ𝕒 τ𝕓 τ𝕔
+  ∀ size Γ v e τ𝕒 τ𝕓 τ𝕔,
+  typing size (τ𝕔 :: Γ) e τ𝕓 ->
+  typing size (τ𝕒 :: Γ) v τ𝕔 ->
+  typing size (τ𝕒 :: Γ) (subst Γ.length v e) τ𝕓 := by
+  intros size Γ v e τ𝕒 τ𝕓 τ𝕔
   rw [← List.nil_append (τ𝕔 :: Γ), ← List.nil_append (τ𝕒 :: Γ)]
   apply preservation_maping_strengthened
 
 theorem preservation_head𝔼 :
-  ∀ Γ E b τ, ctx𝔼 E -> lc b ->
-  typing Γ (E (.reflect b)) τ ->
-  typing Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
+  ∀ size Γ E b τ, ctx𝔼 E -> lc b ->
+  typing size Γ (E (.reflect b)) τ ->
+  typing size Γ (.let𝕔 b (E (.code (.bvar 0)))) τ :=
   by
-  intros Γ E b _ HE Hlc Hτr
-  have ⟨_, Hτr, Hτ𝔼⟩ := decompose𝔼 _ _ _ _ HE Hτr
+  intros size Γ E b _ HE Hlc Hτr
+  have ⟨_, Hτr, Hτ𝔼⟩ := decompose𝔼 _ _ _ _ _ HE Hτr
   cases Hτr with
   | reflect _ _ τ Hτb =>
     constructor; apply Hτb
@@ -392,13 +395,13 @@ theorem preservation_head𝔼 :
     apply typing_regular; apply Hτr; simp
 
 theorem preservation_subst_strengthened :
-  ∀ Γ Δ Φ v e τ𝕒 τ𝕓,
-  typing Γ e τ𝕓 ->
+  ∀ size Γ Δ Φ v e τ𝕒 τ𝕓,
+  typing size Γ e τ𝕓 ->
   Γ = Δ ++ τ𝕒 :: Φ ->
-  typing Φ v τ𝕒 ->
-  typing (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 :=
+  typing size Φ v τ𝕒 ->
+  typing size (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 :=
   by
-  intros Γ Δ Φ v e τ𝕒 τ𝕓 Hτe HEqΓ Hτv
+  intros size Γ Δ Φ v e τ𝕒 τ𝕓 Hτe HEqΓ Hτv
   induction Hτe generalizing Δ with
   | fvar _ x _ Hbinds =>
     rw [HEqΓ] at Hbinds
@@ -536,10 +539,10 @@ theorem preservation_subst_strengthened :
   | lit₁ => constructor
 
 theorem preservation_subst :
-    ∀ Γ v e τ𝕒 τ𝕓, typing Γ v τ𝕒 -> typing (τ𝕒 :: Γ) e τ𝕓 -> typing Γ (subst Γ.length v e) τ𝕓 :=
+    ∀ size Γ v e τ𝕒 τ𝕓, typing size Γ v τ𝕒 -> typing size (τ𝕒 :: Γ) e τ𝕓 -> typing size Γ (subst Γ.length v e) τ𝕓 :=
   by
-  intros Γ v e τ𝕒 τ𝕓 Hτv Hτe
-  have H := preservation_subst_strengthened (τ𝕒 :: Γ) [] Γ v e τ𝕒 τ𝕓
+  intros size Γ v e τ𝕒 τ𝕓 Hτv Hτe
+  have H := preservation_subst_strengthened size (τ𝕒 :: Γ) [] Γ v e τ𝕒 τ𝕓
   simp at H
   have H := H Hτe Hτv
   rw [shiftr_id] at H
@@ -549,12 +552,12 @@ theorem preservation_subst :
   rw [← List.length_cons]; apply typing_closed; apply Hτe
 
 theorem preservation_swap_strengthened :
-  ∀ Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓,
-  typing Γ e τ𝕓 ->
+  ∀ size Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓,
+  typing size Γ e τ𝕓 ->
   Γ = Δ ++ τ𝕒₀ :: τ𝕒₁ :: Φ ->
-  typing (Δ ++ τ𝕒₁ :: τ𝕒₀ :: Φ) (swap (Φ.length + 1) Φ.length e) τ𝕓 :=
+  typing size (Δ ++ τ𝕒₁ :: τ𝕒₀ :: Φ) (swap (Φ.length + 1) Φ.length e) τ𝕓 :=
   by
-  intros Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ HEqΓ
+  intros size Γ Δ Φ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ HEqΓ
   induction Hτ generalizing Δ with
   | fvar _ x _ Hbinds =>
     rw [HEqΓ] at Hbinds
@@ -659,11 +662,11 @@ theorem preservation_swap_strengthened :
   | lit₁ => constructor
 
 theorem preservation_swap :
-  ∀ Γ e τ𝕒₀ τ𝕒₁ τ𝕓,
-  typing (τ𝕒₀ :: τ𝕒₁ :: Γ) e τ𝕓 ->
-  typing (τ𝕒₁ :: τ𝕒₀ :: Γ) (swap (Γ.length + 1) Γ.length e) τ𝕓 :=
+  ∀ size Γ e τ𝕒₀ τ𝕒₁ τ𝕓,
+  typing size (τ𝕒₀ :: τ𝕒₁ :: Γ) e τ𝕓 ->
+  typing size (τ𝕒₁ :: τ𝕒₀ :: Γ) (swap (Γ.length + 1) Γ.length e) τ𝕓 :=
   by
-  intros Γ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ
+  intros size Γ e τ𝕒₀ τ𝕒₁ τ𝕓 Hτ
   rw [← List.nil_append (τ𝕒₁ :: τ𝕒₀ :: Γ)]
   apply preservation_swap_strengthened
   apply Hτ; simp
@@ -687,9 +690,9 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
     apply HNeu.left
     apply swapdb_neutral; apply HNeu.right
 
-theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing Γ e₀ τ -> typing Γ e₁ τ :=
+theorem preservation_head𝕄 : ∀ size Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e₀ -> typing size Γ e₀ τ -> typing size Γ e₁ τ :=
   by
-  intros Γ e₀ e₁ τ Hhead Hlc Hτ
+  intros size Γ e₀ e₁ τ Hhead Hlc Hτ
   cases Hhead with
   | lets =>
     cases Hτ
@@ -777,7 +780,7 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply typing_closed; apply Hτb
         apply swapdb_closed; apply Hclose
 
-theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ.length (st₀, e₀) (st₁, e₁) -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
+theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ.length (st₀, e₀) (st₁, e₁) -> typing_strengthened st₀.length Γ e₀ τ -> typing_strengthened st₁.length Γ e₁ τ :=
   by
   intro Γ st₀ st₁ e₀ e₁ τ
   generalize HEqlvl : Γ.length = lvl
@@ -806,7 +809,7 @@ theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ
     | hole =>
       constructor
       . constructor
-        . apply closed_at_decompose𝔼 _ _ _ HE (typing_closed _ _ _ Hτ.right)
+        . apply closed_at_decompose𝔼 _ _ _ HE (typing_closed _ _ _ _ Hτ.right)
         . apply neutral𝔼; apply HE; apply Hτ.left; simp
       . apply preservation_head𝔼; apply HE; apply Hlc; apply Hτ.right
     | cons𝔹 _ _ HB _ IHM =>
@@ -821,7 +824,7 @@ theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ
       intros _ _; apply IHM; rfl
       apply Hτ
 
-theorem preservation : ∀ st₀ st₁ e₀ e₁ τ, step (st₀, e₀) (st₁, e₁) -> typing [] e₀ τ -> typing [] e₁ τ :=
+theorem preservation : ∀ st₀ st₁ e₀ e₁ τ, step (st₀, e₀) (st₁, e₁) -> typing st₀.length [] e₀ τ -> typing st₁.length [] e₁ τ :=
   by
   intros st₀ st₁ e₀ e₁ τ Hstep Hτ
   apply And.right; apply preservation_strengthened
