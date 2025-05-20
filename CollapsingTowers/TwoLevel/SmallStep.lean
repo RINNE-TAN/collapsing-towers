@@ -1,6 +1,6 @@
 
-import Mathlib.Data.Finset.Basic
 import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Store
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Neutral
 import CollapsingTowers.TwoLevel.Env
@@ -270,20 +270,20 @@ inductive head𝕄 : Expr -> Expr -> Prop where
   | let𝕔₁ : ∀ b n, head𝕄 (.let𝕔 b (.lit₁ n)) (.lit₁ n)
   | let𝕔₂ : ∀ b e, head𝕄 (.let𝕔 b (.lam₁ e)) (.lam₁ (.let𝕔 b (swapdb 0 1 e)))
 
-inductive step_lvl (lvl: ℕ) : Expr -> Expr -> Prop where
-  | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl M⟦e₀⟧ M⟦e₁⟧
-  | reflect : ∀ P E b, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+inductive step_lvl (lvl: ℕ) : (Store × Expr) -> (Store × Expr) -> Prop where
+  | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)
+  | reflect : ∀ P E b st, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl (st, P⟦E⟦.reflect b⟧⟧) (st, P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧)
 
-theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B -> step_lvl lvl e₀ e₁ -> ∃ e₂, step_lvl lvl (B e₀) e₂ :=
+theorem step𝔹 : ∀ lvl B e₀ e₁ st₀ st₁, ctx𝔹 B -> step_lvl lvl (st₀, e₀) (st₁, e₁) -> ∃ e₂, step_lvl lvl (st₀, B⟦e₀⟧) (st₁, e₂) :=
   by
-  intros lvl B e₀ e₁ HB Hstep
+  intros lvl B e₀ e₁ st₀ st₁ HB Hstep
   cases Hstep with
-  | step𝕄 M _ _ HM Hlc Hhead =>
+  | step𝕄 M _ _ _ HM Hlc Hhead =>
     rw [ctx_comp B M]
     constructor; apply step_lvl.step𝕄
     apply ctx𝕄.cons𝔹; apply HB; apply HM
     apply Hlc; apply Hhead
-  | reflect P E _ HP HE Hlc =>
+  | reflect P E _ _ HP HE Hlc =>
     cases HP with
     | hole =>
       constructor
@@ -307,27 +307,27 @@ theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B -> step_lvl lvl e₀ e₁ -> �
       apply ctxℙℚ.consℝ; apply HR
       apply HPQ; apply HE; apply Hlc
 
-theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R -> step_lvl (lvl + 1) e₀ e₁ -> step_lvl lvl (R e₀) (R e₁) :=
+theorem stepℝ : ∀ lvl R e₀ e₁ st₀ st₁, ctxℝ lvl R -> step_lvl (lvl + 1) (st₀, e₀) (st₁, e₁) -> step_lvl lvl (st₀, R⟦e₀⟧) (st₁, R⟦e₁⟧) :=
   by
-  intros lvl R e₀ e₁ HR Hstep
+  intros lvl R e₀ e₁ st₀ st₁ HR Hstep
   cases Hstep with
-  | step𝕄 M _ _ HM Hlc Hhead =>
+  | step𝕄 M _ _ _ HM Hlc Hhead =>
     repeat rw [ctx_comp R M]
     apply step_lvl.step𝕄
     apply ctx𝕄.consℝ; apply HR; apply HM
     apply Hlc; apply Hhead
-  | reflect P _ _ HP HE Hlc =>
+  | reflect P _ _ _ HP HE Hlc =>
     repeat rw [ctx_comp R P]
     apply step_lvl.reflect
     apply ctxℙℚ.consℝ; apply HR; apply HP
     apply HE; apply Hlc
 
 @[simp]
-def step : Expr -> Expr -> Prop := step_lvl 0
+def step : (Store × Expr) -> (Store × Expr) -> Prop := step_lvl 0
 
-inductive stepn : Expr → Expr → Prop
-  | refl : ∀ e, stepn e e
-  | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
+inductive stepn : (Store × Expr) -> (Store × Expr) → Prop
+  | refl : ∀ st e, stepn (st, e) (st, e)
+  | multi : ∀ st₁ st₂ st₃ e₁ e₂ e₃, stepn (st₁, e₁) (st₂, e₂) → step (st₂, e₂) (st₃, e₃) → stepn (st₁, e₁) (st₃, e₃)
 
 /-- Examples:
 lam₂ x. x +₂ (x +₂ x)
@@ -339,6 +339,10 @@ code {
   in f
 }
 -/
+
+def st : Store :=
+  []
+
 def x₀ : Expr :=
   .fvar 0
 
@@ -386,66 +390,66 @@ def expr𝕩 : Expr :=
   .code
     (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
-example : step expr₀ expr₁ := by
+example : step (st, expr₀) (st, expr₁) := by
   rw [expr₀]
   rw [expr₁]
-  apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
   repeat constructor
 
-example : step expr₁ expr₂ := by
+example : step (st, expr₁) (st, expr₂) := by
   rw [expr₁]
   rw [expr₂]
-  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
+  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
   repeat constructor
 
-example : step expr₂ expr₃ := by
+example : step (st, expr₂) (st, expr₃) := by
   rw [expr₂]
   rw [expr₃]
-  apply step_lvl.reflect _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 ctxℙℚ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  apply step_lvl.reflect _ _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 ctxℙℚ.hole) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
   repeat constructor
 
-example : step expr₃ expr₄ := by
+example : step (st, expr₃) (st, expr₄) := by
   rw [expr₃]
   rw [expr₄]
-  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
   repeat constructor
 
-example : step expr₄ expr₅ := by
+example : step (st, expr₄) (st, expr₅) := by
   rw [expr₄]
   rw [expr₅]
-  apply step_lvl.reflect _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙℚ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙℚ.hole)) ctx𝔼.hole
+  apply step_lvl.reflect _ _ _ _ (ctxℙℚ.consℝ _ _ ctxℝ.lam𝕔 (ctxℙℚ.consℝ _ _ (ctxℝ.let𝕔 _ _) ctxℙℚ.hole)) ctx𝔼.hole
   repeat constructor
 
-example : step expr₅ expr₆ := by
+example : step (st, expr₅) (st, expr₆) := by
   rw [expr₅]
   rw [expr₆]
-  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
   repeat constructor
 
-example : step expr₆ expr₇ := by
+example : step (st, expr₆) (st, expr₇) := by
   rw [expr₆]
   rw [expr₇]
-  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 ctx𝕄.hole)
+  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 ctx𝕄.hole)
   repeat constructor
 
-example : step expr₇ expr₈ := by
+example : step (st, expr₇) (st, expr₈) := by
   rw [expr₇]
   rw [expr₈]
   rw [x₀]
   rw [x₁]
   rw [x₂]
   simp
-  apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
   repeat constructor
 
-example : step expr₈ expr₉ := by
+example : step (st, expr₈) (st, expr₉) := by
   rw [expr₈]
   rw [expr₉]
-  apply step_lvl.reflect _ _ _ ctxℙℚ.hole ctx𝔼.hole
+  apply step_lvl.reflect _ _ _ _ ctxℙℚ.hole ctx𝔼.hole
   repeat constructor
 
-example : step expr₉ expr𝕩 := by
+example : step (st, expr₉) (st, expr𝕩) := by
   rw [expr₉]
   rw [expr𝕩]
-  apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
   repeat constructor

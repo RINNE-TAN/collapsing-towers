@@ -1,6 +1,7 @@
 -- This module serves as the root of the `CollapsingTowers` library.
 -- Import modules here that should be built as part of the library.
 import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Store
 import CollapsingTowers.TwoLevel.Env
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Shift

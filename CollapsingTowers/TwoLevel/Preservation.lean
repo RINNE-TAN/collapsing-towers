@@ -777,12 +777,12 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         apply typing_closed; apply Hτb
         apply swapdb_closed; apply Hclose
 
-theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀ e₁ -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
+theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ.length (st₀, e₀) (st₁, e₁) -> typing_strengthened Γ e₀ τ -> typing_strengthened Γ e₁ τ :=
   by
-  intro Γ e₀ e₁ τ
+  intro Γ st₀ st₁ e₀ e₁ τ
   generalize HEqlvl : Γ.length = lvl
   intro Hstep Hτ; cases Hstep with
-  | step𝕄 _ _ _ HM Hlc Hhead𝕄 =>
+  | step𝕄 _ _ _ _ HM Hlc Hhead𝕄 =>
     induction HM generalizing τ Γ with
     | hole =>
       constructor
@@ -790,7 +790,7 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       . apply preservation_head𝕄; apply Hhead𝕄; apply Hlc; apply Hτ.right
     | cons𝔹 _ _ HB _ IHM =>
       simp; apply preservation𝔹
-      apply HB; intro; apply IHM;
+      apply HB; intro; apply IHM
       apply HEqlvl; apply Hτ
     | consℝ _ _ HR HM IHM =>
       rw [← HEqlvl] at HR IHM; simp; apply preservationℝ
@@ -798,7 +798,7 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
       apply Hτ
-  | reflect P E e HP HE Hlc =>
+  | reflect P E e _ HP HE Hlc =>
     generalize HPQ : ℙℚ.ℙ = PQ
     simp at HP; rw [HPQ] at HP
     clear HPQ
@@ -821,8 +821,8 @@ theorem preservation_strengthened : ∀ Γ e₀ e₁ τ, step_lvl Γ.length e₀
       intros _ _; apply IHM; rfl
       apply Hτ
 
-theorem preservation : ∀ e₀ e₁ τ, step e₀ e₁ -> typing [] e₀ τ -> typing [] e₁ τ :=
+theorem preservation : ∀ st₀ st₁ e₀ e₁ τ, step (st₀, e₀) (st₁, e₁) -> typing [] e₀ τ -> typing [] e₁ τ :=
   by
-  intros e₀ e₁ τ Hstep Hτ
+  intros st₀ st₁ e₀ e₁ τ Hstep Hτ
   apply And.right; apply preservation_strengthened
   apply Hstep; apply typing_weakening_empty; apply Hτ
