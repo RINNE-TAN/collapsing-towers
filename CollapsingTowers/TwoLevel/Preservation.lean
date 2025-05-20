@@ -1,6 +1,8 @@
 
 import Mathlib.Tactic
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.Typing
+
 theorem decompose𝔼 :
     ∀ Γ E e τ𝕓, ctx𝔼 E -> typing Γ (E e) τ𝕓 -> ∃ τ𝕒, typing Γ e τ𝕒 /\ typing (τ𝕒 :: Γ) (E (.fvar Γ.length)) τ𝕓 :=
   by

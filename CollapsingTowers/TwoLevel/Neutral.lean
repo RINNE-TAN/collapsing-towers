@@ -1,7 +1,8 @@
 
-import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Shift
+
 @[simp]
 def neutral (x : ℕ) : Expr -> Prop
   | .bvar _ => true

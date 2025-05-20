@@ -1,5 +1,8 @@
 
-import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Syntax
+
+-- Definitions
+
 @[simp]
 def subst (x : ℕ) (v : Expr) : Expr -> Expr
   | .bvar i => .bvar i
@@ -109,6 +112,71 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
 
 @[simp]
 def lc e := closedb_at e 0
+
+@[simp]
+def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
+  match e with
+  | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
+  | .fvar x => .fvar x
+  | .lam₁ e => .lam₁ (maping𝕔 e (i + 1))
+  | .lam₂ e => .lam₂ (maping𝕔 e i)
+  | .app₁ f arg => .app₁ (maping𝕔 f i) (maping𝕔 arg i)
+  | .app₂ f arg => .app₂ (maping𝕔 f i) (maping𝕔 arg i)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ (maping𝕔 n i)
+  | .plus₁ l r => .plus₁ (maping𝕔 l i) (maping𝕔 r i)
+  | .plus₂ l r => .plus₂ (maping𝕔 l i) (maping𝕔 r i)
+  | .code e => .code (maping𝕔 e i)
+  | .reflect e => .reflect (maping𝕔 e i)
+  | .lam𝕔 e => .lam𝕔 (maping𝕔 e (i + 1))
+  | .lets b e => .lets (maping𝕔 b i) (maping𝕔 e (i + 1))
+  | .let𝕔 b e => .let𝕔 (maping𝕔 b i) (maping𝕔 e (i + 1))
+
+@[simp]
+def map𝕔₀ (e : Expr) : Expr := maping𝕔 e 0
+
+inductive value : Expr -> Prop where
+  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
+  | lit₁ : ∀ n, value (.lit₁ n)
+  | code : ∀ e, lc e -> value (.code e)
+
+@[simp]
+def swapdb (i : ℕ) (j : ℕ) : Expr -> Expr
+  | .bvar k => if k = i then .bvar j else if k = j then .bvar i else .bvar k
+  | .fvar x => .fvar x
+  | .lam₁ e => .lam₁ (swapdb (i + 1) (j + 1) e)
+  | .lam₂ e => .lam₂ (swapdb i j e)
+  | .app₁ f arg => .app₁ (swapdb i j f) (swapdb i j arg)
+  | .app₂ f arg => .app₂ (swapdb i j f) (swapdb i j arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ (swapdb i j n)
+  | .plus₁ l r => .plus₁ (swapdb i j l) (swapdb i j r)
+  | .plus₂ l r => .plus₂ (swapdb i j l) (swapdb i j r)
+  | .code e => .code (swapdb i j e)
+  | .reflect e => .reflect (swapdb i j e)
+  | .lam𝕔 e => .lam𝕔 (swapdb (i + 1) (j + 1) e)
+  | .lets b e => .lets (swapdb i j b) (swapdb (i + 1) (j + 1) e)
+  | .let𝕔 b e => .let𝕔 (swapdb i j b) (swapdb (i + 1) (j + 1) e)
+
+@[simp]
+def swap (x : ℕ) (y : ℕ) : Expr -> Expr
+  | .bvar k => .bvar k
+  | .fvar z => if z = x then .fvar y else if z = y then .fvar x else .fvar z
+  | .lam₁ e => .lam₁ (swap x y e)
+  | .lam₂ e => .lam₂ (swap x y e)
+  | .app₁ f arg => .app₁ (swap x y f) (swap x y arg)
+  | .app₂ f arg => .app₂ (swap x y f) (swap x y arg)
+  | .lit₁ n => .lit₁ n
+  | .lit₂ n => .lit₂ (swap x y n)
+  | .plus₁ l r => .plus₁ (swap x y l) (swap x y r)
+  | .plus₂ l r => .plus₂ (swap x y l) (swap x y r)
+  | .code e => .code (swap x y e)
+  | .reflect e => .reflect (swap x y e)
+  | .lam𝕔 e => .lam𝕔 (swap x y e)
+  | .lets b e => .lets (swap x y b) (swap x y e)
+  | .let𝕔 b e => .let𝕔 (swap x y b) (swap x y e)
+
+-- Properties
 
 lemma subst_intro : ∀ x e v i, closed_at e x -> subst x v (opening i (.fvar x) e) = opening i v e :=
   by
@@ -587,40 +655,12 @@ lemma subst_opening_comm :
 lemma subst_open₀_comm : ∀ x y e v, x ≠ y -> lc v -> subst x v (open₀ y e) = open₀ y (subst x v e) := by
   intros x y e v; apply subst_opening_comm
 
-@[simp]
-def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
-  match e with
-  | .bvar j => if j == i then (.code (.bvar i)) else .bvar j
-  | .fvar x => .fvar x
-  | .lam₁ e => .lam₁ (maping𝕔 e (i + 1))
-  | .lam₂ e => .lam₂ (maping𝕔 e i)
-  | .app₁ f arg => .app₁ (maping𝕔 f i) (maping𝕔 arg i)
-  | .app₂ f arg => .app₂ (maping𝕔 f i) (maping𝕔 arg i)
-  | .lit₁ n => .lit₁ n
-  | .lit₂ n => .lit₂ (maping𝕔 n i)
-  | .plus₁ l r => .plus₁ (maping𝕔 l i) (maping𝕔 r i)
-  | .plus₂ l r => .plus₂ (maping𝕔 l i) (maping𝕔 r i)
-  | .code e => .code (maping𝕔 e i)
-  | .reflect e => .reflect (maping𝕔 e i)
-  | .lam𝕔 e => .lam𝕔 (maping𝕔 e (i + 1))
-  | .lets b e => .lets (maping𝕔 b i) (maping𝕔 e (i + 1))
-  | .let𝕔 b e => .let𝕔 (maping𝕔 b i) (maping𝕔 e (i + 1))
-
-inductive value : Expr -> Prop where
-  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
-  | lit₁ : ∀ n, value (.lit₁ n)
-  | code : ∀ e, lc e -> value (.code e)
-
 theorem value_lc : ∀ e, value e -> lc e := by
   intro e Hvalue
   cases Hvalue with
   | lam₁ _ Hclose => apply Hclose
   | lit₁ => constructor
   | code _ Hclose => apply Hclose
-
-@[simp]
-def map𝕔₀ (e : Expr) : Expr :=
-  maping𝕔 e 0
 
 example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1))) := by simp
 
@@ -680,24 +720,6 @@ theorem maping𝕔_closed : ∀ x e i, closed_at e x -> closed_at (maping𝕔 e 
     apply IH₀; apply He.left
     apply IH₁; apply He.right
 
-@[simp]
-def swapdb (i : ℕ) (j : ℕ) : Expr -> Expr
-  | .bvar k => if k = i then .bvar j else if k = j then .bvar i else .bvar k
-  | .fvar x => .fvar x
-  | .lam₁ e => .lam₁ (swapdb (i + 1) (j + 1) e)
-  | .lam₂ e => .lam₂ (swapdb i j e)
-  | .app₁ f arg => .app₁ (swapdb i j f) (swapdb i j arg)
-  | .app₂ f arg => .app₂ (swapdb i j f) (swapdb i j arg)
-  | .lit₁ n => .lit₁ n
-  | .lit₂ n => .lit₂ (swapdb i j n)
-  | .plus₁ l r => .plus₁ (swapdb i j l) (swapdb i j r)
-  | .plus₂ l r => .plus₂ (swapdb i j l) (swapdb i j r)
-  | .code e => .code (swapdb i j e)
-  | .reflect e => .reflect (swapdb i j e)
-  | .lam𝕔 e => .lam𝕔 (swapdb (i + 1) (j + 1) e)
-  | .lets b e => .lets (swapdb i j b) (swapdb (i + 1) (j + 1) e)
-  | .let𝕔 b e => .let𝕔 (swapdb i j b) (swapdb (i + 1) (j + 1) e)
-
 theorem swapdb_closed : ∀ x e i j, closed_at e x -> closed_at (swapdb i j e) x :=
   by
   intros x e i j Hclose
@@ -727,24 +749,6 @@ theorem swapdb_closed : ∀ x e i j, closed_at e x -> closed_at (swapdb i j e) x
     constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-
-@[simp]
-def swap (x : ℕ) (y : ℕ) : Expr -> Expr
-  | .bvar k => .bvar k
-  | .fvar z => if z = x then .fvar y else if z = y then .fvar x else .fvar z
-  | .lam₁ e => .lam₁ (swap x y e)
-  | .lam₂ e => .lam₂ (swap x y e)
-  | .app₁ f arg => .app₁ (swap x y f) (swap x y arg)
-  | .app₂ f arg => .app₂ (swap x y f) (swap x y arg)
-  | .lit₁ n => .lit₁ n
-  | .lit₂ n => .lit₂ (swap x y n)
-  | .plus₁ l r => .plus₁ (swap x y l) (swap x y r)
-  | .plus₂ l r => .plus₂ (swap x y l) (swap x y r)
-  | .code e => .code (swap x y e)
-  | .reflect e => .reflect (swap x y e)
-  | .lam𝕔 e => .lam𝕔 (swap x y e)
-  | .lets b e => .lets (swap x y b) (swap x y e)
-  | .let𝕔 b e => .let𝕔 (swap x y b) (swap x y e)
 
 theorem open_swapdb_comm :
   ∀ i j x y e,

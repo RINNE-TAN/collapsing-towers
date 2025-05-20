@@ -1,6 +1,6 @@
 
 import Mathlib.Data.Finset.Basic
-import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.SmallStep
 import CollapsingTowers.TwoLevel.Env

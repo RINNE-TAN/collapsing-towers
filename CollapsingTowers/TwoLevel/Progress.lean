@@ -1,5 +1,7 @@
 
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.Typing
+
 theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -> value e₀ \/ ∃ e₁, step_lvl Γ.length e₀ e₁ :=
   by
   intros Γ e₀ τ H

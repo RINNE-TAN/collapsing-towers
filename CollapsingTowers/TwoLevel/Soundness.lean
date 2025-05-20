@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevel.Progresss
+import CollapsingTowers.TwoLevel.Progress
 import CollapsingTowers.TwoLevel.Preservation
 @[simp]
 def stuck (e₀ : Expr) : Prop :=

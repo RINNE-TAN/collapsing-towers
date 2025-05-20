@@ -1,5 +1,6 @@
 
 import Mathlib.Data.Nat.Basic
+
 inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
@@ -21,9 +22,3 @@ inductive Expr : Type where
   | lam𝕔 (e : Expr)
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
-
-abbrev TEnv :=
-  List Ty
-
-abbrev VEnv :=
-  List Expr

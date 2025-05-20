@@ -1,11 +1,11 @@
 
 import Mathlib.Data.Finset.Basic
-import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.OpenClose
 import CollapsingTowers.TwoLevel.Neutral
 import CollapsingTowers.TwoLevel.Env
-abbrev Ctx :=
-  Expr -> Expr
+
+abbrev Ctx := Expr -> Expr
 
 theorem ctx_comp : (f g : Ctx) -> ∀ e, f (g e) = (f ∘ g) e := by simp
 
@@ -25,6 +25,57 @@ inductive ctx𝔹 : Ctx -> Prop where
   | lit₂ : ctx𝔹 (fun X => .lit₂ X)
   | lam₂ : ctx𝔹 (fun X => .lam₂ X)
   | lets : ∀ e, closedb_at e 1 -> ctx𝔹 (fun X => .lets X e)
+
+inductive ctxℝ : ℕ -> Ctx -> Prop where
+  | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
+  | let𝕔 : ∀ b, lc b -> ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
+
+inductive ctx𝕄 : ℕ -> Ctx -> Prop where
+  | hole : ctx𝕄 lvl id
+  | cons𝔹 : ∀ B M, ctx𝔹 B -> ctx𝕄 lvl M -> ctx𝕄 lvl (B ∘ M)
+  | consℝ : ∀ R M, ctxℝ lvl R -> ctx𝕄 (lvl + 1) M -> ctx𝕄 lvl (R ∘ M)
+
+inductive ctx𝔼 : Ctx -> Prop where
+  | hole : ctx𝔼 id
+  | cons𝔹 : ∀ B E, ctx𝔹 B -> ctx𝔼 E -> ctx𝔼 (B ∘ E)
+
+inductive ℙℚ : Type where
+  | ℙ
+  | ℚ
+
+inductive ctxℙℚ : ℙℚ -> ℕ -> Ctx -> Prop where
+  | hole : ctxℙℚ .ℙ lvl id
+  | cons𝔹 : ∀ B PQ, ctx𝔹 B -> ctxℙℚ .ℚ lvl PQ -> ctxℙℚ flag lvl (B ∘ PQ)
+  | consℝ : ∀ R PQ, ctxℝ lvl R -> ctxℙℚ .ℙ (lvl + 1) PQ -> ctxℙℚ flag lvl (R ∘ PQ)
+
+@[simp]
+def ctxℙ : ℕ -> Ctx -> Prop := ctxℙℚ .ℙ
+
+inductive head𝕄 : Expr -> Expr -> Prop where
+  | lets : ∀ e v, value v -> head𝕄 (.lets v e) (open_subst v e)
+  | app₁ : ∀ e v, value v -> head𝕄 (.app₁ (.lam₁ e) v) (open_subst v e)
+  | app₂ : ∀ f arg, head𝕄 (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
+  | plus₁ : ∀ l r, head𝕄 (.plus₁ (.lit₁ l) (.lit₁ r)) (.lit₁ (l + r))
+  | plus₂ : ∀ l r, head𝕄 (.plus₂ (.code l) (.code r)) (.reflect (.plus₁ l r))
+  | lit₂ : ∀ n, head𝕄 (.lit₂ (.lit₁ n)) (.code (.lit₁ n))
+  | lam₂ : ∀ e, head𝕄 (.lam₂ (.lam₁ e)) (.lam𝕔 (map𝕔₀ e))
+  | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))
+  | let𝕔₀ : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
+  | let𝕔₁ : ∀ b n, head𝕄 (.let𝕔 b (.lit₁ n)) (.lit₁ n)
+  | let𝕔₂ : ∀ b e, head𝕄 (.let𝕔 b (.lam₁ e)) (.lam₁ (.let𝕔 b (swapdb 0 1 e)))
+
+inductive step_lvl (lvl: ℕ) : Expr -> Expr -> Prop where
+  | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl M⟦e₀⟧ M⟦e₁⟧
+  | reflect : ∀ P E b, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+
+@[simp]
+def step : Expr -> Expr -> Prop := step_lvl 0
+
+inductive stepn : Expr → Expr → Prop
+  | refl : ∀ e, stepn e e
+  | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
+
+-- properties of 𝔹 contexts
 
 theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   by
@@ -121,9 +172,7 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open
   | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
   | lit₂| lam₂ => simp
 
-inductive ctxℝ : ℕ -> Ctx -> Prop where
-  | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
-  | let𝕔 : ∀ b, lc b -> ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
+-- properties of ℝ contexts
 
 theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
   by
@@ -138,10 +187,7 @@ theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
     apply close_closedb; omega
     apply closedb_inc; apply Hlc; omega
 
-inductive ctx𝕄 : ℕ -> Ctx -> Prop where
-  | hole : ctx𝕄 lvl id
-  | cons𝔹 : ∀ B M, ctx𝔹 B -> ctx𝕄 lvl M -> ctx𝕄 lvl (B ∘ M)
-  | consℝ : ∀ R M, ctxℝ lvl R -> ctx𝕄 (lvl + 1) M -> ctx𝕄 lvl (R ∘ M)
+-- properties of 𝕄 contexts
 
 theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
   by
@@ -151,9 +197,7 @@ theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 
-inductive ctx𝔼 : Ctx -> Prop where
-  | hole : ctx𝔼 id
-  | cons𝔹 : ∀ B E, ctx𝔹 B -> ctx𝔼 E -> ctx𝔼 (B ∘ E)
+-- properties of 𝔼 contexts
 
 theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
   by
@@ -235,17 +279,7 @@ theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open
     simp at *; rw [← IH]
     apply open_ctx𝔹_map; apply HB
 
-inductive ℙℚ : Type where
-  | ℙ
-  | ℚ
-
-inductive ctxℙℚ : ℙℚ -> ℕ -> Ctx -> Prop where
-  | hole : ctxℙℚ .ℙ lvl id
-  | cons𝔹 : ∀ B PQ, ctx𝔹 B -> ctxℙℚ .ℚ lvl PQ -> ctxℙℚ flag lvl (B ∘ PQ)
-  | consℝ : ∀ R PQ, ctxℝ lvl R -> ctxℙℚ .ℙ (lvl + 1) PQ -> ctxℙℚ flag lvl (R ∘ PQ)
-
-@[simp]
-def ctxℙ : ℕ -> Ctx -> Prop := ctxℙℚ .ℙ
+-- properties of ℙ contexts
 
 theorem lc_ctxℙ : ∀ P e n, ctxℙ n P -> lc e -> lc P⟦e⟧ :=
   by
@@ -256,23 +290,6 @@ theorem lc_ctxℙ : ∀ P e n, ctxℙ n P -> lc e -> lc P⟦e⟧ :=
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
-
-inductive head𝕄 : Expr -> Expr -> Prop where
-  | lets : ∀ e v, value v -> head𝕄 (.lets v e) (open_subst v e)
-  | app₁ : ∀ e v, value v -> head𝕄 (.app₁ (.lam₁ e) v) (open_subst v e)
-  | app₂ : ∀ f arg, head𝕄 (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
-  | plus₁ : ∀ l r, head𝕄 (.plus₁ (.lit₁ l) (.lit₁ r)) (.lit₁ (l + r))
-  | plus₂ : ∀ l r, head𝕄 (.plus₂ (.code l) (.code r)) (.reflect (.plus₁ l r))
-  | lit₂ : ∀ n, head𝕄 (.lit₂ (.lit₁ n)) (.code (.lit₁ n))
-  | lam₂ : ∀ e, head𝕄 (.lam₂ (.lam₁ e)) (.lam𝕔 (map𝕔₀ e))
-  | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))
-  | let𝕔₀ : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
-  | let𝕔₁ : ∀ b n, head𝕄 (.let𝕔 b (.lit₁ n)) (.lit₁ n)
-  | let𝕔₂ : ∀ b e, head𝕄 (.let𝕔 b (.lam₁ e)) (.lam₁ (.let𝕔 b (swapdb 0 1 e)))
-
-inductive step_lvl (lvl: ℕ) : Expr -> Expr -> Prop where
-  | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl M⟦e₀⟧ M⟦e₁⟧
-  | reflect : ∀ P E b, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
 
 theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B -> step_lvl lvl e₀ e₁ -> ∃ e₂, step_lvl lvl (B e₀) e₂ :=
   by
@@ -321,13 +338,6 @@ theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R -> step_lvl (lvl + 1) e₀ e
     apply step_lvl.reflect
     apply ctxℙℚ.consℝ; apply HR; apply HP
     apply HE; apply Hlc
-
-@[simp]
-def step : Expr -> Expr -> Prop := step_lvl 0
-
-inductive stepn : Expr → Expr → Prop
-  | refl : ∀ e, stepn e e
-  | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
 
 /-- Examples:
 lam₂ x. x +₂ (x +₂ x)

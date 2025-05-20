@@ -1,6 +1,7 @@
 
-import CollapsingTowers.TwoLevel.Basic
+import CollapsingTowers.TwoLevel.Syntax
 import CollapsingTowers.TwoLevel.OpenClose
+
 @[simp]
 def shiftl_at (x : ℕ) (n : ℕ) : Expr -> Expr
   | .bvar i => .bvar i
