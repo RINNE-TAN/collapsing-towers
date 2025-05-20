@@ -200,11 +200,20 @@ theorem progress_strengthened :
         apply close_closedb; omega
         apply closedb_inc; apply Hlc; omega
         apply head𝕄.let𝕔₂
+      | loc e =>
+        exists st₀; exists .loc e
+        apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+        constructor
+        apply typing_regular; apply H₀
+        simp
+        apply head𝕄.let𝕔₃
     | inr Hstep =>
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       constructor
       apply stepℝ _ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
+  | loc =>
+    left; constructor
 
 theorem progress : ∀ st₀ e₀ τ, typing st₀.length [] e₀ τ -> value e₀ \/ ∃ st₁ e₁, step (st₀, e₀) (st₁, e₁) :=
   by

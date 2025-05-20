@@ -111,6 +111,9 @@ inductive typing (size: ℕ) : TEnv -> Expr -> Ty -> Prop where
     closed_at e Γ.length ->
     neutral_lc e ->
     typing size Γ (.let𝕔 b e) τ𝕓
+  | loc : ∀ Γ n,
+    n < size ->
+    typing size Γ (.loc n) (.ref .nat)
 
 example : typing 0 [] expr₀ (.rep (.arrow .nat .nat)) :=
   by
@@ -172,7 +175,7 @@ theorem typing_regular : ∀ size Γ e τ, typing size Γ e τ -> lc e :=
   intros size Γ e τ Htyping
   induction Htyping with
   | fvar
-  | lit₁=> constructor
+  | lit₁| loc => constructor
   | lam₁ _ _ _ _ _ _ IHe
   | lam𝕔 _ _ _ _ _ _ _ IHe => apply open_closedb; apply IHe
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
@@ -203,7 +206,7 @@ theorem typing_closed : ∀ size Γ e τ, typing size Γ e τ -> closed_at e Γ.
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | lets _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ IH₀ _ IH₁ => constructor; apply IH₁; apply IH₀
-  | lit₁ => constructor
+  | lit₁| loc => constructor
 
 theorem weakening_strengthened:
     ∀ size Γ Ψ Δ Φ e τ, typing size Γ e τ -> Γ = Ψ ++ Φ -> typing size (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ :=
@@ -284,6 +287,9 @@ theorem weakening_strengthened:
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose
     apply shiftl_neutral_db; apply HNeu
     simp
+  | loc _ _ Hsize =>
+    constructor
+    apply Hsize
 
 theorem weakening : ∀ size Γ Δ e τ, typing size Γ e τ -> typing size (Δ ++ Γ) e τ :=
   by

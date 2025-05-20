@@ -4,6 +4,7 @@ inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
   | rep (τ : Ty)
+  | ref (τ : Ty)
 
 inductive Expr : Type where
   | bvar (i : ℕ)
@@ -21,6 +22,7 @@ inductive Expr : Type where
   | lam𝕔 (e : Expr)
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
+  | loc (n : ℕ)
 
 abbrev TEnv :=
   List Ty

@@ -269,6 +269,7 @@ inductive head𝕄 : Expr -> Expr -> Prop where
   | let𝕔₀ : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
   | let𝕔₁ : ∀ b n, head𝕄 (.let𝕔 b (.lit₁ n)) (.lit₁ n)
   | let𝕔₂ : ∀ b e, head𝕄 (.let𝕔 b (.lam₁ e)) (.lam₁ (.let𝕔 b (swapdb 0 1 e)))
+  | let𝕔₃ : ∀ b n, head𝕄 (.let𝕔 b (.loc n)) (.loc n)
 
 inductive step_lvl (lvl: ℕ) : (Store × Expr) -> (Store × Expr) -> Prop where
   | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)

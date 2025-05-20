@@ -363,6 +363,7 @@ theorem preservation_maping_strengthened :
   | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ; apply Hτv
   | lit₁ => constructor
+  | loc _ _ Hsize => constructor; apply Hsize
 
 theorem preservation_maping :
   ∀ size Γ v e τ𝕒 τ𝕓 τ𝕔,
@@ -537,6 +538,7 @@ theorem preservation_subst_strengthened :
   | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
+  | loc _ _ Hsize => constructor; apply Hsize
 
 theorem preservation_subst :
     ∀ size Γ v e τ𝕒 τ𝕓, typing size Γ v τ𝕒 -> typing size (τ𝕒 :: Γ) e τ𝕓 -> typing size Γ (subst Γ.length v e) τ𝕓 :=
@@ -660,6 +662,7 @@ theorem preservation_swap_strengthened :
   | lam₂ _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
+  | loc _ _ Hsize => constructor; apply Hsize
 
 theorem preservation_swap :
   ∀ size Γ e τ𝕒₀ τ𝕒₁ τ𝕓,
@@ -682,7 +685,7 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
     apply neutral_opening
     apply HNeu.left; apply HNeu.right
   | app₂| plus₂| lit₂| lam𝕔| let𝕔₀ => apply HNeu
-  | plus₁| let𝕔₁ => simp
+  | plus₁| let𝕔₁| let𝕔₃ => simp
   | lam₂ =>
     apply maping𝕔_neutral; apply HNeu
   | let𝕔₂ =>
@@ -779,6 +782,12 @@ theorem preservation_head𝕄 : ∀ size Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> 
         constructor
         apply typing_closed; apply Hτb
         apply swapdb_closed; apply Hclose
+  | let𝕔₃ =>
+    cases Hτ
+    next Hτ =>
+      cases Hτ
+      next Hsize =>
+      constructor; apply Hsize
 
 theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ.length (st₀, e₀) (st₁, e₁) -> typing_strengthened st₀.length Γ e₀ τ -> typing_strengthened st₁.length Γ e₁ τ :=
   by
