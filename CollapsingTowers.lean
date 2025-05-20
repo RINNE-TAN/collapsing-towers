@@ -10,4 +10,5 @@ import CollapsingTowers.TwoLevel.Typing
 import CollapsingTowers.TwoLevel.Progress
 import CollapsingTowers.TwoLevel.Preservation
 import CollapsingTowers.TwoLevel.Soundness
+import CollapsingTowers.TwoLevel.Examples
 import CollapsingTowers.TwoLevel.LR

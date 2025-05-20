@@ -59,61 +59,6 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     neutral_lc e ->
     typing Γ (.let𝕔 b e) τ𝕓
 
-example : typing [] expr₀ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₀, x₀]
-  repeat constructor
-
-example : typing [] expr₁ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₁, x₀]
-  repeat constructor
-
-example : typing [] expr₂ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₂, x₀]
-  repeat constructor
-
-example : typing [] expr₃ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₃, x₀, x₁]
-  repeat constructor
-
-example : typing [] expr₄ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₄, x₀, x₁]
-  repeat constructor
-
-example : typing [] expr₅ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₅, x₀, x₁, x₂]
-  repeat constructor
-
-example : typing [] expr₆ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₆, x₀, x₁, x₂]
-  repeat constructor
-
-example : typing [] expr₇ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₇, x₀, x₁, x₂]
-  repeat constructor
-
-example : typing [] expr₈ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₈, x₀, x₁, x₂]
-  repeat constructor
-
-example : typing [] expr₉ (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr₉, x₀, x₁, x₂]
-  repeat constructor
-
-example : typing [] expr𝕩 (.rep (.arrow .nat .nat)) :=
-  by
-  rw [expr𝕩, x₀, x₁, x₂]
-  repeat constructor
-
 theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   by
   intros Γ e τ Htyping
