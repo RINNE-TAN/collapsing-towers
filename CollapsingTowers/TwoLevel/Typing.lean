@@ -114,6 +114,9 @@ inductive typing (size: ℕ) : TEnv -> Expr -> Ty -> Prop where
   | loc : ∀ Γ n,
     n < size ->
     typing size Γ (.loc n) (.ref .nat)
+  | load₁ : ∀ Γ e,
+    typing size Γ e (.ref .nat) ->
+    typing size Γ (.load₁ e) .nat
 
 example : typing 0 [] expr₀ (.rep (.arrow .nat .nat)) :=
   by
@@ -185,7 +188,9 @@ theorem typing_regular : ∀ size Γ e τ, typing size Γ e τ -> lc e :=
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
   | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH => apply IH
+  | lam₂ _ _ _ _ _ IH
+  | load₁ _ _ _ IH =>
+    apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
@@ -199,7 +204,9 @@ theorem typing_closed : ∀ size Γ e τ, typing size Γ e τ -> closed_at e Γ.
   | lam𝕔 _ _ _ _ _ IH
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH => apply IH
+  | lit₂ _ _ _ IH
+  | load₁ _ _ _ IH =>
+    apply IH
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
@@ -260,7 +267,8 @@ theorem weakening_strengthened:
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
   | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lam₂ _ _ _ _ _ IH
+  | load₁ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
     rw [HEqΓ] at IHe
@@ -310,7 +318,7 @@ theorem weakening1 : ∀ size Γ e τ𝕒 τ𝕓, typing size Γ e τ𝕓 -> typ
 def typing_strengthened (size : ℕ) (Γ: TEnv) (e : Expr) (τ : Ty) : Prop :=
   neutral Γ.length e /\ typing size Γ e τ
 
-theorem typing_weakening_empty : ∀ size e τ, typing size [] e τ -> typing_strengthened size [] e τ :=
+theorem typing_strengthened_empty : ∀ size e τ, typing size [] e τ -> typing_strengthened size [] e τ :=
   by
   intros _ _ _ Hτ
   constructor

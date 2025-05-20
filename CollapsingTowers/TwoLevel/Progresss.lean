@@ -214,11 +214,27 @@ theorem progress_strengthened :
       apply typing_regular; apply H₀
   | loc =>
     left; constructor
+  | load₁ _ _ H IH =>
+    right
+    cases IH HNeu with
+    | inl Hvalue =>
+      cases Hvalue with
+      | loc n =>
+        cases H
+        next Hsize =>
+        exists st₀; exists .lit₁ (st₀.get ⟨n, Hsize⟩)
+        apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
+        simp
+        apply shead𝕄.load₁
+      | _ => nomatch H
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₁; apply Hstep
 
 theorem progress : ∀ st₀ e₀ τ, typing st₀.length [] e₀ τ -> value e₀ \/ ∃ st₁ e₁, step (st₀, e₀) (st₁, e₁) :=
   by
   intros _ _ _ Hτ
   rw [step, ← List.length_nil]
   apply progress_strengthened
-  apply typing_weakening_empty
+  apply typing_strengthened_empty
   apply Hτ

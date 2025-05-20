@@ -19,6 +19,7 @@ def neutral (x : ℕ) : Expr -> Prop
   | .lam𝕔 e => neutral x e
   | .lets b e => neutral x b ∧ neutral x e
   | .let𝕔 b e => closed_at b x ∧ neutral x e
+  | .load₁ e => neutral x e
 
 @[simp]
 def neutral_db (i : ℕ) : Expr -> Prop
@@ -37,6 +38,7 @@ def neutral_db (i : ℕ) : Expr -> Prop
   | .lam𝕔 e => neutral_db (i + 1) e
   | .lets b e => neutral_db i b ∧ neutral_db (i + 1) e
   | .let𝕔 _ e => neutral_db (i + 1) e
+  | .load₁ e => neutral_db i e
 
 @[simp]
 def neutral_lc : Expr -> Prop :=
@@ -52,7 +54,8 @@ theorem neutral_closed_at : ∀ x e, neutral x e -> closed_at e x :=
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     apply IH; apply HNe
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -77,7 +80,8 @@ theorem closed_at_neutral : ∀ e, closed_at e 0 -> neutral 0 e :=
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *; apply IH; apply Hclose
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -103,7 +107,8 @@ theorem neutral_inc : ∀ x e i, neutral x e -> neutral_db i e -> neutral (x + 1
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *; apply IH; apply HNeu; apply HNeulc
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -143,7 +148,8 @@ theorem shiftl_neutral_db :
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
-  | lit₂ _ IH =>
+  | lit₂ _ IH
+  | load₁ _ IH =>
     simp; apply IH
   | code _ IH
   | reflect _ IH => simp
@@ -173,7 +179,8 @@ theorem shiftr_neutral_db :
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
-  | lit₂ _ IH =>
+  | lit₂ _ IH
+  | load₁ _ IH =>
     simp; apply IH
   | code _ IH
   | reflect _ IH => simp
@@ -196,7 +203,8 @@ theorem closedb_at_of_neutral_db : ∀ x e, closedb_at e x -> neutral_db x e :=
   | lam₁ _ IH
   | lam₂ _ IH
   | lam𝕔 _ IH
-  | lit₂ _ IH =>
+  | lit₂ _ IH
+  | load₁ _ IH =>
     apply IH; apply Hclose
   | let𝕔 _ _ _ IH =>
     apply IH; apply Hclose.right
@@ -225,7 +233,8 @@ theorem subst_neutral_db :
     apply closedb_inc; apply HNeuV; omega
   | lit₁| code| reflect| loc => simp
   | lam₂ _ IH
-  | lit₂ _ IH =>
+  | lit₂ _ IH
+  | load₁ _ IH =>
     apply IH; apply HNeuE; apply HNeuV
   | lam₁ _ IH
   | lam𝕔 _ IH
@@ -252,7 +261,8 @@ theorem maping𝕔_neutral_db : ∀ e i, neutral_db i (maping𝕔 e i) :=
   | lit₂ _ IH
   | lam₁ _ IH
   | lam𝕔 _ IH
-  | let𝕔 _ _ _ IH =>
+  | let𝕔 _ _ _ IH
+  | load₁ _ IH =>
     apply IH
 
 theorem opening_neutral_db : ∀ e x i j, neutral_db i e -> neutral_db i (opening j (.fvar x) e) :=
@@ -268,7 +278,8 @@ theorem opening_neutral_db : ∀ e x i j, neutral_db i e -> neutral_db i (openin
   | lit₂ _ IH
   | lam₁ _ IH
   | lam𝕔 _ IH
-  | let𝕔 _ _ _ IH =>
+  | let𝕔 _ _ _ IH
+  | load₁ _ IH =>
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -296,7 +307,8 @@ theorem swapdb_neutral_db :
   | lit₂ _ IH
   | lam₁ _ IH
   | lam𝕔 _ IH
-  | let𝕔 _ _ _ IH =>
+  | let𝕔 _ _ _ IH
+  | load₁ _ IH =>
     apply IH; apply HNeu
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -329,7 +341,8 @@ theorem maping𝕔_neutral : ∀ e x i, neutral x e -> neutral x (maping𝕔 e i
   | lam₂ _ IH
   | lit₂ _ IH
   | lam₁ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *
     apply IH; apply HNeu
   | let𝕔 _ _ _ IHe =>
@@ -348,7 +361,8 @@ theorem neutral_closing : ∀ x e i, neutral (x + 1) e -> neutral x (closing i x
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *; apply IH; apply HNeu
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -374,7 +388,8 @@ theorem neutral_db_closing : ∀ x e i, closedb_at e i -> neutral (x + 1) e -> n
   | lam₂ _ IH
   | lit₂ _ IH
   | lam₁ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *; apply IH; apply Hlc; apply HNeu
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -402,7 +417,9 @@ theorem neutral_opening : ∀ x e v i, neutral x e -> neutral x v -> neutral x (
   | lam₁ _ IH
   | lam₂ _ IH
   | lit₂ _ IH
-  | lam𝕔 _ IH => apply IH; apply He
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
+    apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | plus₁ _ _ IH₀ IH₁
@@ -443,7 +460,8 @@ theorem swapdb_neutral : ∀ e x i j, neutral x e -> neutral x (swapdb i j e) :=
   | lam₂ _ IH
   | lit₂ _ IH
   | lam₁ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *
     apply IH; apply HNeu
   | let𝕔 _ _ _ IHe =>
@@ -476,7 +494,8 @@ theorem swap_neutraldb : ∀ e i x y, neutral_db i e -> neutral_db i (swap x y e
   | lam₂ _ IH
   | lit₂ _ IH
   | lam₁ _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | load₁ _ IH =>
     simp at *
     apply IH; apply HNeu
   | let𝕔 _ _ _ IHe =>

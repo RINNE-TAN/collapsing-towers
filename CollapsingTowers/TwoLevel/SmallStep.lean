@@ -25,6 +25,7 @@ inductive ctx𝔹 : Ctx -> Prop where
   | lit₂ : ctx𝔹 (fun X => .lit₂ X)
   | lam₂ : ctx𝔹 (fun X => .lam₂ X)
   | lets : ∀ e, closedb_at e 1 -> ctx𝔹 (fun X => .lets X e)
+  | load₁ : ctx𝔹 (fun X => .load₁ X)
 
 theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   by
@@ -39,7 +40,7 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
-  | lit₂| lam₂ => apply Hlc
+  | lit₂| lam₂| load₁ => apply Hlc
 
 theorem neutral_ctx𝔹 : ∀ B e x, ctx𝔹 B -> neutral x B⟦e⟧ -> neutral x e :=
   by
@@ -54,7 +55,7 @@ theorem neutral_ctx𝔹 : ∀ B e x, ctx𝔹 B -> neutral x B⟦e⟧ -> neutral 
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => apply HNeu.right
-  | lit₂| lam₂ => apply HNeu
+  | lit₂| lam₂| load₁ => apply HNeu
 
 theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₀ x :=
   by
@@ -64,7 +65,7 @@ theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B -> closed_at B⟦e₀�
     apply Hclose.left
   | appr₁| appr₂| plusr₁| plusr₂ =>
     apply Hclose.right
-  | lit₂| lam₂ => apply Hclose
+  | lit₂| lam₂| load₁ => apply Hclose
 
 theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
   by
@@ -74,7 +75,7 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x 
     constructor; apply He₁; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     constructor; apply He₀.left; apply He₁
-  | lit₂| lam₂ => apply He₁
+  | lit₂| lam₂| load₁ => apply He₁
 
 theorem neutral_db𝔹 : ∀ B e₀ e₁ i, ctx𝔹 B -> neutral_db i B⟦e₀⟧ -> neutral_db i e₁ -> neutral_db i B⟦e₁⟧ :=
   by
@@ -84,7 +85,7 @@ theorem neutral_db𝔹 : ∀ B e₀ e₁ i, ctx𝔹 B -> neutral_db i B⟦e₀�
     constructor; apply He₁; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     constructor; apply He₀.left; apply He₁
-  | lit₂| lam₂ => apply He₁
+  | lit₂| lam₂| load₁ => apply He₁
 
 theorem neutral𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> neutral x B⟦e₀⟧ -> neutral x e₁ -> neutral x B⟦e₁⟧ :=
   by
@@ -94,7 +95,7 @@ theorem neutral𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> neutral x B⟦e₀⟧ -> n
     constructor; apply He₁; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     constructor; apply He₀.left; apply He₁
-  | lit₂| lam₂ => apply He₁
+  | lit₂| lam₂| load₁ => apply He₁
 
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
@@ -104,7 +105,7 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B -> closed_at B⟦e₀⟧ x ->
     simp; apply subst_closed_id; apply He₀.right
   | appr₁| appr₂| plusr₁| plusr₂ =>
     simp; apply subst_closed_id; apply He₀.left
-  | lit₂| lam₂ => simp
+  | lit₂| lam₂| load₁ => simp
 
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
@@ -119,7 +120,7 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B -> open₀ x B⟦e⟧ = B⟦open
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
   | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
-  | lit₂| lam₂ => simp
+  | lit₂| lam₂| load₁ => simp
 
 inductive ctxℝ : ℕ -> Ctx -> Prop where
   | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
@@ -224,7 +225,7 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E -> closed_at E⟦e₀⟧ x ->
     cases HB with
     | appl₁| appl₂| plusl₁| plusl₂| lets => apply He₀.left
     | appr₁| appr₂| plusr₁| plusr₂ => apply He₀.right
-    | lit₂| lam₂ => apply He₀
+    | lit₂| lam₂| load₁ => apply He₀
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E -> open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by
@@ -271,8 +272,12 @@ inductive head𝕄 : Expr -> Expr -> Prop where
   | let𝕔₂ : ∀ b e, head𝕄 (.let𝕔 b (.lam₁ e)) (.lam₁ (.let𝕔 b (swapdb 0 1 e)))
   | let𝕔₃ : ∀ b n, head𝕄 (.let𝕔 b (.loc n)) (.loc n)
 
+inductive shead𝕄 : (Store × Expr) -> (Store × Expr) -> Prop where
+  | load₁ : ∀ st n, (Hsize : n < st.length) -> shead𝕄 (st, .load₁ (.loc n)) (st, .lit₁ (st.get ⟨n, Hsize⟩))
+
 inductive step_lvl (lvl: ℕ) : (Store × Expr) -> (Store × Expr) -> Prop where
   | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M -> lc e₀ -> head𝕄 e₀ e₁ -> step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)
+  | store𝕄 : ∀ M e₀ e₁ st₀ st₁, ctx𝕄 lvl M -> lc e₀ -> shead𝕄 (st₀, e₀) (st₁, e₁) -> step_lvl lvl (st₀, M⟦e₀⟧) (st₁, M⟦e₁⟧)
   | reflect : ∀ P E b st, ctxℙ lvl P -> ctx𝔼 E -> lc b -> step_lvl lvl (st, P⟦E⟦.reflect b⟧⟧) (st, P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧)
 
 theorem step𝔹 : ∀ lvl B e₀ e₁ st₀ st₁, ctx𝔹 B -> step_lvl lvl (st₀, e₀) (st₁, e₁) -> ∃ e₂, step_lvl lvl (st₀, B⟦e₀⟧) (st₁, e₂) :=
@@ -282,6 +287,11 @@ theorem step𝔹 : ∀ lvl B e₀ e₁ st₀ st₁, ctx𝔹 B -> step_lvl lvl (s
   | step𝕄 M _ _ _ HM Hlc Hhead =>
     rw [ctx_comp B M]
     constructor; apply step_lvl.step𝕄
+    apply ctx𝕄.cons𝔹; apply HB; apply HM
+    apply Hlc; apply Hhead
+  | store𝕄 M _ _ _ _ HM Hlc Hhead =>
+    rw [ctx_comp B M]
+    constructor; apply step_lvl.store𝕄
     apply ctx𝕄.cons𝔹; apply HB; apply HM
     apply Hlc; apply Hhead
   | reflect P E _ _ HP HE Hlc =>
@@ -315,6 +325,11 @@ theorem stepℝ : ∀ lvl R e₀ e₁ st₀ st₁, ctxℝ lvl R -> step_lvl (lvl
   | step𝕄 M _ _ _ HM Hlc Hhead =>
     repeat rw [ctx_comp R M]
     apply step_lvl.step𝕄
+    apply ctx𝕄.consℝ; apply HR; apply HM
+    apply Hlc; apply Hhead
+  | store𝕄 M _ _ _ _ HM Hlc Hhead =>
+    repeat rw [ctx_comp R M]
+    apply step_lvl.store𝕄
     apply ctx𝕄.consℝ; apply HR; apply HM
     apply Hlc; apply Hhead
   | reflect P _ _ _ HP HE Hlc =>

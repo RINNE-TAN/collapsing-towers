@@ -109,6 +109,13 @@ theorem decompose𝔼 :
         exists τ
         constructor; apply HτX
         constructor; apply Hτ𝔼
+    | load₁ =>
+      cases Hτ with
+      | load₁ _ _ HτX =>
+        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
+        exists τ
+        constructor; apply HτX
+        constructor; apply Hτ𝔼
 
 theorem preservationℝ :
   ∀ size Γ R e₀ e₁,
@@ -256,6 +263,14 @@ theorem preservation𝔹 :
       constructor
       . constructor; apply HNeue₁; apply HNeue₀.right
       . constructor; apply Hτe₁; apply He; apply Hclose
+  | load₁ =>
+    cases Hτe₀ with
+    | load₁ _ _ H =>
+      simp at IH
+      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀ H
+      constructor
+      . apply HNeue₁
+      . constructor; apply Hτe₁
 
 theorem preservation_maping_strengthened :
   ∀ size Δ Φ v e τ𝕒 τ𝕓 τ𝕔,
@@ -360,7 +375,8 @@ theorem preservation_maping_strengthened :
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
   | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lam₂ _ _ _ _ _ IH
+  | load₁ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ; apply Hτv
   | lit₁ => constructor
   | loc _ _ Hsize => constructor; apply Hsize
@@ -535,7 +551,8 @@ theorem preservation_subst_strengthened :
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
   | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lam₂ _ _ _ _ _ IH
+  | load₁ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
   | loc _ _ Hsize => constructor; apply Hsize
@@ -659,7 +676,8 @@ theorem preservation_swap_strengthened :
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
   | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lam₂ _ _ _ _ _ IH
+  | load₁ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
   | loc _ _ Hsize => constructor; apply Hsize
@@ -810,6 +828,7 @@ theorem preservation_strengthened : ∀ Γ st₀ st₁ e₀ e₁ τ, step_lvl Γ
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _; apply IHM; rfl
       apply Hτ
+  | store𝕄 => admit
   | reflect P E e _ HP HE Hlc =>
     generalize HPQ : ℙℚ.ℙ = PQ
     simp at HP; rw [HPQ] at HP
@@ -837,4 +856,4 @@ theorem preservation : ∀ st₀ st₁ e₀ e₁ τ, step (st₀, e₀) (st₁, 
   by
   intros st₀ st₁ e₀ e₁ τ Hstep Hτ
   apply And.right; apply preservation_strengthened
-  apply Hstep; apply typing_weakening_empty; apply Hτ
+  apply Hstep; apply typing_strengthened_empty; apply Hτ
