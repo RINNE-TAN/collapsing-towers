@@ -12,9 +12,9 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) τ𝕓 ->
     closed_at e Γ.length ->
     typing Γ (.lam₁ e) (.arrow τ𝕒 τ𝕓)
-  | lam₂ : ∀ Γ e τ𝕒 τ𝕓,
+  | lift_lam : ∀ Γ e τ𝕒 τ𝕓,
     typing Γ e (.arrow (.rep τ𝕒) (.rep τ𝕓)) ->
-    typing Γ (.lam₂ e) (.rep (.arrow τ𝕒 τ𝕓))
+    typing Γ (.lift e) (.rep (.arrow τ𝕒 τ𝕓))
   | app₁ : ∀ Γ f arg τ𝕒 τ𝕓,
     typing Γ f (.arrow τ𝕒 τ𝕓) ->
     typing Γ arg τ𝕒 ->
@@ -33,9 +33,9 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ (.plus₂ l r) (.rep .nat)
   | lit₁ : ∀ Γ n,
     typing Γ (.lit₁ n) .nat
-  | lit₂ : ∀ Γ n,
+  | lift_lit : ∀ Γ n,
     typing Γ n .nat ->
-    typing Γ (.lit₂ n) (.rep .nat)
+    typing Γ (.lift n) (.rep .nat)
   | code : ∀ Γ e τ,
     typing Γ e τ ->
     typing Γ (.code e) (.rep τ)
@@ -73,8 +73,8 @@ theorem typing_regular : ∀ Γ e τ, typing Γ e τ -> lc e :=
   | plus₂ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply IH₁
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH => apply IH
+  | lift_lit _ _ _ IH
+  | lift_lam _ _ _ _ _ IH => apply IH
   | lets _ _ _ _ _ _ _ _ IH₀ IH₁
   | let𝕔 _ _ _ _ _ _ _ _ _ IH₀ IH₁ => constructor; apply IH₀; apply open_closedb; apply IH₁
 
@@ -84,11 +84,11 @@ theorem typing_closed : ∀ Γ e τ, typing Γ e τ -> closed_at e Γ.length :=
   induction Htyping with
   | fvar _ _ τ Hbind => simp at *; apply indexrSome'; exists τ
   | lam₁ _ _ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH
+  | lift_lam _ _ _ _ _ IH
   | lam𝕔 _ _ _ _ _ IH
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH => apply IH
+  | lift_lit _ _ _ IH => apply IH
   | app₁ _ _ _ _ _ _ _ IH₀ IH₁
   | app₂ _ _ _ _ _ _ _ IH₀ IH₁
   | plus₁ _ _ _ _ _ IH₀ IH₁
@@ -148,8 +148,8 @@ theorem weakening_strengthened:
   | lit₁ => constructor
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lift_lit _ _ _ IH
+  | lift_lam _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lets _ _ _ _ _ _ _ Hclose IHb IHe =>
     rw [HEqΓ] at IHe

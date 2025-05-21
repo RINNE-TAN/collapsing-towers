@@ -10,7 +10,7 @@ import CollapsingTowers.TwoLevel.Typing
 namespace Example1
 
 /-- Example 1:
-lam₂ x. x +₂ (x +₂ x)
+lift x. x +₂ (x +₂ x)
 →⋆
 code {
   lets f = lam₁ x.
@@ -32,7 +32,7 @@ def x₃ : Expr :=
   .fvar 3
 
 def expr₀ : Expr :=
-  .lam₂ (.lam₁ (close₀ 0 (.plus₂ x₀ (.plus₂ x₀ x₀))))
+  .lift (.lam₁ (close₀ 0 (.plus₂ x₀ (.plus₂ x₀ x₀))))
 
 def expr₁ : Expr :=
   .lam𝕔 (close₀ 0 (.plus₂ (.code x₀) (.plus₂ (.code x₀) (.code x₀))))
@@ -166,7 +166,7 @@ end Example1
 namespace Example2
 
 /-- Example 2:
-  app₂ (λ₂ (λ₁ x. x)) (lit₂ (lit₁ 0))
+  app₂ (λ₂ (λ₁ x. x)) (lift (lit₁ 0))
 →⋆
 code {
   lets x1 = (λ₁ x. x) in
@@ -175,8 +175,8 @@ code {
 }
 -/
 
-@[simp] def f : Expr := (.lam₂ (.lam₁ (.bvar 0)))
-@[simp] def i : Expr := (.lit₂ (.lit₁ 0))
+@[simp] def f : Expr := (.lift (.lam₁ (.bvar 0)))
+@[simp] def i : Expr := (.lift (.lit₁ 0))
 
 @[simp] def e1 : Expr := (.app₂ f i)
 @[simp] def e2 : Expr := (.app₂ (.lam𝕔 (.code (.bvar 0))) i)

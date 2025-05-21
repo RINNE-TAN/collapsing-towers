@@ -11,7 +11,7 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
   | lam₁ _ _ _ _ H =>
     left; constructor
     apply open_closedb; apply typing_regular; apply H
-  | lam₂ _ _ _ _ H IH =>
+  | lift_lam _ _ _ _ H IH =>
     right
     cases IH HNeu with
     | inl Hvalue =>
@@ -19,11 +19,11 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
       | lam₁ e Hlc =>
         exists .lam𝕔 (map𝕔₀ e)
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
-        apply Hlc; apply head𝕄.lam₂
+        apply Hlc; apply head𝕄.lift_lam
       | _ => nomatch H
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
-      apply step𝔹 _ _ _ _ ctx𝔹.lam₂; apply Hstep
+      apply step𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
   | app₁ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ =>
     right
     cases IH₀ HNeu.left with
@@ -117,7 +117,7 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
       apply step𝔹 _ _ _ _ (ctx𝔹.plusl₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   | lit₁ => left; constructor
-  | lit₂ _ _ H IH =>
+  | lift_lit _ _ H IH =>
     right
     cases IH HNeu with
     | inl Hvalue =>
@@ -125,11 +125,11 @@ theorem progress_strengthened : ∀ Γ e₀ τ, typing_strengthened Γ e₀ τ -
       | lit₁ e =>
         exists .code (.lit₁ e)
         apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
-        simp; apply head𝕄.lit₂
+        simp; apply head𝕄.lift_lit
       | _ => nomatch H
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
-      apply step𝔹 _ _ _ _ ctx𝔹.lit₂; apply Hstep
+      apply step𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
   | code _ _ _ H =>
     left; constructor
     apply typing_regular; apply H

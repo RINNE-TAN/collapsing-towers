@@ -94,16 +94,10 @@ theorem decompose𝔼 :
         apply HτX; rfl
         omega; apply Hclose
         apply closed_inc; apply Hclose; simp
-    | lit₂ =>
+    | lift =>
       cases Hτ with
-      | lit₂ _ _ HτX =>
-        have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
-        exists τ
-        constructor; apply HτX
-        constructor; apply Hτ𝔼
-    | lam₂ =>
-      cases Hτ with
-      | lam₂ _ _ _ _ HτX =>
+      | lift_lit _ _ HτX
+      | lift_lam _ _ _ _ HτX =>
         have ⟨τ, HτX, Hτ𝔼⟩ := IHE _ HτX
         exists τ
         constructor; apply HτX
@@ -231,17 +225,10 @@ theorem preservation𝔹 :
       constructor
       . constructor; apply HNeue₀.left; apply HNeue₁
       . constructor; apply H₀; apply Hτe₁
-  | lit₂ =>
+  | lift =>
     cases Hτe₀ with
-    | lit₂ _ _ H =>
-      simp at IH
-      have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀ H
-      constructor
-      . apply HNeue₁
-      . constructor; apply Hτe₁
-  | lam₂ =>
-    cases Hτe₀ with
-    | lam₂ _ _ _ _ H =>
+    | lift_lit _ _ H
+    | lift_lam _ _ _ _ H =>
       simp at IH
       have ⟨HNeue₁, Hτe₁⟩ := IH _ HNeue₀ H
       constructor
@@ -358,8 +345,8 @@ theorem preservation_maping_strengthened :
     apply IH₁; apply HEqΓ; apply Hτv
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lift_lit _ _ _ IH
+  | lift_lam _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ; apply Hτv
   | lit₁ => constructor
 
@@ -532,8 +519,8 @@ theorem preservation_subst_strengthened :
     apply IH₁; apply HEqΓ
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lift_lit _ _ _ IH
+  | lift_lam _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
 
@@ -655,8 +642,8 @@ theorem preservation_swap_strengthened :
     apply IH₁; apply HEqΓ
   | code _ _ _ _ IH
   | reflect _ _ _ _ IH
-  | lit₂ _ _ _ IH
-  | lam₂ _ _ _ _ _ IH =>
+  | lift_lit _ _ _ IH
+  | lift_lam _ _ _ _ _ IH =>
     constructor; apply IH; apply HEqΓ
   | lit₁ => constructor
 
@@ -680,9 +667,9 @@ theorem neutral_head𝕄 : ∀ x e₀ e₁, head𝕄 e₀ e₁ -> neutral x e₀
   | app₁ =>
     apply neutral_opening
     apply HNeu.left; apply HNeu.right
-  | app₂| plus₂| lit₂| lam𝕔| let𝕔₀ => apply HNeu
+  | app₂| plus₂| lift_lit| lam𝕔| let𝕔₀ => apply HNeu
   | plus₁| let𝕔₁ => simp
-  | lam₂ =>
+  | lift_lam =>
     apply maping𝕔_neutral; apply HNeu
   | let𝕔₂ =>
     constructor
@@ -726,10 +713,14 @@ theorem preservation_head𝕄 : ∀ Γ e₀ e₁ τ, head𝕄 e₀ e₁ -> lc e�
         next Hr =>
           repeat constructor
           apply Hl; apply Hr
-  | lit₂ => cases Hτ; repeat constructor
-  | lam₂ =>
-    cases Hτ
-    next Hτ =>
+  | lift_lit =>
+    cases Hτ with
+    | lift_lit => repeat constructor
+    | lift_lam _ _ _ _ Hτ => nomatch Hτ
+  | lift_lam =>
+    cases Hτ with
+    | lift_lit _ _ Hτ => nomatch Hτ
+    | lift_lam _ _ _ _ Hτ =>
       cases Hτ
       next Hclose Hτe =>
         rw [← map𝕔₀_intro]
