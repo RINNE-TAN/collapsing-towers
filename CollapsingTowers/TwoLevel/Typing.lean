@@ -41,6 +41,7 @@ inductive typing : TEnv -> Expr -> Ty -> Prop where
     typing Γ (.code e) (.rep τ)
   | reflect : ∀ Γ e τ,
     typing Γ e τ ->
+    -- e can be decomposed to P and E context, and E context has resulting type rep τ ->
     typing Γ (.reflect e) (.rep τ)
   | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
     typing (τ𝕒 :: Γ) (open₀ Γ.length e) (.rep τ𝕓) ->

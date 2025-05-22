@@ -129,11 +129,6 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
 @[simp]
 def map𝕔₀ (e : Expr) : Expr := maping𝕔 e 0
 
-inductive value : Expr -> Prop where
-  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
-  | lit₁ : ∀ n, value (.lit₁ n)
-  | code : ∀ e, lc e -> value (.code e)
-
 @[simp]
 def swapdb (i : ℕ) (j : ℕ) : Expr -> Expr
   | .bvar k => if k = i then .bvar j else if k = j then .bvar i else .bvar k
@@ -629,13 +624,6 @@ lemma subst_opening_comm :
 
 lemma subst_open₀_comm : ∀ x y e v, x ≠ y -> lc v -> subst x v (open₀ y e) = open₀ y (subst x v e) := by
   intros x y e v; apply subst_opening_comm
-
-theorem value_lc : ∀ e, value e -> lc e := by
-  intro e Hvalue
-  cases Hvalue with
-  | lam₁ _ Hclose => apply Hclose
-  | lit₁ => constructor
-  | code _ Hclose => apply Hclose
 
 example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1))) := by simp
 

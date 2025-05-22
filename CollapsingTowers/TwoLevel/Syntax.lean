@@ -7,6 +7,7 @@ inductive Ty : Type where
   | rep (τ : Ty)
 
 inductive Expr : Type where
+-- surface language
   | bvar (i : ℕ)
   | fvar (x : ℕ)
   | lam₁ (e : Expr)
@@ -16,6 +17,7 @@ inductive Expr : Type where
   | plus₁ (l : Expr) (r : Expr)
   | plus₂ (l : Expr) (r : Expr)
   | lift (e : Expr)
+-- intermediate constructs
   | code (e : Expr)
   | reflect (e : Expr)
   | lam𝕔 (e : Expr)

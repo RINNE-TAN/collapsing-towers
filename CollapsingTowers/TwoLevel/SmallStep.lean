@@ -13,6 +13,11 @@ theorem ctx_swap : (f : Ctx) -> ∀ e, f (id e) = id (f e) := by simp
 
 notation:max a "⟦" b "⟧" => a b
 
+inductive value : Expr -> Prop where
+  | lam₁ : ∀ e, lc (.lam₁ e) -> value (.lam₁ e)
+  | lit₁ : ∀ n, value (.lit₁ n)
+  | code : ∀ e, lc e -> value (.code e)
+
 inductive ctx𝔹 : Ctx -> Prop where
   | appl₁ : ∀ arg, lc arg -> ctx𝔹 (fun X => .app₁ X arg)
   | appr₁ : ∀ v, value v -> ctx𝔹 (fun X => .app₁ v X)
@@ -44,8 +49,8 @@ inductive ℙℚ : Type where
 
 inductive ctxℙℚ : ℙℚ -> ℕ -> Ctx -> Prop where
   | hole : ctxℙℚ .ℙ lvl id
-  | cons𝔹 : ∀ B PQ, ctx𝔹 B -> ctxℙℚ .ℚ lvl PQ -> ctxℙℚ flag lvl (B ∘ PQ)
-  | consℝ : ∀ R PQ, ctxℝ lvl R -> ctxℙℚ .ℙ (lvl + 1) PQ -> ctxℙℚ flag lvl (R ∘ PQ)
+  | cons𝔹 : ∀ B Q, ctx𝔹 B -> ctxℙℚ .ℚ lvl Q -> ctxℙℚ flag lvl (B ∘ Q)
+  | consℝ : ∀ R P, ctxℝ lvl R -> ctxℙℚ .ℙ (lvl + 1) P -> ctxℙℚ flag lvl (R ∘ P)
 
 @[simp]
 def ctxℙ : ℕ -> Ctx -> Prop := ctxℙℚ .ℙ
@@ -75,6 +80,13 @@ inductive stepn : Expr → Expr → Prop
   | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
 
 ----------------
+
+theorem value_lc : ∀ e, value e -> lc e := by
+  intro e Hvalue
+  cases Hvalue with
+  | lam₁ _ Hclose => apply Hclose
+  | lit₁ => constructor
+  | code _ Hclose => apply Hclose
 
 lemma stepn.trans : ∀ t1 t2 t3, stepn t1 t2 → stepn t2 t3 → stepn t1 t3 := by
   intros t1 t2 t3 h1 h2; induction h2
