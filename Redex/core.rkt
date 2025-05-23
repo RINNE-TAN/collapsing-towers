@@ -227,3 +227,13 @@
       (lift -10)))
   )
 
+;;; avoid side effects duplication
+(stepper
+  red
+  (term
+    (lets f
+          (letc x eff
+                (lam y (code 1)))
+          (plus₂ (app₁ f 0) (app₁ f 0))))
+  )
+
