@@ -33,7 +33,7 @@
      (ifz₁ E e e) (ifz₂ E e e)
      (fix₁ E) (fix₂ E))
   ;;; extended context, E without hole
-  (F
+  (E+
     (app₁ E e) (app₁ v E)
     (app₂ E e) (app₂ v E)
     (plus₁ E e) (plus₁ v E)
@@ -96,7 +96,11 @@
     (--> (in-hole M (lamc x (code e))) (in-hole M (reflect (lam x e))) "lamc")
     (--> (in-hole M (letc x e_1 (code e_2))) (in-hole M (code (lets x e_1 e_2))) "letc_code")
     ;;; extended letc rules
-    (--> (in-hole P (in-hole F (letc x e v))) (in-hole P (letc x e (in-hole F v))) "letc_value"
+    ;;; letc_value equivalent to:
+    ;;; P⟦E⟦let𝕔 x e v⟧⟧ --> P⟦let𝕔 x e E⟦v⟧⟧
+    ;;; where v != code _
+    ;;;       E != hole
+    (--> (in-hole P (in-hole E+ (letc x e v))) (in-hole P (letc x e (in-hole E+ v))) "letc_value"
          (side-condition (not-code? (term v))))
     (--> (in-hole M (run (code e))) (in-hole M e) "run")
     (--> (in-hole M (ifz₁ 0 e_1 e_2)) (in-hole M e_1) "ifz₁_0")
