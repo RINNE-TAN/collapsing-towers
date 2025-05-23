@@ -241,26 +241,16 @@ namespace Example3
 
 /--
   lets f = {
-    letc y = code 42
+    letc y = 42
     in lam₁ (code 1)
   } in
   f(0) +₂ f(0)
 --/
 
-
+-- stuck
 @[simp] def e1 : Expr :=
   (.lets
-    (.let𝕔 (.code (.lit₁ 42))
+    (.let𝕔 (.lit₁ 42)
       (.lam₁ /-int→rep(int)-/ (.code (.lit₁ 1))))
     (.plus₂ (.app₁ (.bvar 0) (.lit₁ 0)) (.app₁ (.bvar 0) (.lit₁ 1))))
-@[simp] def e2 : Expr :=
-  (.lets
-    (.lam₁ (.let𝕔 (.code (.lit₁ 42)) (.code (.lit₁ 1))))
-    (.plus₂ (.app₁ (.bvar 0) (.lit₁ 0)) (.app₁ (.bvar 0) (.lit₁ 1))))
-
-example : step e1 e2 := by
-  apply step_lvl.step𝕄 (fun x => .lets x (.plus₂ (.app₁ (.bvar 0) (.lit₁ 0)) (.app₁ (.bvar 0) (.lit₁ 1))))
-  apply ctx𝕄.cons𝔹 (fun x => .lets x (.plus₂ (.app₁ (.bvar 0) (.lit₁ 0)) (.app₁ (.bvar 0) (.lit₁ 1))))
-  repeat constructor
-
 end Example3
