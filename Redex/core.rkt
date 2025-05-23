@@ -15,6 +15,7 @@
      (reflect e)
      (lamc x e)
      (ifz₁ e e e)
+     (fix₁ e)
      ;;; reify bound
      (lets x e e)
      (letc x e e)
@@ -28,7 +29,8 @@
      (plus₂ E e) (plus₂ v E)
      (lift E)
      (lets x E e)
-     (ifz₁ E e e) (ifz₂ E e e))
+     (ifz₁ E e e) (ifz₂ E e e)
+     (fix₁ E))
   ;;; extended context, E without hole
   (F
     (app₁ E e) (app₁ v E)
@@ -37,7 +39,8 @@
     (plus₂ E e) (plus₂ v E)
     (lift E)
     (lets x E e)
-    (ifz₁ E e e) (ifz₂ E e e))
+    (ifz₁ E e e) (ifz₂ E e e)
+    (fix₁ E))
   (M hole
      (app₁ M e) (app₁ v M)
      (app₂ M e) (app₂ v M)
@@ -46,6 +49,7 @@
      (lift M)
      (lets x M e)
      (ifz₁ M e e) (ifz₂ M e e)
+     (fix₁ M)
      ;;; reify context bound
      (lamc x M) (letc x e M) (run M)
      (ifz₂ v M e) (ifz₂ v v M))
@@ -57,6 +61,7 @@
     (lift R)
     (lets x R e)
     (ifz₁ R e e) (ifz₂ R e e)
+    (fix₁ R)
     ;;; reify context bound
     (lamc x P) (letc x e P) (run P)
     (ifz₂ v P e) (ifz₂ v v P))
@@ -68,6 +73,7 @@
      (lift R)
      (lets x R e)
      (ifz₁ R e e) (ifz₂ R e e)
+     (fix₁ R)
      ;;; reify context bound
      (lamc x P) (letc x e P) (run P)
      (ifz₂ v P e) (ifz₂ v v P))
@@ -96,31 +102,32 @@
     (--> (in-hole M (ifz₁ number_0 e_1 e_2)) (in-hole M e_2) "ifz₁_n"
          (side-condition (not (= 0 (term number_0)))))
     (--> (in-hole M (ifz₂ (code e_1) (code e_2) (code e_3))) (in-hole M (reflect (ifz₁ e_1 e_2 e_3))) "ifz₂")
+    (--> (in-hole M (fix₁ (lam x e))) (in-hole M (subst x (fix₁ (lam x e)) e)) "fix₁")
     (--> (in-hole P (in-hole E (reflect e))) (in-hole P (letc x_new e (in-hole E (code x_new)))) "reflect"
          (where x_new ,(variable-not-in (term (P E e)) (term x))))
     ))
 
 (define-metafunction
   vm
-  subst : x v any -> any
-  [(subst x_1 v (lam x_1 any_2)) (lam x_1 any_2)]
-  [(subst x_1 v (lam x_2 any_2))
-   (lam x_new (subst x_1 v (subst-var x_2 x_new any_2)))
-   (where x_new ,(variable-not-in (term (x_1 v any_2)) (term x_2)))
+  subst : x any any -> any
+  [(subst x_1 any_1 (lam x_1 any_2)) (lam x_1 any_2)]
+  [(subst x_1 any_1 (lam x_2 any_2))
+   (lam x_new (subst x_1 any_1 (subst-var x_2 x_new any_2)))
+   (where x_new ,(variable-not-in (term (x_1 any_1 any_2)) (term x_2)))
    ]
-  [(subst x_1 v (lets x_1 any_x any_2)) (lets x_1 (subst x_1 v any_x) any_2)]
-  [(subst x_1 v (lets x_2 any_x any_2))
-   (lets x_new (subst x_1 v any_x) (subst x_1 v (subst-var x_2 x_new any_2)))
-   (where x_new ,(variable-not-in (term (x_1 v any_2)) (term x_2)))]
-  [(subst x_1 v (letc x_1 any_x any_2)) (letc x_1 (subst x_1 v any_x) any_2)]
-  [(subst x_1 v (letc x_2 any_x any_2))
-   (letc x_new (subst x_1 v any_x) (subst x_1 v (subst-var x_2 x_new any_2)))
-   (where x_new ,(variable-not-in (term (x_1 v any_2)) (term x_2)))]
-  [(subst x_1 v x_1) v]
-  [(subst x_1 v x_2) x_2]
-  [(subst x_1 v (any_2 ...))
-   ((subst x_1 v any_2) ...)]
-  [(subst x_1 v any_2) any_2])
+  [(subst x_1 any_1 (lets x_1 any_x any_2)) (lets x_1 (subst x_1 any_1 any_x) any_2)]
+  [(subst x_1 any_1 (lets x_2 any_x any_2))
+   (lets x_new (subst x_1 any_1 any_x) (subst x_1 any_1 (subst-var x_2 x_new any_2)))
+   (where x_new ,(variable-not-in (term (x_1 any_1 any_2)) (term x_2)))]
+  [(subst x_1 any_1 (letc x_1 any_x any_2)) (letc x_1 (subst x_1 any_1 any_x) any_2)]
+  [(subst x_1 any_1 (letc x_2 any_x any_2))
+   (letc x_new (subst x_1 any_1 any_x) (subst x_1 any_1 (subst-var x_2 x_new any_2)))
+   (where x_new ,(variable-not-in (term (x_1 any_1 any_2)) (term x_2)))]
+  [(subst x_1 any_1 x_1) any_1]
+  [(subst x_1 any_1 x_2) x_2]
+  [(subst x_1 any_1 (any_2 ...))
+   ((subst x_1 any_1 any_2) ...)]
+  [(subst x_1 any_1 any_2) any_2])
 
 (define-metafunction
   vm
@@ -157,5 +164,43 @@
     (plus₁
       1
       (letc x1 (plus₁ 1 1) 2)))
+  )
+
+;;; sum (-10) + (-9)... + 0
+(stepper
+  red
+  (term
+    (app₁
+      (fix₁
+        (lam sum
+             (lam x
+                  (ifz₁ x
+                        0
+                        (plus₁
+                          x
+                          (app₁ sum (plus₁ x 1)))))
+             )
+        )
+      -10)
+    )
+  )
+
+;;; staged sum
+(stepper
+  red
+  (term
+    (app₁
+      (fix₁
+        (lam sum
+             (lam x
+                  (ifz₁ x
+                        (lift 0)
+                        (plus₂
+                          (lift x)
+                          (app₁ sum (plus₁ x 1)))))
+             )
+        )
+      -10)
+    )
   )
 
