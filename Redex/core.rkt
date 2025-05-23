@@ -16,6 +16,7 @@
      (lamc x e)
      (ifz₁ e e e)
      (fix₁ e)
+     (fix₂ e)
      ;;; reify bound
      (lets x e e)
      (letc x e e)
@@ -30,7 +31,7 @@
      (lift E)
      (lets x E e)
      (ifz₁ E e e) (ifz₂ E e e)
-     (fix₁ E))
+     (fix₁ E) (fix₂ E))
   ;;; extended context, E without hole
   (F
     (app₁ E e) (app₁ v E)
@@ -40,7 +41,7 @@
     (lift E)
     (lets x E e)
     (ifz₁ E e e) (ifz₂ E e e)
-    (fix₁ E))
+    (fix₁ E) (fix₂ E))
   (M hole
      (app₁ M e) (app₁ v M)
      (app₂ M e) (app₂ v M)
@@ -49,7 +50,7 @@
      (lift M)
      (lets x M e)
      (ifz₁ M e e) (ifz₂ M e e)
-     (fix₁ M)
+     (fix₁ M) (fix₂ M)
      ;;; reify context bound
      (lamc x M) (letc x e M) (run M)
      (ifz₂ v M e) (ifz₂ v v M))
@@ -61,7 +62,7 @@
     (lift R)
     (lets x R e)
     (ifz₁ R e e) (ifz₂ R e e)
-    (fix₁ R)
+    (fix₁ R) (fix₂ R)
     ;;; reify context bound
     (lamc x P) (letc x e P) (run P)
     (ifz₂ v P e) (ifz₂ v v P))
@@ -73,7 +74,7 @@
      (lift R)
      (lets x R e)
      (ifz₁ R e e) (ifz₂ R e e)
-     (fix₁ R)
+     (fix₁ R) (fix₂ R)
      ;;; reify context bound
      (lamc x P) (letc x e P) (run P)
      (ifz₂ v P e) (ifz₂ v v P))
@@ -103,6 +104,7 @@
          (side-condition (not (= 0 (term number_0)))))
     (--> (in-hole M (ifz₂ (code e_1) (code e_2) (code e_3))) (in-hole M (reflect (ifz₁ e_1 e_2 e_3))) "ifz₂")
     (--> (in-hole M (fix₁ (lam x e))) (in-hole M (subst x (fix₁ (lam x e)) e)) "fix₁")
+    (--> (in-hole M (fix₂ (code e))) (in-hole M (reflect (fix₁ e))) "fix₂")
     (--> (in-hole P (in-hole E (reflect e))) (in-hole P (letc x_new e (in-hole E (code x_new)))) "reflect"
          (where x_new ,(variable-not-in (term (P E e)) (term x))))
     ))
@@ -202,5 +204,26 @@
         )
       -10)
     )
+  )
+
+;;; staged sum₂
+(stepper
+  red
+  (term
+    (app₂
+      (fix₂
+        (lift
+          (lam sum
+               (lift
+                 (lam x
+                      (ifz₂ x
+                            (lift 0)
+                            (plus₂
+                              x
+                              (app₂ sum (plus₂ x (lift 1)))))))
+               )
+          )
+        )
+      (lift -10)))
   )
 
