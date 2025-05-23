@@ -4,10 +4,10 @@
 (define-language
   vm
   (e x
+     number
      (lam x e)
      (app₁ e e)
      (app₂ e e)
-     (lit number)
      (plus₁ e e)
      (plus₂ e e)
      (lift e)
@@ -71,7 +71,7 @@
      ;;; reify context bound
      (lamc x P) (letc x e P) (run P)
      (ifz₂ v P e) (ifz₂ v v P))
-  (v (lit number) (lam x e) (code e))
+  (v number (lam x e) (code e))
   (x variable-not-otherwise-mentioned))
 
 (define not-code? (lambda (x) (not ((redex-match vm (code e)) x))))
@@ -82,9 +82,9 @@
     (--> (in-hole M (lets x v e)) (in-hole M (subst x v e)) "lets")
     (--> (in-hole M (app₁ (lam x e) v)) (in-hole M (subst x v e)) "app₁")
     (--> (in-hole M (app₂ (code e_1) (code e_2))) (in-hole M (reflect (app₁ e_1 e_2))) "app₂")
-    (--> (in-hole M (plus₁ (lit number_1) (lit number_2))) (in-hole M (lit ,(+ (term number_1) (term number_2)))) "plus₁")
+    (--> (in-hole M (plus₁ number_1 number_2)) (in-hole M ,(+ (term number_1) (term number_2))) "plus₁")
     (--> (in-hole M (plus₂ (code e_1) (code e_2))) (in-hole M (reflect (plus₁ e_1 e_2))) "plus₂")
-    (--> (in-hole M (lift (lit number_1))) (in-hole M (code (lit number_1))) "lift_lit")
+    (--> (in-hole M (lift number_1)) (in-hole M (code number_1)) "lift_lit")
     (--> (in-hole M (lift (lam x e))) (in-hole M (lamc x (subst x (code x) e))) "lift_lam")
     (--> (in-hole M (lamc x (code e))) (in-hole M (reflect (lam x e))) "lamc")
     (--> (in-hole M (letc x e_1 (code e_2))) (in-hole M (code (lets x e_1 e_2))) "letc_code")
@@ -92,8 +92,8 @@
     (--> (in-hole P (in-hole F (letc x e v))) (in-hole P (letc x e (in-hole F v))) "letc_value"
          (side-condition (not-code? (term v))))
     (--> (in-hole M (run (code e))) (in-hole M e) "run")
-    (--> (in-hole M (ifz₁ (lit 0) e_1 e_2)) (in-hole M e_1) "ifz₁_0")
-    (--> (in-hole M (ifz₁ (lit number_0) e_1 e_2)) (in-hole M e_2) "ifz₁_n"
+    (--> (in-hole M (ifz₁ 0 e_1 e_2)) (in-hole M e_1) "ifz₁_0")
+    (--> (in-hole M (ifz₁ number_0 e_1 e_2)) (in-hole M e_2) "ifz₁_n"
          (side-condition (not (= 0 (term number_0)))))
     (--> (in-hole M (ifz₂ (code e_1) (code e_2) (code e_3))) (in-hole M (reflect (ifz₁ e_1 e_2 e_3))) "ifz₂")
     (--> (in-hole P (in-hole E (reflect e))) (in-hole P (letc x_new e (in-hole E (code x_new)))) "reflect"
@@ -134,10 +134,10 @@
 (stepper
   red
   (term
-    (lets x (lit 0)
-          (lets y (ifz₂ (plus₂ (lift (lit 1)) (lift (lit 1)))
-                        (plus₂ (lift (lit 2)) (lift (lit 2)))
-                        (plus₂ (lift (lit 3)) (lift (lit 3))))
+    (lets x 0
+          (lets y (ifz₂ (plus₂ (lift 1) (lift 1))
+                        (plus₂ (lift 2) (lift 2))
+                        (plus₂ (lift 3) (lift 3)))
                 x)
           )))
 
@@ -146,9 +146,8 @@
   red
   (term
     (plus₁
-      (lit 1)
-      (lets x (reflect (plus₁ (lit 1) (lit 1)))
-            (lit 2))))
+      1
+      (lets x (reflect (plus₁ 1 1)) 2)))
   )
 
 ;;; reflect stuck example
@@ -156,8 +155,7 @@
   red
   (term
     (plus₁
-      (lit 1)
-      (letc x1 (plus₁ (lit 1) (lit 1))
-            (lit 2))))
+      1
+      (letc x1 (plus₁ 1 1) 2)))
   )
 
