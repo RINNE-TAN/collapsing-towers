@@ -127,3 +127,22 @@
                 x)
           )))
 
+;;; reflect example
+(stepper
+  red
+  (term
+    (plus₁
+      (lit 1)
+      (lets x (reflect (plus₁ (lit 1) (lit 1)))
+            (lit 2))))
+  )
+
+;;; reflect stuck example
+(stepper
+  red
+  (term
+    (plus₁
+      (lit 1)
+      (letc x (lit 2) 2)))
+  )
+
