@@ -155,7 +155,7 @@
           )))
 
 ;;; reflect example
-(stepper
+(traces
   red
   (term
     (plus₁
@@ -240,4 +240,18 @@
                 (lam y (code 1)))
           (plus₂ (app₁ f 0) (app₁ f 0))))
   )
+
+;;; side effects discard
+(stepper
+  red
+  (term
+    (lets y
+          (letc x eff
+                (code 1))
+          1))
+  )
+
+(stepper
+  red
+  (term (lets y (code eff) 1)))
 
