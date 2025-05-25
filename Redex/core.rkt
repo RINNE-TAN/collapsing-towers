@@ -255,3 +255,29 @@
   red
   (term (lets y (code eff) 1)))
 
+;;; reify
+
+(stepper
+  red
+  (term
+    (run
+      ;;; reify here!
+      (letc x (plus₁ 0 1)
+            (letc x1 (plus₁ x 2)
+                  (code x1)))
+      ))
+  )
+
+(stepper
+  red
+  (term
+    (ifz₂
+      (code 0)
+      (code 0)
+      ;;; reify here!
+      (letc x (plus₁ 0 1)
+            (letc x1 (plus₁ x 2)
+                  (code x1)))
+      ))
+  )
+
