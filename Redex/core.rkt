@@ -32,16 +32,6 @@
      (lets x E e)
      (ifz₁ E e e) (ifz₂ E e e)
      (fix₁ E) (fix₂ E))
-  ;;; extended context, E without hole
-  (E+
-    (app₁ E e) (app₁ v E)
-    (app₂ E e) (app₂ v E)
-    (plus₁ E e) (plus₁ v E)
-    (plus₂ E e) (plus₂ v E)
-    (lift E)
-    (lets x E e)
-    (ifz₁ E e e) (ifz₂ E e e)
-    (fix₁ E) (fix₂ E))
   (M hole
      (app₁ M e) (app₁ v M)
      (app₂ M e) (app₂ v M)
@@ -94,14 +84,7 @@
     (--> (in-hole M (lift number_1)) (in-hole M (code number_1)) "lift_lit")
     (--> (in-hole M (lift (lam x e))) (in-hole M (lamc x (subst x (code x) e))) "lift_lam")
     (--> (in-hole M (lamc x (code e))) (in-hole M (reflect (lam x e))) "lamc")
-    (--> (in-hole M (letc x e_1 (code e_2))) (in-hole M (code (lets x e_1 e_2))) "letc_code")
-    ;;; extended letc rules
-    ;;; letc_value equivalent to:
-    ;;; P⟦E⟦let𝕔 x e v⟧⟧ --> P⟦let𝕔 x e E⟦v⟧⟧
-    ;;; where v != code _
-    ;;;       E != hole
-    (--> (in-hole P (in-hole E+ (letc x e v))) (in-hole P (letc x e (in-hole E+ v))) "letc_value"
-         (side-condition (not-code? (term v))))
+    (--> (in-hole M (letc x e_1 (code e_2))) (in-hole M (code (lets x e_1 e_2))) "letc")
     (--> (in-hole M (run (code e))) (in-hole M e) "run")
     (--> (in-hole M (ifz₁ 0 e_1 e_2)) (in-hole M e_1) "ifz₁_0")
     (--> (in-hole M (ifz₁ number_0 e_1 e_2)) (in-hole M e_2) "ifz₁_n"
@@ -142,17 +125,6 @@
   [(subst-var x_1 any_1 (any_2 ...))
    ((subst-var x_1 any_1 any_2) ...)]
   [(subst-var x_1 any_1 any_2) any_2])
-
-;;; ifz₂ example
-(stepper
-  red
-  (term
-    (lets x 0
-          (lets y (ifz₂ (plus₂ (lift 1) (lift 1))
-                        (plus₂ (lift 2) (lift 2))
-                        (plus₂ (lift 3) (lift 3)))
-                x)
-          )))
 
 ;;; reflect example
 (traces
@@ -195,18 +167,19 @@
 (stepper
   red
   (term
-    (app₁
-      (fix₁
-        (lam sum
-             (lam x
-                  (ifz₁ x
-                        (lift 0)
-                        (plus₂
-                          (lift x)
-                          (app₁ sum (plus₁ x 1)))))
-             )
-        )
-      -10)
+    (run
+      (app₁
+        (fix₁
+          (lam sum
+               (lam x
+                    (ifz₁ x
+                          (lift 0)
+                          (plus₂
+                            (lift x)
+                            (app₁ sum (plus₁ x 1)))))
+               )
+          )
+        -10))
     )
   )
 
@@ -214,31 +187,22 @@
 (stepper
   red
   (term
-    (app₂
-      (fix₂
-        (lift
-          (lam sum
-               (lift
-                 (lam x
-                      (ifz₂ x
-                            (lift 0)
-                            (plus₂
-                              x
-                              (app₂ sum (plus₂ x (lift 1)))))))
-               )
+    (run
+      (app₂
+        (fix₂
+          (lift
+            (lam sum
+                 (lift
+                   (lam x
+                        (ifz₂ x
+                              (lift 0)
+                              (plus₂
+                                x
+                                (app₂ sum (plus₂ x (lift 1)))))))
+                 )
+            )
           )
-        )
-      (lift -10)))
-  )
-
-;;; avoid side effects duplication
-(stepper
-  red
-  (term
-    (lets f
-          (letc x eff
-                (lam y (code 1)))
-          (plus₂ (app₁ f 0) (app₁ f 0))))
+        (lift -10))))
   )
 
 ;;; side effects discard
@@ -256,7 +220,6 @@
   (term (lets y (code eff) 1)))
 
 ;;; reify
-
 (stepper
   red
   (term
