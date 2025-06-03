@@ -8,8 +8,8 @@ def indexr {X : Type} (n : ℕ) (l : List X) : Option X :=
   | head :: tails => if tails.length == n then some head else indexr n tails
 
 abbrev TEnv :=
-  List Ty
+  List (Ty × Stage)
 
 @[simp]
-def binds (x : ℕ) (τ : Ty) (Γ : TEnv) :=
-  indexr x Γ = some τ
+def binds (x : ℕ) (τ : Ty) (𝕊 : Stage) (Γ : TEnv) :=
+  indexr x Γ = some (τ, 𝕊)

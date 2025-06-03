@@ -1,5 +1,9 @@
 
 import Mathlib.Data.Nat.Basic
+inductive Stage : Type where
+  | fst
+  | snd
+
 inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
