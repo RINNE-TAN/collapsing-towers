@@ -1,23 +1,23 @@
 
 import Mathlib.Data.Nat.Basic
 inductive Stage : Type where
-  | fst
-  | snd
+  | stat
+  | dyn
 
 inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
-  | rep₁ (τ : Ty)
-  | rep₂ (τ : Ty)
+  | fragment (τ : Ty)
+  | rep (τ : Ty)
 
-def binding_time : Stage → Ty → Prop
-  | .fst, .nat => true
-  | .fst, (.arrow _ _) => true
-  | .fst, (.rep₁ _) => true
-  | .fst, _ => false
-  | .snd, .nat => true
-  | .snd, (.arrow _ _) => true
-  | .snd, _ => false
+def well_binding_time : Stage → Ty → Prop
+  | .stat, .nat => true
+  | .stat, (.arrow _ _) => true
+  | .stat, (.fragment _) => true
+  | .stat, _ => false
+  | .dyn, .nat => true
+  | .dyn, (.arrow _ _) => true
+  | .dyn, _ => false
 
 inductive Expr : Type where
   | bvar (i : ℕ)

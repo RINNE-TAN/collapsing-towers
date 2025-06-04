@@ -60,58 +60,63 @@ def expr𝕩 : Expr :=
   .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
 def τ : Ty :=
-  .rep₂ (.arrow .nat .nat)
+  .rep (.arrow .nat .nat)
 
-example : typing .fst [] expr₀ τ := by
+example : typing [] .stat expr₀ τ := by
   rw [expr₀, x₀, τ]
   repeat constructor
 
-example : typing .fst [] expr₁ τ := by
+example : typing [] .stat expr₁ τ := by
   rw [expr₁, x₀, τ]
   repeat constructor
 
-example : typing .fst [] expr₂ τ := by
+example : typing [] .stat expr₂ τ := by
   rw [expr₂, x₀, τ]
   repeat constructor
 
-example : typing .fst [] expr₃ τ := by
+example : typing [] .stat expr₃ τ := by
   rw [expr₃, x₀, x₁, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .fst [] expr₄ τ := by
+example : typing [] .stat expr₄ τ := by
   rw [expr₄, x₀, x₁, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .fst [] expr₅ τ := by
+example : typing [] .stat expr₅ τ := by
   rw [expr₅, x₀, x₁, x₂, τ]
+  apply typing.lift_code
+  apply typing.lam𝕔
+  apply typing.let𝕔; . repeat constructor
+  apply typing.let𝕔; . repeat constructor
   repeat constructor
 
-example : typing .fst [] expr₆ τ := by
+example : typing [] .stat expr₆ τ := by
   rw [expr₆, x₀, x₁, x₂, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .fst [] expr₇ τ := by
+example : typing [] .stat expr₇ τ := by
   rw [expr₇, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .fst [] expr₈ τ := by
+example : typing [] .stat expr₈ τ := by
   rw [expr₈, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .fst [] expr₉ τ := by
+example : typing [] .stat expr₉ τ := by
   rw [expr₉, x₀, x₁, x₂, τ]
+  apply typing.let𝕔
   repeat constructor
 
-example : typing .fst [] expr𝕩 τ := by
+example : typing [] .stat expr𝕩 τ := by
   rw [expr𝕩, x₀, x₁, x₂, τ]
   apply typing.code₂
   apply typing.lets _ _ _ _ (.arrow .nat .nat)
@@ -119,11 +124,55 @@ example : typing .fst [] expr𝕩 τ := by
 
 end Example1
 
-namespace PCP_Stuck
+namespace PhaseConsistency
 
-example : ∀ 𝕊 b τ, ¬typing 𝕊 [] (.let𝕔 b (.bvar 0)) τ :=
+-- stuck example
+-- letc x (* phase 2 *) = eff in
+-- x (* phase 1 *)
+example : ∀ 𝕊 b τ, ¬typing [] 𝕊 (.let𝕔 b (.bvar 0)) τ :=
   by
-  intros 𝕊 b τ Hτ
+  intros _ _ _ Hτ
   cases Hτ <;> contradiction
 
-end PCP_Stuck
+-- cross stage persistence
+-- let x (* phase 1 *) = ref 0 in
+-- code x (* phase 2 *)
+example : ∀ 𝕊 b τ, ¬typing [] 𝕊 (.lets b (.code (.bvar 0))) τ :=
+  by
+  intros _ _ _ Hτ
+  cases Hτ <;> contradiction
+
+end PhaseConsistency
+
+namespace Reification
+
+-- reify under B context
+-- let x =
+--    letc x0 = eff in
+--    code x0
+-- in e
+example : ∀ 𝕊 b e τ, ¬typing [] 𝕊 (.lets (.let𝕔 b (.code (.bvar 0))) e) τ :=
+  by
+  intros _ _ _ _ Hτ
+  cases Hτ with
+  | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
+  | lift_code _ _ _ Hτ =>
+    cases Hτ with
+    | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
+
+-- reify result under B context
+-- let x = code {
+--    let x0 = eff in
+--    x0
+-- }
+-- in e
+example : ∀ 𝕊 b e τ, ¬typing [] 𝕊 (.lets (.code (.lets b (.bvar 0))) e) τ :=
+  by
+  intros _ _ _ _ Hτ
+  cases Hτ with
+  | lets _ _ _ _ _ _ Hcode => cases Hcode <;> contradiction
+  | lift_code _ _ _ Hτ =>
+    cases Hτ with
+    | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
+
+end Reification
