@@ -10,6 +10,15 @@ inductive Ty : Type where
   | rep₁ (τ : Ty)
   | rep₂ (τ : Ty)
 
+def binding_time : Stage → Ty → Prop
+  | .fst, .nat => true
+  | .fst, (.arrow _ _) => true
+  | .fst, (.rep₁ _) => true
+  | .fst, _ => false
+  | .snd, .nat => true
+  | .snd, (.arrow _ _) => true
+  | .snd, _ => false
+
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)

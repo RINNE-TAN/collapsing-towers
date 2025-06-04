@@ -59,70 +59,71 @@ def expr₉ : Expr :=
 def expr𝕩 : Expr :=
   .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
-def ty : Ty :=
+def τ : Ty :=
   .rep₂ (.arrow .nat .nat)
 
-example : typing .snd [] expr₀ ty := by
-  rw [expr₀, x₀, ty]
+example : typing .fst [] expr₀ τ := by
+  rw [expr₀, x₀, τ]
   repeat constructor
 
-example : typing .snd [] expr₁ ty := by
-  rw [expr₁, x₀, ty]
+example : typing .fst [] expr₁ τ := by
+  rw [expr₁, x₀, τ]
   repeat constructor
 
-example : typing .snd [] expr₂ ty := by
-  rw [expr₂, x₀, ty]
+example : typing .fst [] expr₂ τ := by
+  rw [expr₂, x₀, τ]
   repeat constructor
 
-example : typing .snd [] expr₃ ty := by
-  rw [expr₃, x₀, x₁, ty]
+example : typing .fst [] expr₃ τ := by
+  rw [expr₃, x₀, x₁, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .snd [] expr₄ ty := by
-  rw [expr₄, x₀, x₁, ty]
+example : typing .fst [] expr₄ τ := by
+  rw [expr₄, x₀, x₁, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .snd [] expr₅ ty := by
-  rw [expr₅, x₀, x₁, x₂, ty]
-  apply typing.lift_code
-  apply typing.lam𝕔
-  repeat
-    ( apply typing.let𝕔 _ _ _ .nat
-      apply typing.plus₁
-      apply typing.fvar; simp
-      apply typing.fvar; simp)
+example : typing .fst [] expr₅ τ := by
+  rw [expr₅, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .snd [] expr₆ ty := by
-  rw [expr₆, x₀, x₁, x₂, ty]
+example : typing .fst [] expr₆ τ := by
+  rw [expr₆, x₀, x₁, x₂, τ]
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
   repeat constructor
 
-example : typing .snd [] expr₇ ty := by
-  rw [expr₇, x₀, x₁, x₂, ty]
+example : typing .fst [] expr₇ τ := by
+  rw [expr₇, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .snd [] expr₈ ty := by
-  rw [expr₈, x₀, x₁, x₂, ty]
+example : typing .fst [] expr₈ τ := by
+  rw [expr₈, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .snd [] expr₉ ty := by
-  rw [expr₉, x₀, x₁, x₂, ty]
-  apply typing.let𝕔 _ _ _ (.arrow .nat .nat)
+example : typing .fst [] expr₉ τ := by
+  rw [expr₉, x₀, x₁, x₂, τ]
   repeat constructor
 
-example : typing .snd [] expr𝕩 ty := by
-  rw [expr𝕩, x₀, x₁, x₂, ty]
+example : typing .fst [] expr𝕩 τ := by
+  rw [expr𝕩, x₀, x₁, x₂, τ]
   apply typing.code₂
   apply typing.lets _ _ _ _ (.arrow .nat .nat)
   repeat constructor
 
 end Example1
+
+namespace PCP_Stuck
+
+example : ∀ 𝕊 b τ, ¬typing 𝕊 [] (.let𝕔 b (.bvar 0)) τ :=
+  by
+  intros 𝕊 b τ Hτ
+  cases Hτ <;> contradiction
+
+end PCP_Stuck
