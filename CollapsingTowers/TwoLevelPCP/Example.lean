@@ -60,67 +60,100 @@ def expr𝕩 : Expr :=
   .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
 def τ : Ty :=
-  .rep (.arrow .nat .nat)
+  .rep (.arrow .nat .nat ∅)
 
-example : typing [] .stat expr₀ τ := by
+example : typing_reification [] expr₀ τ .reflect := by
   rw [expr₀, x₀, τ]
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₁ τ := by
+example : typing_reification [] expr₁ τ .reflect := by
   rw [expr₁, x₀, τ]
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₂ τ := by
+example : typing_reification [] expr₂ τ .reflect := by
   rw [expr₂, x₀, τ]
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₃ τ := by
+example : typing_reification [] expr₃ τ .reflect := by
   rw [expr₃, x₀, x₁, τ]
+  constructor
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₄ τ := by
+example : typing_reification [] expr₄ τ .reflect := by
   rw [expr₄, x₀, x₁, τ]
+  constructor
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₅ τ := by
+example : typing_reification [] expr₅ τ .reflect := by
   rw [expr₅, x₀, x₁, x₂, τ]
+  constructor
   apply typing.lift_code
   apply typing.lam𝕔
-  apply typing.let𝕔; . repeat constructor
-  apply typing.let𝕔; . repeat constructor
+  apply typing.let𝕔;
+  .
+    repeat
+      ( try rw [← union_empty ∅]
+        constructor)
+  apply typing.let𝕔;
+  .
+    repeat
+      ( try rw [← union_empty ∅]
+        constructor)
   repeat constructor
 
-example : typing [] .stat expr₆ τ := by
+example : typing_reification [] expr₆ τ .reflect := by
   rw [expr₆, x₀, x₁, x₂, τ]
+  constructor
   apply typing.lift_code
   apply typing.lam𝕔
   apply typing.let𝕔
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₇ τ := by
+example : typing_reification [] expr₇ τ .reflect := by
   rw [expr₇, x₀, x₁, x₂, τ]
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₈ τ := by
+example : typing_reification [] expr₈ τ .reflect := by
   rw [expr₈, x₀, x₁, x₂, τ]
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr₉ τ := by
+example : typing_reification [] expr₉ τ ∅ := by
   rw [expr₉, x₀, x₁, x₂, τ]
+  constructor
   apply typing.let𝕔
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
-example : typing [] .stat expr𝕩 τ := by
+example : typing_reification [] expr𝕩 τ ∅ := by
   rw [expr𝕩, x₀, x₁, x₂, τ]
+  constructor
   apply typing.code₂
-  apply typing.lets _ _ _ _ (.arrow .nat .nat)
-  repeat constructor
+  repeat
+    ( try rw [← union_empty ∅]
+      constructor)
 
 end Example1
 
@@ -129,18 +162,20 @@ namespace PhaseConsistency
 -- stuck example
 -- letc x (* phase 2 *) = eff in
 -- x (* phase 1 *)
-example : ∀ 𝕊 b τ, ¬typing [] 𝕊 (.let𝕔 b (.bvar 0)) τ :=
+example : ∀ b τ φ, ¬typing_reification [] (.let𝕔 b (.bvar 0)) τ φ :=
   by
   intros _ _ _ Hτ
-  cases Hτ <;> contradiction
+  cases Hτ
+  contradiction
 
 -- cross stage persistence
 -- let x (* phase 1 *) = ref 0 in
 -- code x (* phase 2 *)
-example : ∀ 𝕊 b τ, ¬typing [] 𝕊 (.lets b (.code (.bvar 0))) τ :=
+example : ∀ b τ φ, ¬typing_reification [] (.lets b (.code (.bvar 0))) τ φ :=
   by
   intros _ _ _ Hτ
-  cases Hτ <;> contradiction
+  cases Hτ
+  contradiction
 
 end PhaseConsistency
 
@@ -151,14 +186,14 @@ namespace Reification
 --    letc x0 = eff in
 --    code x0
 -- in e
-example : ∀ 𝕊 b e τ, ¬typing [] 𝕊 (.lets (.let𝕔 b (.code (.bvar 0))) e) τ :=
+example : ∀ b e τ φ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
   by
   intros _ _ _ _ Hτ
-  cases Hτ with
-  | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
-  | lift_code _ _ _ Hτ =>
-    cases Hτ with
-    | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
+  cases (Hτ.left)
+  case lets Hlet𝕔 _ _ => cases Hlet𝕔 <;> contradiction
+  case lift_code Hτ =>
+    cases Hτ
+    case lets Hlet𝕔 _ _ => cases Hlet𝕔 <;> contradiction
 
 -- reify result under B context
 -- let x = code {
@@ -166,13 +201,25 @@ example : ∀ 𝕊 b e τ, ¬typing [] 𝕊 (.lets (.let𝕔 b (.code (.bvar 0))
 --    x0
 -- }
 -- in e
-example : ∀ 𝕊 b e τ, ¬typing [] 𝕊 (.lets (.code (.lets b (.bvar 0))) e) τ :=
+example : ∀ b e τ φ, ¬typing_reification [] (.lets (.code (.lets b (.bvar 0))) e) τ φ :=
   by
   intros _ _ _ _ Hτ
-  cases Hτ with
-  | lets _ _ _ _ _ _ Hcode => cases Hcode <;> contradiction
-  | lift_code _ _ _ Hτ =>
-    cases Hτ with
-    | lets _ _ _ _ _ _ Hlet𝕔 => cases Hlet𝕔 <;> contradiction
+  cases (Hτ.left)
+  case lets Hcode _ _ => cases Hcode <;> contradiction
+  case lift_code Hτ =>
+    cases Hτ
+    case lets Hlet𝕔 _ _ => cases Hlet𝕔 <;> contradiction
+
+-- E context must has resulting type rep τ -> rep τ
+-- let x = reflect e
+-- in 1
+example : ∀ e τ φ, ¬typing_reification [] (.lets (.reflect e) (.lit₁ 1)) τ φ :=
+  by
+  intros _ _ _ Hτ
+  cases (Hτ.left) <;> try contradiction
+  case lets Hreflect _ Hlit₁ =>
+    cases Hlit₁ <;> try contradiction
+    cases Hreflect <;> try contradiction
+    nomatch (Hτ.right)
 
 end Reification

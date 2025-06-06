@@ -1,23 +1,15 @@
 
 import Mathlib.Data.Nat.Basic
+import CollapsingTowers.TwoLevelPCP.Effect
 inductive Stage : Type where
   | stat
   | dyn
 
 inductive Ty : Type where
   | nat
-  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty)
+  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effects)
   | fragment (τ : Ty)
   | rep (τ : Ty)
-
-def well_binding_time : Stage → Ty → Prop
-  | .stat, .nat => true
-  | .stat, (.arrow _ _) => true
-  | .stat, (.fragment _) => true
-  | .stat, _ => false
-  | .dyn, .nat => true
-  | .dyn, (.arrow _ _) => true
-  | .dyn, _ => false
 
 inductive Expr : Type where
   | bvar (i : ℕ)
