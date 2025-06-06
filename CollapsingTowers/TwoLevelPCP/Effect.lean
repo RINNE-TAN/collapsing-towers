@@ -6,12 +6,13 @@ inductive Effects : Type where
 @[simp]
 def union : Effects → Effects → Effects
   | .pure, .pure => .pure
-  | .pure, .reflect => .reflect
-  | .reflect, .pure => .reflect
-  | .reflect, .reflect => .reflect
+  | .reflect, _ => .reflect
+  | _, .reflect => .reflect
 
+@[simp]
 instance : EmptyCollection Effects where emptyCollection := .pure
 
+@[simp]
 instance : Union Effects where union := union
 
 theorem union_empty : forall φ : Effects, φ ∪ ∅ = φ := by
