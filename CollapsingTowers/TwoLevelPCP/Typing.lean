@@ -24,7 +24,7 @@ mutual
       typing Γ 𝕊 (.lam₁ e) (.arrow τ𝕒 τ𝕓 φ) ∅
     | lift_lam : ∀ Γ e τ𝕒 τ𝕓 φ₀ φ₁,
       typing Γ .stat e (.arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀) φ₁ →
-      typing Γ .stat (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reflect
+      typing Γ .stat (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reify
     | app₁ : ∀ Γ 𝕊 f arg τ𝕒 τ𝕓 φ₀ φ₁ φ₂,
       typing Γ 𝕊 f (.arrow τ𝕒 τ𝕓 φ₀) φ₁ →
       typing Γ 𝕊 arg τ𝕒 φ₂ →
@@ -32,7 +32,7 @@ mutual
     | app₂ : ∀ Γ f arg τ𝕒 τ𝕓 φ₀ φ₁,
       typing Γ .stat f (.fragment (.arrow τ𝕒 τ𝕓 ∅)) φ₀ →
       typing Γ .stat arg (.fragment τ𝕒) φ₁ →
-      typing Γ .stat (.app₂ f arg) (.fragment τ𝕓) .reflect
+      typing Γ .stat (.app₂ f arg) (.fragment τ𝕓) .reify
     | plus₁ : ∀ Γ 𝕊 l r φ₀ φ₁,
       typing Γ 𝕊 l .nat φ₀ →
       typing Γ 𝕊 r .nat φ₁ →
@@ -40,7 +40,7 @@ mutual
     | plus₂ : ∀ Γ l r φ₀ φ₁,
       typing Γ .stat l (.fragment .nat) φ₀ →
       typing Γ .stat r (.fragment .nat) φ₁ →
-      typing Γ .stat (.plus₂ l r) (.fragment .nat) .reflect
+      typing Γ .stat (.plus₂ l r) (.fragment .nat) .reify
     | lit₁ : ∀ Γ 𝕊 n,
       typing Γ 𝕊 (.lit₁ n) .nat ∅
     | lift_lit : ∀ Γ n φ,
@@ -54,12 +54,12 @@ mutual
       typing Γ .stat (.code e) (.rep τ) ∅
     | reflect : ∀ Γ e τ,
       typing Γ .dyn e τ ∅ →
-      typing Γ .stat (.reflect e) (.fragment τ) .reflect
+      typing Γ .stat (.reflect e) (.fragment τ) .reify
     | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓 φ,
       typing_reification ((τ𝕒, .dyn) :: Γ) (open₀ Γ.length e) (.rep τ𝕓) φ →
       well_binding_time .dyn τ𝕒 →
       closed_at e Γ.length →
-      typing Γ .stat (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reflect
+      typing Γ .stat (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reify
     | lets : ∀ Γ 𝕊 b e τ𝕒 τ𝕓 φ₀ φ₁,
       typing Γ 𝕊 b τ𝕒 φ₀ →
       typing ((τ𝕒, 𝕊) :: Γ) 𝕊 (open₀ Γ.length e) τ𝕓 φ₁ →
@@ -75,5 +75,5 @@ mutual
 
   inductive typing_reification : TEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ -> typing_reification Γ e τ ∅
-    | reflect : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reflect -> typing_reification Γ e (.rep τ) .reflect
+    | reify : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reify -> typing_reification Γ e (.rep τ) .reify
 end

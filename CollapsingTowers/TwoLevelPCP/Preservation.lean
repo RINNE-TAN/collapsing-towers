@@ -12,8 +12,44 @@ theorem preservation_subst_strengthened :
       typing Φ .stat v τ𝕒 ∅ ->
       typing (Δ ++ Φ) .stat (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ :=
   by
+  generalize Eq𝕊 : Stage.stat = 𝕊
   intros Γ Δ Φ v e τ𝕒 τ𝕓 φ Hτe HEqΓ Hτv
-  admit
+  revert Δ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
+        ∀ (Δ : TEnv), Γ = Δ ++ (τ𝕒, 𝕊) :: Φ → typing (Δ ++ Φ) 𝕊 (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ)
+      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) =>
+        ∀ (Δ : TEnv),
+          Γ = Δ ++ (τ𝕒, 𝕊) :: Φ → typing_reification (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ)
+  case fvar =>
+    intros _ _ x _ Hbinds Δ HEqΓ
+    admit
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ
+    admit
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg Δ HEqΓ
+    constructor
+    apply IHf; apply HEqΓ
+    apply IHarg; apply HEqΓ
+  case app₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHf IHarg Δ HEqΓ
+    constructor
+    apply IHf; apply HEqΓ
+    apply IHarg; apply HEqΓ
+  case lam𝕔 =>
+    intros _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ
+    admit
+  case pure =>
+    intros _ _ _ _ IH Δ HEqΓ
+    apply typing_reification.pure
+    apply IH; rw [Eq𝕊]; apply HEqΓ
+  case reify =>
+    intros _ _ _ _ IH Δ HEqΓ
+    apply typing_reification.reify
+    apply IH; rw [Eq𝕊]; apply HEqΓ
+  all_goals admit
 
 theorem preservation_head𝕄 :
     ∀ Γ e₀ e₁ τ φ,

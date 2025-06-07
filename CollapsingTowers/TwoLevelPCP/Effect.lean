@@ -2,18 +2,18 @@
 import Mathlib.Order.Basic
 inductive Effects : Type where
   | pure
-  | reflect
+  | reify
 
 @[simp]
 def union : Effects → Effects → Effects
   | .pure, .pure => .pure
-  | .reflect, _ => .reflect
-  | _, .reflect => .reflect
+  | .reify, _ => .reify
+  | _, .reify => .reify
 
 @[simp]
 def le : Effects → Effects → Prop
   | .pure, _ => true
-  | .reflect, .reflect => true
+  | .reify, .reify => true
   | _, _ => false
 
 @[simp]
