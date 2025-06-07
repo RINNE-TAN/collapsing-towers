@@ -96,7 +96,7 @@ example : typing_reification [] expr₂ τ .reify :=
   apply typing_reification.reify
   apply typing.plus₂
   apply typing.code₁; . repeat constructor
-  apply typing.reflect; rw [← union_empty ∅]
+  apply typing.reflect; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -108,7 +108,7 @@ example : typing_reification [] expr₃ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.let𝕔; rw [← union_empty ∅]
+  apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -124,12 +124,12 @@ example : typing_reification [] expr₄ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.let𝕔; rw [← union_empty ∅]
+  apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
   apply typing_reification.reify
-  apply typing.reflect; rw [← union_empty ∅]
+  apply typing.reflect; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -141,12 +141,12 @@ example : typing_reification [] expr₅ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.let𝕔; rw [← union_empty ∅]
+  apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
   apply typing_reification.pure
-  apply typing.let𝕔; rw [← union_empty ∅]
+  apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -161,13 +161,13 @@ example : typing_reification [] expr₆ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.let𝕔; rw [← union_empty ∅]
+  apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -180,13 +180,13 @@ example : typing_reification [] expr₇ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
-  rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -198,13 +198,13 @@ example : typing_reification [] expr₈ τ .reify :=
   rw [expr₈, x₀, x₁, x₂, τ]
   apply typing_reification.reify
   apply typing.reflect
-  apply typing.lam₁; rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  apply typing.lam₁; rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
-  rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; . repeat constructor
   apply typing.fvar; . repeat constructor
@@ -232,8 +232,8 @@ example : typing_reification [] expr𝕩 τ .pure :=
   by
   rw [expr𝕩, x₀, x₁, x₂, τ]
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_empty ∅]
-  apply typing.lets; rw [← union_empty ∅]
+  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.lets; rw [← union_pure_left ∅]
   apply typing.lam₁
   apply typing.lets
   apply typing.plus₁

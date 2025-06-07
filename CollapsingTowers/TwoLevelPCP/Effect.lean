@@ -36,6 +36,10 @@ instance : PartialOrder Effects where
     cases x <;> cases y <;> simp
     all_goals intro _ _; contradiction
 
-theorem union_empty : forall φ : Effects, φ ∪ ∅ = φ := by
+theorem union_pure_right : forall φ : Effects, φ ∪ ∅ = φ := by
+  intro φ
+  cases φ <;> rfl
+
+theorem union_pure_left : forall φ : Effects, ∅ ∪ φ = φ := by
   intro φ
   cases φ <;> rfl
