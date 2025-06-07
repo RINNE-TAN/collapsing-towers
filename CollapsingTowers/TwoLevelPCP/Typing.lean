@@ -55,8 +55,8 @@ mutual
     | reflect : ∀ Γ e τ,
       typing Γ .dyn e τ ∅ →
       typing Γ .stat (.reflect e) (.fragment τ) .reflect
-    | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓,
-      typing_reification ((τ𝕒, .dyn) :: Γ) (open₀ Γ.length e) (.rep τ𝕓) →
+    | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓 φ,
+      typing_reification ((τ𝕒, .dyn) :: Γ) (open₀ Γ.length e) (.rep τ𝕓) φ →
       well_binding_time .dyn τ𝕒 →
       closed_at e Γ.length →
       typing Γ .stat (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reflect
@@ -66,14 +66,14 @@ mutual
       well_binding_time 𝕊 τ𝕒 →
       closed_at e Γ.length →
       typing Γ 𝕊 (.lets b e) τ𝕓 (φ₀ ∪ φ₁)
-    | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓,
+    | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓 φ,
       typing Γ .dyn b τ𝕒 ∅ →
-      typing_reification ((τ𝕒, .dyn) :: Γ) (open₀ Γ.length e) (.rep τ𝕓) →
+      typing_reification ((τ𝕒, .dyn) :: Γ) (open₀ Γ.length e) (.rep τ𝕓) φ →
       well_binding_time .dyn τ𝕒 →
       closed_at e Γ.length →
       typing Γ .stat (.let𝕔 b e) (.rep τ𝕓) ∅
 
-  inductive typing_reification : TEnv → Expr → Ty → Prop
-    | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ -> typing_reification Γ e τ
-    | reflect : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reflect -> typing_reification Γ e (.rep τ)
+  inductive typing_reification : TEnv → Expr → Ty → Effects → Prop
+    | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ -> typing_reification Γ e τ ∅
+    | reflect : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reflect -> typing_reification Γ e (.rep τ) .reflect
 end

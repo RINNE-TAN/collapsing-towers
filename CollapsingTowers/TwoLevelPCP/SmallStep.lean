@@ -36,18 +36,15 @@ inductive ctx𝔼 : Ctx → Prop where
   | hole : ctx𝔼 id
   | cons𝔹 : ∀ B E, ctx𝔹 B → ctx𝔼 E → ctx𝔼 (B ∘ E)
 
-inductive ℙℚ : Type where
-  | ℙ
-  | ℚ
-
-inductive ctxℙℚ : ℙℚ → ℕ → Ctx → Prop where
-  | hole : ctxℙℚ .ℙ lvl id
-  | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℙℚ .ℚ lvl Q → ctxℙℚ flag lvl (B ∘ Q)
-  | consℝ : ∀ R P, ctxℝ lvl R → ctxℙℚ .ℙ (lvl + 1) P → ctxℙℚ flag lvl (R ∘ P)
-
-@[simp]
-def ctxℙ : ℕ → Ctx → Prop :=
-  ctxℙℚ .ℙ
+mutual
+  inductive ctxℚ : ℕ → Ctx → Prop where
+    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℚ lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ (lvl + 1) P → ctxℚ lvl (R ∘ P)
+  inductive ctxℙ : ℕ → Ctx → Prop where
+    | hole : ctxℙ lvl id
+    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℙ lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ (lvl + 1) P → ctxℙ lvl (R ∘ P)
+end
 
 inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
@@ -67,7 +64,3 @@ inductive step_lvl (lvl : ℕ) : Expr → Expr → Prop where
 @[simp]
 def step : Expr → Expr → Prop :=
   step_lvl 0
-
-inductive stepn : Expr → Expr → Prop
-  | refl : ∀ e, stepn e e
-  | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
