@@ -215,6 +215,7 @@ theorem preservation_subst_strengthened :
     apply typing_reification.reify
     apply IH; apply HEqΓ
   apply Hτe
+
 theorem preservation_subst :
     ∀ Γ v e τ𝕒 τ𝕓 φ,
       typing Γ .stat v τ𝕒 ∅ →
@@ -233,13 +234,12 @@ theorem preservation_subst :
 
 theorem preservation_head𝕄 :
     ∀ Γ e₀ e₁ τ φ,
-      dyn_env Γ →
       head𝕄 e₀ e₁ →
       lc e₀ →
       typing Γ .stat e₀ τ φ →
       typing Γ .stat e₁ τ φ :=
   by
-  intros Γ e₀ e₁ τ φ HdynΓ Hhead Hlc Hτ
+  intros Γ e₀ e₁ τ φ Hhead Hlc Hτ
   cases Hhead
   case lets Hvalue =>
     cases Hτ
@@ -265,8 +265,79 @@ theorem preservation_head𝕄 :
         apply Hτv; apply Hτe; apply Hclose
   case app₂ =>
     cases Hτ
-    case app₂ Hτv Hτf => admit
-  all_goals admit
+    case app₂ Hτ₀ Hτ₁ =>
+      cases Hτ₀
+      case code₁ Hbinds₀ =>
+        cases Hτ₁
+        case code₁ Hbinds₁ =>
+          apply typing.reflect
+          rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
+          apply typing.app₁
+          apply typing.fvar; apply Hbinds₀
+          apply typing.fvar; apply Hbinds₁
+  case plus₁ =>
+    cases Hτ
+    case plus₁ Hl Hr =>
+      cases Hl; cases Hr; apply typing.lit₁
+  case plus₂ =>
+    cases Hτ
+    case plus₂ Hτ₀ Hτ₁ =>
+      cases Hτ₀
+      case code₁ Hbinds₀ =>
+        cases Hτ₁
+        case code₁ Hbinds₁ =>
+          apply typing.reflect
+          rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
+          apply typing.plus₁
+          apply typing.fvar; apply Hbinds₀
+          apply typing.fvar; apply Hbinds₁
+  case lift_lit =>
+    cases Hτ
+    case lift_lit Hτ =>
+      apply typing.reflect
+      apply typing.lit₁
+    case lift_lam => contradiction
+  case lift_lam => admit
+  case lam𝕔 e =>
+    cases Hτ
+    case lam𝕔 HwellBinds Hτ Hclose =>
+      apply typing.reflect
+      apply typing.lam₁
+      cases Hτ with
+      | pure _ _ _ Hτ =>
+        simp at *
+        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
+        rw [Eqe] at Hτ
+        cases Hτ with
+        | code₂ _ _ _ Hτ => apply Hτ
+      | reify _ _ _ Hτ =>
+        simp at *
+        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
+        rw [Eqe] at Hτ
+        cases E <;> contradiction
+      apply HwellBinds
+      apply Hclose
+  case let𝕔 e =>
+    cases Hτ
+    case let𝕔 HwellBinds Hτb Hτe Hclose =>
+      apply typing.code₂
+      rw [← union_pure_right ∅]
+      apply typing.lets
+      apply Hτb
+      cases Hτe with
+      | pure _ _ _ Hτ =>
+        simp at *
+        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
+        rw [Eqe] at Hτ
+        cases Hτ with
+        | code₂ _ _ _ Hτ => apply Hτ
+      | reify _ _ _ Hτ =>
+        simp at *
+        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
+        rw [Eqe] at Hτ
+        cases E <;> contradiction
+      apply HwellBinds
+      apply Hclose
 
 theorem preservation_strengthened :
     ∀ Γ e₀ e₁ τ φ₀,
@@ -287,7 +358,7 @@ theorem preservation_strengthened :
           (next Hτ =>
               constructor
               apply preservation_head𝕄
-              apply HdynΓ; apply Hhead𝕄; apply Hlc; apply Hτ)
+              apply Hhead𝕄; apply Hlc; apply Hτ)
       . rfl
     case cons𝔹 HB _ IHM => admit
     case consℝ HR HM IHM => admit

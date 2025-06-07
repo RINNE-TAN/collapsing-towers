@@ -45,7 +45,7 @@ mutual
       typing Γ 𝕊 (.lit₁ n) .nat ∅
     | lift_lit : ∀ Γ n φ,
       typing Γ .stat n .nat φ →
-      typing Γ .stat (.lift n) (.fragment .nat) φ
+      typing Γ .stat (.lift n) (.fragment .nat) .reify
     | code₁ : ∀ Γ x τ,
       binds x τ .dyn Γ →
       typing Γ .stat (.code (.fvar x)) (.fragment τ) ∅
