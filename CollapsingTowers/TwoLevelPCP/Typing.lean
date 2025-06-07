@@ -74,6 +74,20 @@ mutual
       typing Γ .stat (.let𝕔 b e) (.rep τ𝕓) ∅
 
   inductive typing_reification : TEnv → Expr → Ty → Effects → Prop
-    | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ -> typing_reification Γ e τ ∅
-    | reify : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reify -> typing_reification Γ e (.rep τ) .reify
+    | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ → typing_reification Γ e τ ∅
+    | reify : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reify → typing_reification Γ e (.rep τ) .reify
 end
+
+theorem typing_regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
+  by admit
+
+theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_at e Γ.length :=
+  by admit
+
+theorem typing_pure : ∀ Γ v τ φ, typing Γ .stat v τ φ → value v → φ = ∅ :=
+  by
+  intros _ _ _ _ Hτ Hvalue
+  cases Hvalue <;> cases Hτ <;> rfl
+
+theorem weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (Δ ++ Γ) 𝕊 e τ φ :=
+  by admit
