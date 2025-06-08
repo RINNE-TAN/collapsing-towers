@@ -36,7 +36,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .lets b e => .lets (shiftr_at x b) (shiftr_at x e)
   | .let𝕔 b e => .let𝕔 (shiftr_at x b) (shiftr_at x e)
 
-theorem shiftl_opening :
+theorem shiftl_opening_comm :
     ∀ x y e n i, x <= y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
   by
   intros x y e n i HLe
@@ -64,8 +64,8 @@ theorem shiftl_opening :
   | reflect _ IH =>
     simp; apply IH
 
-theorem shiftl_open₀ : ∀ x y e n, x <= y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
-  intros _ _ _ _; apply shiftl_opening
+theorem shiftl_open₀_comm : ∀ x y e n, x <= y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
+  intros _ _ _ _; apply shiftl_opening_comm
 
 theorem shiftl_closed_at :
     ∀ x y e n, closed_at e x → closed_at (shiftl_at y n e) (x + n) :=

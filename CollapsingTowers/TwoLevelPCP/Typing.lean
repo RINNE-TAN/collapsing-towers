@@ -1,5 +1,6 @@
 
 import CollapsingTowers.TwoLevelPCP.Syntax
+import CollapsingTowers.TwoLevelPCP.Shift
 import CollapsingTowers.TwoLevelPCP.SmallStep
 import CollapsingTowers.TwoLevelPCP.Env
 @[simp]
@@ -79,15 +80,223 @@ mutual
 end
 
 theorem typing_regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
-  by admit
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) => lc e)
+      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) => lc e) <;>
+  try simp
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ _ _ IH
+    apply open_closedb; apply IH
+  case lam𝕔 =>
+    intros _ _ _ _ _ _ _ _ IH
+    apply open_closedb; apply IH
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
+    constructor; apply IHf; apply IHarg
+  case app₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHf IHarg
+    constructor; apply IHf; apply IHarg
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
+  case plus₂ =>
+    intros _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHb IHe
+    constructor
+    apply IHb; apply open_closedb; apply IHe
+  case let𝕔 =>
+    intros _ _ _ _ _ _ _ _ _ _ IHb IHe
+    constructor
+    apply IHb; apply open_closedb; apply IHe
+  apply Hτ
 
 theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_at e Γ.length :=
-  by admit
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) => closed_at e Γ.length)
+      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) => closed_at e Γ.length) <;>
+  try intros; assumption
+  case fvar =>
+    intros _ _ _ _ Hbinds
+    apply indexrSome'; constructor
+    apply Hbinds
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
+    constructor; apply IHf; apply IHarg
+  case app₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHf IHarg
+    constructor; apply IHf; apply IHarg
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
+  case plus₂ =>
+    intros _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
+  case lit₁ => simp
+  case code₁ =>
+    intros _ _ _ Hbinds
+    apply indexrSome'; constructor
+    apply Hbinds
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ _ Hclose IHb _
+    constructor; apply IHb; apply Hclose
+  case let𝕔 =>
+    intros _ _ _ _ _ _ _ _ _ Hclose IHb _
+    constructor; apply IHb; apply Hclose
 
 theorem typing_pure : ∀ Γ v τ φ, typing Γ .stat v τ φ → value v → φ = ∅ :=
   by
   intros _ _ _ _ Hτ Hvalue
   cases Hvalue <;> cases Hτ <;> rfl
 
+theorem weakening_strengthened:
+    ∀ Γ Ψ Δ Φ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → Γ = Ψ ++ Φ → typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ :=
+  by
+  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ HEqΓ
+  revert Ψ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
+        ∀ Ψ,
+          Γ = Ψ ++ Φ →
+          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at (List.length Φ) (List.length Δ) e) τ φ)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
+        ∀ Ψ,
+          Γ = Ψ ++ Φ →
+          typing_reification (Ψ ++ Δ ++ Φ) (shiftl_at (List.length Φ) (List.length Δ) e) τ φ)
+  case fvar =>
+    intros _ _ x _ Hbinds Ψ HEqΓ
+    rw [HEqΓ] at Hbinds
+    by_cases HLe : Φ.length <= x
+    . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.fvar
+      rw [← Nat.add_sub_of_le HLe]
+      rw [← Nat.add_sub_of_le HLe] at Hbinds
+      rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
+      rw [Nat.add_comm] at Hbinds
+      repeat apply binds_extendr
+      apply binds_shrinkr; apply Hbinds
+    . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.fvar
+      apply binds_extend; apply binds_shrink
+      omega; apply Hbinds
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ
+    rw [HEqΓ] at IH
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀_comm] at IH
+    rw [List.length_append, Nat.add_right_comm] at IH
+    apply typing.lam₁
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IH; rfl; apply HwellBinds
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose; simp
+  case lift_lam =>
+    intros _ _ _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.lift_lam
+    apply IH; apply HEqΓ
+  case lam𝕔 =>
+    intros _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ
+    rw [HEqΓ] at IH
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀_comm] at IH
+    rw [List.length_append, Nat.add_right_comm] at IH
+    apply typing.lam𝕔
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IH; rfl; apply HwellBinds
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose; simp
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg Ψ HEqΓ
+    apply typing.app₁
+    apply IHf; apply HEqΓ
+    apply IHarg; apply HEqΓ
+  case app₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHf IHarg Ψ HEqΓ
+    apply typing.app₂
+    apply IHf; apply HEqΓ
+    apply IHarg; apply HEqΓ
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
+    apply typing.plus₁
+    apply IHl; apply HEqΓ
+    apply IHr; apply HEqΓ
+  case plus₂ =>
+    intros _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
+    apply typing.plus₂
+    apply IHl; apply HEqΓ
+    apply IHr; apply HEqΓ
+  case lit₁ => intros; apply typing.lit₁
+  case lift_lit =>
+    intros _ _ _ _ IH Ψ HEqΓ
+    apply typing.lift_lit
+    apply IH; apply HEqΓ
+  case code₁ =>
+    intros _ x _ Hbinds Ψ HEqΓ
+    rw [HEqΓ] at Hbinds
+    by_cases HLe : Φ.length <= x
+    . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.code₁
+      rw [← Nat.add_sub_of_le HLe]
+      rw [← Nat.add_sub_of_le HLe] at Hbinds
+      rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
+      rw [Nat.add_comm] at Hbinds
+      repeat apply binds_extendr
+      apply binds_shrinkr; apply Hbinds
+    . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.code₁
+      apply binds_extend; apply binds_shrink
+      omega; apply Hbinds
+  case code₂ =>
+    intros _ _ _ _ IH Ψ HEqΓ
+    apply typing.code₂
+    apply IH; apply HEqΓ
+  case reflect =>
+    intros _ _ _ _ IH Ψ HEqΓ
+    apply typing.reflect
+    apply IH; apply HEqΓ
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe Ψ HEqΓ
+    rw [HEqΓ] at IHe
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀_comm] at IHe
+    rw [List.length_append, Nat.add_right_comm] at IHe
+    apply typing.lets
+    apply IHb; apply HEqΓ
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IHe; rfl; apply HwellBinds
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose; simp
+  case let𝕔 =>
+    intros _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe Ψ HEqΓ
+    rw [HEqΓ] at IHe
+    rw [HEqΓ] at Hclose
+    rw [shiftl_open₀_comm] at IHe
+    rw [List.length_append, Nat.add_right_comm] at IHe
+    apply typing.let𝕔
+    apply IHb; apply HEqΓ
+    rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
+    apply IHe; rfl; apply HwellBinds
+    rw [List.length_append, List.length_append, Nat.add_right_comm]
+    apply shiftl_closed_at; rw [← List.length_append]; apply Hclose; simp
+  case pure =>
+    intros _ _ _ _ IH Ψ HEqΓ
+    apply typing_reification.pure
+    apply IH; apply HEqΓ
+  case reify =>
+    intros _ _ _ _ IH Ψ HEqΓ
+    apply typing_reification.reify
+    apply IH; apply HEqΓ
+  apply Hτ
+
 theorem weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (Δ ++ Γ) 𝕊 e τ φ :=
-  by admit
+  by
+  intros Γ Δ 𝕊 e τ φ Hτ
+  rw [← List.nil_append Δ]
+  rw [← shiftl_id _ e]
+  apply weakening_strengthened
+  apply Hτ; rfl
+  apply typing_closed; apply Hτ

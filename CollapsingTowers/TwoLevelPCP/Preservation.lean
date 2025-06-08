@@ -2,9 +2,6 @@
 import Mathlib.Tactic
 import CollapsingTowers.TwoLevelPCP.Typing
 import CollapsingTowers.TwoLevelPCP.Shift
-@[simp]
-def dyn_env (Γ : TEnv) : Prop :=
-  ∀ x τ 𝕊, binds x τ 𝕊 Γ → 𝕊 = .dyn
 
 theorem preservation_subst_strengthened :
     ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
@@ -18,11 +15,11 @@ theorem preservation_subst_strengthened :
   apply
     @typing.rec
       (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
-        ∀ (Δ : TEnv),
+        ∀ Δ,
           Γ = Δ ++ (τ𝕒, .stat) :: Φ →
           typing (Δ ++ Φ) 𝕊 (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ)
       (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) =>
-        ∀ (Δ : TEnv),
+        ∀ Δ,
           Γ = Δ ++ (τ𝕒, .stat) :: Φ →
           typing_reification (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ)
   case fvar =>
@@ -297,7 +294,16 @@ theorem preservation_head𝕄 :
       apply typing.reflect
       apply typing.lit₁
     case lift_lam => contradiction
-  case lift_lam => admit
+  case lift_lam =>
+    cases Hτ
+    case lift_lit => contradiction
+    case lift_lam Hτ =>
+      cases Hτ
+      case lam₁ Hclose HwellBinds Hτe =>
+        rw [← map𝕔₀_intro]
+        apply typing.lam𝕔
+        simp; rw [open_close_id]
+        all_goals admit
   case lam𝕔 e =>
     cases Hτ
     case lam𝕔 HwellBinds Hτ Hclose =>
@@ -341,14 +347,13 @@ theorem preservation_head𝕄 :
 
 theorem preservation_strengthened :
     ∀ Γ e₀ e₁ τ φ₀,
-      dyn_env Γ →
       step_lvl Γ.length e₀ e₁ →
       typing_reification Γ e₀ τ φ₀ →
       ∃ φ₁, typing_reification Γ e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
   by
   intro Γ e₀ e₁ τ φ₀
   generalize HEqlvl : Γ.length = lvl
-  intro HdynΓ Hstep Hτ; cases Hstep
+  intro Hstep Hτ; cases Hstep
   case step𝕄 HM Hlc Hhead𝕄 =>
     induction HM generalizing τ Γ
     case hole =>
