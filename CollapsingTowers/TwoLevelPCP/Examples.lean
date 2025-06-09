@@ -257,12 +257,10 @@ example : ∀ b τ φ, ¬typing_reification [] (.lets b (.code (.bvar 0))) τ φ
   intros _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize eqφ : (∅ : Effects) = φ
-    rw [eqφ] at Hτ
+    generalize HEqφ : (∅ : Effects) = φ
+    rw [HEqφ] at Hτ
     cases Hτ; contradiction
   case reify Hτ =>
-    generalize eqφ : (.reify : Effects) = φ
-    rw [eqφ] at Hτ
     cases Hτ; contradiction
 
 end PhaseConsistency
@@ -279,13 +277,11 @@ example : ∀ b e τ φ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bva
   intros _ _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize eqφ : (∅ : Effects) = φ
-    rw [eqφ] at Hτ
+    generalize HEqφ : (∅ : Effects) = φ
+    rw [HEqφ] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
   case reify Hτ =>
-    generalize eqφ : (.reify : Effects) = φ
-    rw [eqφ] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
 
@@ -300,13 +296,11 @@ example : ∀ b e τ φ, ¬typing_reification [] (.lets (.code (.lets b (.bvar 0
   intros _ _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize eqφ : (∅ : Effects) = φ
-    rw [eqφ] at Hτ
+    generalize HEqφ : (∅ : Effects) = φ
+    rw [HEqφ] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
   case reify Hτ =>
-    generalize eqφ : (.reify : Effects) = φ
-    rw [eqφ] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
 
@@ -319,16 +313,14 @@ example : ∀ e τ φ, ¬typing_reification [] (.lets (.reflect e) (.lit₁ 1)) 
   intros _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize eqφ : (∅ : Effects) = φ
-    rw [eqφ] at Hτ
+    generalize HEqφ : (∅ : Effects) = φ
+    rw [HEqφ] at Hτ
     cases Hτ
     case lets Hreflect _ _ =>
       cases Hreflect
-      simp at eqφ
+      simp at HEqφ
   case reify Hτ =>
-    generalize eqφ : (.reify : Effects) = φ
-    rw [eqφ] at Hτ
     cases Hτ
-    case lets Hreflect _ _ => cases Hreflect; contradiction
+    contradiction
 
 end Reification

@@ -78,7 +78,7 @@ mutual
 
   inductive typing_reification : TEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ → typing_reification Γ e τ ∅
-    | reify : ∀ Γ e τ, typing Γ .stat e (.fragment τ) .reify → typing_reification Γ e (.rep τ) .reify
+    | reify : ∀ Γ e τ φ, typing Γ .stat e (.fragment τ) φ → typing_reification Γ e (.rep τ) φ
 end
 
 theorem typing_regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
@@ -289,7 +289,7 @@ theorem weakening_strengthened:
     apply typing_reification.pure
     apply IH; apply HEqΓ
   case reify =>
-    intros _ _ _ _ IH Ψ HEqΓ
+    intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.reify
     apply IH; apply HEqΓ
   apply Hτ

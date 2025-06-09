@@ -208,7 +208,7 @@ theorem preservation_subst_strengthened :
     apply typing_reification.pure
     apply IH; apply HEqΓ
   case reify =>
-    intros _ _ _ _ IH Δ HEqΓ
+    intros _ _ _ _ _ IH Δ HEqΓ
     apply typing_reification.reify
     apply IH; apply HEqΓ
   apply Hτe
@@ -318,11 +318,14 @@ theorem preservation_head𝕄 :
         rw [Eqe] at Hτ
         cases Hτ with
         | code₂ _ _ _ Hτ => apply Hτ
-      | reify _ _ _ Hτ =>
+      | reify _ _ _ _ Hτ =>
         simp at *
         generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
         rw [Eqe] at Hτ
-        cases E <;> contradiction
+        cases Hτ with
+        | code₁ _ _ _ Hbinds HwellBinds =>
+          apply typing.fvar
+          apply Hbinds; apply HwellBinds
       apply HwellBinds
       apply Hclose
   case let𝕔 e =>
@@ -339,11 +342,14 @@ theorem preservation_head𝕄 :
         rw [Eqe] at Hτ
         cases Hτ with
         | code₂ _ _ _ Hτ => apply Hτ
-      | reify _ _ _ Hτ =>
+      | reify _ _ _ _ Hτ =>
         simp at *
         generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
         rw [Eqe] at Hτ
-        cases E <;> contradiction
+        cases Hτ with
+        | code₁ _ _ _ Hbinds HwellBinds =>
+          apply typing.fvar
+          apply Hbinds; apply HwellBinds
       apply HwellBinds
       apply Hclose
 
