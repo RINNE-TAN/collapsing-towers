@@ -69,11 +69,10 @@ example : typing_reification [] expr₀ τ .reify :=
   apply typing.lift_lam
   apply typing.lam₁
   apply typing.plus₂
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
   apply typing.plus₂
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₁ τ .reify :=
   by
@@ -82,11 +81,10 @@ example : typing_reification [] expr₁ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; . repeat constructor
+  apply typing.code₁; repeat simp
   apply typing.plus₂
-  apply typing.code₁; . repeat constructor
-  apply typing.code₁; . repeat constructor
-  repeat constructor
+  apply typing.code₁; repeat simp
+  apply typing.code₁; repeat simp
 
 example : typing_reification [] expr₂ τ .reify :=
   by
@@ -95,12 +93,11 @@ example : typing_reification [] expr₂ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; . repeat constructor
+  apply typing.code₁; repeat simp
   apply typing.reflect; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₃ τ .reify :=
   by
@@ -110,13 +107,12 @@ example : typing_reification [] expr₃ τ .reify :=
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; . repeat constructor
-  apply typing.code₁; . repeat constructor
-  repeat constructor
+  apply typing.code₁; repeat simp
+  apply typing.code₁; repeat simp
 
 example : typing_reification [] expr₄ τ .reify :=
   by
@@ -126,14 +122,13 @@ example : typing_reification [] expr₄ τ .reify :=
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   apply typing_reification.reify
   apply typing.reflect; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₅ τ .reify :=
   by
@@ -143,17 +138,16 @@ example : typing_reification [] expr₅ τ .reify :=
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   apply typing_reification.pure
   apply typing.code₂
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₆ τ .reify :=
   by
@@ -163,16 +157,15 @@ example : typing_reification [] expr₆ τ .reify :=
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   apply typing_reification.pure
   apply typing.code₂; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₇ τ .reify :=
   by
@@ -183,15 +176,14 @@ example : typing_reification [] expr₇ τ .reify :=
   apply typing.code₂; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  rw [← union_pure_left ∅]
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  rw [← union_pure_left .pure]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₈ τ .reify :=
   by
@@ -201,15 +193,14 @@ example : typing_reification [] expr₈ τ .reify :=
   apply typing.lam₁; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  rw [← union_pure_left ∅]
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  rw [← union_pure_left .pure]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₉ τ .pure :=
   by
@@ -219,13 +210,13 @@ example : typing_reification [] expr₉ τ .pure :=
   apply typing.lam₁
   apply typing.lets
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; simp; rfl; simp
+  apply typing.fvar; repeat simp
   apply typing.lets
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   repeat constructor
 
 example : typing_reification [] expr𝕩 τ .pure :=
@@ -237,13 +228,13 @@ example : typing_reification [] expr𝕩 τ .pure :=
   apply typing.lam₁
   apply typing.lets
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; simp; rfl; simp
+  apply typing.fvar; repeat simp
   apply typing.lets
   apply typing.plus₁
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
-  apply typing.fvar; . repeat constructor
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
+  apply typing.fvar; repeat simp
   repeat constructor
 
 end Example1
@@ -283,9 +274,9 @@ namespace Reification
 --    letc x0 = eff in
 --    code x0
 -- in e
-example : ∀ b e τ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
+example : ∀ b e τ φ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
   by
-  intros _ _ _ Hτ
+  intros _ _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
     generalize eqφ : (∅ : Effects) = φ

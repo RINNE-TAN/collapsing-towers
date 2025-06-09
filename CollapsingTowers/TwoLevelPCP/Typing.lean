@@ -17,6 +17,7 @@ mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effects → Prop where
     | fvar : ∀ Γ 𝕊 x τ,
       binds x τ 𝕊 Γ →
+      well_binding_time 𝕊 τ →
       typing Γ 𝕊 (.fvar x) τ ∅
     | lam₁ : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ,
       typing ((τ𝕒, 𝕊) :: Γ) 𝕊 (open₀ Γ.length e) τ𝕓 φ →
@@ -49,6 +50,7 @@ mutual
       typing Γ .stat (.lift n) (.fragment .nat) .reify
     | code₁ : ∀ Γ x τ,
       binds x τ .dyn Γ →
+      well_binding_time .dyn τ →
       typing Γ .stat (.code (.fvar x)) (.fragment τ) ∅
     | code₂ : ∀ Γ e τ,
       typing Γ .dyn e τ ∅ →
@@ -84,8 +86,8 @@ theorem typing_regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) => lc e)
-      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) => lc e) <;>
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => lc e)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e) <;>
   try simp
   case lam₁ =>
     intros _ _ _ _ _ _ _ _ _ IH
@@ -120,11 +122,11 @@ theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_a
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) => closed_at e Γ.length)
-      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) => closed_at e Γ.length) <;>
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => closed_at e Γ.length)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length) <;>
   try intros; assumption
   case fvar =>
-    intros _ _ _ _ Hbinds
+    intros _ _ _ _ Hbinds _
     apply indexrSome'; constructor
     apply Hbinds
   case app₁ =>
@@ -141,7 +143,7 @@ theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_a
     constructor; apply IHl; apply IHr
   case lit₁ => simp
   case code₁ =>
-    intros _ _ _ Hbinds
+    intros _ _ _ Hbinds _
     apply indexrSome'; constructor
     apply Hbinds
   case lets =>
@@ -172,7 +174,7 @@ theorem weakening_strengthened:
           Γ = Ψ ++ Φ →
           typing_reification (Ψ ++ Δ ++ Φ) (shiftl_at (List.length Φ) (List.length Δ) e) τ φ)
   case fvar =>
-    intros _ _ x _ Hbinds Ψ HEqΓ
+    intros _ _ x _ Hbinds HwellBinds Ψ HEqΓ
     rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
     . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.fvar
@@ -181,10 +183,10 @@ theorem weakening_strengthened:
       rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
       rw [Nat.add_comm] at Hbinds
       repeat apply binds_extendr
-      apply binds_shrinkr; apply Hbinds
+      apply binds_shrinkr; apply Hbinds; apply HwellBinds
     . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.fvar
       apply binds_extend; apply binds_shrink
-      omega; apply Hbinds
+      omega; apply Hbinds; apply HwellBinds
   case lam₁ =>
     intros _ _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ
     rw [HEqΓ] at IH
@@ -237,7 +239,7 @@ theorem weakening_strengthened:
     apply typing.lift_lit
     apply IH; apply HEqΓ
   case code₁ =>
-    intros _ x _ Hbinds Ψ HEqΓ
+    intros _ x _ Hbinds HwellBinds Ψ HEqΓ
     rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
     . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.code₁
@@ -246,10 +248,10 @@ theorem weakening_strengthened:
       rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
       rw [Nat.add_comm] at Hbinds
       repeat apply binds_extendr
-      apply binds_shrinkr; apply Hbinds
+      apply binds_shrinkr; apply Hbinds; apply HwellBinds
     . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.code₁
       apply binds_extend; apply binds_shrink
-      omega; apply Hbinds
+      omega; apply Hbinds; apply HwellBinds
   case code₂ =>
     intros _ _ _ _ IH Ψ HEqΓ
     apply typing.code₂

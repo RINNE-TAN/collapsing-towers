@@ -23,7 +23,7 @@ theorem preservation_subst_strengthened :
           Γ = Δ ++ (τ𝕒, .stat) :: Φ →
           typing_reification (Δ ++ Φ) (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ)
   case fvar =>
-    intros _ 𝕊 x _ Hbinds Δ HEqΓ
+    intros _ 𝕊 x _ Hbinds HwellBinds Δ HEqΓ
     rw [HEqΓ] at Hbinds; simp
     cases Hx : compare Φ.length x with
     | lt =>
@@ -37,7 +37,7 @@ theorem preservation_subst_strengthened :
       rw [← Nat.sub_add_eq, Nat.add_comm]
       apply binds_shrinkr _ ((τ𝕒, .stat) :: Φ)
       rw [List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega
+      apply Hbinds; omega; apply HwellBinds
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [← Hx] at Hbinds; apply binds_shrink at Hbinds
@@ -52,7 +52,7 @@ theorem preservation_subst_strengthened :
       simp; rw [if_neg (Nat.not_lt_of_gt Hx)]
       constructor
       apply binds_extend; apply binds_shrink
-      omega; rw [List.append_cons] at Hbinds; apply Hbinds
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
   case lam₁ =>
     intros _ _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
@@ -123,7 +123,7 @@ theorem preservation_subst_strengthened :
     apply typing.lift_lit
     apply IH; apply HEqΓ
   case code₁ =>
-    intros _ x _ Hbinds Δ HEqΓ
+    intros _ x _ Hbinds HwellBinds Δ HEqΓ
     rw [HEqΓ] at Hbinds; simp
     cases Hx : compare Φ.length x with
     | lt =>
@@ -137,7 +137,7 @@ theorem preservation_subst_strengthened :
       rw [← Nat.sub_add_eq, Nat.add_comm]
       apply binds_shrinkr _ ((τ𝕒, .stat) :: Φ)
       rw [List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega
+      apply Hbinds; omega; apply HwellBinds
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [← Hx] at Hbinds; apply binds_shrink at Hbinds
@@ -148,7 +148,7 @@ theorem preservation_subst_strengthened :
       simp; rw [if_neg (Nat.not_lt_of_gt Hx)]
       apply typing.code₁
       apply binds_extend; apply binds_shrink
-      omega; rw [List.append_cons] at Hbinds; apply Hbinds
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
   case code₂ =>
     intros _ _ _ _ IH Δ HEqΓ
     apply typing.code₂
@@ -264,14 +264,14 @@ theorem preservation_head𝕄 :
     cases Hτ
     case app₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
-      case code₁ Hbinds₀ =>
+      case code₁ HwellBinds₀ Hbinds₀ =>
         cases Hτ₁
-        case code₁ Hbinds₁ =>
+        case code₁ HwellBinds₁ Hbinds₁ =>
           apply typing.reflect
           rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
           apply typing.app₁
-          apply typing.fvar; apply Hbinds₀
-          apply typing.fvar; apply Hbinds₁
+          apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
+          apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
   case plus₁ =>
     cases Hτ
     case plus₁ Hl Hr =>
@@ -280,27 +280,29 @@ theorem preservation_head𝕄 :
     cases Hτ
     case plus₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
-      case code₁ Hbinds₀ =>
+      case code₁ HwellBinds₀ Hbinds₀ =>
         cases Hτ₁
-        case code₁ Hbinds₁ =>
+        case code₁ HwellBinds₁ Hbinds₁ =>
           apply typing.reflect
           rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
           apply typing.plus₁
-          apply typing.fvar; apply Hbinds₀
-          apply typing.fvar; apply Hbinds₁
+          apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
+          apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
   case lift_lit =>
     cases Hτ
     case lift_lit Hτ =>
       apply typing.reflect
       apply typing.lit₁
     case lift_lam => contradiction
-  case lift_lam =>
+  case lift_lam e =>
     cases Hτ
     case lift_lit => contradiction
     case lift_lam Hτ =>
       cases Hτ
       case lam₁ Hclose HwellBinds Hτe =>
-        rw [← map𝕔₀_intro]
+        rw [← map𝕔₀_intro Γ.length]
+        generalize HEqe : open₀ (List.length Γ) e = E
+        rw [HEqe] at Hτe
         apply typing.lam𝕔
         simp; rw [open_close_id]
         all_goals admit
