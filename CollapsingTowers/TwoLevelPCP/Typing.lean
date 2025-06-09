@@ -302,3 +302,9 @@ theorem weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (�
   apply weakening_strengthened
   apply Hτ; rfl
   apply typing_closed; apply Hτ
+
+theorem weakening1 : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ, typing Γ 𝕊 e τ𝕓 φ -> typing (τ𝕒 :: Γ) 𝕊 e τ𝕓 φ :=
+  by
+  intros Γ 𝕊 e τ𝕒 τ𝕓 φ
+  rw [← List.singleton_append]
+  apply weakening
