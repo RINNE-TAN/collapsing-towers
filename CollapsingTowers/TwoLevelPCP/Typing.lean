@@ -48,11 +48,11 @@ mutual
     | lift_lit : ∀ Γ n φ,
       typing Γ .stat n .nat φ →
       typing Γ .stat (.lift n) (.fragment .nat) .reify
-    | code₁ : ∀ Γ x τ,
+    | code_fragment : ∀ Γ x τ,
       binds x τ .dyn Γ →
       well_binding_time .dyn τ →
       typing Γ .stat (.code (.fvar x)) (.fragment τ) ∅
-    | code₂ : ∀ Γ e τ,
+    | code_rep : ∀ Γ e τ,
       typing Γ .dyn e τ ∅ →
       typing Γ .stat (.code e) (.rep τ) ∅
     | reflect : ∀ Γ e τ,
@@ -142,7 +142,7 @@ theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_a
     intros _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case lit₁ => simp
-  case code₁ =>
+  case code_fragment =>
     intros _ _ _ Hbinds _
     apply indexrSome'; constructor
     apply Hbinds
@@ -238,23 +238,23 @@ theorem weakening_strengthened:
     intros _ _ _ _ IH Ψ HEqΓ
     apply typing.lift_lit
     apply IH; apply HEqΓ
-  case code₁ =>
+  case code_fragment =>
     intros _ x _ Hbinds HwellBinds Ψ HEqΓ
     rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
-    . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.code₁
+    . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.code_fragment
       rw [← Nat.add_sub_of_le HLe]
       rw [← Nat.add_sub_of_le HLe] at Hbinds
       rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
       rw [Nat.add_comm] at Hbinds
       repeat apply binds_extendr
       apply binds_shrinkr; apply Hbinds; apply HwellBinds
-    . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.code₁
+    . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.code_fragment
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds; apply HwellBinds
-  case code₂ =>
+  case code_rep =>
     intros _ _ _ _ IH Ψ HEqΓ
-    apply typing.code₂
+    apply typing.code_rep
     apply IH; apply HEqΓ
   case reflect =>
     intros _ _ _ _ IH Ψ HEqΓ

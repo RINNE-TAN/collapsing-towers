@@ -81,10 +81,10 @@ example : typing_reification [] expr₁ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; repeat simp
+  apply typing.code_fragment; repeat simp
   apply typing.plus₂
-  apply typing.code₁; repeat simp
-  apply typing.code₁; repeat simp
+  apply typing.code_fragment; repeat simp
+  apply typing.code_fragment; repeat simp
 
 example : typing_reification [] expr₂ τ .reify :=
   by
@@ -93,7 +93,7 @@ example : typing_reification [] expr₂ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; repeat simp
+  apply typing.code_fragment; repeat simp
   apply typing.reflect; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; repeat simp
@@ -111,8 +111,8 @@ example : typing_reification [] expr₃ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing_reification.reify
   apply typing.plus₂
-  apply typing.code₁; repeat simp
-  apply typing.code₁; repeat simp
+  apply typing.code_fragment; repeat simp
+  apply typing.code_fragment; repeat simp
 
 example : typing_reification [] expr₄ τ .reify :=
   by
@@ -146,7 +146,7 @@ example : typing_reification [] expr₅ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.pure
-  apply typing.code₂
+  apply typing.code_rep
   apply typing.fvar; repeat simp
 
 example : typing_reification [] expr₆ τ .reify :=
@@ -160,7 +160,7 @@ example : typing_reification [] expr₆ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; repeat simp
@@ -173,7 +173,7 @@ example : typing_reification [] expr₇ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.plus₁
   apply typing.fvar; repeat simp
@@ -223,7 +223,7 @@ example : typing_reification [] expr𝕩 τ .pure :=
   by
   rw [expr𝕩, x₀, x₁, x₂, τ]
   apply typing_reification.pure
-  apply typing.code₂; rw [← union_pure_left ∅]
+  apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.lam₁
   apply typing.lets
