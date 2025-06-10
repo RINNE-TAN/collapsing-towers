@@ -4,11 +4,11 @@ import CollapsingTowers.TwoLevelPCP.Typing
 import CollapsingTowers.TwoLevelPCP.Shift
 
 theorem preservation_subst_strengthened :
-    ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
-      typing Γ .stat e τ𝕓 φ →
-      Γ = Δ ++ (τ𝕒, .stat) :: Φ →
-      typing Φ .stat v τ𝕒 ∅ →
-      typing (Δ ++ Φ) .stat (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ :=
+  ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
+    typing Γ .stat e τ𝕓 φ →
+    Γ = Δ ++ (τ𝕒, .stat) :: Φ →
+    typing Φ .stat v τ𝕒 ∅ →
+    typing (Δ ++ Φ) .stat (shiftr_at Φ.length (subst Φ.length v e)) τ𝕓 φ :=
   by
   intros Γ Δ Φ v e τ𝕒 τ𝕓 φ Hτe HEqΓ Hτv
   revert Δ
@@ -214,10 +214,10 @@ theorem preservation_subst_strengthened :
   apply Hτe
 
 theorem preservation_subst :
-    ∀ Γ v e τ𝕒 τ𝕓 φ,
-      typing Γ .stat v τ𝕒 ∅ →
-      typing ((τ𝕒, .stat) :: Γ) .stat e τ𝕓 φ →
-      typing Γ .stat (subst Γ.length v e) τ𝕓 φ :=
+  ∀ Γ v e τ𝕒 τ𝕓 φ,
+    typing Γ .stat v τ𝕒 ∅ →
+    typing ((τ𝕒, .stat) :: Γ) .stat e τ𝕓 φ →
+    typing Γ .stat (subst Γ.length v e) τ𝕓 φ :=
   by
   intros Γ v e τ𝕒 τ𝕓 φ Hτv Hτe
   have H := preservation_subst_strengthened ((τ𝕒, .stat) :: Γ) [] Γ v e τ𝕒 τ𝕓 φ
@@ -418,11 +418,11 @@ theorem preservation_maping :
   apply preservation_maping_strengthened
 
 theorem preservation_head𝕄 :
-    ∀ Γ e₀ e₁ τ φ,
-      head𝕄 e₀ e₁ →
-      lc e₀ →
-      typing Γ .stat e₀ τ φ →
-      typing Γ .stat e₁ τ φ :=
+  ∀ Γ e₀ e₁ τ φ,
+    head𝕄 e₀ e₁ →
+    lc e₀ →
+    typing Γ .stat e₀ τ φ →
+    typing Γ .stat e₁ τ φ :=
   by
   intros Γ e₀ e₁ τ φ Hhead Hlc Hτ
   cases Hhead
@@ -547,26 +547,110 @@ theorem preservation_head𝕄 :
       apply HwellBinds
       apply Hclose
 
+theorem preservation𝔹 :
+  ∀ Γ B e₀ e₁ τ φ,
+    ctx𝔹 B →
+    (∀ τ φ,
+      typing Γ .stat e₀ τ φ →
+      typing Γ .stat e₁ τ φ
+    ) →
+    typing Γ .stat (B e₀) τ φ →
+    typing Γ .stat (B e₁) τ φ :=
+  by
+  intros Γ B e₀ e₁ τ φ HB IH Hτ
+  cases HB
+  case appl₁ =>
+    cases Hτ
+    case app₁ IHarg IHf =>
+      apply typing.app₁
+      apply IH; apply IHf; apply IHarg
+  case appr₁ =>
+    cases Hτ
+    case app₁ IHarg IHf =>
+      apply typing.app₁
+      apply IHf; apply IH; apply IHarg
+  case appl₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      apply typing.app₂
+      apply IH; apply IHf; apply IHarg
+  case appr₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      apply typing.app₂
+      apply IHf; apply IH; apply IHarg
+  case plusl₁ =>
+    cases Hτ
+    case plus₁ IHl IHr =>
+      apply typing.plus₁
+      apply IH; apply IHl; apply IHr
+  case plusr₁ =>
+    cases Hτ
+    case plus₁ IHl IHr =>
+      apply typing.plus₁
+      apply IHl; apply IH; apply IHr
+  case plusl₂ =>
+    cases Hτ
+    case plus₂ IHl IHr =>
+      apply typing.plus₂
+      apply IH; apply IHl; apply IHr
+  case plusr₂ =>
+    cases Hτ
+    case plus₂ IHl IHr =>
+      apply typing.plus₂
+      apply IHl; apply IH; apply IHr
+  case lift =>
+    cases Hτ
+    case lift_lit IHn =>
+      apply typing.lift_lit
+      apply IH; apply IHn
+    case lift_lam IHe =>
+      apply typing.lift_lam
+      apply IH; apply IHe
+  case lets =>
+    cases Hτ
+    case lets HwellBinds IHb Hclose IHe =>
+      apply typing.lets
+      apply IH; apply IHb; apply IHe
+      apply HwellBinds; apply Hclose
+
+theorem preservation𝕄 :
+  ∀ Γ M e₀ e₁ τ φ,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    head𝕄 e₀ e₁ →
+    typing Γ .stat (M e₀) τ φ →
+    typing Γ .stat (M e₁) τ φ :=
+  by
+  intros Γ M e₀ e₁ τ φ HM Hlc Hhead𝕄 Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing τ φ Γ with
+  | hole =>
+    apply preservation_head𝕄
+    apply Hhead𝕄; apply Hlc; apply Hτ
+  | cons𝔹 _ _ HB _ IHM =>
+    simp; apply preservation𝔹
+    apply HB; intros _ _ IHτ
+    apply IHM; apply IHτ; apply HEqlvl; apply Hτ
+  | consℝ _ _ HR HM IHM =>
+    admit
+
 theorem preservation_strengthened :
-    ∀ Γ e₀ e₁ τ φ₀,
-      step_lvl Γ.length e₀ e₁ →
-      typing_reification Γ e₀ τ φ₀ →
-      ∃ φ₁, typing_reification Γ e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
+  ∀ Γ e₀ e₁ τ φ₀,
+    step_lvl Γ.length e₀ e₁ →
+    typing_reification Γ e₀ τ φ₀ →
+    ∃ φ₁, typing_reification Γ e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
   by
   intro Γ e₀ e₁ τ φ₀
-  generalize HEqlvl : Γ.length = lvl
   intro Hstep Hτ; cases Hstep
   case step𝕄 HM Hlc Hhead𝕄 =>
-    induction HM generalizing τ Γ
-    case hole =>
-      exists φ₀; constructor
-      . cases Hτ
-        all_goals
-          (next Hτ =>
-              constructor
-              apply preservation_head𝕄
-              apply Hhead𝕄; apply Hlc; apply Hτ)
-      . rfl
-    case cons𝔹 HB _ IHM => admit
-    case consℝ HR HM IHM => admit
+    exists φ₀; constructor
+    . cases Hτ
+      all_goals
+        next Hτ =>
+        constructor
+        apply preservation𝕄
+        apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
+    . rfl
   case reflect => admit
