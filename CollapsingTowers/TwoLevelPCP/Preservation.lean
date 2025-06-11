@@ -702,6 +702,83 @@ theorem preservation𝕄 :
     apply HM; apply Hlc; intros _ _ _ IHτ
     apply IHM; apply IHτ; simp; omega; apply Hτ
 
+theorem pure𝔹 :
+  ∀ Γ B e τ φ,
+    ctx𝔹 B →
+    φ = ∅ →
+    typing Γ Stage.stat (B e) τ φ →
+    ∃ τ, typing Γ Stage.stat e τ ∅  :=
+  by
+  intros Γ B e τ φ HB HEqφ Hτ
+  cases HB
+  case appl₁ =>
+    cases Hτ
+    case app₁ φ₀ φ₁ φ₂ IHarg IHf =>
+      cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> try contradiction
+      constructor; apply IHf
+  case appr₁ =>
+    cases Hτ
+    case app₁ φ₀ φ₁ φ₂ IHarg IHf =>
+      cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> try contradiction
+      constructor; apply IHarg
+  case appl₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      contradiction
+  case appr₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      contradiction
+  case plusl₁ =>
+    cases Hτ
+    case plus₁ φ₀ φ₁ IHl IHr =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHl
+  case plusr₁ =>
+    cases Hτ
+    case plus₁ φ₀ φ₁ IHl IHr =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHr
+  case plusl₂ =>
+    cases Hτ
+    case plus₂ IHl IHr =>
+      contradiction
+  case plusr₂ =>
+    cases Hτ
+    case plus₂ IHl IHr =>
+      contradiction
+  case lift =>
+    cases Hτ
+    case lift_lit IHn =>
+      contradiction
+    case lift_lam IHe =>
+      contradiction
+  case lets =>
+    cases Hτ
+    case lets φ₀ φ₁ HwellBinds IHb Hclose IHe =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHb
+
+theorem preservation_reflect :
+  ∀ Γ E e τ φ,
+    ctx𝔼 E →
+    typing_reification Γ (E (.reflect e)) τ φ →
+    typing_reification Γ (.let𝕔 e (E (.code (.bvar 0)))) τ ∅ :=
+  by
+  intros Γ E e τ φ HE Hτ
+  cases Hτ
+  case pure Hτ =>
+    exfalso
+    induction HE generalizing τ with
+    | hole => nomatch Hτ
+    | cons𝔹 _ _ HB _ IH =>
+      have ⟨_, Hτ⟩ := pure𝔹 _ _ _ _ _ HB (by rfl) Hτ
+      apply IH; apply Hτ
+  case reify Hτ =>
+    apply typing_reification.pure
+    apply typing.let𝕔
+    all_goals admit
+
 theorem preservationℚ :
   ∀ Γ lvl Q E e τ φ,
     Γ.length = lvl →
@@ -714,7 +791,39 @@ theorem preservationℚ :
   intros Γ lvl Q E e τ φ HEqlvl HQ HE Hlc Hτ
   induction HQ generalizing τ φ Γ with
   | holeℝ _ HR =>
-    admit
+    cases HR
+    case lam𝕔 =>
+      rw [← HEqlvl] at Hτ; rw [← HEqlvl]
+      cases Hτ
+      case lam𝕔 HwellBinds IHe Hclose =>
+        rw [open_close_id₀] at IHe
+        apply typing.lam𝕔; rw [open_close_id₀]
+        apply preservation_reflect; apply HE; apply IHe
+        constructor; apply Hlc
+        apply lc_ctx𝔼; apply HE; simp
+        apply HwellBinds
+        apply close_closed; constructor
+        apply closed_at_decompose𝔼 _ (.reflect e) _ HE
+        rw [← List.length_cons]; apply typing_reification_closed; apply IHe
+        apply closed_at𝔼; apply HE
+        rw [← List.length_cons]; apply typing_reification_closed; apply IHe; simp
+        apply lc_ctx𝔼; apply HE; apply Hlc
+    case let𝕔 =>
+      rw [← HEqlvl] at Hτ; rw [← HEqlvl]
+      cases Hτ
+      case let𝕔 HwellBinds IHb IHe Hclose =>
+        rw [open_close_id₀] at IHe
+        apply typing.let𝕔; apply IHb; rw [open_close_id₀]
+        apply preservation_reflect; apply HE; apply IHe
+        constructor; apply Hlc
+        apply lc_ctx𝔼; apply HE; simp
+        apply HwellBinds
+        apply close_closed; constructor
+        apply closed_at_decompose𝔼 _ (.reflect e) _ HE
+        rw [← List.length_cons]; apply typing_reification_closed; apply IHe
+        apply closed_at𝔼; apply HE
+        rw [← List.length_cons]; apply typing_reification_closed; apply IHe; simp
+        apply lc_ctx𝔼; apply HE; apply Hlc
   | cons𝔹 _ _ HB _ IHQ =>
     simp; apply preservation𝔹
     apply HB; intros _ _ IHτ
@@ -750,7 +859,8 @@ theorem preservation_strengthened :
     cases HP
     case hole =>
       exists ∅; constructor
-      . admit
+      . apply preservation_reflect
+        apply HE; apply Hτ
       . rfl
     case consℚ HQ =>
       exists φ₀; constructor

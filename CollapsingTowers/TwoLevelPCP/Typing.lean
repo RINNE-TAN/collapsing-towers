@@ -153,6 +153,15 @@ theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_a
     intros _ _ _ _ _ _ _ _ _ Hclose IHb _
     constructor; apply IHb; apply Hclose
 
+theorem typing_reification_closed : ∀ Γ e τ φ, typing_reification Γ e τ φ → closed_at e Γ.length :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ
+  all_goals
+    next Hτ =>
+      apply typing_closed
+      apply Hτ
+
 theorem typing_pure : ∀ Γ v τ φ, typing Γ .stat v τ φ → value v → φ = ∅ :=
   by
   intros _ _ _ _ Hτ Hvalue
