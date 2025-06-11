@@ -36,15 +36,14 @@ inductive ctx𝔼 : Ctx → Prop where
   | hole : ctx𝔼 id
   | cons𝔹 : ∀ B E, ctx𝔹 B → ctx𝔼 E → ctx𝔼 (B ∘ E)
 
-mutual
-  inductive ctxℚ : ℕ → Ctx → Prop where
-    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℚ lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ (lvl + 1) P → ctxℚ lvl (R ∘ P)
-  inductive ctxℙ : ℕ → Ctx → Prop where
-    | hole : ctxℙ lvl id
-    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℙ lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ (lvl + 1) P → ctxℙ lvl (R ∘ P)
-end
+inductive ctxℚ : ℕ → Ctx → Prop where
+  | holeℝ : ∀ R, ctxℝ lvl R → ctxℚ lvl R
+  | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℚ lvl (B ∘ Q)
+  | consℝ : ∀ R Q, ctxℝ lvl R → ctxℚ (lvl + 1) Q → ctxℚ lvl (R ∘ Q)
+
+inductive ctxℙ : ℕ → Ctx → Prop where
+  | hole : ctxℙ 0 id
+  | consℚ : ∀ Q, ctxℚ lvl Q → ctxℙ lvl Q
 
 theorem value_lc : ∀ e, value e -> lc e := by
   intro e Hvalue
@@ -72,9 +71,9 @@ theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
 
 -- properties of ℝ contexts
 
-theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
+theorem lc_ctxℝ : ∀ R e lvl, ctxℝ lvl R -> lc e -> lc R⟦e⟧ :=
   by
-  intros R e n HR Hlc
+  intros _ _ _ HR Hlc
   induction HR with
   | lam𝕔 =>
     apply close_closedb; omega
@@ -87,11 +86,30 @@ theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
 
 -- properties of 𝕄 contexts
 
-theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
+theorem lc_ctx𝕄 : ∀ M e lvl, ctx𝕄 lvl M -> lc e -> lc M⟦e⟧ :=
   by
   intros _ _ _ HM Hlc
   induction HM with
   | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
+
+-- properties of 𝔼 contexts
+
+theorem lc_ctx𝔼 : ∀ E e, ctx𝔼 E -> lc e -> lc E⟦e⟧ :=
+  by
+  intros _ _ HE Hlc
+  induction HE with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+
+-- properties of ℚ contexts
+
+theorem lc_ctxℚ : ∀ Q e lvl, ctxℚ lvl Q -> lc e -> lc Q⟦e⟧ :=
+  by
+  intros _ _ _ HQ Hlc
+  induction HQ with
+  | holeℝ _ HR => apply lc_ctxℝ; apply HR; apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
 

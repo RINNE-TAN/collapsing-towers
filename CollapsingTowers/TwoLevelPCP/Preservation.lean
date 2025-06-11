@@ -697,10 +697,35 @@ theorem preservation𝕄 :
     apply IHM; apply IHτ; apply HEqlvl; apply Hτ
   | consℝ _ _ HR HM IHM =>
     simp; apply preservationℝ
-    rw [HEqlvl]; apply HR;
+    rw [HEqlvl]; apply HR
     apply lc_ctx𝕄
     apply HM; apply Hlc; intros _ _ _ IHτ
     apply IHM; apply IHτ; simp; omega; apply Hτ
+
+theorem preservationℚ :
+  ∀ Γ lvl Q E e τ φ,
+    Γ.length = lvl →
+    ctxℚ lvl Q →
+    ctx𝔼 E →
+    lc e →
+    typing Γ .stat (Q (E (.reflect e))) τ φ →
+    typing Γ .stat (Q (.let𝕔 e (E (.code (.bvar 0))))) τ φ :=
+  by
+  intros Γ lvl Q E e τ φ HEqlvl HQ HE Hlc Hτ
+  induction HQ generalizing τ φ Γ with
+  | holeℝ _ HR =>
+    admit
+  | cons𝔹 _ _ HB _ IHQ =>
+    simp; apply preservation𝔹
+    apply HB; intros _ _ IHτ
+    apply IHQ; apply HEqlvl; apply IHτ; apply Hτ
+  | consℝ R Q HR HQ IHQ =>
+    simp; apply preservationℝ _ _ (Q (E (.reflect e)))
+    rw [HEqlvl]; apply HR
+    apply lc_ctxℚ; apply HQ
+    apply lc_ctx𝔼; apply HE
+    apply Hlc; intros _ _ _ IHτ
+    apply IHQ; simp; omega; apply IHτ; apply Hτ
 
 theorem preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ₀,
@@ -719,4 +744,20 @@ theorem preservation_strengthened :
         apply preservation𝕄
         apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
     . rfl
-  case reflect => admit
+  case reflect P E e HP HE Hlc =>
+    generalize HEqlvl : Γ.length = lvl
+    rw [HEqlvl] at HP
+    cases HP
+    case hole =>
+      exists ∅; constructor
+      . admit
+      . rfl
+    case consℚ HQ =>
+      exists φ₀; constructor
+      . cases Hτ
+        all_goals
+          next Hτ =>
+          constructor
+          apply preservationℚ
+          apply HEqlvl; apply HQ; apply HE; apply Hlc; apply Hτ
+      . rfl

@@ -59,6 +59,46 @@ def expr₉ : Expr :=
 def expr𝕩 : Expr :=
   .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
+example : step expr₀ expr₁ := by
+  apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  repeat constructor
+
+example : step expr₁ expr₂ := by
+  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
+  repeat constructor
+
+example : step expr₂ expr₃ := by
+  apply step_lvl.reflect _ _ _ (ctxℙ.consℚ _ (ctxℚ.holeℝ _ ctxℝ.lam𝕔)) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  repeat constructor
+
+example : step expr₃ expr₄ := by
+  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  repeat constructor
+
+example : step expr₄ expr₅ := by
+  apply step_lvl.reflect _ _ _ (ctxℙ.consℚ _ (ctxℚ.consℝ _ _ ctxℝ.lam𝕔 (ctxℚ.holeℝ _ (ctxℝ.let𝕔 _ _)))) ctx𝔼.hole
+  repeat constructor
+
+example : step expr₅ expr₆ := by
+  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.consℝ _ _ (ctxℝ.let𝕔 _ _) ctx𝕄.hole))
+  repeat constructor
+
+example : step expr₆ expr₇ := by
+  apply step_lvl.step𝕄 _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 ctx𝕄.hole)
+  repeat constructor
+
+example : step expr₇ expr₈ := by
+  simp; apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  repeat constructor
+
+example : step expr₈ expr₉ := by
+  apply step_lvl.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
+  repeat constructor
+
+example : step expr₉ expr𝕩 := by
+  apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+  repeat constructor
+
 def τ : Ty :=
   .rep (.arrow .nat .nat ∅)
 
