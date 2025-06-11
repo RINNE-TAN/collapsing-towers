@@ -45,7 +45,7 @@ inductive ctxℙ : ℕ → Ctx → Prop where
   | hole : ctxℙ 0 id
   | consℚ : ∀ Q, ctxℚ lvl Q → ctxℙ lvl Q
 
-theorem value_lc : ∀ e, value e -> lc e := by
+theorem value_lc : ∀ e, value e → lc e := by
   intro e Hvalue
   cases Hvalue with
   | lam₁ _ Hclose => apply Hclose
@@ -54,7 +54,7 @@ theorem value_lc : ∀ e, value e -> lc e := by
 
 -- properties of 𝔹 contexts
 
-theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B -> closedb_at e n -> closedb_at B⟦e⟧ n :=
+theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦e⟧ n :=
   by
   intros _ _ _ HB Hlc
   induction HB with
@@ -74,7 +74,7 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B -> closedb_at e n -> closedb_at B⟦e�
     apply Hlc
   | lift => apply Hlc
 
-theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₀ x :=
+theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₀ x :=
   by
   intros _ _ _ HB Hclose
   cases HB with
@@ -84,7 +84,7 @@ theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B -> closed_at B⟦e₀�
     apply Hclose.right
   | lift => apply Hclose
 
-theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x -> closed_at e₁ x -> closed_at B⟦e₁⟧ x :=
+theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₁ x → closed_at B⟦e₁⟧ x :=
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
@@ -94,9 +94,34 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B -> closed_at B⟦e₀⟧ x 
     constructor; apply He₀.left; apply He₁
   | lift => apply He₁
 
+theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
+  by
+  intros B e x HB
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | plusl₁ _ IH
+  | plusl₂ _ IH
+  | lets _ IH => simp; apply closedb_opening_id; apply IH
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue
+  | plusr₁ _ Hvalue
+  | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
+  | lift => simp
+
+theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x → subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HB He₀
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    simp; apply subst_closed_id; apply He₀.right
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    simp; apply subst_closed_id; apply He₀.left
+  | lift => simp
+
 -- properties of ℝ contexts
 
-theorem lc_ctxℝ : ∀ R e n lvl, ctxℝ lvl R -> closedb_at e n -> closedb_at R⟦e⟧ n :=
+theorem lc_ctxℝ : ∀ R e n lvl, ctxℝ lvl R → closedb_at e n → closedb_at R⟦e⟧ n :=
   by
   intros _ _ _ _ HR Hlc
   induction HR with
@@ -111,7 +136,7 @@ theorem lc_ctxℝ : ∀ R e n lvl, ctxℝ lvl R -> closedb_at e n -> closedb_at 
 
 -- properties of 𝕄 contexts
 
-theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M -> closedb_at e n -> closedb_at M⟦e⟧ n :=
+theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M → closedb_at e n → closedb_at M⟦e⟧ n :=
   by
   intros _ _ _ _ HM Hlc
   induction HM with
@@ -121,14 +146,14 @@ theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M -> closedb_at e n -> closedb_a
 
 -- properties of 𝔼 contexts
 
-theorem lc_ctx𝔼 : ∀ E e n, ctx𝔼 E -> closedb_at e n -> closedb_at E⟦e⟧ n :=
+theorem lc_ctx𝔼 : ∀ E e n, ctx𝔼 E → closedb_at e n → closedb_at E⟦e⟧ n :=
   by
   intros _ _ _ HE Hlc
   induction HE with
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
 
-theorem closed_at_decompose𝔼 : ∀ E e₀ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₀ x :=
+theorem closed_at_decompose𝔼 : ∀ E e₀ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₀ x :=
   by
   intros _ _ _ HE Hclose
   induction HE with
@@ -137,7 +162,7 @@ theorem closed_at_decompose𝔼 : ∀ E e₀ x, ctx𝔼 E -> closed_at E⟦e₀�
     apply IH; apply closed_at_decompose𝔹
     apply HB; apply Hclose
 
-theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x -> closed_at e₁ x -> closed_at E⟦e₁⟧ x :=
+theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₁ x → closed_at E⟦e₁⟧ x :=
   by
   intros _ _ _ _ HE He₀ He₁
   induction HE with
@@ -151,9 +176,31 @@ theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E -> closed_at E⟦e₀⟧ x 
       | apply He₀.right
       | apply He₀
 
+theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E → open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
+  by
+  intros _ _ _ HE
+  induction HE with
+  | hole => rfl
+  | cons𝔹 _ _ HB _ IH =>
+    simp at *; rw [← IH]
+    apply open_ctx𝔹_map; apply HB
+
+theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x → subst x v E⟦e₁⟧ = E⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HE He₀
+  induction HE with
+  | hole => simp
+  | cons𝔹 _ E HB _ IH =>
+    simp at *; rw [← IH]; apply subst𝔹
+    apply HB; apply He₀
+    cases HB with
+    | appl₁| appl₂| plusl₁| plusl₂| lets => apply He₀.left
+    | appr₁| appr₂| plusr₁| plusr₂ => apply He₀.right
+    | lift => apply He₀
+
 -- properties of ℚ contexts
 
-theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q -> closedb_at e n -> closedb_at Q⟦e⟧ n :=
+theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q → closedb_at e n → closedb_at Q⟦e⟧ n :=
   by
   intros _ _ _ _ HQ Hlc
   induction HQ with
