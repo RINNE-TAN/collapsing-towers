@@ -547,6 +547,68 @@ theorem preservation_head𝕄 :
       apply HwellBinds
       apply Hclose
 
+theorem preservationℝ :
+  ∀ Γ R e₀ e₁ τ φ,
+    ctxℝ Γ.length R →
+    lc e₀ →
+    (∀ τ𝕒 τ𝕓 φ,
+      typing (τ𝕒 :: Γ) .stat e₀ τ𝕓 φ →
+      typing (τ𝕒 :: Γ) .stat e₁ τ𝕓 φ
+    ) →
+    typing Γ .stat (R e₀) τ φ →
+    typing Γ .stat (R e₁) τ φ :=
+  by
+  intros Γ R e₀ e₁ τ φ HR Hlc IH Hτ
+  cases HR
+  case lam𝕔 =>
+    cases Hτ
+    case lam𝕔 HwellBinds IHe Hclose =>
+      rw [open_close_id₀] at IHe
+      . cases IHe with
+        | pure _ _ _ IHe₀ =>
+          have IHe₁ := IH _ _ _ IHe₀
+          apply typing.lam𝕔
+          apply typing_reification.pure
+          rw [open_close_id₀]
+          apply IHe₁; apply typing_regular; apply IHe₁
+          apply HwellBinds
+          apply close_closed; rw [← List.length_cons]
+          apply typing_closed; apply IHe₁
+        | reify _ _ _ _ IHe₀ =>
+          have IHe₁ := IH _ _ _ IHe₀
+          apply typing.lam𝕔
+          apply typing_reification.reify
+          rw [open_close_id₀]
+          apply IHe₁; apply typing_regular; apply IHe₁
+          apply HwellBinds
+          apply close_closed; rw [← List.length_cons]
+          apply typing_closed; apply IHe₁
+      apply Hlc
+  case let𝕔 =>
+    cases Hτ
+    case let𝕔 HwellBinds IHb IHe Hclose =>
+      rw [open_close_id₀] at IHe
+      . cases IHe with
+        | pure _ _ _ IHe₀ =>
+          have IHe₁ := IH _ _ _ IHe₀
+          apply typing.let𝕔; apply IHb
+          apply typing_reification.pure
+          rw [open_close_id₀]
+          apply IHe₁; apply typing_regular; apply IHe₁
+          apply HwellBinds
+          apply close_closed; rw [← List.length_cons]
+          apply typing_closed; apply IHe₁
+        | reify _ _ _ _ IHe₀ =>
+          have IHe₁ := IH _ _ _ IHe₀
+          apply typing.let𝕔; apply IHb
+          apply typing_reification.reify
+          rw [open_close_id₀]
+          apply IHe₁; apply typing_regular; apply IHe₁
+          apply HwellBinds
+          apply close_closed; rw [← List.length_cons]
+          apply typing_closed; apply IHe₁
+      apply Hlc
+
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁ τ φ,
     ctx𝔹 B →
@@ -634,7 +696,11 @@ theorem preservation𝕄 :
     apply HB; intros _ _ IHτ
     apply IHM; apply IHτ; apply HEqlvl; apply Hτ
   | consℝ _ _ HR HM IHM =>
-    admit
+    simp; apply preservationℝ
+    rw [HEqlvl]; apply HR;
+    apply lc_ctx𝕄
+    apply HM; apply Hlc; intros _ _ _ IHτ
+    apply IHM; apply IHτ; simp; omega; apply Hτ
 
 theorem preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ₀,

@@ -46,6 +46,55 @@ mutual
     | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ (lvl + 1) P → ctxℙ lvl (R ∘ P)
 end
 
+theorem value_lc : ∀ e, value e -> lc e := by
+  intro e Hvalue
+  cases Hvalue with
+  | lam₁ _ Hclose => apply Hclose
+  | lit₁ => constructor
+  | code _ Hclose => apply Hclose
+
+-- properties of 𝔹 contexts
+
+theorem lc_ctx𝔹 : ∀ B e, ctx𝔹 B -> lc e -> lc B⟦e⟧ :=
+  by
+  intros B e HB Hlc
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | plusl₁ _ IH
+  | plusl₂ _ IH
+  | lets _ IH => constructor; apply Hlc; apply IH
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue
+  | plusr₁ _ Hvalue
+  | plusr₂ _ Hvalue => constructor; apply value_lc; apply Hvalue; apply Hlc
+  | lift => apply Hlc
+
+-- properties of ℝ contexts
+
+theorem lc_ctxℝ : ∀ R e n, ctxℝ n R -> lc e -> lc R⟦e⟧ :=
+  by
+  intros R e n HR Hlc
+  induction HR with
+  | lam𝕔 =>
+    apply close_closedb; omega
+    apply closedb_inc; apply Hlc; omega
+  | let𝕔 _ Hlcb =>
+    constructor
+    apply Hlcb
+    apply close_closedb; omega
+    apply closedb_inc; apply Hlc; omega
+
+-- properties of 𝕄 contexts
+
+theorem lc_ctx𝕄 : ∀ M e n, ctx𝕄 n M -> lc e -> lc M⟦e⟧ :=
+  by
+  intros _ _ _ HM Hlc
+  induction HM with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
+
 inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
   | app₁ : ∀ e v, value v → head𝕄 (.app₁ (.lam₁ e) v) (open_subst v e)
