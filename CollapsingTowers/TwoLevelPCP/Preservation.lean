@@ -3,100 +3,6 @@ import Mathlib.Tactic
 import CollapsingTowers.TwoLevelPCP.Typing
 import CollapsingTowers.TwoLevelPCP.Shift
 
-theorem decompose𝔼 :
-    ∀ Γ E e τ𝕓 φ,
-      ctx𝔼 E →
-      typing Γ .stat (E e) τ𝕓 φ →
-      ∃ τ𝕒 φ𝕒 φ𝕓,
-        typing Γ .stat e τ𝕒 φ𝕒 ∧ typing ((τ𝕒, .stat) :: Γ) .stat (E (.fvar Γ.length)) τ𝕓 φ𝕓 :=
-  by
-  intros Γ E e τ𝕓 φ HE Hτ
-  induction HE generalizing τ𝕓 φ with
-  | hole =>
-    exists τ𝕓; exists φ; exists ∅; constructor
-    apply Hτ; apply typing.fvar; simp
-    admit
-  | cons𝔹 _ _ HB _ IHE =>
-    cases HB with
-    | appl₁ =>
-      cases Hτ
-      case app₁ Hτarg HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply Hτ𝔼; apply weakening1; apply Hτarg
-    | appr₁ =>
-      cases Hτ
-      case app₁ HτX Hτv =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply weakening1; apply Hτv; apply Hτ𝔼
-    | appl₂ =>
-      cases Hτ
-      case app₂ HτX Hτarg =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply Hτ𝔼; apply weakening1; apply Hτarg
-    | appr₂ =>
-      cases Hτ
-      case app₂ Hτv HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply weakening1; apply Hτv; apply Hτ𝔼
-    | plusl₁ =>
-      cases Hτ
-      case plus₁ HτX Hτr =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply Hτ𝔼; apply weakening1; apply Hτr
-    | plusr₁ =>
-      cases Hτ
-      case plus₁ Hτr HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply weakening1; apply Hτr; apply Hτ𝔼
-    | plusl₂ =>
-      cases Hτ
-      case plus₂ HτX Hτr =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply Hτ𝔼; apply weakening1; apply Hτr
-    | plusr₂ =>
-      cases Hτ
-      case plus₂ Hτr HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply weakening1; apply Hτr; apply Hτ𝔼
-    | lets e =>
-      cases Hτ
-      case lets HwellBinds HτX Hclose Hτe =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor
-        apply Hτ𝔼
-        rw [List.length_cons, ← shiftl_id Γ.length e 1, ← shiftl_open₀_comm]
-        rw [← List.singleton_append, List.append_cons]
-        apply weakening_strengthened; apply Hτe
-        rfl; rfl; apply Hclose; apply HwellBinds
-        apply closed_inc; apply Hclose; simp
-    | lift =>
-      cases Hτ
-      case lift_lit HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor; apply Hτ𝔼
-      case lift_lam HτX =>
-        have ⟨τ, _ ,_ , HτX, Hτ𝔼⟩ := IHE _ _ HτX
-        exists τ; constructor; constructor; constructor
-        apply HτX; constructor; apply Hτ𝔼
-
 theorem preservation_subst_strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
     typing Γ .stat e τ𝕓 φ →
@@ -853,6 +759,27 @@ theorem pure𝔹 :
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHb
 
+theorem decompose𝔼 :
+  ∀ Γ E e τ φ,
+    ctx𝔼 E →
+    typing Γ .stat (E e) τ φ →
+    ∃ τ𝕖 φ₀ φ₁,
+      φ = φ₀ ∪ φ₁ ∧
+      typing Γ .stat e τ𝕖 φ₀ ∧
+      ∀ e φ₀ Δ,
+        typing (Δ ++ Γ) .stat e τ𝕖 φ₀ →
+        typing (Δ ++ Γ) .stat (E e) τ (φ₀ ∪ φ₁) :=
+  by
+  intros Γ E e τ φ HE Hτ
+  induction HE with
+  | hole =>
+    exists τ, φ, ∅
+    constructor; cases φ <;> rfl
+    constructor; apply Hτ
+    intros e φ₀ Δ Hτ; cases φ₀ <;> apply Hτ
+  | cons𝔹 _ _ HB _ IH =>
+    admit
+
 theorem preservation_reflect :
   ∀ Γ E e τ φ,
     ctx𝔼 E →
@@ -868,22 +795,16 @@ theorem preservation_reflect :
     | cons𝔹 _ _ HB _ IH =>
       have ⟨_, Hτ⟩ := pure𝔹 _ _ _ _ _ HB (by rfl) Hτ
       apply IH; apply Hτ
-  case reify Hτ =>
-    have ⟨_, _, _, Hτr, Hτ𝔼⟩ := decompose𝔼 _ _ _ _ _ HE Hτ
-    cases Hτr
-    case reflect Hτe =>
+  case reify τ Hτ =>
+    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := decompose𝔼 _ _ _ _ _ HE Hτ
+    cases Hτr with
+    | reflect _ _ _ Hτ =>
       apply typing_reification.pure
-      apply typing.let𝕔; apply Hτe
+      apply typing.let𝕔; apply Hτ
       apply typing_reification.reify
-      rw [open_ctx𝔼_map _ _ _ HE]; simp
-      have Hsubst : .code (.fvar Γ.length) = subst Γ.length (.code (.fvar Γ.length)) (.fvar Γ.length) := by simp
-      rw [Hsubst, ← subst𝔼 E (.reflect e)]
-      apply preservation_maping; apply Hτ𝔼; repeat constructor; ; simp
-      admit
-      apply HE; apply typing_closed; apply Hτ
-      admit
-      apply closed_at𝔼; apply HE
-      apply typing_closed; apply Hτ; constructor
+      rw [open_ctx𝔼_map _ _ _ HE, ← List.singleton_append]
+      apply HτE; apply typing.code_fragment; simp
+      all_goals admit
 
 theorem preservationℚ :
   ∀ Γ lvl Q E e τ φ,
