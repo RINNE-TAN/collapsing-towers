@@ -42,8 +42,57 @@ inductive ctxℚ : ℕ → Ctx → Prop where
   | consℝ : ∀ R Q, ctxℝ lvl R → ctxℚ (lvl + 1) Q → ctxℚ lvl (R ∘ Q)
 
 inductive ctxℙ : ℕ → Ctx → Prop where
-  | hole : ctxℙ 0 id
+  | hole : ctxℙ lvl id
   | consℚ : ∀ Q, ctxℚ lvl Q → ctxℙ lvl Q
+
+mutual
+  inductive ctxℙ' : ℕ → Ctx → Prop where
+    | hole : ctxℙ' lvl id
+    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℙ' lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ' (lvl + 1) P → ctxℙ' lvl (R ∘ P)
+  inductive ctxℚ' : ℕ → Ctx → Prop where
+    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℚ' lvl (B ∘ Q)
+    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ' (lvl + 1) P → ctxℚ' lvl (R ∘ P)
+end
+
+theorem ctxℙ_if_ctxℙ' : ∀ P lvl, ctxℙ' lvl P → ctxℙ lvl P :=
+  by
+  intros P lvl
+  intro HP
+  apply
+    @ctxℙ'.rec
+      (fun lvl P (H : ctxℙ' lvl P) => ctxℙ lvl P)
+      (fun lvl P (H : ctxℚ' lvl P) => ctxℚ lvl P)
+  case hole => apply ctxℙ.hole
+  case cons𝔹 =>
+    intros _ _ _ HB _ IHQ
+    apply ctxℙ.consℚ
+    apply ctxℚ.cons𝔹
+    apply HB; apply IHQ
+  case consℝ =>
+    intros _ _ _ HR _ IHP
+    apply ctxℙ.consℚ
+    cases IHP with
+    | hole =>
+      apply ctxℚ.holeℝ
+      apply HR
+    | consℚ _ HQ =>
+      apply ctxℚ.consℝ
+      apply HR; apply HQ
+  case cons𝔹 =>
+    intros _ _ _ HB _ IHQ
+    apply ctxℚ.cons𝔹
+    apply HB; apply IHQ
+  case consℝ =>
+    intros _ _ _ HR _ IHP
+    cases IHP with
+    | hole =>
+      apply ctxℚ.holeℝ
+      apply HR
+    | consℚ _ HQ =>
+      apply ctxℚ.consℝ
+      apply HR; apply HQ
+  apply HP
 
 theorem value_lc : ∀ e, value e → lc e := by
   intro e Hvalue
