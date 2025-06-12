@@ -87,8 +87,8 @@ theorem typing_regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => lc e)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e) <;>
-  try simp
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e)
+  <;> (try simp)
   case lam₁ =>
     intros _ _ _ _ _ _ _ _ _ IH
     apply open_closedb; apply IH
@@ -123,8 +123,8 @@ theorem typing_closed : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_a
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => closed_at e Γ.length)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length) <;>
-  try intros; assumption
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length)
+  <;> (try intros; assumption)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply indexrSome'; constructor
@@ -162,10 +162,66 @@ theorem typing_reification_closed : ∀ Γ e τ φ, typing_reification Γ e τ �
       apply typing_closed
       apply Hτ
 
-theorem typing_pure : ∀ Γ v τ φ, typing Γ .stat v τ φ → value v → φ = ∅ :=
+theorem typing_value_pure : ∀ Γ v τ φ, typing Γ .stat v τ φ → value v → φ = ∅ :=
   by
   intros _ _ _ _ Hτ Hvalue
   cases Hvalue <;> cases Hτ <;> rfl
+
+theorem typing_dyn_pure : ∀ Γ e τ φ, typing Γ .dyn e τ φ → well_binding_time .dyn τ ∧ φ = ∅ :=
+  by
+  generalize HEq𝕊 : (.dyn : Stage) = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => .dyn = 𝕊 → well_binding_time 𝕊 τ ∧ φ = ∅)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> (try intros; assumption)
+  <;> (try intros; contradiction)
+  case fvar =>
+    intros _ _ x _ Hbinds HwellBinds HEq𝕊
+    constructor; apply HwellBinds; rfl
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ HwellBinds₀ Hclose IH HEq𝕊
+    have ⟨HwellBinds₁, Hφ₀⟩ := IH HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at HwellBinds₀ HwellBinds₁
+    constructor
+    . constructor
+      apply Hφ₀; constructor
+      apply HwellBinds₀; apply HwellBinds₁
+    . rfl
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHf HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHarg HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at HwellBinds₁ HwellBinds₂
+    constructor
+    . apply HwellBinds₁.right.right
+    . rw [Hφ₁, Hφ₂, HwellBinds₁.left]; rfl
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHl HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHr HEq𝕊
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rw [Hφ₁, Hφ₂]; rfl
+  case lit₁ =>
+    intros _ _ _ HEq𝕊
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rfl
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHb HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHe HEq𝕊
+    constructor
+    . apply HwellBinds₂
+    . rw [Hφ₁, Hφ₂]; rfl
+  case pure => simp
+  case reify => simp
 
 theorem weakening_strengthened:
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → Γ = Ψ ++ Φ → typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ :=

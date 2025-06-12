@@ -431,7 +431,7 @@ theorem preservation_head𝕄 :
     case lets e v τ φ _ _ Hτv Hclose
       Hτe =>
       have Hpure : φ = ∅ := by
-        apply typing_pure
+        apply typing_value_pure
         apply Hτv; apply Hvalue
       rw [Hpure] at Hτv; rw [Hpure, open_subst, union_pure_left]
       rw [← subst_intro]; apply preservation_subst
@@ -443,7 +443,7 @@ theorem preservation_head𝕄 :
       case lam₁ Hclose _
         Hτe =>
         have Hpure : φ = ∅ := by
-          apply typing_pure
+          apply typing_value_pure
           apply Hτv; apply Hvalue
         rw [Hpure] at Hτv; rw [Hpure, open_subst, union_pure_right, union_pure_right]
         rw [← subst_intro]; apply preservation_subst
@@ -798,13 +798,17 @@ theorem preservation_reflect :
   case reify τ Hτ =>
     have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := decompose𝔼 _ _ _ _ _ HE Hτ
     cases Hτr with
-    | reflect _ _ _ Hτ =>
+    | reflect _ _ _ Hτe =>
+      have ⟨HwellBinds, _⟩ := typing_dyn_pure _ _ _ _ Hτe
       apply typing_reification.pure
-      apply typing.let𝕔; apply Hτ
+      apply typing.let𝕔; apply Hτe
       apply typing_reification.reify
       rw [open_ctx𝔼_map _ _ _ HE, ← List.singleton_append]
       apply HτE; apply typing.code_fragment; simp
-      all_goals admit
+      apply HwellBinds
+      apply HwellBinds
+      apply closed_at𝔼; apply HE
+      apply typing_closed; apply Hτ; simp
 
 theorem preservationℚ :
   ∀ Γ lvl Q E e τ φ,
