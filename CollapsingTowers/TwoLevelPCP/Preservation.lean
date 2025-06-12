@@ -909,10 +909,35 @@ theorem decompose𝔼 :
           apply typing.plus₂
           apply weakening; apply Hl
           apply IH; apply He
-    case lift => admit
+    case lift =>
+      cases Hτ
+      case lift_lit HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.lift_lit
+          apply IH; apply He
+      case lift_lam HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.lift_lam
+          apply IH; apply He
     case lets =>
       cases Hτ
-      case lets φ₀ φ₁ HwellBinds HX Hclose Hbody =>
+      case lets body Hclose _ φ₀ φ₁ HwellBinds HX Hclose Hbody =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
         constructor
@@ -925,7 +950,12 @@ theorem decompose𝔼 :
           rw [HEqφ]
           apply typing.lets
           apply IH; apply He
-          all_goals admit
+          rw [← shiftl_id Γ.length body Δ.length]
+          rw [← List.singleton_append, ← List.append_assoc]
+          rw [List.length_append, Nat.add_comm, ← shiftl_open₀_comm]
+          apply weakening_strengthened; apply Hbody; rfl; rfl
+          apply Hclose; apply HwellBinds
+          apply closed_inc; apply Hclose; simp
 
 theorem preservation_reflect :
   ∀ Γ E e τ φ,
@@ -1049,3 +1079,14 @@ theorem preservation_strengthened :
           apply preservationℚ
           apply HEqlvl; apply HQ; apply HE; apply Hlc; apply Hτ
       . rfl
+
+theorem preservation :
+  ∀ e₀ e₁ τ φ₀,
+    step e₀ e₁ →
+    typing_reification [] e₀ τ φ₀ →
+    ∃ φ₁,
+      typing_reification [] e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
+  by
+  intros e₀ e₁ τ φ₀ Hstep
+  apply preservation_strengthened
+  apply Hstep
