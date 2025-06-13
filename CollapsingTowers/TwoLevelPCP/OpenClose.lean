@@ -189,7 +189,7 @@ lemma openSubst_intro : ∀ x e v, closed_at e x → subst x v (open₀ x e) = o
   apply Hclosed
 
 lemma closedb_inc: ∀ t i j,
-    closedb_at t i → i <= j →
+    closedb_at t i → i ≤ j →
     closedb_at t j := by
   intros t i j Hclose HLe
   induction t generalizing i j with
@@ -212,7 +212,7 @@ lemma closedb_inc: ∀ t i j,
     . apply IH₁; apply Hclose.right; omega
   | lit₁ => simp
 
-lemma closed_inc : ∀ x y e, closed_at e x → x <= y → closed_at e y :=
+lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   by
   intros x y e Hclose Hxy
   induction e with

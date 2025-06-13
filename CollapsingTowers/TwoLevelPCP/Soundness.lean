@@ -3,14 +3,14 @@ import CollapsingTowers.TwoLevelPCP.Progress
 import CollapsingTowers.TwoLevelPCP.Preservation
 @[simp]
 def stuck (e₀ : Expr) : Prop :=
-  ¬(∃ e₁, step e₀ e₁) /\ ¬value e₀
+  ¬(∃ e₁, step e₀ e₁) ∧ ¬value e₀
 
 theorem stepn_preservation :
   ∀ e₀ e₁ τ φ₀,
     stepn e₀ e₁ →
     typing_reification [] e₀ τ φ₀ →
     ∃ φ₁,
-      typing_reification [] e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
+      typing_reification [] e₁ τ φ₁ ∧ φ₁ ≤ φ₀ :=
   by
   intro e₀ e₁ τ φ₀ Hstepn Hτ
   induction Hstepn with

@@ -1048,7 +1048,7 @@ theorem preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ₀,
     step_lvl Γ.length e₀ e₁ →
     typing_reification Γ e₀ τ φ₀ →
-    ∃ φ₁, typing_reification Γ e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
+    ∃ φ₁, typing_reification Γ e₁ τ φ₁ ∧ φ₁ ≤ φ₀ :=
   by
   intro Γ e₀ e₁ τ φ₀
   intro Hstep Hτ; cases Hstep
@@ -1085,7 +1085,7 @@ theorem preservation :
     step e₀ e₁ →
     typing_reification [] e₀ τ φ₀ →
     ∃ φ₁,
-      typing_reification [] e₁ τ φ₁ ∧ φ₁ <= φ₀ :=
+      typing_reification [] e₁ τ φ₁ ∧ φ₁ ≤ φ₀ :=
   by
   intros e₀ e₁ τ φ₀ Hstep
   apply preservation_strengthened

@@ -5,7 +5,7 @@ import CollapsingTowers.TwoLevelPCP.OpenClose
 @[simp]
 def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .bvar i => .bvar i
-  | .fvar y => if x <= y then .fvar (y + n) else .fvar y
+  | .fvar y => if x ≤ y then .fvar (y + n) else .fvar y
   | .lam₁ e => .lam₁ (shiftl_at x n e)
   | .lift e => .lift (shiftl_at x n e)
   | .app₁ f arg => .app₁ (shiftl_at x n f) (shiftl_at x n arg)
@@ -37,7 +37,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .let𝕔 b e => .let𝕔 (shiftr_at x b) (shiftr_at x e)
 
 theorem shiftl_opening_comm :
-    ∀ x y e n i, x <= y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
+    ∀ x y e n i, x ≤ y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
   by
   intros x y e n i HLe
   induction e generalizing i with
@@ -46,7 +46,7 @@ theorem shiftl_opening_comm :
     . rw [HEq]; simp; omega
     . simp; rw [if_neg HEq]; rw [if_neg HEq]; rfl
   | fvar z =>
-    by_cases HLe : x <= z
+    by_cases HLe : x ≤ z
     . simp; rw [if_pos HLe]; rfl
     . simp; rw [if_neg HLe]; rfl
   | app₁ _ _ IH₀ IH₁
@@ -64,7 +64,7 @@ theorem shiftl_opening_comm :
   | reflect _ IH =>
     simp; apply IH
 
-theorem shiftl_open₀_comm : ∀ x y e n, x <= y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
+theorem shiftl_open₀_comm : ∀ x y e n, x ≤ y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
   intros _ _ _ _; apply shiftl_opening_comm
 
 theorem shiftl_closed_at :
@@ -74,7 +74,7 @@ theorem shiftl_closed_at :
   induction e with
   | bvar j => simp
   | fvar z =>
-    by_cases HLe : y <= z
+    by_cases HLe : y ≤ z
     . simp; rw [if_pos HLe]; simp; apply Hclose
     . simp; rw [if_neg HLe]; simp at *; omega
   | app₁ _ _ IH₀ IH₁

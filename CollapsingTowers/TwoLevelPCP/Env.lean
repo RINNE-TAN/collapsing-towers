@@ -7,24 +7,23 @@ def indexr {X : Type} (n : ℕ) (l : List X) : Option X :=
   | [] => none
   | head :: tails => if tails.length == n then some head else indexr n tails
 
-theorem indexrSome : ∀ {A} (xs : List A) i,
-  i < xs.length → ∃ x, indexr i xs = some x := by
-  intro A xs i h; induction xs
-  case nil => simp at h
-  case cons x xs ih =>
-    simp; by_cases h': xs.length = i
-    . simp [h']
-    . simp [if_neg h']; apply ih; simp at h; omega
-
-theorem indexrSome' : ∀ {A} (xs : List A) i,
-  (∃ x, indexr i xs = some x) → i < xs.length := by
-  intros A xs i h; induction xs
-  case nil => simp at h
-  case cons x xs ih =>
-    simp at h; by_cases h': xs.length = i
-    . subst h'; simp
-    . simp [if_neg h'] at h; simp;
-      have h' := ih h; omega
+theorem indexr_iff_lt : ∀ {A} {xs : List A} {i},
+  i < xs.length ↔ ∃ x, indexr i xs = some x := by
+  intro A xs i;
+  constructor
+  . intro h; induction xs
+    case nil => simp at h
+    case cons x xs ih =>
+      simp; by_cases h': xs.length = i
+      . simp [h']
+      . simp [if_neg h']; apply ih; simp at h; omega
+  . intro h; induction xs
+    case nil => simp at h
+    case cons x xs ih =>
+      simp at h; by_cases h': xs.length = i
+      . subst h'; simp
+      . simp [if_neg h'] at h; simp;
+        have h' := ih h; omega
 
 abbrev TEnv :=
   List (Ty × Stage)
@@ -41,7 +40,7 @@ theorem binds_extend : ∀ Γ Δ x τ 𝕊, binds x τ 𝕊 Γ → binds x τ �
   | cons head tails IHtails =>
     simp
     by_cases Hx : tails.length + Γ.length = x
-    . have Hx : x < Γ.length := by apply indexrSome'; exists (τ, 𝕊)
+    . have Hx : x < Γ.length := by apply indexr_iff_lt.mpr; exists (τ, 𝕊)
       omega
     . rw [if_neg Hx]; apply IHtails
 
@@ -75,7 +74,7 @@ theorem binds_shrinkr : ∀ Γ Δ x τ 𝕊, binds (x + Δ.length) τ 𝕊 (Γ +
   induction Γ with
   | nil =>
     simp; intro Hindexr
-    have : x + Δ.length < Δ.length := by apply indexrSome'; exists (τ, 𝕊)
+    have : x + Δ.length < Δ.length := by apply indexr_iff_lt.mpr; exists (τ, 𝕊)
     omega
   | cons head tails IHtails =>
     simp
