@@ -203,6 +203,15 @@ theorem preservation_subst_strengthened :
     simp; omega
     simp; omega
     apply typing_regular; apply Hτv
+  case run =>
+    intros _ _ _ _ _ Hclose IH Δ HEqΓ
+    apply typing.run
+    apply IH; apply HEqΓ
+    rw [shiftr_id, subst_closed_id]; apply Hclose
+    apply closed_inc; apply Hclose; omega
+    rw [subst_closed_id]
+    apply closed_inc; apply Hclose; omega
+    apply closed_inc; apply Hclose; omega
   case pure =>
     intros _ _ _ _ IH Δ HEqΓ
     apply typing_reification.pure
@@ -398,6 +407,12 @@ theorem preservation_maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing_regular; apply Hτv
+  case run =>
+    intros _ _ _ _ _ Hclose IH Δ HEqΓ Hτv
+    apply typing.run
+    apply IH; apply HEqΓ; apply Hτv
+    rw [subst_closed_id]; apply Hclose
+    apply closed_inc; apply Hclose; omega
   case pure =>
     intros _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -546,6 +561,17 @@ theorem preservation_head𝕄 :
           apply Hbinds; apply HwellBinds
       apply HwellBinds
       apply Hclose
+  case run =>
+    cases Hτ
+    case run Hclose Hτ =>
+      cases Hτ with
+      | pure _ _ _ Hτ =>
+        cases Hτ
+        case code_rep Hτ =>
+          apply typing_escape
+          apply Hclose; apply Hτ
+      | reify _ _ _ _ Hτ =>
+        cases Hτ; contradiction
 
 theorem preservationℝ :
   ∀ intro Γ R e₀ e₁ τ φ,
@@ -613,6 +639,22 @@ theorem preservationℝ :
           apply close_closed; rw [← List.length_cons]
           apply typing_closed; apply IHe₀; rfl
       apply Hlc
+  case run =>
+    cases Hτ
+    case run Hτ =>
+      cases Hτ with
+      | pure _ _ _ Hτ =>
+        apply typing.run
+        apply typing_reification.pure
+        rw [← List.nil_append Γ]
+        apply IH; simp; apply Hτ
+        admit
+      | reify _ _ _ _ Hτ =>
+        apply typing.run
+        apply typing_reification.reify
+        rw [← List.nil_append Γ]
+        apply IH; simp; apply Hτ
+        admit
 
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁ τ φ,
@@ -1037,6 +1079,16 @@ theorem preservationℚ :
         apply closed_at𝔼; apply HE
         rw [← List.length_cons]; apply typing_reification_closed; apply IHe; simp
         apply lc_ctx𝔼; apply HE; apply Hlc
+    case run =>
+      cases Hτ
+      case run Hclose IH =>
+        apply typing.run
+        apply preservation_reflect
+        apply HE; apply IH
+        constructor
+        apply closed_at_decompose𝔼 _ (.reflect e) _ HE
+        apply Hclose
+        apply closed_at𝔼; apply HE; apply Hclose; simp
   | cons𝔹 _ _ HB _ IHQ =>
     simp; apply preservation𝔹
     apply HB; intros _ _ IHτ

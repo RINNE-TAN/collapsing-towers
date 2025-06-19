@@ -13,6 +13,7 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (subst x v l) (subst x v r)
   | .plus₂ l r => .plus₂ (subst x v l) (subst x v r)
+  | .run e => .run (subst x v e)
   | .code e => .code (subst x v e)
   | .reflect e => .reflect (subst x v e)
   | .lam𝕔 e => .lam𝕔 (subst x v e)
@@ -31,6 +32,7 @@ def opening (i : ℕ) (x : Expr) : Expr → Expr
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (opening i x l) (opening i x r)
   | .plus₂ l r => .plus₂ (opening i x l) (opening i x r)
+  | .run e => .run (opening i x e)
   | .code e => .code (opening i x e)
   | .reflect e => .reflect (opening i x e)
   | .lam𝕔 e => .lam𝕔 (opening (i + 1) x e)
@@ -56,6 +58,7 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (closing i x l) (closing i x r)
   | .plus₂ l r => .plus₂ (closing i x l) (closing i x r)
+  | .run e => .run (closing i x e)
   | .code e => .code (closing i x e)
   | .reflect e => .reflect (closing i x e)
   | .lam𝕔 e => .lam𝕔 (closing (i + 1) x e)
@@ -79,6 +82,7 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   | .lit₁ _ => true
   | .plus₁ l r => closed_at l f ∧ closed_at r f
   | .plus₂ l r => closed_at l f ∧ closed_at r f
+  | .run e => closed_at e f
   | .code e => closed_at e f
   | .reflect e => closed_at e f
   | .lam𝕔 e => closed_at e f
@@ -98,6 +102,7 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .lit₁ _ => true
   | .plus₁ l r => closedb_at l b ∧ closedb_at r b
   | .plus₂ l r => closedb_at l b ∧ closedb_at r b
+  | .run e => closedb_at e b
   | .code e => closedb_at e b
   | .reflect e => closedb_at e b
   | .lam𝕔 e => closedb_at e (b + 1)
@@ -119,6 +124,7 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (maping𝕔 l i) (maping𝕔 r i)
   | .plus₂ l r => .plus₂ (maping𝕔 l i) (maping𝕔 r i)
+  | .run e => .run (maping𝕔 e i)
   | .code e => .code (maping𝕔 e i)
   | .reflect e => .reflect (maping𝕔 e i)
   | .lam𝕔 e => .lam𝕔 (maping𝕔 e (i + 1))
@@ -143,7 +149,8 @@ lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x
   | lift _ IHe
   | code _ IHe
   | reflect _ IHe
-  | lam𝕔 _ IHe =>
+  | lam𝕔 _ IHe
+  | run _ IHe =>
     simp; apply IHe; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -166,7 +173,8 @@ lemma subst_closed_id : ∀ x e v, closed_at e x → subst x v e = e :=
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -199,7 +207,8 @@ lemma closedb_inc: ∀ t i j,
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH; apply Hclose; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -232,7 +241,8 @@ lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hclose
 
 lemma subst_closedb_at : ∀ x e v i, closedb_at v i → closedb_at e i → closedb_at (subst x v e) i :=
@@ -261,7 +271,8 @@ lemma subst_closedb_at : ∀ x e v i, closedb_at v i → closedb_at e i → clos
     apply IHb; apply Hv; apply He.left
     apply IHe; apply closedb_inc; apply Hv; omega; apply He.right
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hv; apply He
   | lit₁ => simp
 
@@ -288,7 +299,8 @@ lemma subst_closed_at : ∀ x e v y, closed_at v y → closed_at e y → closed_
     apply IH₀; apply Hv; apply He.left
     apply IH₁; apply Hv; apply He.right
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hv; apply He
   | lit₁ => simp
 
@@ -315,7 +327,8 @@ lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) →
     apply IH₀; apply He.left
     apply IH₁; apply He.right
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply He
   | lit₁ => simp
 
@@ -334,7 +347,8 @@ lemma open_closedb : ∀ t n m,
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih
-     | lift t ih =>
+     | lift _ ih
+     | run _ ih =>
     simp at *; apply ih; apply h
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -357,7 +371,8 @@ lemma open_closedb': ∀ t n m,
   case code _ ih
      | reflect _ ih
      | lam𝕔 _ ih
-     | lift t ih =>
+     | lift _ ih
+     | run _ ih =>
     simp at *; apply ih; apply h
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -381,7 +396,8 @@ theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -408,7 +424,8 @@ theorem open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → clo
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -433,7 +450,8 @@ theorem open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -459,7 +477,8 @@ theorem close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (cl
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -481,7 +500,8 @@ lemma closedb_opening_id: ∀ t1 t2 n,
     simp at h; apply ih; assumption
   case code _ ih
      | reflect _ ih
-     | lam𝕔 _ ih =>
+     | lam𝕔 _ ih
+     | run _ ih =>
     simp at *; apply ih; apply h
   case app₁ t1 t2 ih1 ih2
      | app₂ t1 t2 ih1 ih2
@@ -509,7 +529,8 @@ lemma open_close_id : ∀ i e x, closedb_at e i → opening i (.fvar x) (closing
   | lift _ IHe
   | lam𝕔 _ IHe
   | code _ IHe
-  | reflect _ IHe =>
+  | reflect _ IHe
+  | run _ IHe =>
     simp; apply IHe; apply Hlc
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -537,7 +558,8 @@ lemma close_open_id : ∀ i e x, closed_at e x → closing i x (opening i (.fvar
   | lift _ IHe
   | lam𝕔 _ IHe
   | code _ IHe
-  | reflect _ IHe =>
+  | reflect _ IHe
+  | run _ IHe =>
     simp; apply IHe; apply Hclose
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -578,7 +600,8 @@ lemma subst_opening_comm :
     apply IH₀; apply Hclosedb
     apply IH₁; apply closedb_inc; apply Hclosedb; omega
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hclosedb
   | lit₁ => simp
   | lam₁ _ IH
@@ -602,7 +625,8 @@ theorem maping𝕔_intro :
   | lift _ ih
   | code _ ih
   | reflect _ ih
-  | lam𝕔 _ ih =>
+  | lam𝕔 _ ih
+  | run _ ih =>
     simp at *; apply ih; apply Hclosed
   | app₁ _ _ ih1 ih2
   | app₂ _ _ ih1 ih2
@@ -633,7 +657,8 @@ theorem maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁

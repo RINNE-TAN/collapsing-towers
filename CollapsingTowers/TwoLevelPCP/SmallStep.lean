@@ -30,6 +30,7 @@ inductive ctx𝔹 : Ctx → Prop where
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
   | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 (close₀ lvl X))
   | let𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .let𝕔 b (close₀ lvl X))
+  | run : ctxℝ 0 lvl (fun X => .run X)
 
 inductive ctx𝕄 : ℕ → Ctx → Prop where
   | hole : ctx𝕄 lvl id
@@ -240,6 +241,8 @@ theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → closedb_at e n �
     apply closedb_inc; apply Hlcb; omega
     apply close_closedb; omega
     apply closedb_inc; apply Hlc; omega
+  | run =>
+    apply Hlc
 
 -- properties of 𝕄 contexts
 
@@ -325,6 +328,7 @@ inductive head𝕄 : Expr → Expr → Prop where
   | lift_lam : ∀ e, head𝕄 (.lift (.lam₁ e)) (.lam𝕔 (map𝕔₀ e))
   | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))
   | let𝕔 : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
+  | run : ∀ e, head𝕄 (.run (.code e)) e
 
 inductive step_lvl (lvl : ℕ) : Expr → Expr → Prop where
   | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl M⟦e₀⟧ M⟦e₁⟧

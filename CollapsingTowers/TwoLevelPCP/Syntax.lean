@@ -21,6 +21,7 @@ inductive Expr : Type where
   | plus₁ (l : Expr) (r : Expr)
   | plus₂ (l : Expr) (r : Expr)
   | lift (e : Expr)
+  | run (e : Expr)
   | code (e : Expr)
   | reflect (e : Expr)
   | lam𝕔 (e : Expr)

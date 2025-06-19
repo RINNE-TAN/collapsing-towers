@@ -232,6 +232,22 @@ theorem progress_strengthened :
       constructor
       apply stepℝ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
+  case run =>
+    intros _ _ _ _ _ Hclose IH HDyn HEq𝕊
+    right
+    cases IH HDyn with
+    | inl Hvalue =>
+      cases Hvalue with
+      | code e Hlc =>
+        exists e
+        apply step_lvl.step𝕄 _ _ _ ctx𝕄.hole
+        apply Hlc
+        apply head𝕄.run
+      | _ => contradiction
+    | inr Hstep =>
+      have ⟨_, Hstep⟩ := Hstep
+      constructor
+      apply stepℝ _ _ _ _ _ ctxℝ.run; apply Hstep
   case pure =>
     intros _ _ _ _ IH HDyn
     apply IH; apply HDyn; rfl

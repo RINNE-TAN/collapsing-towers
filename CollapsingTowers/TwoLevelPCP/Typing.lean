@@ -75,6 +75,10 @@ mutual
       well_binding_time .dyn τ𝕒 →
       closed_at e Γ.length →
       typing Γ .stat (.let𝕔 b e) (.rep τ𝕓) ∅
+    | run : ∀ Γ e τ φ,
+      typing_reification Γ e (.rep τ) φ →
+      closed_at e 0 →
+      typing Γ .stat (.run e) τ ∅
 
   inductive typing_reification : TEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ e τ, typing Γ .stat e τ ∅ → typing_reification Γ e τ ∅
@@ -223,6 +227,11 @@ theorem typing_dyn_pure : ∀ Γ e τ φ, typing Γ .dyn e τ φ → well_bindin
   case pure => simp
   case reify => simp
 
+theorem typing_escape : ∀ Γ e τ, closed_at e 0 → typing Γ .dyn e τ ∅ → typing Γ .stat e τ ∅ :=
+  by
+  intros Γ e τ Hclose Hτ
+  admit
+
 theorem weakening_strengthened:
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → Γ = Ψ ++ Φ → typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ :=
   by
@@ -349,6 +358,12 @@ theorem weakening_strengthened:
     apply IHe; rfl; apply HwellBinds
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply shiftl_closed_at; rw [← List.length_append]; apply Hclose; simp
+  case run =>
+    intros _ _ _ _ _ Hclose IH Ψ HEqΓ
+    apply typing.run
+    apply IH; apply HEqΓ
+    rw [shiftl_id]; apply Hclose
+    apply closed_inc; apply Hclose; omega
   case pure =>
     intros _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure

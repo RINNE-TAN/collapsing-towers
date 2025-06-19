@@ -13,6 +13,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (shiftl_at x n l) (shiftl_at x n r)
   | .plus₂ l r => .plus₂ (shiftl_at x n l) (shiftl_at x n r)
+  | .run e => .run (shiftl_at x n e)
   | .code e => .code (shiftl_at x n e)
   | .reflect e => .reflect (shiftl_at x n e)
   | .lam𝕔 e => .lam𝕔 (shiftl_at x n e)
@@ -30,6 +31,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .lit₁ n => .lit₁ n
   | .plus₁ l r => .plus₁ (shiftr_at x l) (shiftr_at x r)
   | .plus₂ l r => .plus₂ (shiftr_at x l) (shiftr_at x r)
+  | .run e => .run (shiftr_at x e)
   | .code e => .code (shiftr_at x e)
   | .reflect e => .reflect (shiftr_at x e)
   | .lam𝕔 e => .lam𝕔 (shiftr_at x e)
@@ -61,7 +63,8 @@ theorem shiftl_opening_comm :
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH
 
 theorem shiftl_open₀_comm : ∀ x y e n, x ≤ y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
@@ -91,7 +94,8 @@ theorem shiftl_closed_at :
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftl_id :
@@ -115,7 +119,8 @@ theorem shiftl_id :
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH
 
 theorem shiftr_opening_comm :
@@ -143,7 +148,8 @@ theorem shiftr_opening_comm :
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH
 
 theorem shiftr_open₀_comm : ∀ x y e, x < y → shiftr_at x (open₀ y e) = open₀ (y - 1) (shiftr_at x e) :=
@@ -174,7 +180,8 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x e) x :=
@@ -200,7 +207,8 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_id :
@@ -224,5 +232,6 @@ theorem shiftr_id :
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
-  | reflect _ IH =>
+  | reflect _ IH
+  | run _ IH =>
     simp; apply IH
