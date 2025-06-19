@@ -13,6 +13,21 @@ def well_binding_time : Stage → Ty → Prop
   | .dyn, (.arrow τ𝕒 τ𝕓 φ) => φ = ∅ ∧ well_binding_time .dyn τ𝕒 ∧ well_binding_time .dyn τ𝕓
   | .dyn, _ => false
 
+theorem well_binding_time_escape : ∀ 𝕊 τ, well_binding_time 𝕊 τ → well_binding_time .stat τ :=
+  by
+  intros 𝕊 τ HwellBinds
+  cases 𝕊
+  case stat => assumption
+  case dyn =>
+    induction τ with
+    | nat => simp
+    | arrow _ _ _ IH₀ IH₁ =>
+      constructor
+      apply IH₀; apply HwellBinds.right.left
+      apply IH₁; apply HwellBinds.right.right
+    | fragment => nomatch HwellBinds
+    | rep => nomatch HwellBinds
+
 mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effects → Prop where
     | fvar : ∀ Γ 𝕊 x τ,
@@ -227,12 +242,85 @@ theorem typing_dyn_pure : ∀ Γ e τ φ, typing Γ .dyn e τ φ → well_bindin
   case pure => simp
   case reify => simp
 
-theorem typing_escape : ∀ Γ e τ, closed_at e 0 → typing Γ .dyn e τ ∅ → typing Γ .stat e τ ∅ :=
+theorem typing_shrink_strengthened :
+  ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
+    Γ = Ψ ++ Φ :: Δ →
+    Δ.length ∉ fv e →
+    typing (Ψ ++ Δ) 𝕊 (shiftr_at Δ.length e) τ φ :=
   by
-  intros Γ e τ Hclose Hτ
-  admit
+  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ
+  revert Ψ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
+        ∀ Ψ,
+          Γ = Ψ ++ Φ :: Δ →
+          Δ.length ∉ fv e →
+          typing (Ψ ++ Δ) 𝕊 (shiftr_at Δ.length e) τ φ)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
+        ∀ Ψ,
+          Γ = Ψ ++ Φ :: Δ →
+          Δ.length ∉ fv e →
+          typing_reification (Ψ ++ Δ) (shiftr_at Δ.length e) τ φ)
+  case fvar =>
+    intros _ _ x _ Hbinds HwellBinds Ψ HEqΓ HcloseΔ
+    rw [HEqΓ] at Hbinds; simp
+    cases Hx : compare Δ.length x with
+    | lt =>
+      rw [compare_lt_iff_lt] at Hx
+      rw [if_pos Hx]
+      apply typing.fvar
+      have Hx : Δ.length <= x - 1 := by omega
+      rw [← Nat.add_sub_of_le Hx, Nat.add_comm]
+      apply binds_extendr
+      rw [← Nat.sub_add_eq, Nat.add_comm]
+      apply binds_shrinkr _ (Φ :: Δ)
+      rw [List.length_cons, Nat.sub_add_cancel]
+      apply Hbinds; omega; apply HwellBinds
+    | eq =>
+      rw [compare_eq_iff_eq] at Hx
+      rw [Hx] at HcloseΔ; nomatch HcloseΔ
+    | gt =>
+      rw [compare_gt_iff_gt] at Hx
+      rw [if_neg (Nat.not_lt_of_gt Hx)]
+      apply typing.fvar
+      apply binds_extend; apply binds_shrink
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ HcloseΔ
+    rw [HEqΓ, shiftr_open₀_comm] at IH
+    rw [HEqΓ] at Hclose
+    apply typing.lam₁
+    simp; rw [← List.cons_append]
+    simp at IH; apply IH; rfl
+    admit
+    apply HwellBinds
+    cases Ψ with
+    | nil =>
+      apply shiftr_closed_at_id
+      admit
+    | cons =>
+      simp at *
+      apply shiftr_closed_at; omega
+      apply Hclose
+    simp; omega
+  all_goals admit
 
-theorem weakening_strengthened:
+theorem typing_shrink :
+  ∀ Γ Φ 𝕊 e τ φ,
+    typing (Φ :: Γ) 𝕊 e τ φ →
+    closed_at e Γ.length →
+    typing Γ 𝕊 e τ φ :=
+  by
+  intros Γ Φ 𝕊 e τ φ Hτ Hclose
+  have H := typing_shrink_strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
+  rw [shiftr_id] at H
+  apply H; apply Hτ; rfl
+  admit
+  apply closed_inc; apply Hclose; omega
+
+theorem weakening_strengthened :
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → Γ = Ψ ++ Φ → typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ :=
   by
   intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ HEqΓ
@@ -388,3 +476,68 @@ theorem weakening1 : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ, typing Γ 𝕊 e τ𝕓 φ 
   intros Γ 𝕊 e τ𝕒 τ𝕓 φ
   rw [← List.singleton_append]
   apply weakening
+
+theorem typing_escape_strengthened :
+  ∀ Γ e τ,
+    typing Γ .dyn e τ ∅ →
+    typing (escape Γ) .stat e τ ∅ :=
+  by
+  generalize HEq𝕊 : (.dyn : Stage) = 𝕊
+  intros Γ e τ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
+          .dyn = 𝕊 →
+          typing (escape Γ) .stat e τ φ)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> (try intros; contradiction)
+  case fvar =>
+    intros _ _ x _ Hbinds HwellBinds HEq𝕊
+    apply typing.fvar
+    apply binds_escape; apply Hbinds
+    apply well_binding_time_escape; apply HwellBinds
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ HwellBinds Hclose IH HEq𝕊
+    rw [← HEq𝕊, escape] at IH
+    apply typing.lam₁; rw [← length_escape]
+    apply IH; rfl
+    apply well_binding_time_escape; apply HwellBinds
+    rw [← length_escape]; apply Hclose
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg HEq𝕊
+    apply typing.app₁
+    apply IHf; apply HEq𝕊
+    apply IHarg; apply HEq𝕊
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
+    apply typing.plus₁
+    apply IHl; apply HEq𝕊
+    apply IHr; apply HEq𝕊
+  case lit₁ => intros; apply typing.lit₁
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe HEq𝕊
+    rw [← HEq𝕊, escape] at IHe
+    apply typing.lets
+    apply IHb; apply HEq𝕊
+    rw [← length_escape]; apply IHe; rfl
+    apply well_binding_time_escape; apply HwellBinds
+    rw [← length_escape]; apply Hclose
+  case pure => simp
+  case reify => simp
+  apply Hτ; apply HEq𝕊
+
+theorem typing_escape :
+  ∀ Γ e τ,
+    closed_at e 0 →
+    typing Γ .dyn e τ ∅ →
+    typing Γ .stat e τ ∅ :=
+  by
+  intros Γ e τ Hclose Hτ
+  rw [← List.append_nil Γ]; apply weakening
+  rw [nil_escape]; apply typing_escape_strengthened
+  induction Γ with
+  | nil => apply Hτ
+  | cons _ _ IH =>
+    apply IH
+    apply typing_shrink; apply Hτ
+    apply closed_inc; apply Hclose; omega

@@ -82,3 +82,36 @@ theorem binds_shrinkr : ∀ Γ Δ x τ 𝕊, binds (x + Δ.length) τ 𝕊 (Γ +
     . repeat rw [if_pos HEq]; simp
     . repeat rw [if_neg HEq]
       apply IHtails
+
+@[simp]
+def escape : TEnv → TEnv
+  | [] => []
+  | (τ, .stat) :: tails => (τ, .stat) :: escape tails
+  | (τ, .dyn) :: tails => (τ, .stat) :: escape tails
+
+theorem nil_escape : [] = escape [] := by simp
+
+theorem length_escape : ∀ Γ, Γ.length = (escape Γ).length := by
+  intro Γ
+  induction Γ with
+  | nil => simp
+  | cons head _ IH =>
+    have ⟨τ, 𝕊⟩ := head
+    cases 𝕊 <;> (simp; apply IH)
+
+theorem binds_escape : ∀ Γ x τ 𝕊, binds x τ 𝕊 Γ → binds x τ .stat (escape Γ) :=
+  by
+  intros Γ x τ 𝕊
+  induction Γ with
+  | nil => simp
+  | cons head tails IH =>
+    have ⟨τ, 𝕊⟩ := head
+    cases 𝕊
+    all_goals
+      simp
+      rw [← length_escape]
+      by_cases HEq : tails.length = x
+      . repeat rw [if_pos HEq]; simp
+        intros; assumption
+      . repeat rw [if_neg HEq]
+        apply IH

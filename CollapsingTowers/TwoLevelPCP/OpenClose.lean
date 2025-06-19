@@ -134,6 +134,24 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
 @[simp]
 def map𝕔₀ (e : Expr) : Expr := maping𝕔 e 0
 
+@[simp]
+def fv : Expr → Set ℕ
+  | .bvar _ => ∅
+  | .fvar x => { x }
+  | .lam₁ e => fv e
+  | .lift e => fv e
+  | .app₁ f arg => fv f ∪ fv arg
+  | .app₂ f arg => fv f ∪ fv arg
+  | .lit₁ _ => ∅
+  | .plus₁ l r => fv l ∪ fv r
+  | .plus₂ l r => fv l ∪ fv r
+  | .run e => fv e
+  | .code e => fv e
+  | .reflect e => fv e
+  | .lam𝕔 e => fv e
+  | .lets b e => fv b ∪ fv e
+  | .let𝕔 b e => fv b ∪ fv e
+
 -- Properties
 lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x) e) = opening i v e :=
   by
