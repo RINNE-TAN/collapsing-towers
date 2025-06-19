@@ -27,23 +27,23 @@ inductive ctx𝔹 : Ctx → Prop where
   | lift : ctx𝔹 (fun X => .lift X)
   | lets : ∀ e, closedb_at e 1 → ctx𝔹 (fun X => .lets X e)
 
-inductive ctxℝ : ℕ → Ctx → Prop where
-  | lam𝕔 : ctxℝ lvl (fun X => .lam𝕔 (close₀ lvl X))
-  | let𝕔 : ∀ b, lc b → ctxℝ lvl (fun X => .let𝕔 b (close₀ lvl X))
+inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
+  | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 (close₀ lvl X))
+  | let𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .let𝕔 b (close₀ lvl X))
 
 inductive ctx𝕄 : ℕ → Ctx → Prop where
   | hole : ctx𝕄 lvl id
   | cons𝔹 : ∀ B M, ctx𝔹 B → ctx𝕄 lvl M → ctx𝕄 lvl (B ∘ M)
-  | consℝ : ∀ R M, ctxℝ lvl R → ctx𝕄 (lvl + 1) M → ctx𝕄 lvl (R ∘ M)
+  | consℝ : ∀ R M, ctxℝ intro lvl R → ctx𝕄 (lvl + intro) M → ctx𝕄 lvl (R ∘ M)
 
 inductive ctx𝔼 : Ctx → Prop where
   | hole : ctx𝔼 id
   | cons𝔹 : ∀ B E, ctx𝔹 B → ctx𝔼 E → ctx𝔼 (B ∘ E)
 
 inductive ctxℚ : ℕ → Ctx → Prop where
-  | holeℝ : ∀ R, ctxℝ lvl R → ctxℚ lvl R
+  | holeℝ : ∀ R, ctxℝ intro lvl R → ctxℚ lvl R
   | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ lvl Q → ctxℚ lvl (B ∘ Q)
-  | consℝ : ∀ R Q, ctxℝ lvl R → ctxℚ (lvl + 1) Q → ctxℚ lvl (R ∘ Q)
+  | consℝ : ∀ R Q, ctxℝ intro lvl R → ctxℚ (lvl + intro) Q → ctxℚ lvl (R ∘ Q)
 
 inductive ctxℙ : ℕ → Ctx → Prop where
   | hole : ctxℙ lvl id
@@ -53,10 +53,10 @@ mutual
   inductive ctxℙ' : ℕ → Ctx → Prop where
     | hole : ctxℙ' lvl id
     | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℙ' lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ' (lvl + 1) P → ctxℙ' lvl (R ∘ P)
+    | consℝ : ∀ R P, ctxℝ intro lvl R → ctxℙ' (lvl + intro) P → ctxℙ' lvl (R ∘ P)
   inductive ctxℚ' : ℕ → Ctx → Prop where
     | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℚ' lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ lvl R → ctxℙ' (lvl + 1) P → ctxℚ' lvl (R ∘ P)
+    | consℝ : ∀ R P, ctxℝ intro lvl R → ctxℙ' (lvl + intro) P → ctxℚ' lvl (R ∘ P)
 end
 
 theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
@@ -75,7 +75,7 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
       apply ctxℚ.cons𝔹
       apply HB; apply IHQ
     case consℝ =>
-      intros _ _ _ HR _ IHP
+      intros _ _ _ _ HR _ IHP
       apply ctxℙ.consℚ
       cases IHP with
       | hole =>
@@ -89,7 +89,7 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
       apply ctxℚ.cons𝔹
       apply HB; apply IHQ
     case consℝ =>
-      intros _ _ _ HR _ IHP
+      intros _ _ _ _ HR _ IHP
       cases IHP with
       | hole =>
         apply ctxℚ.holeℝ
@@ -105,12 +105,13 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
     case consℚ HQ =>
       have H :
         (∃ B Q, ctx𝔹 B ∧ ctxℚ' lvl Q ∧ C = B ∘ Q) ∨
-        (∃ R P, ctxℝ lvl R ∧ ctxℙ' (lvl + 1) P ∧ C = R ∘ P) :=
+        (∃ R P intro, ctxℝ intro lvl R ∧ ctxℙ' (lvl + intro) P ∧ C = R ∘ P) :=
         by
         induction HQ with
         | holeℝ R HR =>
           right
-          exists R, id; constructor
+          exists R, id
+          constructor; constructor
           apply HR; constructor
           apply ctxℙ'.hole; rfl
         | cons𝔹 B₀ Q₀ HB₀ _ IHQ =>
@@ -122,7 +123,7 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
             rw [HEqC]; apply ctxℚ'.cons𝔹
             apply HB₁; apply HQ₁; rfl
           case inr IHQ =>
-            have ⟨R, P, HR, HP, HEqC⟩ := IHQ; constructor
+            have ⟨R, P, _, HR, HP, HEqC⟩ := IHQ; constructor
             apply HB₀; constructor
             rw [HEqC]; apply ctxℚ'.consℝ
             apply HR; apply HP; rfl
@@ -130,12 +131,14 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
           right; exists R₀, P₀
           cases IHP
           case inl IHP =>
-            have ⟨B, Q, HB, HQ, HEqC⟩ := IHP; constructor
+            have ⟨B, Q, HB, HQ, HEqC⟩ := IHP
+            constructor; constructor
             apply HR₀; constructor
             rw [HEqC]; apply ctxℙ'.cons𝔹
             apply HB; apply HQ; rfl
           case inr IHQ =>
-            have ⟨R₁, P₁, HR₁, HP₁, HEqC⟩ := IHQ; constructor
+            have ⟨R₁, P₁, _, HR₁, HP₁, HEqC⟩ := IHQ
+            constructor; constructor
             apply HR₀; constructor
             rw [HEqC]; apply ctxℙ'.consℝ
             apply HR₁; apply HP₁; rfl
@@ -145,7 +148,7 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
         rw [HEqC]; apply ctxℙ'.cons𝔹
         apply HB; apply HQ
       case inr H =>
-        have ⟨R, P, HR, HP, HEqC⟩ := H
+        have ⟨R, P, _, HR, HP, HEqC⟩ := H
         rw [HEqC]; apply ctxℙ'.consℝ
         apply HR; apply HP
 
@@ -225,9 +228,9 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x �
 
 -- properties of ℝ contexts
 
-theorem lc_ctxℝ : ∀ R e n lvl, ctxℝ lvl R → closedb_at e n → closedb_at R⟦e⟧ n :=
+theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → closedb_at e n → closedb_at R⟦e⟧ n :=
   by
-  intros _ _ _ _ HR Hlc
+  intros _ _ _ _ _ HR Hlc
   induction HR with
   | lam𝕔 =>
     apply close_closedb; omega
@@ -359,9 +362,9 @@ theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ →
       apply ctxℙ.consℚ; apply ctxℚ.cons𝔹
       apply HB; apply HQ; apply HE; apply Hlc
 
-theorem stepℝ : ∀ lvl R e₀ e₁, ctxℝ lvl R → step_lvl (lvl + 1) e₀ e₁ → step_lvl lvl (R e₀) (R e₁) :=
+theorem stepℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → step_lvl (lvl + intro) e₀ e₁ → step_lvl lvl (R e₀) (R e₁) :=
   by
-  intros lvl R e₀ e₁ HR Hstep
+  intros intro lvl R e₀ e₁ HR Hstep
   cases Hstep with
   | step𝕄 M _ _ HM Hlc Hhead =>
     repeat rw [ctx_comp R M]

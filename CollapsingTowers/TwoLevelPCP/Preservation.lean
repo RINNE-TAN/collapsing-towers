@@ -548,17 +548,18 @@ theorem preservation_head𝕄 :
       apply Hclose
 
 theorem preservationℝ :
-  ∀ Γ R e₀ e₁ τ φ,
-    ctxℝ Γ.length R →
+  ∀ intro Γ R e₀ e₁ τ φ,
+    ctxℝ intro Γ.length R →
     lc e₀ →
-    (∀ τ𝕒 τ𝕓 φ,
-      typing (τ𝕒 :: Γ) .stat e₀ τ𝕓 φ →
-      typing (τ𝕒 :: Γ) .stat e₁ τ𝕓 φ
+    (∀ Δ τ φ,
+      Δ.length = intro →
+      typing (Δ ++ Γ) .stat e₀ τ φ →
+      typing (Δ ++ Γ) .stat e₁ τ φ
     ) →
     typing Γ .stat (R e₀) τ φ →
     typing Γ .stat (R e₁) τ φ :=
   by
-  intros Γ R e₀ e₁ τ φ HR Hlc IH Hτ
+  intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
@@ -566,23 +567,25 @@ theorem preservationℝ :
       rw [open_close_id₀] at IHe
       . cases IHe with
         | pure _ _ _ IHe₀ =>
-          have IHe₁ := IH _ _ _ IHe₀
+          rw [← List.singleton_append] at IHe₀
+          apply IH at IHe₀
           apply typing.lam𝕔
           apply typing_reification.pure
           rw [open_close_id₀]
-          apply IHe₁; apply typing_regular; apply IHe₁
+          apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
           apply close_closed; rw [← List.length_cons]
-          apply typing_closed; apply IHe₁
+          apply typing_closed; apply IHe₀; rfl
         | reify _ _ _ _ IHe₀ =>
-          have IHe₁ := IH _ _ _ IHe₀
+          rw [← List.singleton_append] at IHe₀
+          apply IH at IHe₀
           apply typing.lam𝕔
           apply typing_reification.reify
           rw [open_close_id₀]
-          apply IHe₁; apply typing_regular; apply IHe₁
+          apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
           apply close_closed; rw [← List.length_cons]
-          apply typing_closed; apply IHe₁
+          apply typing_closed; apply IHe₀; rfl
       apply Hlc
   case let𝕔 =>
     cases Hτ
@@ -590,23 +593,25 @@ theorem preservationℝ :
       rw [open_close_id₀] at IHe
       . cases IHe with
         | pure _ _ _ IHe₀ =>
-          have IHe₁ := IH _ _ _ IHe₀
+          rw [← List.singleton_append] at IHe₀
+          apply IH at IHe₀
           apply typing.let𝕔; apply IHb
           apply typing_reification.pure
           rw [open_close_id₀]
-          apply IHe₁; apply typing_regular; apply IHe₁
+          apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
           apply close_closed; rw [← List.length_cons]
-          apply typing_closed; apply IHe₁
+          apply typing_closed; apply IHe₀; rfl
         | reify _ _ _ _ IHe₀ =>
-          have IHe₁ := IH _ _ _ IHe₀
+          rw [← List.singleton_append] at IHe₀
+          apply IH at IHe₀
           apply typing.let𝕔; apply IHb
           apply typing_reification.reify
           rw [open_close_id₀]
-          apply IHe₁; apply typing_regular; apply IHe₁
+          apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
           apply close_closed; rw [← List.length_cons]
-          apply typing_closed; apply IHe₁
+          apply typing_closed; apply IHe₀; rfl
       apply Hlc
 
 theorem preservation𝔹 :
@@ -699,7 +704,7 @@ theorem preservation𝕄 :
     simp; apply preservationℝ
     rw [HEqlvl]; apply HR
     apply lc_ctx𝕄
-    apply HM; apply Hlc; intros _ _ _ IHτ
+    apply HM; apply Hlc; intros _ _ _ _ IHτ
     apply IHM; apply IHτ; simp; omega; apply Hτ
 
 theorem pure𝔹 :
@@ -1037,11 +1042,11 @@ theorem preservationℚ :
     apply HB; intros _ _ IHτ
     apply IHQ; apply HEqlvl; apply IHτ; apply Hτ
   | consℝ R Q HR HQ IHQ =>
-    simp; apply preservationℝ _ _ (Q (E (.reflect e)))
+    simp; apply preservationℝ _ _ _ (Q (E (.reflect e)))
     rw [HEqlvl]; apply HR
     apply lc_ctxℚ; apply HQ
     apply lc_ctx𝔼; apply HE
-    apply Hlc; intros _ _ _ IHτ
+    apply Hlc; intros _ _ _ _ IHτ
     apply IHQ; simp; omega; apply IHτ; apply Hτ
 
 theorem preservation_strengthened :

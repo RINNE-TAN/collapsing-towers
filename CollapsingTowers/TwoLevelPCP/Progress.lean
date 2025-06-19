@@ -193,7 +193,7 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor
-      apply stepℝ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
+      apply stepℝ _ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
   case lets =>
     intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊
     right
@@ -230,7 +230,7 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       constructor
-      apply stepℝ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
+      apply stepℝ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
   case pure =>
     intros _ _ _ _ IH HDyn
