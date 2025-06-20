@@ -18,29 +18,29 @@ theorem dyn_env_extend :
     apply HDyn; apply Hbinds; rfl
 
 theorem progress_strengthened :
-  ∀ Γ e₀ τ φ,
-    typing_reification Γ e₀ τ φ →
+  ∀ Γ σ e₀ τ φ,
+    typing_reification Γ σ e₀ τ φ →
     dyn_env Γ →
     value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁ :=
   by
-  intros Γ e₀ τ φ Hτ
+  intros Γ σ e₀ τ φ Hτ
   apply @typing_reification.rec
-    (fun Γ 𝕊 e₀ τ φ (H : typing Γ 𝕊 e₀ τ φ) =>
+    (fun Γ σ 𝕊 e₀ τ φ (H : typing Γ σ 𝕊 e₀ τ φ) =>
       dyn_env Γ →
       𝕊 = .stat →
       value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁)
-    (fun Γ e₀ τ φ (H : typing_reification Γ e₀ τ φ) =>
+    (fun Γ σ e₀ τ φ (H : typing_reification Γ σ e₀ τ φ) =>
       dyn_env Γ →
       value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁)
   case fvar =>
-    intros _ _ x _ Hbinds HwellBinds HDyn HEq𝕊
+    intros _ _ _ x _ Hbinds HwellBinds HDyn HEq𝕊
     exfalso; apply HDyn; apply Hbinds; apply HEq𝕊
   case lam₁ =>
-    intros _ _ _ _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
     left; constructor
     apply open_closedb; apply typing_regular; apply H
   case lift_lam =>
-    intros _ _ _ _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ _ H IH HDyn HEq𝕊
     right
     cases IH HDyn rfl with
     | inl Hvalue =>
@@ -54,7 +54,7 @@ theorem progress_strengthened :
       have ⟨_, Hstep⟩ := Hstep
       apply step𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
   case app₁ =>
-    intros _ _ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -76,7 +76,7 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ (ctx𝔹.appl₁ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case app₂ =>
-    intros _ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -101,7 +101,7 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ (ctx𝔹.appl₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case plus₁ =>
-    intros _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -125,7 +125,7 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ (ctx𝔹.plusl₁ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case plus₂ =>
-    intros _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -151,7 +151,7 @@ theorem progress_strengthened :
       apply typing_regular; apply H₁
   case lit₁ => intros; left; constructor
   case lift_lit =>
-    intros _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ H IH HDyn HEq𝕊
     right
     cases IH HDyn HEq𝕊 with
     | inl Hvalue =>
@@ -166,16 +166,16 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
   case code_fragment => intros; left; constructor; simp
   case code_rep =>
-    intros _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ H IH HDyn HEq𝕊
     left; constructor
     apply typing_regular; apply H
   case reflect =>
-    intros _ _ _ H _ _ _
+    intros _ _ _ _ H _ _ _
     right; constructor
     apply step_lvl.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
     apply typing_regular; apply H
   case lam𝕔 =>
-    intros Γ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
+    intros Γ _ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
     right
     rw [← close_open_id₀ e _ Hclose]
     cases IH (dyn_env_extend _ _ HDyn) with
@@ -195,7 +195,7 @@ theorem progress_strengthened :
       constructor
       apply stepℝ _ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
   case lets =>
-    intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -210,7 +210,7 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
       apply open_closedb; apply typing_regular; apply H₁
   case let𝕔 =>
-    intros Γ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊
+    intros Γ _ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊
     right
     rw [← close_open_id₀ e _ Hclose]
     cases IH₁ (dyn_env_extend _ _ HDyn) with
@@ -233,7 +233,7 @@ theorem progress_strengthened :
       apply stepℝ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
   case run =>
-    intros _ _ _ _ _ Hclose IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ Hclose IH HDyn HEq𝕊
     right
     cases IH HDyn with
     | inl Hvalue =>
@@ -249,19 +249,19 @@ theorem progress_strengthened :
       constructor
       apply stepℝ _ _ _ _ _ ctxℝ.run; apply Hstep
   case pure =>
-    intros _ _ _ _ IH HDyn
+    intros _ _ _ _ _ IH HDyn
     apply IH; apply HDyn; rfl
   case reify =>
-    intros _ _ _ _ _ IH HDyn
+    intros _ _ _ _ _ _ IH HDyn
     apply IH; apply HDyn; rfl
   apply Hτ
 
 theorem progress :
-  ∀ e₀ τ φ,
-    typing_reification [] e₀ τ φ →
+  ∀ σ e₀ τ φ,
+    typing_reification [] σ e₀ τ φ →
     value e₀ ∨ ∃ e₁, step e₀ e₁ :=
   by
-  intros _ _ _ Hτ
+  intros _ _ _ _ Hτ
   rw [step, ← List.length_nil]
   apply progress_strengthened
   apply Hτ; simp

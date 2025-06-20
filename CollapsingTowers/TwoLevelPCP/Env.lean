@@ -28,6 +28,9 @@ theorem indexr_iff_lt : ∀ {A} {xs : List A} {i},
 abbrev TEnv :=
   List (Ty × Stage)
 
+abbrev SEnv :=
+  List Ty
+
 @[simp]
 def binds {A : Type} (x : ℕ) (a : A) (Γ : List A) :=
   indexr x Γ = some a

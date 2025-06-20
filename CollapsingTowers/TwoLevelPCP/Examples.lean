@@ -102,7 +102,7 @@ example : step expr₉ expr𝕩 := by
 def τ : Ty :=
   .rep (.arrow .nat .nat ∅)
 
-example : typing_reification [] expr₀ τ .reify :=
+example : typing_reification [] [] expr₀ τ .reify :=
   by
   rw [expr₀, x₀, τ]
   apply typing_reification.reify
@@ -114,7 +114,7 @@ example : typing_reification [] expr₀ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₁ τ .reify :=
+example : typing_reification [] [] expr₁ τ .reify :=
   by
   rw [expr₁, x₀, τ]
   apply typing_reification.reify
@@ -126,7 +126,7 @@ example : typing_reification [] expr₁ τ .reify :=
   apply typing.code_fragment; repeat simp
   apply typing.code_fragment; repeat simp
 
-example : typing_reification [] expr₂ τ .reify :=
+example : typing_reification [] [] expr₂ τ .reify :=
   by
   rw [expr₂, x₀, τ]
   apply typing_reification.reify
@@ -139,7 +139,7 @@ example : typing_reification [] expr₂ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₃ τ .reify :=
+example : typing_reification [] [] expr₃ τ .reify :=
   by
   rw [expr₃, x₀, x₁, τ]
   apply typing_reification.reify
@@ -154,7 +154,7 @@ example : typing_reification [] expr₃ τ .reify :=
   apply typing.code_fragment; repeat simp
   apply typing.code_fragment; repeat simp
 
-example : typing_reification [] expr₄ τ .reify :=
+example : typing_reification [] [] expr₄ τ .reify :=
   by
   rw [expr₄, x₀, x₁, τ]
   apply typing_reification.reify
@@ -170,7 +170,7 @@ example : typing_reification [] expr₄ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₅ τ .reify :=
+example : typing_reification [] [] expr₅ τ .reify :=
   by
   rw [expr₅, x₀, x₁, x₂, τ]
   apply typing_reification.reify
@@ -189,7 +189,7 @@ example : typing_reification [] expr₅ τ .reify :=
   apply typing.code_rep
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₆ τ .reify :=
+example : typing_reification [] [] expr₆ τ .reify :=
   by
   rw [expr₆, x₀, x₁, x₂, τ]
   apply typing_reification.reify
@@ -207,7 +207,7 @@ example : typing_reification [] expr₆ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₇ τ .reify :=
+example : typing_reification [] [] expr₇ τ .reify :=
   by
   rw [expr₇, x₀, x₁, x₂, τ]
   apply typing_reification.reify
@@ -225,7 +225,7 @@ example : typing_reification [] expr₇ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₈ τ .reify :=
+example : typing_reification [] [] expr₈ τ .reify :=
   by
   rw [expr₈, x₀, x₁, x₂, τ]
   apply typing_reification.reify
@@ -242,7 +242,7 @@ example : typing_reification [] expr₈ τ .reify :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
-example : typing_reification [] expr₉ τ .pure :=
+example : typing_reification [] [] expr₉ τ .pure :=
   by
   rw [expr₉, x₀, x₁, x₂, τ]
   apply typing_reification.pure
@@ -259,7 +259,7 @@ example : typing_reification [] expr₉ τ .pure :=
   apply typing.fvar; repeat simp
   repeat constructor
 
-example : typing_reification [] expr𝕩 τ .pure :=
+example : typing_reification [] [] expr𝕩 τ .pure :=
   by
   rw [expr𝕩, x₀, x₁, x₂, τ]
   apply typing_reification.pure
@@ -284,7 +284,7 @@ namespace PhaseConsistency
 -- stuck example
 -- letc x (* phase 2 *) = eff in
 -- x (* phase 1 *)
-example : ∀ b τ φ, ¬typing_reification [] (.let𝕔 b (.bvar 0)) τ φ :=
+example : ∀ b τ φ, ¬typing_reification [] [] (.let𝕔 b (.bvar 0)) τ φ :=
   by
   intros _ _ _ Hτ
   cases Hτ <;> contradiction
@@ -292,7 +292,7 @@ example : ∀ b τ φ, ¬typing_reification [] (.let𝕔 b (.bvar 0)) τ φ :=
 -- cross stage persistence
 -- let x (* phase 1 *) = ref 0 in
 -- code x (* phase 2 *)
-example : ∀ b τ φ, ¬typing_reification [] (.lets b (.code (.bvar 0))) τ φ :=
+example : ∀ b τ φ, ¬typing_reification [] [] (.lets b (.code (.bvar 0))) τ φ :=
   by
   intros _ _ _ Hτ
   cases Hτ
@@ -312,7 +312,7 @@ namespace Reification
 --    letc x0 = eff in
 --    code x0
 -- in e
-example : ∀ b e τ φ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
+example : ∀ b e τ φ, ¬typing_reification [] [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
   by
   intros _ _ _ _ Hτ
   cases Hτ
@@ -331,7 +331,7 @@ example : ∀ b e τ φ, ¬typing_reification [] (.lets (.let𝕔 b (.code (.bva
 --    x0
 -- }
 -- in e
-example : ∀ b e τ φ, ¬typing_reification [] (.lets (.code (.lets b (.bvar 0))) e) τ φ :=
+example : ∀ b e τ φ, ¬typing_reification [] [] (.lets (.code (.lets b (.bvar 0))) e) τ φ :=
   by
   intros _ _ _ _ Hτ
   cases Hτ
@@ -348,7 +348,7 @@ example : ∀ b e τ φ, ¬typing_reification [] (.lets (.code (.lets b (.bvar 0
 -- E ~ fragment τ -> rep τ
 -- let x = reflect e
 -- in 1
-example : ∀ e τ φ, ¬typing_reification [] (.lets (.reflect e) (.lit₁ 1)) τ φ :=
+example : ∀ e τ φ, ¬typing_reification [] [] (.lets (.reflect e) (.lit₁ 1)) τ φ :=
   by
   intros _ _ _ Hτ
   cases Hτ
