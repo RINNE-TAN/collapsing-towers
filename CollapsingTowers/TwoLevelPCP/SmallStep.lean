@@ -1,5 +1,6 @@
 
 import CollapsingTowers.TwoLevelPCP.Syntax
+import CollapsingTowers.TwoLevelPCP.Store
 import CollapsingTowers.TwoLevelPCP.OpenClose
 abbrev Ctx :=
   Expr → Expr
@@ -423,30 +424,34 @@ inductive head𝕄 : Expr → Expr → Prop where
   | let𝕔 : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
   | run : ∀ e, head𝕄 (.run (.code e)) e
 
-inductive step_lvl (lvl : ℕ) : Expr → Expr → Prop where
-  | step𝕄 : ∀ M e₀ e₁, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl M⟦e₀⟧ M⟦e₁⟧
-  | reflect : ∀ P E b, ctxℙ lvl P → ctx𝔼 E → lc b → step_lvl lvl P⟦E⟦.reflect b⟧⟧ P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧
+inductive shead𝕄 : (Store × Expr) → (Store × Expr) → Prop where
+
+inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
+  | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)
+  | store𝕄 : ∀ M st₀ st₁ e₀ e₁, ctx𝕄 lvl M → lc e₀ → shead𝕄 (st₀, e₀) (st₁, e₁) → step_lvl lvl (st₀, M⟦e₀⟧) (st₁, M⟦e₁⟧)
+  | reflect : ∀ P E b st, ctxℙ lvl P → ctx𝔼 E → lc b → step_lvl lvl (st, P⟦E⟦.reflect b⟧⟧) (st, P⟦.let𝕔 b E⟦.code (.bvar 0)⟧⟧)
 
 @[simp]
-def step : Expr → Expr → Prop :=
+def step : (Store × Expr) → (Store × Expr) → Prop :=
   step_lvl 0
 
-inductive stepn : Expr → Expr → Prop
+inductive stepn : (Store × Expr) → (Store × Expr) → Prop
   | refl : ∀ e, stepn e e
-  | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
+  | multi : ∀ e₀ e₁ e₂, stepn e₀ e₁ → step e₁ e₂ → stepn e₀ e₂
 
 -- properties of step
 
-theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl (B e₀) e₂ :=
+theorem step𝔹 : ∀ lvl B st₀ st₁ e₀ e₁, ctx𝔹 B → step_lvl lvl (st₀, e₀) (st₁, e₁) → ∃ e₂, step_lvl lvl (st₀, B⟦e₀⟧) (st₁, e₂) :=
   by
-  intros lvl B e₀ e₁ HB Hstep
+  intros lvl B st₀ st₁ e₀ e₁ HB Hstep
   cases Hstep with
-  | step𝕄 M _ _ HM Hlc Hhead =>
+  | step𝕄 M _ _ _ HM Hlc Hhead =>
     rw [ctx_comp B M]
     constructor; apply step_lvl.step𝕄
     apply ctx𝕄.cons𝔹; apply HB; apply HM
     apply Hlc; apply Hhead
-  | reflect P E _ HP HE Hlc =>
+  | store𝕄 _ _ _ _ _ _ _ Hstore => nomatch Hstore
+  | reflect P E _ _ HP HE Hlc =>
     cases HP
     case hole =>
       constructor
@@ -461,16 +466,17 @@ theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ →
       apply ctxℙ.consℚ; apply ctxℚ.cons𝔹
       apply HB; apply HQ; apply HE; apply Hlc
 
-theorem stepℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → step_lvl (lvl + intro) e₀ e₁ → step_lvl lvl (R e₀) (R e₁) :=
+theorem stepℝ : ∀ intro lvl R st₀ st₁ e₀ e₁, ctxℝ intro lvl R → step_lvl (lvl + intro) (st₀, e₀) (st₁, e₁) → step_lvl lvl (st₀, R⟦e₀⟧) (st₁, R⟦e₁⟧) :=
   by
-  intros intro lvl R e₀ e₁ HR Hstep
+  intros intro lvl R st₀ st₁ e₀ e₁ HR Hstep
   cases Hstep with
-  | step𝕄 M _ _ HM Hlc Hhead =>
+  | step𝕄 M _ _ _ HM Hlc Hhead =>
     repeat rw [ctx_comp R M]
     apply step_lvl.step𝕄
     apply ctx𝕄.consℝ; apply HR; apply HM
     apply Hlc; apply Hhead
-  | reflect P _ _ HP HE Hlc =>
+  | store𝕄 _ _ _ _ _ _ _ Hstore => nomatch Hstore
+  | reflect P _ _ _ HP HE Hlc =>
     cases HP
     case hole =>
       apply step_lvl.reflect

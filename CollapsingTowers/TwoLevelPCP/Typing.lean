@@ -3,7 +3,6 @@ import CollapsingTowers.TwoLevelPCP.Syntax
 import CollapsingTowers.TwoLevelPCP.Shift
 import CollapsingTowers.TwoLevelPCP.SmallStep
 import CollapsingTowers.TwoLevelPCP.Env
-import CollapsingTowers.TwoLevelPCP.Store
 @[simp]
 def well_binding_time : Stage → Ty → Prop
   | .stat, .nat => true
@@ -102,7 +101,7 @@ mutual
 end
 
 @[simp]
-def well_store (st : Store) (σ : SEnv) : Prop :=
+def well_store (σ : SEnv) (st : Store) : Prop :=
   σ.length = st.length ∧
   (∀ loc e,
     binds loc e st →

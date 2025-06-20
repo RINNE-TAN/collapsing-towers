@@ -732,7 +732,7 @@ theorem preservation𝔹 :
       apply IH; apply IHb; apply IHe
       apply HwellBinds; apply Hclose
 
-theorem preservation𝕄 :
+theorem preservation_step𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
     ctx𝕄 Γ.length M →
     lc e₀ →
@@ -1122,48 +1122,56 @@ theorem preservationℚ :
     apply Hτ
 
 theorem preservation_strengthened :
-  ∀ Γ σ e₀ e₁ τ φ₀,
-    step_lvl Γ.length e₀ e₁ →
-    typing_reification Γ σ e₀ τ φ₀ →
-    ∃ φ₁, typing_reification Γ σ e₁ τ φ₁ ∧ φ₁ ≤ φ₀ :=
+  ∀ Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
+    step_lvl Γ.length (st₀, e₀) (st₁, e₁) →
+    well_store σ₀ st₀ →
+    typing_reification Γ σ₀ e₀ τ φ₀ →
+    ∃ σ₁ φ₁,
+      well_store (σ₁ ++ σ₀) st₁ ∧
+      typing_reification Γ (σ₁ ++ σ₀) e₁ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
   by
-  intro Γ σ e₀ e₁ τ φ₀
-  intro Hstep Hτ; cases Hstep
+  intro Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀ Hstep HwellStore Hτ
+  cases Hstep
   case step𝕄 HM Hlc Hhead𝕄 =>
-    exists φ₀; constructor
+    exists [], φ₀; constructor
+    . apply HwellStore
     . cases Hτ
       all_goals
         next Hτ =>
-        constructor
-        apply preservation𝕄
+        simp; constructor
+        apply preservation_step𝕄
         apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
-    . rfl
+  case store𝕄 Hstore𝕄 => nomatch Hstore𝕄
   case reflect P E e HP HE Hlc =>
     generalize HEqlvl : Γ.length = lvl
     rw [HEqlvl] at HP
     cases HP
     case hole =>
-      exists ∅; constructor
-      . apply preservation_reflect
+      exists [], ∅; constructor
+      . apply HwellStore
+      . simp; apply preservation_reflect
         apply HE; apply Hτ
-      . rfl
     case consℚ HQ =>
-      exists φ₀; constructor
+      exists [], φ₀; constructor
+      . apply HwellStore
       . cases Hτ
         all_goals
           next Hτ =>
-          constructor
+          simp; constructor
           apply preservationℚ
           apply HEqlvl; apply HQ; apply HE; apply Hlc; apply Hτ
-      . rfl
 
 theorem preservation :
-  ∀ σ e₀ e₁ τ φ₀,
-    step e₀ e₁ →
-    typing_reification [] σ e₀ τ φ₀ →
-    ∃ φ₁,
-      typing_reification [] σ e₁ τ φ₁ ∧ φ₁ ≤ φ₀ :=
+  ∀ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
+    step (st₀, e₀) (st₁, e₁) →
+    well_store σ₀ st₀ →
+    typing_reification [] σ₀ e₀ τ φ₀ →
+    ∃ σ₁ φ₁,
+      well_store (σ₁ ++ σ₀) st₁ ∧
+      typing_reification [] (σ₁ ++ σ₀) e₁ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
   by
-  intros σ e₀ e₁ τ φ₀ Hstep
+  intros σ₀ st₀ st₁ e₀ e₁ τ φ₀ Hstep
   apply preservation_strengthened
   apply Hstep
