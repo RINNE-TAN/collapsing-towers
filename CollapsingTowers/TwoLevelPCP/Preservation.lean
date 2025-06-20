@@ -582,10 +582,11 @@ theorem preservationℝ :
       typing (Δ ++ Γ) .stat e₀ τ φ →
       typing (Δ ++ Γ) .stat e₁ τ φ
     ) →
+    (closed_at e₀ 0 → closed_at e₁ 0) →
     typing Γ .stat (R e₀) τ φ →
     typing Γ .stat (R e₁) τ φ :=
   by
-  intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
+  intros intro Γ R e₀ e₁ τ φ HR Hlc IH IHclose Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
@@ -641,20 +642,20 @@ theorem preservationℝ :
       apply Hlc
   case run =>
     cases Hτ
-    case run Hτ =>
+    case run Hclose Hτ =>
       cases Hτ with
       | pure _ _ _ Hτ =>
         apply typing.run
         apply typing_reification.pure
         rw [← List.nil_append Γ]
         apply IH; simp; apply Hτ
-        admit
+        apply IHclose; apply Hclose
       | reify _ _ _ _ Hτ =>
         apply typing.run
         apply typing_reification.reify
         rw [← List.nil_append Γ]
         apply IH; simp; apply Hτ
-        admit
+        apply IHclose; apply Hclose
 
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁ τ φ,
@@ -746,8 +747,12 @@ theorem preservation𝕄 :
     simp; apply preservationℝ
     rw [HEqlvl]; apply HR
     apply lc_ctx𝕄
-    apply HM; apply Hlc; intros _ _ _ _ IHτ
-    apply IHM; apply IHτ; simp; omega; apply Hτ
+    apply HM; apply Hlc
+    . intros _ _ _ _ IHτ
+      apply IHM; apply IHτ; simp; omega
+    . intros Hclose
+      admit
+    apply Hτ
 
 theorem pure𝔹 :
   ∀ Γ B e τ φ,
@@ -1098,8 +1103,12 @@ theorem preservationℚ :
     rw [HEqlvl]; apply HR
     apply lc_ctxℚ; apply HQ
     apply lc_ctx𝔼; apply HE
-    apply Hlc; intros _ _ _ _ IHτ
-    apply IHQ; simp; omega; apply IHτ; apply Hτ
+    apply Hlc
+    . intros _ _ _ _ IHτ
+      apply IHQ; simp; omega; apply IHτ
+    . intros Hclose
+      admit
+    apply Hτ
 
 theorem preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ₀,

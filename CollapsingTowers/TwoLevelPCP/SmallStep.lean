@@ -279,12 +279,7 @@ theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀⟧ x
   | hole => apply He₁
   | cons𝔹 _ _ HB _ IH =>
     simp; apply closed_at𝔹; apply HB; apply He₀
-    apply IH; cases HB <;> simp at He₀
-    repeat
-      first
-      | apply He₀.left
-      | apply He₀.right
-      | apply He₀
+    apply IH; apply closed_at_decompose𝔹; apply HB; apply He₀
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E → open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by
@@ -342,6 +337,8 @@ inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
   | multi : ∀ e₁ e₂ e₃, stepn e₁ e₂ → step e₂ e₃ → stepn e₁ e₃
 
+-- properties of step
+
 theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl (B e₀) e₂ :=
   by
   intros lvl B e₀ e₁ HB Hstep
@@ -386,3 +383,15 @@ theorem stepℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → step_lvl (lv
       apply step_lvl.reflect
       apply ctxℙ.consℚ; apply ctxℚ.consℝ
       apply HR; apply HQ; apply HE; apply Hlc
+
+theorem head𝕄_fv : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+  by
+  intros e₀ e₁ Hhead
+  cases Hhead <;> simp
+  case lets =>
+    apply fv_opening
+  case app₁ =>
+    rw [Set.union_comm]
+    apply fv_opening
+  case lift_lam =>
+    rw [← maping𝕔_fv]

@@ -1,6 +1,6 @@
 
+import Mathlib.Data.Set.Insert
 import CollapsingTowers.TwoLevelPCP.Syntax
-
 -- Definitions
 @[simp]
 def subst (x : ℕ) (v : Expr) : Expr → Expr
@@ -401,7 +401,7 @@ lemma open_closedb': ∀ t n m,
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
-theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e) x :=
+lemma close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e) x :=
   by
   intros e x i
   induction e generalizing i with
@@ -428,7 +428,7 @@ theorem close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x
     apply IH₁; apply Hclose.right
   | lit₁ => simp
 
-theorem open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → closed_at (opening i v e) x :=
+lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → closed_at (opening i v e) x :=
   by
   intros x e v i He Hv
   induction e generalizing i with
@@ -455,7 +455,7 @@ theorem open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → clo
     apply IH₀; apply He.left
     apply IH₁; apply He.right
 
-theorem open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) e) (x + 1) :=
+lemma open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) e) (x + 1) :=
   by
   intros e x i
   induction e generalizing i with
@@ -482,7 +482,7 @@ theorem open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x
     apply IH₁; apply Hclose.right
   | lit₁ => simp
 
-theorem close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (closing j x e) i :=
+lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (closing j x e) i :=
   by
   intros e x i j Hlt
   induction e generalizing i j with
@@ -632,7 +632,7 @@ lemma subst_open₀_comm : ∀ x y e v, x ≠ y → lc v → subst x v (open₀ 
 
 example : map𝕔₀ (.app₁ (.bvar 0) (.lam₁ (.bvar 1))) = .app₁ (.code (.bvar 0)) (.lam₁ (.code (.bvar 1))) := by simp
 
-theorem maping𝕔_intro :
+lemma maping𝕔_intro :
     ∀ x e i, closed_at e x → closing i x (subst x (.code (.fvar x)) (opening i (.fvar x) e)) = maping𝕔 e i :=
   by
   intros x e i Hclosed
@@ -655,13 +655,13 @@ theorem maping𝕔_intro :
     simp at *; constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
   | lit₁ => simp
 
-theorem map𝕔₀_intro : ∀ x e, closed_at e x → close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=
+lemma map𝕔₀_intro : ∀ x e, closed_at e x → close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=
   by
   intro _ _ Hclose
   apply maping𝕔_intro
   apply Hclose
 
-theorem maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e i) x :=
+lemma maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e i) x :=
   by
   intros x e i He
   induction e generalizing i with
@@ -687,3 +687,130 @@ theorem maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e
     constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
+
+lemma fv_if_closed_at :
+  ∀ x y e,
+    closed_at e x →
+    y ≥ x →
+    y ∉ fv e :=
+  by
+  intros x y e Hclose HGe HIn
+  induction e with
+  | bvar => nomatch HIn
+  | fvar z =>
+    simp at *
+    omega
+  | lit₁ => nomatch HIn
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH; apply Hclose; apply HIn
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    cases HIn
+    case inl H₀ =>
+      apply IH₀; apply Hclose.left; apply H₀
+    case inr H₁ =>
+      apply IH₁; apply Hclose.right; apply H₁
+
+lemma fv_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
+  by
+  intros i v e
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]
+    . rw [if_neg HEq]; simp
+  | fvar z => simp
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply Set.Subset.trans; apply IH₀
+    apply Set.union_subset_union; rfl; simp
+    apply Set.Subset.trans; apply IH₁
+    apply Set.union_subset_union; rfl; simp
+
+lemma fv_open₀ :
+  ∀ x y e,
+    x ∉ fv e →
+    x ≠ y →
+    x ∉ fv (open₀ y e) :=
+  by
+  intros x y e HNotIn HNe HIn
+  apply HNotIn
+  have H : fv (open₀ y e) ⊆ { y } ∪ fv e := by apply fv_opening
+  rw [Set.subset_def] at H
+  cases (H x HIn)
+  case inl => simp at *; omega
+  case inr => assumption
+
+lemma fv_closed_at_dec :
+  ∀ e x,
+    closed_at e (x + 1) →
+    x ∉ fv e →
+    closed_at e x :=
+  by
+  intros e x Hclose HFv
+  induction e with
+  | bvar j => simp
+  | fvar y => simp at *; omega
+  | lit₁ => simp
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH =>
+    apply IH; apply Hclose; apply HFv
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp at HFv; constructor
+    apply IH₀; apply Hclose.left; apply HFv.left
+    apply IH₁; apply Hclose.right; apply HFv.right
+
+lemma maping𝕔_fv : ∀ e i, fv e = fv (maping𝕔 e i) :=
+  by
+  intros e i
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; rfl
+    . rw [if_neg HEq]; rfl
+  | fvar => rfl
+  | lit₁ => rfl
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH => apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]
