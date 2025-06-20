@@ -29,24 +29,24 @@ abbrev TEnv :=
   List (Ty × Stage)
 
 @[simp]
-def binds (x : ℕ) (τ : Ty) (𝕊 : Stage) (Γ : TEnv) :=
-  indexr x Γ = some (τ, 𝕊)
+def binds {A : Type} (x : ℕ) (a : A) (Γ : List A) :=
+  indexr x Γ = some a
 
-theorem binds_extend : ∀ Γ Δ x τ 𝕊, binds x τ 𝕊 Γ → binds x τ 𝕊 (Δ ++ Γ) :=
+theorem binds_extend : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds x a (Δ ++ Γ) :=
   by
-  intros Γ Δ x τ 𝕊 Hbinds
+  intros _ Γ Δ x a Hbinds
   induction Δ with
   | nil => apply Hbinds
   | cons head tails IHtails =>
     simp
     by_cases Hx : tails.length + Γ.length = x
-    . have Hx : x < Γ.length := by apply indexr_iff_lt.mpr; exists (τ, 𝕊)
+    . have Hx : x < Γ.length := by apply indexr_iff_lt.mpr; exists a
       omega
     . rw [if_neg Hx]; apply IHtails
 
-theorem binds_extendr : ∀ Γ Δ x τ 𝕊, binds x τ 𝕊 Γ → binds (x + Δ.length) τ 𝕊 (Γ ++ Δ) :=
+theorem binds_extendr : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds (x + Δ.length) a (Γ ++ Δ) :=
   by
-  intros Γ Δ x τ 𝕊
+  intros _ Γ Δ x a
   induction Γ with
   | nil => simp
   | cons head tails IHtails =>
@@ -56,9 +56,9 @@ theorem binds_extendr : ∀ Γ Δ x τ 𝕊, binds x τ 𝕊 Γ → binds (x + �
     . repeat rw [if_neg HEq]
       apply IHtails
 
-theorem binds_shrink : ∀ Γ Δ x τ 𝕊, x < Γ.length → binds x τ 𝕊 (Δ ++ Γ) → binds x τ 𝕊 Γ :=
+theorem binds_shrink : ∀ {A : Type} Γ Δ x (a : A), x < Γ.length → binds x a (Δ ++ Γ) → binds x a Γ :=
   by
-  intros Γ Δ x τ 𝕊 HLt
+  intros _ Γ Δ x a HLt
   induction Δ with
   | nil => simp
   | cons head tails IHtails =>
@@ -68,13 +68,13 @@ theorem binds_shrink : ∀ Γ Δ x τ 𝕊, x < Γ.length → binds x τ 𝕊 (�
     rw [if_neg HNe] at Hbinds
     apply Hbinds
 
-theorem binds_shrinkr : ∀ Γ Δ x τ 𝕊, binds (x + Δ.length) τ 𝕊 (Γ ++ Δ) → binds x τ 𝕊 Γ :=
+theorem binds_shrinkr : ∀ {A : Type} Γ Δ x (a : A), binds (x + Δ.length) a (Γ ++ Δ) → binds x a Γ :=
   by
-  intros Γ Δ x τ 𝕊
+  intros _ Γ Δ x a
   induction Γ with
   | nil =>
     simp; intro Hindexr
-    have : x + Δ.length < Δ.length := by apply indexr_iff_lt.mpr; exists (τ, 𝕊)
+    have : x + Δ.length < Δ.length := by apply indexr_iff_lt.mpr; exists a
     omega
   | cons head tails IHtails =>
     simp
@@ -99,7 +99,7 @@ theorem length_escape : ∀ Γ, Γ.length = (escape Γ).length := by
     have ⟨τ, 𝕊⟩ := head
     cases 𝕊 <;> (simp; apply IH)
 
-theorem binds_escape : ∀ Γ x τ 𝕊, binds x τ 𝕊 Γ → binds x τ .stat (escape Γ) :=
+theorem binds_escape : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, .stat) (escape Γ) :=
   by
   intros Γ x τ 𝕊
   induction Γ with

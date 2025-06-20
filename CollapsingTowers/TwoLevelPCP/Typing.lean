@@ -31,7 +31,7 @@ theorem well_binding_time_escape : ∀ 𝕊 τ, well_binding_time 𝕊 τ → we
 mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effects → Prop where
     | fvar : ∀ Γ 𝕊 x τ,
-      binds x τ 𝕊 Γ →
+      binds x (τ, 𝕊) Γ →
       well_binding_time 𝕊 τ →
       typing Γ 𝕊 (.fvar x) τ ∅
     | lam₁ : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ,
@@ -64,7 +64,7 @@ mutual
       typing Γ .stat n .nat φ →
       typing Γ .stat (.lift n) (.fragment .nat) .reify
     | code_fragment : ∀ Γ x τ,
-      binds x τ .dyn Γ →
+      binds x (τ, .dyn) Γ →
       well_binding_time .dyn τ →
       typing Γ .stat (.code (.fvar x)) (.fragment τ) ∅
     | code_rep : ∀ Γ e τ,

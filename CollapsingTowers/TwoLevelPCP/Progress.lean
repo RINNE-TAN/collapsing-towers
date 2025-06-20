@@ -2,7 +2,7 @@
 import CollapsingTowers.TwoLevelPCP.Typing
 @[simp]
 def dyn_env (Γ : TEnv) : Prop :=
-  ∀ x τ 𝕊, binds x τ 𝕊 Γ → ¬𝕊 = .stat
+  ∀ x τ 𝕊, binds x (τ, 𝕊) Γ → ¬𝕊 = .stat
 
 theorem dyn_env_extend :
   ∀ Γ τ,
