@@ -582,11 +582,11 @@ theorem preservationℝ :
       typing (Δ ++ Γ) .stat e₀ τ φ →
       typing (Δ ++ Γ) .stat e₁ τ φ
     ) →
-    (closed_at e₀ 0 → closed_at e₁ 0) →
+    fv e₁ ⊆ fv e₀ →
     typing Γ .stat (R e₀) τ φ →
     typing Γ .stat (R e₁) τ φ :=
   by
-  intros intro Γ R e₀ e₁ τ φ HR Hlc IH IHclose Hτ
+  intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hsubst Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
@@ -649,13 +649,19 @@ theorem preservationℝ :
         apply typing_reification.pure
         rw [← List.nil_append Γ]
         apply IH; simp; apply Hτ
-        apply IHclose; apply Hclose
+        rw [← fv_empty_iff_closed]
+        rw [← fv_empty_iff_closed] at Hclose
+        rw [Hclose] at Hsubst
+        simp at Hsubst; apply Hsubst
       | reify _ _ _ _ Hτ =>
         apply typing.run
         apply typing_reification.reify
         rw [← List.nil_append Γ]
         apply IH; simp; apply Hτ
-        apply IHclose; apply Hclose
+        rw [← fv_empty_iff_closed]
+        rw [← fv_empty_iff_closed] at Hclose
+        rw [Hclose] at Hsubst
+        simp at Hsubst; apply Hsubst
 
 theorem preservation𝔹 :
   ∀ Γ B e₀ e₁ τ φ,
@@ -750,8 +756,8 @@ theorem preservation𝕄 :
     apply HM; apply Hlc
     . intros _ _ _ _ IHτ
       apply IHM; apply IHτ; simp; omega
-    . intros Hclose
-      admit
+    . apply fv_at𝕄; apply HM
+      apply fv_head𝕄; apply Hhead𝕄
     apply Hτ
 
 theorem pure𝔹 :
@@ -1106,8 +1112,11 @@ theorem preservationℚ :
     apply Hlc
     . intros _ _ _ _ IHτ
       apply IHQ; simp; omega; apply IHτ
-    . intros Hclose
-      admit
+    . apply fv_atℚ; apply HQ
+      simp; constructor
+      have H : fv e = fv (.reflect e) := rfl; rw [H]
+      apply fv_decompose𝔼; apply HE
+      apply fv_at𝔼; apply HE; simp
     apply Hτ
 
 theorem preservation_strengthened :

@@ -202,10 +202,31 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x
     constructor; apply He₀.left; apply He₁
   | lift => apply He₁
 
+theorem fv_at𝔹 :
+  ∀ B e₀ e₁,
+    ctx𝔹 B →
+    fv e₁ ⊆ fv e₀ →
+    fv B⟦e₁⟧ ⊆ fv B⟦e₀⟧ :=
+  by
+  intros B e₀ e₁ HB Hsubst
+  cases HB with
+  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+    apply Set.union_subset_union
+    apply Hsubst; rfl
+  | appr₁| appr₂| plusr₁| plusr₂ =>
+    apply Set.union_subset_union
+    rfl; apply Hsubst
+  | lift => apply Hsubst
+
+theorem fv_decompose𝔹 : ∀ B e, ctx𝔹 B → fv e ⊆ fv B⟦e⟧ :=
+  by
+  intros _ _ HB
+  cases HB <;> simp
+
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
   intros B e x HB
-  induction HB with
+  cases HB with
   | appl₁ _ IH
   | appl₂ _ IH
   | plusl₁ _ IH
@@ -232,7 +253,7 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x �
 theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → closedb_at e n → closedb_at R⟦e⟧ n :=
   by
   intros _ _ _ _ _ HR Hlc
-  induction HR with
+  cases HR with
   | lam𝕔 =>
     apply close_closedb; omega
     apply closedb_inc; apply Hlc; omega
@@ -244,6 +265,27 @@ theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → closedb_at e n �
   | run =>
     apply Hlc
 
+theorem fv_atℝ :
+  ∀ intro lvl R e₀ e₁,
+    ctxℝ intro lvl R →
+    fv e₁ ⊆ fv e₀ →
+    fv R⟦e₁⟧ ⊆ fv R⟦e₀⟧ :=
+  by
+  intros intro lvl R e₀ e₁ HR Hsubst
+  cases HR with
+  | lam𝕔 =>
+    simp
+    rw [fv_closing, fv_closing]
+    apply Set.diff_subset_diff_left
+    apply Hsubst
+  | let𝕔 =>
+    simp
+    rw [fv_closing, fv_closing]
+    apply Set.subset_union_of_subset_right
+    apply Set.diff_subset_diff_left
+    apply Hsubst
+  | run => apply Hsubst
+
 -- properties of 𝕄 contexts
 
 theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M → closedb_at e n → closedb_at M⟦e⟧ n :=
@@ -253,6 +295,22 @@ theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M → closedb_at e n → closedb
   | hole => apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
+
+theorem fv_at𝕄 :
+  ∀ lvl M e₀ e₁,
+    ctx𝕄 lvl M →
+    fv e₁ ⊆ fv e₀ →
+    fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ :=
+  by
+  intros lvl M e₀ e₁ HM Hsubst
+  induction HM with
+  | hole => apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv_at𝔹
+    apply HB; apply IH
+  | consℝ _ _ HR _ IH =>
+    simp; apply fv_atℝ
+    apply HR; apply IH
 
 -- properties of 𝔼 contexts
 
@@ -280,6 +338,28 @@ theorem closed_at𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀⟧ x
   | cons𝔹 _ _ HB _ IH =>
     simp; apply closed_at𝔹; apply HB; apply He₀
     apply IH; apply closed_at_decompose𝔹; apply HB; apply He₀
+
+theorem fv_at𝔼 :
+  ∀ E e₀ e₁,
+    ctx𝔼 E →
+    fv e₁ ⊆ fv e₀ →
+    fv E⟦e₁⟧ ⊆ fv E⟦e₀⟧ :=
+  by
+  intros E e₀ e₁ HE Hsubst
+  induction HE with
+  | hole => apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv_at𝔹
+    apply HB; apply IH
+
+theorem fv_decompose𝔼 : ∀ E e, ctx𝔼 E → fv e ⊆ fv E⟦e⟧ :=
+  by
+  intros _ _ HE
+  induction HE with
+  | hole => rfl
+  | cons𝔹 _ _ HB _ IH =>
+    apply Set.Subset.trans; apply IH
+    apply fv_decompose𝔹; apply HB
 
 theorem open_ctx𝔼_map : ∀ E e x, ctx𝔼 E → open₀ x E⟦e⟧ = E⟦open₀ x e⟧ :=
   by
@@ -312,6 +392,24 @@ theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q → closedb_at e n → closedb_a
   | holeℝ _ HR => apply lc_ctxℝ; apply HR; apply Hlc
   | cons𝔹 _ _ HB _ IHlc => simp; apply lc_ctx𝔹; apply HB; apply IHlc
   | consℝ _ _ HR _ IHlc => simp; apply lc_ctxℝ; apply HR; apply IHlc
+
+theorem fv_atℚ :
+  ∀ lvl Q e₀ e₁,
+    ctxℚ lvl Q →
+    fv e₁ ⊆ fv e₀ →
+    fv Q⟦e₁⟧ ⊆ fv Q⟦e₀⟧ :=
+  by
+  intros lvl Q e₀ e₁ HQ Hsubst
+  induction HQ with
+  | holeℝ _ HR =>
+    apply fv_atℝ
+    apply HR; apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv_at𝔹
+    apply HB; apply IH
+  | consℝ _ _ HR _ IH =>
+    simp; apply fv_atℝ
+    apply HR; apply IH
 
 inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
@@ -384,7 +482,7 @@ theorem stepℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → step_lvl (lv
       apply ctxℙ.consℚ; apply ctxℚ.consℝ
       apply HR; apply HQ; apply HE; apply Hlc
 
-theorem head𝕄_fv : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+theorem fv_head𝕄 : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
   intros e₀ e₁ Hhead
   cases Hhead <;> simp
@@ -394,4 +492,4 @@ theorem head𝕄_fv : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ 
     rw [Set.union_comm]
     apply fv_opening
   case lift_lam =>
-    rw [← maping𝕔_fv]
+    rw [← fv_maping𝕔]

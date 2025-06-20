@@ -791,7 +791,7 @@ lemma fv_closed_at_dec :
     apply IH₀; apply Hclose.left; apply HFv.left
     apply IH₁; apply Hclose.right; apply HFv.right
 
-lemma maping𝕔_fv : ∀ e i, fv e = fv (maping𝕔 e i) :=
+lemma fv_maping𝕔 : ∀ e i, fv e = fv (maping𝕔 e i) :=
   by
   intros e i
   induction e generalizing i with
@@ -814,3 +814,62 @@ lemma maping𝕔_fv : ∀ e i, fv e = fv (maping𝕔 e i) :=
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
+
+lemma fv_empty_iff_closed : ∀ e, fv e = ∅ ↔ closed_at e 0 :=
+  by
+  intro e
+  induction e with
+  | bvar => simp
+  | fvar => simp
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    . intro HFv; simp at HFv
+      constructor
+      apply IH₀.mp; apply HFv.left
+      apply IH₁.mp; apply HFv.right
+    . intro Hclose
+      simp; constructor
+      apply IH₀.mpr; apply Hclose.left
+      apply IH₁.mpr; apply Hclose.right
+
+lemma fv_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
+  by
+  intros i x e
+  induction e generalizing i with
+  | bvar => simp
+  | fvar y =>
+    simp; by_cases HEq : x = y
+    . rw [if_pos HEq]
+      rw [HEq]; simp
+    . rw [if_neg HEq]
+      rw [Set.diff_singleton_eq_self]
+      rfl; apply HEq
+  | lit₁ => simp
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]
+    rw [Set.union_diff_distrib]
