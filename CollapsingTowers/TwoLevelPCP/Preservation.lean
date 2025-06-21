@@ -222,6 +222,10 @@ theorem preservation_subst_strengthened :
     intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.load₁
     apply IH; apply HEqΓ; apply Hτv
+  case alloc₁ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.alloc₁
+    apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -430,6 +434,10 @@ theorem preservation_maping_strengthened :
   case load₁ =>
     intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.load₁
+    apply IH; apply HEqΓ; apply Hτv
+  case alloc₁ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.alloc₁
     apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
@@ -752,6 +760,11 @@ theorem preservation𝔹 :
     case load₁ IHe =>
       apply typing.load₁
       apply IH; apply IHe
+  case alloc₁ =>
+    cases Hτ
+    case alloc₁ IHe =>
+      apply typing.alloc₁
+      apply IH; apply IHe
 
 theorem preservation_step𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -842,6 +855,11 @@ theorem pure𝔹 :
   case load₁ =>
     cases Hτ
     case load₁ IHe =>
+      cases φ <;> try contradiction
+      constructor; apply IHe
+  case alloc₁ =>
+    cases Hτ
+    case alloc₁ IHe =>
       cases φ <;> try contradiction
       constructor; apply IHe
 
@@ -1053,6 +1071,17 @@ theorem decompose𝔼 :
           intros e φ Δ He
           apply typing.load₁
           apply IH; apply He
+    case alloc₁ =>
+      cases Hτ
+      case alloc₁ HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, φ𝔼
+        constructor
+        . rw [HEqφ]
+        . constructor; apply He
+          intros e φ Δ He
+          apply typing.alloc₁
+          apply IH; apply He
 
 theorem preservation_reflect :
   ∀ Γ σ E e τ φ,
@@ -1179,7 +1208,7 @@ theorem preservation_strengthened :
         simp; constructor
         apply preservation_step𝕄
         apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
-  case store𝕄 Hstore𝕄 => admit
+  case store𝕄 HM Hlc Hstore𝕄 => admit
   case reflect P E e HP HE Hlc =>
     generalize HEqlvl : Γ.length = lvl
     rw [HEqlvl] at HP

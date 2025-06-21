@@ -276,6 +276,18 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₁; apply Hstep
+  case alloc₁ =>
+    intros _ σ _ v _ H IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      exists v :: st₀, .loc st₀.length
+      apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
+      simp; apply typing_regular; apply H
+      apply shead𝕄.alloc₁; apply Hvalue
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.alloc₁; apply Hstep
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

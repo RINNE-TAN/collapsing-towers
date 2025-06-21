@@ -102,6 +102,9 @@ mutual
     | load₁ : ∀ Γ σ 𝕊 e φ,
       typing Γ σ 𝕊 e (.ref .nat) φ →
       typing Γ σ 𝕊 (.load₁ e) .nat φ
+    | alloc₁ : ∀ Γ σ 𝕊 e φ,
+      typing Γ σ 𝕊 e .nat φ →
+      typing Γ σ 𝕊 (.alloc₁ e) (.ref .nat) φ
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -258,6 +261,13 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     . apply HwellBinds₂
     . rw [Hφ₁, Hφ₂]; rfl
   case load₁ =>
+    intros _ _ _ _ _ _ IH HEq𝕊
+    rw [← HEq𝕊]
+    have ⟨HwellBinds, Hφ⟩ := IH HEq𝕊
+    constructor
+    . simp
+    . apply Hφ
+  case alloc₁ =>
     intros _ _ _ _ _ _ IH HEq𝕊
     rw [← HEq𝕊]
     have ⟨HwellBinds, Hφ⟩ := IH HEq𝕊
@@ -465,6 +475,10 @@ theorem typing_shrink_strengthened :
     intros _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.load₁
     apply IH; apply HEqΓ; apply HcloseΔ
+  case alloc₁ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    apply typing.alloc₁
+    apply IH; apply HEqΓ; apply HcloseΔ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -628,6 +642,10 @@ theorem weakening_strengthened :
     intros _ _ _ _ _ _ IH Ψ HEqΓ
     apply typing.load₁
     apply IH; apply HEqΓ
+  case alloc₁ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.alloc₁
+    apply IH; apply HEqΓ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure
@@ -701,6 +719,10 @@ theorem typing_escape_strengthened :
   case load₁ =>
     intros _ _ _ _ _ _ IH HEq𝕊
     apply typing.load₁
+    apply IH; apply HEq𝕊
+  case alloc₁ =>
+    intros _ _ _ _ _ _ IH HEq𝕊
+    apply typing.alloc₁
     apply IH; apply HEq𝕊
   case pure => simp
   case reify => simp
