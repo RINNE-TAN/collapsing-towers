@@ -15,6 +15,7 @@ inductive value : Expr → Prop where
   | lam₁ : ∀ e, lc (.lam₁ e) → value (.lam₁ e)
   | lit₁ : ∀ n, value (.lit₁ n)
   | code : ∀ e, lc e → value (.code e)
+  | loc : ∀ l, value (.loc l)
 
 inductive ctx𝔹 : Ctx → Prop where
   | appl₁ : ∀ arg, lc arg → ctx𝔹 (fun X => .app₁ X arg)
@@ -160,6 +161,7 @@ theorem value_lc : ∀ e, value e → lc e := by
   | lam₁ _ Hclose => apply Hclose
   | lit₁ => constructor
   | code _ Hclose => apply Hclose
+  | loc => constructor
 
 -- properties of 𝔹 contexts
 

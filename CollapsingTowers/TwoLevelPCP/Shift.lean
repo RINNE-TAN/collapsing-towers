@@ -19,6 +19,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (shiftl_at x n e)
   | .lets b e => .lets (shiftl_at x n b) (shiftl_at x n e)
   | .let𝕔 b e => .let𝕔 (shiftl_at x n b) (shiftl_at x n e)
+  | .loc l => .loc l
 
 @[simp]
 def shiftr_at (x : ℕ) : Expr → Expr
@@ -37,6 +38,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (shiftr_at x e)
   | .lets b e => .lets (shiftr_at x b) (shiftr_at x e)
   | .let𝕔 b e => .let𝕔 (shiftr_at x b) (shiftr_at x e)
+  | .loc l => .loc l
 
 theorem shiftl_opening_comm :
     ∀ x y e n i, x ≤ y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
@@ -58,7 +60,7 @@ theorem shiftl_opening_comm :
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -89,7 +91,7 @@ theorem shiftl_closed_at :
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -114,7 +116,7 @@ theorem shiftl_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -143,7 +145,7 @@ theorem shiftr_opening_comm :
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -175,7 +177,7 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -202,7 +204,7 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -227,7 +229,7 @@ theorem shiftr_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH

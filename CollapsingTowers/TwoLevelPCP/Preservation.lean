@@ -214,6 +214,10 @@ theorem preservation_subst_strengthened :
     rw [subst_closed_id]
     apply closed_inc; apply Hclose; omega
     apply closed_inc; apply Hclose; omega
+  case loc =>
+    intros _ _ _ HbindsLoc Δ HEqΓ Hτv
+    apply typing.loc
+    apply HbindsLoc
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -415,6 +419,10 @@ theorem preservation_maping_strengthened :
     apply IH; apply HEqΓ; apply Hτv
     rw [subst_closed_id]; apply Hclose
     apply closed_inc; apply Hclose; omega
+  case loc =>
+    intros _ _ _ HbindsLoc Δ HEqΓ Hτv
+    apply typing.loc
+    apply HbindsLoc
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure

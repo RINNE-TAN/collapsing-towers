@@ -249,6 +249,7 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       constructor
       apply stepℝ _ _ _ _ _ _ _ ctxℝ.run; apply Hstep
+  case loc => intros; left; constructor
   case pure =>
     intros _ _ _ _ _ IH HDyn
     apply IH; apply HDyn; rfl

@@ -19,6 +19,7 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (subst x v e)
   | .lets b e => .lets (subst x v b) (subst x v e)
   | .let𝕔 b e => .let𝕔 (subst x v b) (subst x v e)
+  | .loc l => .loc l
 
 -- opening i t1 t2 = [i → t1]t2
 @[simp]
@@ -38,6 +39,7 @@ def opening (i : ℕ) (x : Expr) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (opening (i + 1) x e)
   | .lets b e => .lets (opening i x b) (opening (i + 1) x e)
   | .let𝕔 b e => .let𝕔 (opening i x b) (opening (i + 1) x e)
+  | .loc l => .loc l
 
 @[simp]
 def open₀ (x : ℕ) : Expr → Expr :=
@@ -64,6 +66,7 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (closing (i + 1) x e)
   | .lets b e => .lets (closing i x b) (closing (i + 1) x e)
   | .let𝕔 b e => .let𝕔 (closing i x b) (closing (i + 1) x e)
+  | .loc l => .loc l
 
 @[simp]
 def close₀ : ℕ → Expr → Expr :=
@@ -88,6 +91,7 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   | .lam𝕔 e => closed_at e f
   | .lets b e => closed_at b f ∧ closed_at e f
   | .let𝕔 b e => closed_at b f ∧ closed_at e f
+  | .loc _ => true
 
 -- closedness condition for bound variables
 @[simp]
@@ -108,6 +112,7 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .lam𝕔 e => closedb_at e (b + 1)
   | .lets e1 e2 => closedb_at e1 b ∧ closedb_at e2 (b + 1)
   | .let𝕔 e1 e2 => closedb_at e1 b ∧ closedb_at e2 (b + 1)
+  | .loc _ => true
 
 @[simp]
 def lc e := closedb_at e 0
@@ -130,6 +135,7 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .lam𝕔 e => .lam𝕔 (maping𝕔 e (i + 1))
   | .lets b e => .lets (maping𝕔 b i) (maping𝕔 e (i + 1))
   | .let𝕔 b e => .let𝕔 (maping𝕔 b i) (maping𝕔 e (i + 1))
+  | .loc l => .loc l
 
 @[simp]
 def map𝕔₀ (e : Expr) : Expr := maping𝕔 e 0
@@ -151,6 +157,7 @@ def fv : Expr → Set ℕ
   | .lam𝕔 e => fv e
   | .lets b e => fv b ∪ fv e
   | .let𝕔 b e => fv b ∪ fv e
+  | .loc _ => ∅
 
 -- Properties
 lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x) e) = opening i v e :=
@@ -179,7 +186,7 @@ lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x
     simp; constructor
     apply IH₀; apply Hclosed.left
     apply IH₁; apply Hclosed.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma subst_closed_id : ∀ x e v, closed_at e x → subst x v e = e :=
   by
@@ -206,7 +213,7 @@ lemma subst_closed_id : ∀ x e v, closed_at e x → subst x v e = e :=
     simp; constructor
     apply IHb; apply He.left
     apply IHe; apply He.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma openSubst_intro : ∀ x e v, closed_at e x → subst x v (open₀ x e) = open_subst v e :=
   by
@@ -237,7 +244,7 @@ lemma closedb_inc: ∀ t i j,
     apply And.intro
     . apply IH₀; apply Hclose.left; omega
     . apply IH₁; apply Hclose.right; omega
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   by
@@ -254,7 +261,7 @@ lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -292,7 +299,7 @@ lemma subst_closedb_at : ∀ x e v i, closedb_at v i → closedb_at e i → clos
   | reflect _ IH
   | run _ IH =>
     simp; apply IH; apply Hv; apply He
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma subst_closed_at : ∀ x e v y, closed_at v y → closed_at e y → closed_at (subst x v e) y :=
   by
@@ -320,7 +327,7 @@ lemma subst_closed_at : ∀ x e v y, closed_at v y → closed_at e y → closed_
   | reflect _ IH
   | run _ IH =>
     simp; apply IH; apply Hv; apply He
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) → closed_at (subst x v e) x :=
   by
@@ -348,7 +355,7 @@ lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) →
   | reflect _ IH
   | run _ IH =>
     simp; apply IH; apply He
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma open_closedb : ∀ t n m,
   closedb_at (opening m (.fvar n) t) m →
@@ -426,7 +433,7 @@ lemma close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e
     intro Hclose; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → closed_at (opening i v e) x :=
   by
@@ -437,7 +444,7 @@ lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → close
     . rw [if_pos HEq]; apply Hv
     . rw [if_neg HEq]; simp
   | fvar => apply He
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -480,7 +487,7 @@ lemma open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) 
     intro Hclose; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (closing j x e) i :=
   by
@@ -507,7 +514,7 @@ lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (clos
     intro Hclose; constructor
     apply IH₀; omega; apply Hclose.left
     apply IH₁; omega; apply Hclose.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma closedb_opening_id: ∀ t1 t2 n,
   closedb_at t1 n → opening n t2 t1 = t1 := by
@@ -559,7 +566,7 @@ lemma open_close_id : ∀ i e x, closedb_at e i → opening i (.fvar x) (closing
     simp; constructor
     apply IH₀; apply Hlc.left
     apply IH₁; apply Hlc.right
-  | lit₁ => rfl
+  | lit₁| loc => rfl
 
 lemma open_close_id₀ : ∀ e x, lc e → open₀ x (close₀ x e) = e := by apply open_close_id
 
@@ -588,7 +595,7 @@ lemma close_open_id : ∀ i e x, closed_at e x → closing i x (opening i (.fvar
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit₁ => rfl
+  | lit₁| loc => rfl
 
 lemma close_open_id₀ : ∀ e x, closed_at e x → close₀ x (open₀ x e) = e := by apply close_open_id
 
@@ -621,7 +628,7 @@ lemma subst_opening_comm :
   | reflect _ IH
   | run _ IH =>
     simp; apply IH; apply Hclosedb
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH =>
@@ -653,7 +660,7 @@ lemma maping𝕔_intro :
   | lets _ _ ih1 ih2
   | let𝕔 _ _ ih1 ih2 =>
     simp at *; constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
-  | lit₁ => simp
+  | lit₁| loc => simp
 
 lemma map𝕔₀_intro : ∀ x e, closed_at e x → close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=
   by
@@ -670,7 +677,7 @@ lemma maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e i
     . rw [if_pos HEq]; apply He
     . rw [if_neg HEq]; simp
   | fvar => apply He
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -700,7 +707,7 @@ lemma fv_if_closed_at :
   | fvar z =>
     simp at *
     omega
-  | lit₁ => nomatch HIn
+  | lit₁| loc => nomatch HIn
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -729,7 +736,7 @@ lemma fv_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
     . rw [if_pos HEq]
     . rw [if_neg HEq]; simp
   | fvar z => simp
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -773,7 +780,7 @@ lemma fv_closed_at_dec :
   induction e with
   | bvar j => simp
   | fvar y => simp at *; omega
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lift _ IH
   | code _ IH
   | reflect _ IH
@@ -800,7 +807,7 @@ lemma fv_maping𝕔 : ∀ e i, fv e = fv (maping𝕔 e i) :=
     . rw [if_pos HEq]; rfl
     . rw [if_neg HEq]; rfl
   | fvar => rfl
-  | lit₁ => rfl
+  | lit₁| loc => rfl
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -821,7 +828,7 @@ lemma fv_empty_iff_closed : ∀ e, fv e = ∅ ↔ closed_at e 0 :=
   induction e with
   | bvar => simp
   | fvar => simp
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -857,7 +864,7 @@ lemma fv_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
     . rw [if_neg HEq]
       rw [Set.diff_singleton_eq_self]
       rfl; apply HEq
-  | lit₁ => simp
+  | lit₁| loc => simp
   | lam₁ _ IH
   | lift _ IH
   | lam𝕔 _ IH

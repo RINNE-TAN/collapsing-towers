@@ -8,9 +8,11 @@ def well_binding_time : Stage → Ty → Prop
   | .stat, .nat => true
   | .stat, (.arrow τ𝕒 τ𝕓 _) => well_binding_time .stat τ𝕒 ∧ well_binding_time .stat τ𝕓
   | .stat, (.fragment τ) => well_binding_time .dyn τ
+  | .stat, (.ref τ) => well_binding_time .stat τ
   | .stat, _ => false
   | .dyn, .nat => true
   | .dyn, (.arrow τ𝕒 τ𝕓 φ) => φ = ∅ ∧ well_binding_time .dyn τ𝕒 ∧ well_binding_time .dyn τ𝕓
+  | .dyn, (.ref τ) => well_binding_time .dyn τ
   | .dyn, _ => false
 
 theorem well_binding_time_escape : ∀ 𝕊 τ, well_binding_time 𝕊 τ → well_binding_time .stat τ :=
@@ -27,6 +29,7 @@ theorem well_binding_time_escape : ∀ 𝕊 τ, well_binding_time 𝕊 τ → we
       apply IH₁; apply HwellBinds.right.right
     | fragment => nomatch HwellBinds
     | rep => nomatch HwellBinds
+    | ref _ IH => apply IH; apply HwellBinds
 
 mutual
   inductive typing : TEnv → SEnv → Stage → Expr → Ty → Effects → Prop where
@@ -94,6 +97,9 @@ mutual
       typing_reification Γ σ e (.rep τ) φ →
       closed_at e 0 →
       typing Γ σ .stat (.run e) τ ∅
+    | loc : ∀ Γ σ l,
+      binds l .nat σ →
+      typing Γ σ .stat (.loc l) (.ref .nat) ∅
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -103,9 +109,9 @@ end
 @[simp]
 def well_store (σ : SEnv) (st : Store) : Prop :=
   σ.length = st.length ∧
-  (∀ loc e,
-    binds loc e st →
-    binds loc .nat σ →
+  (∀ l e,
+    binds l e st →
+    binds l .nat σ →
     typing [] σ .stat e .nat ∅
   )
 
@@ -180,6 +186,7 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   case let𝕔 =>
     intros _ _ _ _ _ _ _ _ _ _ Hclose IHb _
     constructor; apply IHb; apply Hclose
+  case loc => simp
 
 theorem typing_reification_closed : ∀ Γ σ e τ φ, typing_reification Γ σ e τ φ → closed_at e Γ.length :=
   by
@@ -441,6 +448,10 @@ theorem typing_shrink_strengthened :
     apply IH; apply HEqΓ; apply HcloseΔ
     rw [shiftr_id]; apply Hclose
     apply closed_inc; apply Hclose; omega
+  case loc =>
+    intros _ _ _ HbindsLoc Ψ HEqΓ HcloseΔ
+    apply typing.loc
+    apply HbindsLoc
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -596,6 +607,10 @@ theorem weakening_strengthened :
     apply IH; apply HEqΓ
     rw [shiftl_id]; apply Hclose
     apply closed_inc; apply Hclose; omega
+  case loc =>
+    intros _ _ _ HbindsLoc Ψ HEqΓ
+    apply typing.loc
+    apply HbindsLoc
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure
