@@ -743,3 +743,7 @@ theorem typing_escape :
     apply IH
     apply typing_shrink; apply Hτ
     apply closed_inc; apply Hclose; omega
+
+theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 e τ φ → typing Γ (σ₁ ++ σ₀) 𝕊 e τ φ :=
+  by
+  admit

@@ -766,21 +766,23 @@ theorem preservation𝔹 :
       apply typing.alloc₁
       apply IH; apply IHe
 
-theorem preservation_step𝕄 :
+theorem preservation𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
     ctx𝕄 Γ.length M →
     lc e₀ →
-    head𝕄 e₀ e₁ →
+    fv e₁ ⊆ fv e₀ →
+    (∀ Γ τ φ,
+      typing Γ σ .stat e₀ τ φ →
+      typing Γ σ .stat e₁ τ φ
+    ) →
     typing Γ σ .stat (M e₀) τ φ →
     typing Γ σ .stat (M e₁) τ φ :=
   by
-  intros Γ σ M e₀ e₁ τ φ HM Hlc Hhead𝕄 Hτ
+  intros Γ σ M e₀ e₁ τ φ HM Hlc HFv IH Hτ
   generalize HEqlvl : Γ.length = lvl
   rw [HEqlvl] at HM
   induction HM generalizing τ φ Γ with
-  | hole =>
-    apply preservation_head𝕄
-    apply Hhead𝕄; apply Hlc; apply Hτ
+  | hole => apply IH; apply Hτ
   | cons𝔹 _ _ HB _ IHM =>
     simp; apply preservation𝔹
     apply HB; intros _ _ IHτ
@@ -793,7 +795,7 @@ theorem preservation_step𝕄 :
     . intros _ _ _ _ IHτ
       apply IHM; apply IHτ; simp; omega
     . apply fv_at𝕄; apply HM
-      apply fv_head𝕄; apply Hhead𝕄
+      apply HFv
     apply Hτ
 
 theorem pure𝔹 :
@@ -1206,9 +1208,41 @@ theorem preservation_strengthened :
       all_goals
         next Hτ =>
         simp; constructor
-        apply preservation_step𝕄
-        apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
-  case store𝕄 HM Hlc Hstore𝕄 => admit
+        apply preservation𝕄
+        apply HM; apply Hlc
+        apply fv_head𝕄; apply Hhead𝕄; intros _ _ _
+        apply preservation_head𝕄; apply Hhead𝕄; apply Hlc
+        apply Hτ
+  case store𝕄 HM Hlc Hstore𝕄 =>
+    cases Hstore𝕄
+    case load₁ l HbindsLocST =>
+      have HbindsLoc : ∃ τ, binds l τ σ₀ :=
+        by
+        apply indexr_iff_lt.mp; rw [HwellStore.left]
+        apply indexr_iff_lt.mpr; constructor
+        apply HbindsLocST
+      have ⟨_, HbindsLoc⟩ := HbindsLoc
+      exists [], φ₀; constructor
+      . apply HwellStore
+      . cases Hτ
+        all_goals
+          next Hτ =>
+          simp; constructor
+          apply preservation𝕄; apply HM; apply Hlc
+          . simp; rw [fv_empty_iff_closed, ← List.length_nil]
+            apply typing_closed; apply HwellStore.right
+            apply HbindsLocST
+            apply HbindsLoc
+          . intros Γ _ _ Hτ
+            cases Hτ with
+            | load₁ _ _ _ _ _ _ Hτ =>
+              cases Hτ with
+              | loc _ _ _ _ HbindsLoc =>
+                rw [← List.append_nil Γ]
+                apply weakening; apply HwellStore.right
+                apply HbindsLocST; apply HbindsLoc
+          apply Hτ
+    case alloc₁ => admit
   case reflect P E e HP HE Hlc =>
     generalize HEqlvl : Γ.length = lvl
     rw [HEqlvl] at HP
