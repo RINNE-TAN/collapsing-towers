@@ -218,6 +218,10 @@ theorem preservation_subst_strengthened :
     intros _ _ _ HbindsLoc Δ HEqΓ Hτv
     apply typing.loc
     apply HbindsLoc
+  case load₁ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.load₁
+    apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -423,6 +427,10 @@ theorem preservation_maping_strengthened :
     intros _ _ _ HbindsLoc Δ HEqΓ Hτv
     apply typing.loc
     apply HbindsLoc
+  case load₁ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.load₁
+    apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -739,6 +747,11 @@ theorem preservation𝔹 :
       apply typing.lets
       apply IH; apply IHb; apply IHe
       apply HwellBinds; apply Hclose
+  case load₁ =>
+    cases Hτ
+    case load₁ IHe =>
+      apply typing.load₁
+      apply IH; apply IHe
 
 theorem preservation_step𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -826,6 +839,11 @@ theorem pure𝔹 :
     case lets φ₀ φ₁ HwellBinds IHb Hclose IHe =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHb
+  case load₁ =>
+    cases Hτ
+    case load₁ IHe =>
+      cases φ <;> try contradiction
+      constructor; apply IHe
 
 theorem decompose𝔼 :
   ∀ Γ σ E e τ φ,
@@ -1024,6 +1042,17 @@ theorem decompose𝔼 :
           apply weakening_strengthened; apply Hbody; rfl; rfl
           apply Hclose; apply HwellBinds
           apply closed_inc; apply Hclose; simp
+    case load₁ =>
+      cases Hτ
+      case load₁ HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, φ𝔼
+        constructor
+        . rw [HEqφ]
+        . constructor; apply He
+          intros e φ Δ He
+          apply typing.load₁
+          apply IH; apply He
 
 theorem preservation_reflect :
   ∀ Γ σ E e τ φ,
@@ -1150,7 +1179,7 @@ theorem preservation_strengthened :
         simp; constructor
         apply preservation_step𝕄
         apply HM; apply Hlc; apply Hhead𝕄; apply Hτ
-  case store𝕄 Hstore𝕄 => nomatch Hstore𝕄
+  case store𝕄 Hstore𝕄 => admit
   case reflect P E e HP HE Hlc =>
     generalize HEqlvl : Γ.length = lvl
     rw [HEqlvl] at HP

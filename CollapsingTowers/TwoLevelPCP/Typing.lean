@@ -2,7 +2,6 @@
 import CollapsingTowers.TwoLevelPCP.Syntax
 import CollapsingTowers.TwoLevelPCP.Shift
 import CollapsingTowers.TwoLevelPCP.SmallStep
-import CollapsingTowers.TwoLevelPCP.Env
 @[simp]
 def well_binding_time : Stage → Ty → Prop
   | .stat, .nat => true
@@ -100,6 +99,9 @@ mutual
     | loc : ∀ Γ σ l,
       binds l .nat σ →
       typing Γ σ .stat (.loc l) (.ref .nat) ∅
+    | load₁ : ∀ Γ σ 𝕊 e φ,
+      typing Γ σ 𝕊 e (.ref .nat) φ →
+      typing Γ σ 𝕊 (.load₁ e) .nat φ
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -255,6 +257,13 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     constructor
     . apply HwellBinds₂
     . rw [Hφ₁, Hφ₂]; rfl
+  case load₁ =>
+    intros _ _ _ _ _ _ IH HEq𝕊
+    rw [← HEq𝕊]
+    have ⟨HwellBinds, Hφ⟩ := IH HEq𝕊
+    constructor
+    . simp
+    . apply Hφ
   case pure => simp
   case reify => simp
 
@@ -452,6 +461,10 @@ theorem typing_shrink_strengthened :
     intros _ _ _ HbindsLoc Ψ HEqΓ HcloseΔ
     apply typing.loc
     apply HbindsLoc
+  case load₁ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    apply typing.load₁
+    apply IH; apply HEqΓ; apply HcloseΔ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -611,6 +624,10 @@ theorem weakening_strengthened :
     intros _ _ _ HbindsLoc Ψ HEqΓ
     apply typing.loc
     apply HbindsLoc
+  case load₁ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.load₁
+    apply IH; apply HEqΓ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure
@@ -681,6 +698,10 @@ theorem typing_escape_strengthened :
     rw [← length_escape]; apply IHe; rfl
     apply well_binding_time_escape; apply HwellBinds
     rw [← length_escape]; apply Hclose
+  case load₁ =>
+    intros _ _ _ _ _ _ IH HEq𝕊
+    apply typing.load₁
+    apply IH; apply HEq𝕊
   case pure => simp
   case reify => simp
   apply Hτ; apply HEq𝕊

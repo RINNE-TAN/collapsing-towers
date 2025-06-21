@@ -20,6 +20,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .lets b e => .lets (shiftl_at x n b) (shiftl_at x n e)
   | .let𝕔 b e => .let𝕔 (shiftl_at x n b) (shiftl_at x n e)
   | .loc l => .loc l
+  | .load₁ e => .load₁ (shiftl_at x n e)
 
 @[simp]
 def shiftr_at (x : ℕ) : Expr → Expr
@@ -39,6 +40,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .lets b e => .lets (shiftr_at x b) (shiftr_at x e)
   | .let𝕔 b e => .let𝕔 (shiftr_at x b) (shiftr_at x e)
   | .loc l => .loc l
+  | .load₁ e => .load₁ (shiftr_at x e)
 
 theorem shiftl_opening_comm :
     ∀ x y e n i, x ≤ y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
@@ -66,7 +68,8 @@ theorem shiftl_opening_comm :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH
 
 theorem shiftl_open₀_comm : ∀ x y e n, x ≤ y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
@@ -97,7 +100,8 @@ theorem shiftl_closed_at :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftl_id :
@@ -122,7 +126,8 @@ theorem shiftl_id :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH
 
 theorem shiftr_opening_comm :
@@ -151,7 +156,8 @@ theorem shiftr_opening_comm :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH
 
 theorem shiftr_open₀_comm : ∀ x y e, x < y → shiftr_at x (open₀ y e) = open₀ (y - 1) (shiftr_at x e) :=
@@ -183,7 +189,8 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x e) x :=
@@ -210,7 +217,8 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_id :
@@ -235,5 +243,6 @@ theorem shiftr_id :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | load₁ _ IH =>
     simp; apply IH

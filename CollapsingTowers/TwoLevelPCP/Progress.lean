@@ -25,25 +25,28 @@ theorem progress_strengthened :
     value e₀ ∨ ∃ st₁ e₁, step_lvl Γ.length (st₀, e₀) (st₁, e₁) :=
   by
   intros Γ σ st₀ e₀ τ φ HwellStore Hτ
+  revert HwellStore
   apply @typing_reification.rec
     (fun Γ σ 𝕊 e₀ τ φ (H : typing Γ σ 𝕊 e₀ τ φ) =>
+      well_store σ st₀ →
       dyn_env Γ →
       𝕊 = .stat →
       value e₀ ∨ ∃ st₁ e₁, step_lvl Γ.length (st₀, e₀) (st₁, e₁))
     (fun Γ σ e₀ τ φ (H : typing_reification Γ σ e₀ τ φ) =>
+      well_store σ st₀ →
       dyn_env Γ →
       value e₀ ∨ ∃ st₁ e₁, step_lvl Γ.length (st₀, e₀) (st₁, e₁))
   case fvar =>
-    intros _ _ _ x _ Hbinds HwellBinds HDyn HEq𝕊
+    intros _ _ _ x _ Hbinds HwellBinds HwellStore HDyn HEq𝕊
     exfalso; apply HDyn; apply Hbinds; apply HEq𝕊
   case lam₁ =>
-    intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HwellStore HDyn HEq𝕊
     left; constructor
     apply open_closedb; apply typing_regular; apply H
   case lift_lam =>
-    intros _ _ _ _ _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ _ H IH HwellStore HDyn HEq𝕊
     right
-    cases IH HDyn rfl with
+    cases IH HwellStore HDyn rfl with
     | inl Hvalue =>
       cases Hvalue with
       | lam₁ e Hlc =>
@@ -55,11 +58,11 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.lift; apply Hstep
   case app₁ =>
-    intros _ _ _ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
-    cases IH₀ HDyn HEq𝕊 with
+    cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
-      cases IH₁ HDyn HEq𝕊 with
+      cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
         | lam₁ e₀ Hlc₀ =>
@@ -77,11 +80,11 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.appl₁ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case app₂ =>
-    intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
-    cases IH₀ HDyn HEq𝕊 with
+    cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
-      cases IH₁ HDyn HEq𝕊 with
+      cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
         | code e₀ Hlc₀ =>
@@ -102,11 +105,11 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.appl₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case plus₁ =>
-    intros _ _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
-    cases IH₀ HDyn HEq𝕊 with
+    cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
-      cases IH₁ HDyn HEq𝕊 with
+      cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
         | lit₁ e₀ =>
@@ -126,11 +129,11 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.plusl₁ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case plus₂ =>
-    intros _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
-    cases IH₀ HDyn HEq𝕊 with
+    cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
-      cases IH₁ HDyn HEq𝕊 with
+      cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
         | code e₀ Hlc₀ =>
@@ -152,9 +155,9 @@ theorem progress_strengthened :
       apply typing_regular; apply H₁
   case lit₁ => intros; left; constructor
   case lift_lit =>
-    intros _ _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ H IH HwellStore HDyn HEq𝕊
     right
-    cases IH HDyn HEq𝕊 with
+    cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
       cases Hvalue with
       | lit₁ e =>
@@ -167,19 +170,19 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.lift; apply Hstep
   case code_fragment => intros; left; constructor; simp
   case code_rep =>
-    intros _ _ _ _ H IH HDyn HEq𝕊
+    intros _ _ _ _ H IH HwellStore HDyn HEq𝕊
     left; constructor
     apply typing_regular; apply H
   case reflect =>
-    intros _ _ e _ H _ _ _
+    intros _ _ e _ H _ _ _ _
     right; exists st₀, .let𝕔 e (.code (.bvar 0))
     apply step_lvl.reflect _ _ _ _ ctxℙ.hole ctx𝔼.hole
     apply typing_regular; apply H
   case lam𝕔 =>
-    intros Γ _ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
+    intros Γ _ e _ _ _ H HwellBinds Hclose IH HwellStore HDyn HEq𝕊
     right
     rw [← close_open_id₀ e _ Hclose]
-    cases IH (dyn_env_extend _ _ HDyn) with
+    cases IH HwellStore (dyn_env_extend _ _ HDyn) with
     | inl Hvalue =>
       generalize HEqe : open₀ Γ.length e = e𝕠
       rw [HEqe] at Hvalue H
@@ -196,9 +199,9 @@ theorem progress_strengthened :
       constructor
       apply stepℝ _ _ _ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
   case lets =>
-    intros _ _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊
+    intros _ _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
-    cases IH₀ HDyn HEq𝕊 with
+    cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
       exists st₀, open_subst e₀ e₁
       apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
@@ -211,10 +214,10 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
       apply open_closedb; apply typing_regular; apply H₁
   case let𝕔 =>
-    intros Γ _ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊
+    intros Γ _ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HwellStore HDyn HEq𝕊
     right
     rw [← close_open_id₀ e _ Hclose]
-    cases IH₁ (dyn_env_extend _ _ HDyn) with
+    cases IH₁ HwellStore (dyn_env_extend _ _ HDyn) with
     | inl Hvalue =>
       generalize HEqe : open₀ Γ.length e = e𝕠
       rw [HEqe] at Hvalue H₁
@@ -234,9 +237,9 @@ theorem progress_strengthened :
       apply stepℝ _ _ _ _ _ _ _ (ctxℝ.let𝕔 _ _); apply Hstep
       apply typing_regular; apply H₀
   case run =>
-    intros _ _ _ _ _ _ Hclose IH HDyn HEq𝕊
+    intros _ _ _ _ _ _ Hclose IH HwellStore HDyn HEq𝕊
     right
-    cases IH HDyn with
+    cases IH HwellStore HDyn with
     | inl Hvalue =>
       cases Hvalue with
       | code e Hlc =>
@@ -250,12 +253,35 @@ theorem progress_strengthened :
       constructor
       apply stepℝ _ _ _ _ _ _ _ ctxℝ.run; apply Hstep
   case loc => intros; left; constructor
+  case load₁ =>
+    intros _ σ _ _ _ H IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | loc l =>
+        cases H
+        case loc HbindsLoc =>
+          have HLt : l < σ.length :=
+            by
+            apply indexr_iff_lt.mpr
+            constructor; apply HbindsLoc
+          rw [HwellStore.left] at HLt
+          have ⟨e, HbindsLoc⟩ := indexr_iff_lt.mp HLt
+          exists st₀, e
+          apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
+          simp
+          apply shead𝕄.load₁; apply HbindsLoc
+      | _ => contradiction
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₁; apply Hstep
   case pure =>
-    intros _ _ _ _ _ IH HDyn
-    apply IH; apply HDyn; rfl
+    intros _ _ _ _ _ IH HwellStore HDyn
+    apply IH; apply HwellStore; apply HDyn; rfl
   case reify =>
-    intros _ _ _ _ _ _ IH HDyn
-    apply IH; apply HDyn; rfl
+    intros _ _ _ _ _ _ IH HwellStore HDyn
+    apply IH; apply HwellStore; apply HDyn; rfl
   apply Hτ
 
 theorem progress :

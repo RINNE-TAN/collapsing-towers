@@ -29,3 +29,4 @@ inductive Expr : Type where
   | lets (b : Expr) (e : Expr)
   | let𝕔 (b : Expr) (e : Expr)
   | loc (l : ℕ)
+  | load₁ (e : Expr)
