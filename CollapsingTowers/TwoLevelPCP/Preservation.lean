@@ -215,15 +215,15 @@ theorem preservation_subst_strengthened :
     apply closed_inc; apply Hclose; omega
     apply closed_inc; apply Hclose; omega
   case loc =>
-    intros _ _ _ HbindsLoc Δ HEqΓ Hτv
+    intros _ _ _ _ HbindsLoc Δ HEqΓ Hτv
     apply typing.loc
     apply HbindsLoc
   case load₁ =>
-    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.load₁
     apply IH; apply HEqΓ; apply Hτv
   case alloc₁ =>
-    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.alloc₁
     apply IH; apply HEqΓ; apply Hτv
   case pure =>
@@ -428,15 +428,15 @@ theorem preservation_maping_strengthened :
     rw [subst_closed_id]; apply Hclose
     apply closed_inc; apply Hclose; omega
   case loc =>
-    intros _ _ _ HbindsLoc Δ HEqΓ Hτv
+    intros _ _ _ _ HbindsLoc Δ HEqΓ Hτv
     apply typing.loc
     apply HbindsLoc
   case load₁ =>
-    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.load₁
     apply IH; apply HEqΓ; apply Hτv
   case alloc₁ =>
-    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.alloc₁
     apply IH; apply HEqΓ; apply Hτv
   case pure =>
