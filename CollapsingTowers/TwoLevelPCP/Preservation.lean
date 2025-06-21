@@ -1189,6 +1189,21 @@ theorem preservationℚ :
       apply fv_at𝔼; apply HE; simp
     apply Hτ
 
+theorem preservation_alloc :
+  ∀ Γ σ st M v τ𝕓 φ,
+    ctx𝕄 Γ.length M →
+    well_store σ st →
+    value v →
+    typing Γ σ .stat (M (.alloc₁ v)) τ𝕓 φ →
+    ∃ τ𝕒,
+      well_store (τ𝕒 :: σ) (v :: st) ∧
+      typing Γ (τ𝕒 :: σ) .stat (M (.loc st.length)) τ𝕓 φ :=
+  by
+  intros Γ σ st M v τ𝕓 φ HM HwellStore Hvalue Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  admit
+
 theorem preservation_strengthened :
   ∀ Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
     step_lvl Γ.length (st₀, e₀) (st₁, e₁) →
@@ -1216,12 +1231,11 @@ theorem preservation_strengthened :
   case store𝕄 HM Hlc Hstore𝕄 =>
     cases Hstore𝕄
     case load₁ l HbindsLocST =>
-      have HbindsLoc : ∃ τ, binds l τ σ₀ :=
+      have ⟨_, HbindsLoc⟩ : ∃ τ, binds l τ σ₀ :=
         by
         apply indexr_iff_lt.mp; rw [HwellStore.left]
         apply indexr_iff_lt.mpr; constructor
         apply HbindsLocST
-      have ⟨_, HbindsLoc⟩ := HbindsLoc
       exists [], φ₀; constructor
       . apply HwellStore
       . cases Hτ
@@ -1242,7 +1256,20 @@ theorem preservation_strengthened :
                 apply weakening; apply HwellStore.right
                 apply HbindsLocST; apply HbindsLoc
           apply Hτ
-    case alloc₁ => admit
+    case alloc₁ Hvalue =>
+      cases Hτ
+      case pure Hτ =>
+        have ⟨τ𝕒, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
+        exists [τ𝕒], ∅
+        constructor; apply HwellStore
+        constructor; apply typing_reification.pure
+        apply Hτ; rfl
+      case reify Hτ =>
+        have ⟨τ𝕒, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
+        exists [τ𝕒], φ₀
+        constructor; apply HwellStore
+        constructor; apply typing_reification.reify
+        apply Hτ; rfl
   case reflect P E e HP HE Hlc =>
     generalize HEqlvl : Γ.length = lvl
     rw [HEqlvl] at HP
