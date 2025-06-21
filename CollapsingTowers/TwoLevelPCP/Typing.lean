@@ -746,4 +746,70 @@ theorem typing_escape :
 
 theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 e τ φ → typing Γ (σ₁ ++ σ₀) 𝕊 e τ φ :=
   by
-  admit
+  intros Γ σ₀ σ₁ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ σ₀ 𝕊 e τ φ (H : typing Γ σ₀ 𝕊 e τ φ) => typing Γ (σ₁ ++ σ₀) 𝕊 e τ φ)
+      (fun Γ σ₀ e τ φ (H : typing_reification Γ σ₀ e τ φ) => typing_reification Γ (σ₁ ++ σ₀) e τ φ)
+  case fvar =>
+    intros _ _ _ x _ Hbinds HwellBinds
+    apply typing.fvar; apply Hbinds; apply HwellBinds
+  case lam₁ =>
+    intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH
+    apply typing.lam₁; apply IH; apply HwellBinds; apply Hclose
+  case lift_lam =>
+    intros _ _ _ _ _ _ _ _ IH
+    apply typing.lift_lam; apply IH
+  case lam𝕔 =>
+    intros _ _ _ _ _ _ _ HwellBinds Hclose IH
+    apply typing.lam𝕔; apply IH; apply HwellBinds; apply Hclose
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
+    apply typing.app₁; apply IHf; apply IHarg
+  case app₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHf IHarg
+    apply typing.app₂; apply IHf; apply IHarg
+  case plus₁ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr
+    apply typing.plus₁; apply IHl; apply IHr
+  case plus₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
+    apply typing.plus₂; apply IHl; apply IHr
+  case lit₁ => intros; apply typing.lit₁
+  case lift_lit =>
+    intros _ _ _ _ _ IH
+    apply typing.lift_lit; apply IH
+  case code_fragment =>
+    intros _ _ x _ Hbinds HwellBinds
+    apply typing.code_fragment; apply Hbinds; apply HwellBinds
+  case code_rep =>
+    intros _ _ _ _ _ IH
+    apply typing.code_rep; apply IH
+  case reflect =>
+    intros _ _ _ _ _ IH
+    apply typing.reflect; apply IH
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe
+    apply typing.lets; apply IHb; apply IHe; apply HwellBinds; apply Hclose
+  case let𝕔 =>
+    intros _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe
+    apply typing.let𝕔; apply IHb; apply IHe; apply HwellBinds; apply Hclose
+  case run =>
+    intros _ _ _ _ _ _ Hclose IH
+    apply typing.run; apply IH; apply Hclose
+  case loc =>
+    intros _ _ _ _ HbindsLoc
+    apply typing.loc; apply binds_extend; apply HbindsLoc
+  case load₁ =>
+    intros _ _ _ _ _ _ _ IH
+    apply typing.load₁; apply IH
+  case alloc₁ =>
+    intros _ _ _ _ _ _ _ IH
+    apply typing.alloc₁; apply IH
+  case pure =>
+    intros _ _ _ _ _ IH
+    apply typing_reification.pure; apply IH
+  case reify =>
+    intros _ _ _ _ _ _ IH
+    apply typing_reification.reify; apply IH
+  apply Hτ
