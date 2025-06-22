@@ -873,3 +873,25 @@ theorem well_store_alloc :
       intros _ _ HbindsLoc HbindsLocTy
       apply weakening1_store; apply HwellStore.right
       apply HbindsLoc; apply HbindsLocTy
+
+theorem well_store_store :
+  ∀ σ st₀ st₁ l e τ,
+    well_store σ st₀ →
+    patch l e st₀ st₁ →
+    binds l τ σ →
+    typing [] σ .stat e τ ∅ →
+    well_store σ st₁ :=
+  by
+  intros σ st₀ st₁ l₀ e₀ τ₀ HwellStore Hpatch HBindsLocTy₀ Hτ
+  constructor
+  . rw [HwellStore.left]; apply length_patch; apply Hpatch
+  . intros l₁
+    by_cases HEq : l₁ = l₀
+    . rw [HEq]
+      intros e₁ τ₁ HbindsLoc₁ HbindsTy₁
+      have HBindsLoc₀ := patch_binds _ _ _ _ Hpatch
+      rw [binds_deterministic _ _ _ _ HbindsLoc₁ HBindsLoc₀]
+      rw [binds_deterministic _ _ _ _ HbindsTy₁ HBindsLocTy₀]
+      apply Hτ
+    . intros e₁ τ₁ HbindsLoc₁; apply HwellStore.right
+      apply patch_binds_ne; apply Hpatch; omega; apply HbindsLoc₁

@@ -121,6 +121,103 @@ theorem binds_shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) 
     . repeat rw [if_neg HEq]
       apply IHtails
 
+theorem binds_deterministic :
+  ∀ {α : Type} x (a b : α) l,
+    binds x a l →
+    binds x b l →
+    a = b :=
+  by
+  intros _ x a b l Hbinds₀ Hbinds₁
+  simp at Hbinds₀ Hbinds₁
+  simp [Hbinds₀] at Hbinds₁
+  assumption
+
+theorem length_patch :
+  ∀ {α : Type} x (a : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    l₀.length = l₁.length :=
+  by
+  intro _ x a l₀ l₁ Hpatch
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEq : tails₀.length = x
+    . simp [if_pos HEq] at Hpatch
+      rw [← Hpatch]; rfl
+    . simp [if_neg HEq] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₁ =>
+        simp [HEq] at Hpatch; simp [← Hpatch]
+        apply IHtails; apply HEq
+
+theorem patch_binds :
+  ∀ {α : Type} x (a : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    binds x a l₁ :=
+  by
+  intros _ x a l₀ l₁ Hpatch
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEqx : tails₀.length = x
+    . simp [if_pos HEqx] at Hpatch
+      rw [← Hpatch, ← HEqx]; simp
+    . simp [if_neg HEqx] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₁ =>
+        simp [HEq] at Hpatch; simp [← Hpatch]
+        rw [← (length_patch _ _ _ _ HEq), if_neg HEqx]
+        apply IHtails; apply HEq
+
+theorem patch_binds_ne :
+  ∀ {α : Type} x y (a b : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    x ≠ y →
+    binds y b l₁ →
+    binds y b l₀ :=
+  by
+  intros _ x y a b l₀ l₁ Hpatch HNe Hbinds
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEqx : tails₀.length = x
+    . simp [if_pos HEqx] at Hpatch
+      cases l₁ with
+      | nil => nomatch Hpatch
+      | cons head₁ tails₁ =>
+        simp at Hpatch
+        rw [← Hpatch.right] at Hbinds
+        simp; rw [HEqx, if_neg HNe]
+        simp at Hbinds; rw [HEqx, if_neg HNe] at Hbinds
+        apply Hbinds
+    . simp [if_neg HEqx] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₀ =>
+        simp [HEq] at Hpatch
+        cases l₁ with
+        | nil => nomatch Hpatch
+        | cons head₁ tails₁ =>
+          simp at Hpatch
+          rw [← Hpatch.right, ← Hpatch.left] at Hbinds
+          simp; simp at Hbinds
+          rw [length_patch _ _ _ _ HEq]
+          by_cases HEqy : tails₀.length = y
+          . rw [if_pos HEqy]
+            rw [if_pos HEqy] at Hbinds
+            apply Hbinds
+          . rw [if_neg HEqy]
+            rw [if_neg HEqy] at Hbinds
+            apply IHtails; apply HEq; apply Hbinds
+
 abbrev TEnv :=
   List (Ty × Stage)
 

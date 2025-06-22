@@ -1601,7 +1601,8 @@ theorem preservation_strengthened :
         apply Hτ; rfl
     case store₁ Hvalue Hpatch =>
       exists [], φ₀; constructor
-      . admit
+      . apply well_store_store; apply HwellStore
+        all_goals admit
       . cases Hτ
         all_goals
           next Hτ =>
