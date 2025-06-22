@@ -813,3 +813,27 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
     intros _ _ _ _ _ _ IH
     apply typing_reification.reify; apply IH
   apply Hτ
+
+theorem weakening1_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 e τ φ → typing Γ (σ₁ :: σ₀) 𝕊 e τ φ :=
+  by
+  intros Γ σ₀ σ₁; rw [← List.singleton_append]
+  apply weakening_store
+
+theorem well_store_extend :
+  ∀ σ st e τ,
+    well_store σ st →
+    typing [] σ .stat e τ ∅ →
+    well_store (τ :: σ) (e :: st) :=
+  by
+  intros σ st e τ HwellStore Hτ
+  constructor
+  . simp; apply HwellStore.left
+  . intros l
+    simp; rw [HwellStore.left]
+    by_cases HEq : st.length = l
+    . repeat rw [if_pos HEq]; simp
+      apply weakening1_store; apply Hτ
+    . repeat rw [if_neg HEq]
+      intros _ _ HbindsLoc HbindsLocTy
+      apply weakening1_store; apply HwellStore.right
+      apply HbindsLoc; apply HbindsLocTy

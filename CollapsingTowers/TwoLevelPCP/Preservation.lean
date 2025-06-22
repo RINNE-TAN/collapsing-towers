@@ -1116,15 +1116,16 @@ theorem preservation_reflect :
       apply typing_closed; apply Hτ; simp
 
 theorem preservationℚ :
-  ∀ Γ σ lvl Q E e τ φ,
-    Γ.length = lvl →
-    ctxℚ lvl Q →
+  ∀ Γ σ Q E e τ φ,
+    ctxℚ Γ.length Q →
     ctx𝔼 E →
     lc e →
     typing Γ σ .stat (Q (E (.reflect e))) τ φ →
     typing Γ σ .stat (Q (.let𝕔 e (E (.code (.bvar 0))))) τ φ :=
   by
-  intros Γ σ lvl Q E e τ φ HEqlvl HQ HE Hlc Hτ
+  intros Γ σ Q E e τ φ HQ HE Hlc Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HQ
   induction HQ generalizing τ φ Γ with
   | holeℝ _ HR =>
     cases HR
@@ -1173,7 +1174,7 @@ theorem preservationℚ :
   | cons𝔹 _ _ HB _ IHQ =>
     simp; apply preservation𝔹
     apply HB; intros _ _ IHτ
-    apply IHQ; apply HEqlvl; apply IHτ; apply Hτ
+    apply IHQ; apply IHτ; apply HEqlvl; apply Hτ
   | consℝ R Q HR HQ IHQ =>
     simp; apply preservationℝ _ _ _ _ (Q (E (.reflect e)))
     rw [HEqlvl]; apply HR
@@ -1181,7 +1182,7 @@ theorem preservationℚ :
     apply lc_ctx𝔼; apply HE
     apply Hlc
     . intros _ _ _ _ IHτ
-      apply IHQ; simp; omega; apply IHτ
+      apply IHQ; apply IHτ; simp; omega;
     . apply fv_atℚ; apply HQ
       simp; constructor
       have H : fv e = fv (.reflect e) := rfl; rw [H]
@@ -1189,20 +1190,34 @@ theorem preservationℚ :
       apply fv_at𝔼; apply HE; simp
     apply Hτ
 
-theorem preservation_alloc :
-  ∀ Γ σ st M v τ𝕓 φ,
+theorem decompose𝕄 :
+  ∀ Γ σ₀ M v τ φ,
     ctx𝕄 Γ.length M →
-    well_store σ st →
     value v →
-    typing Γ σ .stat (M (.alloc₁ v)) τ𝕓 φ →
-    ∃ τ𝕒,
-      well_store (τ𝕒 :: σ) (v :: st) ∧
-      typing Γ (τ𝕒 :: σ) .stat (M (.loc st.length)) τ𝕓 φ :=
+    typing Γ σ₀ .stat (M (.alloc₁ v)) τ φ →
+    typing [] σ₀ .stat v .nat ∅ ∧
+    ∀ σ₁ loc,
+      typing [] (σ₁ ++ σ₀) .stat loc (.ref .nat) ∅ →
+      typing Γ (σ₁ ++ σ₀) .stat (M loc) τ φ :=
   by
-  intros Γ σ st M v τ𝕓 φ HM HwellStore Hvalue Hτ
-  generalize HEqlvl : Γ.length = lvl
-  rw [HEqlvl] at HM
   admit
+
+theorem preservation_alloc :
+  ∀ Γ σ₀ st M v τ𝕓 φ,
+    ctx𝕄 Γ.length M →
+    well_store σ₀ st →
+    value v →
+    typing Γ σ₀ .stat (M (.alloc₁ v)) τ𝕓 φ →
+    ∃ σ₁,
+      well_store (σ₁ ++ σ₀) (v :: st) ∧
+      typing Γ (σ₁ ++ σ₀) .stat (M (.loc st.length)) τ𝕓 φ :=
+  by
+  intros Γ σ₀ st M v τ𝕓 φ HM HwellStore Hvalue Hτ
+  rw [← HwellStore.left]
+  have ⟨Hτv, IH⟩ := decompose𝕄 _ _ _ _ _ _ HM Hvalue Hτ
+  exists [.nat]; constructor
+  . apply well_store_extend; apply HwellStore; apply Hτv
+  . apply IH; apply typing.loc; simp
 
 theorem preservation_strengthened :
   ∀ Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
@@ -1259,20 +1274,18 @@ theorem preservation_strengthened :
     case alloc₁ Hvalue =>
       cases Hτ
       case pure Hτ =>
-        have ⟨τ𝕒, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
-        exists [τ𝕒], ∅
+        have ⟨σ₁, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
+        exists σ₁, ∅
         constructor; apply HwellStore
         constructor; apply typing_reification.pure
         apply Hτ; rfl
       case reify Hτ =>
-        have ⟨τ𝕒, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
-        exists [τ𝕒], φ₀
+        have ⟨σ₁, HwellStore, Hτ⟩ := preservation_alloc _ _ _ _ _ _ _ HM HwellStore Hvalue Hτ
+        exists σ₁, φ₀
         constructor; apply HwellStore
         constructor; apply typing_reification.reify
         apply Hτ; rfl
   case reflect P E e HP HE Hlc =>
-    generalize HEqlvl : Γ.length = lvl
-    rw [HEqlvl] at HP
     cases HP
     case hole =>
       exists [], ∅; constructor
@@ -1287,7 +1300,7 @@ theorem preservation_strengthened :
           next Hτ =>
           simp; constructor
           apply preservationℚ
-          apply HEqlvl; apply HQ; apply HE; apply Hlc; apply Hτ
+          apply HQ; apply HE; apply Hlc; apply Hτ
 
 theorem preservation :
   ∀ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
