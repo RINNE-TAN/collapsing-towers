@@ -2,28 +2,37 @@
 import Mathlib.Data.Nat.Basic
 import CollapsingTowers.TwoLevelPCP.Syntax
 @[simp]
-def indexr {X : Type} (n : ℕ) (l : List X) : Option X :=
+def getr {α : Type} (x : ℕ) (l : List α) : Option α :=
   match l with
   | [] => none
-  | head :: tails => if tails.length == n then some head else indexr n tails
+  | head :: tails => if tails.length == x then some head else getr x tails
 
-theorem indexr_iff_lt : ∀ {A} {xs : List A} {i},
-  i < xs.length ↔ ∃ x, indexr i xs = some x := by
-  intro A xs i;
-  constructor
-  . intro h; induction xs
-    case nil => simp at h
-    case cons x xs ih =>
-      simp; by_cases h': xs.length = i
-      . simp [h']
-      . simp [if_neg h']; apply ih; simp at h; omega
-  . intro h; induction xs
-    case nil => simp at h
-    case cons x xs ih =>
-      simp at h; by_cases h': xs.length = i
-      . subst h'; simp
-      . simp [if_neg h'] at h; simp;
-        have h' := ih h; omega
+@[simp]
+def setr {α : Type} (x : ℕ) (a : α) (l : List α) : Option (List α) :=
+  match l with
+  | [] => none
+  | head :: tails =>
+    if tails.length == x then some (a :: tails)
+    else do
+      let tails ← setr x a tails
+      (head :: tails)
+
+theorem getr_iff_lt : ∀ {α : Type} (l : List α) i, i < l.length ↔ ∃ a, getr i l = some a :=
+  by
+  intro α l i; constructor
+  . intro H; induction l
+    case nil => nomatch H
+    case cons tails IH =>
+      simp; by_cases HEq : tails.length = i
+      . simp [HEq]
+      . simp [if_neg HEq]; apply IH; simp at H; omega
+  . intro H; induction l
+    case nil => nomatch H
+    case cons x xs IH =>
+      simp at H; by_cases HEq : xs.length = i
+      . subst HEq; simp
+      . simp [if_neg HEq] at H; simp
+        have _ := IH H; omega
 
 abbrev TEnv :=
   List (Ty × Stage)
@@ -32,10 +41,10 @@ abbrev SEnv :=
   List Ty
 
 @[simp]
-def binds {A : Type} (x : ℕ) (a : A) (Γ : List A) :=
-  indexr x Γ = some a
+def binds {α : Type} (x : ℕ) (a : α) (Γ : List α) :=
+  getr x Γ = some a
 
-theorem binds_extend : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds x a (Δ ++ Γ) :=
+theorem binds_extend : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds x a (Δ ++ Γ) :=
   by
   intros _ Γ Δ x a Hbinds
   induction Δ with
@@ -43,11 +52,11 @@ theorem binds_extend : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds x 
   | cons head tails IHtails =>
     simp
     by_cases Hx : tails.length + Γ.length = x
-    . have Hx : x < Γ.length := by apply indexr_iff_lt.mpr; exists a
+    . have Hx : x < Γ.length := by apply (getr_iff_lt _ _).mpr; exists a
       omega
     . rw [if_neg Hx]; apply IHtails
 
-theorem binds_extendr : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds (x + Δ.length) a (Γ ++ Δ) :=
+theorem binds_extendr : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds (x + Δ.length) a (Γ ++ Δ) :=
   by
   intros _ Γ Δ x a
   induction Γ with
@@ -59,7 +68,7 @@ theorem binds_extendr : ∀ {A : Type} Γ Δ x (a : A), binds x a Γ → binds (
     . repeat rw [if_neg HEq]
       apply IHtails
 
-theorem binds_shrink : ∀ {A : Type} Γ Δ x (a : A), x < Γ.length → binds x a (Δ ++ Γ) → binds x a Γ :=
+theorem binds_shrink : ∀ {α : Type} Γ Δ x (a : α), x < Γ.length → binds x a (Δ ++ Γ) → binds x a Γ :=
   by
   intros _ Γ Δ x a HLt
   induction Δ with
@@ -71,13 +80,13 @@ theorem binds_shrink : ∀ {A : Type} Γ Δ x (a : A), x < Γ.length → binds x
     rw [if_neg HNe] at Hbinds
     apply Hbinds
 
-theorem binds_shrinkr : ∀ {A : Type} Γ Δ x (a : A), binds (x + Δ.length) a (Γ ++ Δ) → binds x a Γ :=
+theorem binds_shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) a (Γ ++ Δ) → binds x a Γ :=
   by
   intros _ Γ Δ x a
   induction Γ with
   | nil =>
-    simp; intro Hindexr
-    have : x + Δ.length < Δ.length := by apply indexr_iff_lt.mpr; exists a
+    simp; intro Hgetr
+    have : x + Δ.length < Δ.length := by apply (getr_iff_lt _ _).mpr; exists a
     omega
   | cons head tails IHtails =>
     simp
@@ -94,7 +103,8 @@ def escape : TEnv → TEnv
 
 theorem nil_escape : [] = escape [] := by simp
 
-theorem length_escape : ∀ Γ, Γ.length = (escape Γ).length := by
+theorem length_escape : ∀ Γ, Γ.length = (escape Γ).length :=
+  by
   intro Γ
   induction Γ with
   | nil => simp

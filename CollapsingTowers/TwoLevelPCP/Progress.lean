@@ -264,10 +264,10 @@ theorem progress_strengthened :
         case loc HbindsLoc =>
           have HLt : l < σ.length :=
             by
-            apply indexr_iff_lt.mpr
+            apply (getr_iff_lt _ _).mpr
             constructor; apply HbindsLoc
           rw [HwellStore.left] at HLt
-          have ⟨e, HbindsLoc⟩ := indexr_iff_lt.mp HLt
+          have ⟨e, HbindsLoc⟩ := (getr_iff_lt _ _).mp HLt
           exists st₀, e
           apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
           simp

@@ -1482,8 +1482,8 @@ theorem preservation_strengthened :
     case load₁ l HbindsLocST =>
       have ⟨_, HbindsLoc⟩ : ∃ τ, binds l τ σ₀ :=
         by
-        apply indexr_iff_lt.mp; rw [HwellStore.left]
-        apply indexr_iff_lt.mpr; constructor
+        apply (getr_iff_lt _ _).mp; rw [HwellStore.left]
+        apply (getr_iff_lt _ _).mpr; constructor
         apply HbindsLocST
       exists [], φ₀; constructor
       . apply HwellStore

@@ -166,7 +166,7 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   <;> (try intros; assumption)
   case fvar =>
     intros _ _ _ _ _ Hbinds _
-    apply indexr_iff_lt.mpr; constructor
+    apply (getr_iff_lt _ _).mpr; constructor
     apply Hbinds
   case app₁ =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
@@ -183,7 +183,7 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   case lit₁ => simp
   case code_fragment =>
     intros _ _ _ _ Hbinds _
-    apply indexr_iff_lt.mpr; constructor
+    apply (getr_iff_lt _ _).mpr; constructor
     apply Hbinds
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ Hclose IHb _
