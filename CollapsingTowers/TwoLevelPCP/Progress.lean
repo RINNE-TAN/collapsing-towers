@@ -42,7 +42,7 @@ theorem progress_strengthened :
   case lam₁ =>
     intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HwellStore HDyn HEq𝕊
     left; constructor
-    apply open_closedb; apply typing_regular; apply H
+    apply (open_closedb _ _ _).mp; apply typing_regular; apply H
   case lift_lam =>
     intros _ _ _ _ _ _ _ H IH HwellStore HDyn HEq𝕊
     right
@@ -207,12 +207,12 @@ theorem progress_strengthened :
       apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
       constructor
       apply value_lc; apply Hvalue₀
-      apply open_closedb; apply typing_regular; apply H₁
+      apply (open_closedb _ _ _).mp; apply typing_regular; apply H₁
       apply head𝕄.lets; apply Hvalue₀
     | inr Hstep₀ =>
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
-      apply open_closedb; apply typing_regular; apply H₁
+      apply (open_closedb _ _ _).mp; apply typing_regular; apply H₁
   case let𝕔 =>
     intros Γ _ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HwellStore HDyn HEq𝕊
     right

@@ -130,10 +130,10 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   <;> (try simp)
   case lam₁ =>
     intros _ _ _ _ _ _ _ _ _ _ IH
-    apply open_closedb; apply IH
+    apply (open_closedb _ _ _).mp; apply IH
   case lam𝕔 =>
     intros _ _ _ _ _ _ _ _ _ IH
-    apply open_closedb; apply IH
+    apply (open_closedb _ _ _).mp; apply IH
   case app₁ =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
     constructor; apply IHf; apply IHarg
@@ -149,11 +149,11 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ _ IHb IHe
     constructor
-    apply IHb; apply open_closedb; apply IHe
+    apply IHb; apply (open_closedb _ _ _).mp; apply IHe
   case let𝕔 =>
     intros _ _ _ _ _ _ _ _ _ _ _ IHb IHe
     constructor
-    apply IHb; apply open_closedb; apply IHe
+    apply IHb; apply (open_closedb _ _ _).mp; apply IHe
   apply Hτ
 
 theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → closed_at e Γ.length :=

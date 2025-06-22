@@ -385,60 +385,42 @@ lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) →
     simp; apply IH; apply He
   | lit₁| loc => simp
 
-lemma open_closedb : ∀ t n m,
-  closedb_at (opening m (.fvar n) t) m →
-  closedb_at t (m + 1) := by
-  intros t; induction t <;> intros n m h <;> simp
-  case bvar x =>
-    by_cases hx: (x = m)
-    . omega
-    . by_cases hx': (x < m)
-      . omega;
-      . simp at h; rw [if_neg hx] at h; simp at h; omega
-  case lam₁ t ih =>
-    apply ih n (m + 1); simp at h; assumption
-  case code _ ih
-     | reflect _ ih
-     | lam𝕔 _ ih
-     | lift _ ih
-     | run _ ih
-     | load₁ _ ih
-     | alloc₁ _ ih =>
-    simp at *; apply ih; apply h
-  case app₁ t1 t2 ih1 ih2
-     | app₂ t1 t2 ih1 ih2
-     | plus₁ _ _ ih1 ih2
-     | plus₂ _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n m h.2
-  case lets _ _ ih1 ih2
-     | let𝕔 _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
-
-lemma open_closedb': ∀ t n m,
-    closedb_at t (m + 1) → closedb_at (opening m (.fvar n) t) m := by
-  intros t; induction t <;> intros n m h <;> simp
-  case bvar x =>
-    by_cases hx: (x = m)
-    . simp [hx]
-    . rw [if_neg hx]; simp at h; simp; omega
-  case lam₁ t ih =>
-    apply ih n (m + 1); simp at h; assumption
-  case code _ ih
-     | reflect _ ih
-     | lam𝕔 _ ih
-     | lift _ ih
-     | run _ ih
-     | load₁ _ ih
-     | alloc₁ _ ih =>
-    simp at *; apply ih; apply h
-  case app₁ t1 t2 ih1 ih2
-     | app₂ t1 t2 ih1 ih2
-     | plus₁ _ _ ih1 ih2
-     | plus₂ _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n m h.2
-  case lets _ _ ih1 ih2
-     | let𝕔 _ _ ih1 ih2 =>
-    apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
+lemma open_closedb : ∀ i x e, closedb_at (opening i (.fvar x) e) i ↔ closedb_at e (i + 1) :=
+  by
+  intros i x e
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; constructor
+      . omega
+      . simp
+    . rw [if_neg HEq]; simp; omega
+  | fvar => simp
+  | lit₁| loc => simp
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH
+  | load₁ _ IH
+  | alloc₁ _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    . intro Hclosedb
+      constructor
+      apply (IH₀ _).mp; apply Hclosedb.left
+      apply (IH₁ _).mp; apply Hclosedb.right
+    . intro Hclosedb
+      constructor
+      apply (IH₀ _).mpr; apply Hclosedb.left
+      apply (IH₁ _).mpr; apply Hclosedb.right
 
 lemma close_closed : ∀ e x i, closed_at e (x + 1) ↔ closed_at (closing i x e) x :=
   by
@@ -560,27 +542,31 @@ lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (clos
     apply IH₁; omega; apply Hclose.right
   | lit₁| loc => simp
 
-lemma closedb_opening_id: ∀ t1 t2 n,
-  closedb_at t1 n → opening n t2 t1 = t1 := by
-  intros t1; induction t1 <;> intros t2 n h <;> simp
-  case bvar x => intro xn; simp at h; omega
-  case lam₁ t ih
-     | lift t ih =>
-    simp at h; apply ih; assumption
-  case code _ ih
-     | reflect _ ih
-     | lam𝕔 _ ih
-     | run _ ih
-     | load₁ _ ih
-     | alloc₁ _ ih =>
-    simp at *; apply ih; apply h
-  case app₁ t1 t2 ih1 ih2
-     | app₂ t1 t2 ih1 ih2
-     | plus₁ _ _ ih1 ih2
-     | plus₂ _ _ ih1 ih2
-     | lets _ _ ih1 ih2
-     | let𝕔 _ _ ih1 ih2 =>
-    apply And.intro; apply ih1; apply h.1; apply ih2; apply h.2
+lemma closedb_opening_id : ∀ e v i, closedb_at e i → opening i v e = e :=
+  by
+  intros e v i Hclosedb
+  induction e generalizing i with
+  | fvar y => simp
+  | bvar j => simp at *; omega
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH
+  | lam₁ _ IH
+  | lam𝕔 _ IH
+  | load₁ _ IH
+  | alloc₁ _ IH =>
+    simp; apply IH; apply Hclosedb
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclosedb.left
+    apply IH₁; apply Hclosedb.right
+  | lit₁| loc => simp
 
 lemma open_close_id : ∀ i e x, closedb_at e i → opening i (.fvar x) (closing i x e) = e :=
   by
@@ -698,22 +684,24 @@ lemma maping𝕔_intro :
   induction e generalizing i with
   | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
   | fvar y => simp at *; by_cases HEq : x = y; omega; rw [if_neg HEq]; simp; apply HEq
-  | lam₁ _ ih
-  | lift _ ih
-  | code _ ih
-  | reflect _ ih
-  | lam𝕔 _ ih
-  | run _ ih
-  | load₁ _ ih
-  | alloc₁ _ ih =>
-    simp at *; apply ih; apply Hclosed
-  | app₁ _ _ ih1 ih2
-  | app₂ _ _ ih1 ih2
-  | plus₁ _ _ ih1 ih2
-  | plus₂ _ _ ih1 ih2
-  | lets _ _ ih1 ih2
-  | let𝕔 _ _ ih1 ih2 =>
-    simp at *; constructor; apply ih1; apply Hclosed.left; apply ih2; apply Hclosed.right
+  | lam₁ _ IH
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | lam𝕔 _ IH
+  | run _ IH
+  | load₁ _ IH
+  | alloc₁ _ IH =>
+    simp at *; apply IH; apply Hclosed
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp at *; constructor
+    apply IH₀; apply Hclosed.left
+    apply IH₁; apply Hclosed.right
   | lit₁| loc => simp
 
 lemma map𝕔₀_intro : ∀ x e, closed_at e x → close₀ x (subst x (.code (.fvar x)) (open₀ x e)) = map𝕔₀ e :=

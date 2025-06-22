@@ -537,7 +537,7 @@ theorem preservation_head𝕄 :
         apply Hτe
         apply typing.code_fragment; simp
         apply HwellBinds
-        apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
+        apply subst_closedb_at; simp; apply (open_closedb _ _ _).mpr; apply Hlc
         apply HwellBinds
         apply (close_closed _ _ _).mp; apply subst_closed_at; simp; apply open_closed; apply Hclose
         apply Hclose
