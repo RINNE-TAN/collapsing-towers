@@ -440,7 +440,7 @@ lemma open_closedb': ∀ t n m,
      | let𝕔 _ _ ih1 ih2 =>
     apply And.intro; apply ih1 n m h.1; apply ih2 n (m + 1) h.2
 
-lemma close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e) x :=
+lemma close_closed : ∀ e x i, closed_at e (x + 1) ↔ closed_at (closing i x e) x :=
   by
   intros e x i
   induction e generalizing i with
@@ -464,9 +464,13 @@ lemma close_closed : ∀ e x i, closed_at e (x + 1) → closed_at (closing i x e
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
-    intro Hclose; constructor
-    apply IH₀; apply Hclose.left
-    apply IH₁; apply Hclose.right
+    constructor
+    . intro Hclose; constructor
+      apply (IH₀ _).mp; apply Hclose.left
+      apply (IH₁ _).mp; apply Hclose.right
+    . intro Hclose; constructor
+      apply (IH₀ _).mpr; apply Hclose.left
+      apply (IH₁ _).mpr; apply Hclose.right
   | lit₁| loc => simp
 
 lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → closed_at (opening i v e) x :=
@@ -944,3 +948,39 @@ lemma fv_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
   | let𝕔 _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
     rw [Set.union_diff_distrib]
+
+lemma fv_subset_closed :
+  ∀ e₀ e₁ x,
+    fv e₁ ⊆ fv e₀ →
+    closed_at e₀ x →
+    closed_at e₁ x :=
+  by
+  intros e₀ e₁ x HFv Hclose
+  induction e₁ with
+  | bvar| lit₁| loc => simp
+  | fvar y =>
+    simp at *
+    have _ : ¬y ≥ x := by
+      intro HGe
+      apply fv_if_closed_at; apply Hclose
+      apply HGe; apply HFv
+    omega
+  | lam₁ _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH
+  | load₁ _ IH
+  | alloc₁ _ IH =>
+    apply IH; apply HFv
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | plus₁ _ _ IH₀ IH₁
+  | plus₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp at HFv
+    constructor
+    apply IH₀; apply HFv.left
+    apply IH₁; apply HFv.right

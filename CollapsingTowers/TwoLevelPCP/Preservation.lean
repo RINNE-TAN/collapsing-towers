@@ -539,7 +539,7 @@ theorem preservation_head𝕄 :
         apply HwellBinds
         apply subst_closedb_at; simp; apply open_closedb'; apply Hlc
         apply HwellBinds
-        apply close_closed; apply subst_closed_at; simp; apply open_closed; apply Hclose
+        apply (close_closed _ _ _).mp; apply subst_closed_at; simp; apply open_closed; apply Hclose
         apply Hclose
   case lam𝕔 e =>
     cases Hτ
@@ -627,7 +627,7 @@ theorem preservationℝ :
           rw [open_close_id₀]
           apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
-          apply close_closed; rw [← List.length_cons]
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
           apply typing_closed; apply IHe₀; rfl
         | reify _ _ _ _ _ IHe₀ =>
           rw [← List.singleton_append] at IHe₀
@@ -637,7 +637,7 @@ theorem preservationℝ :
           rw [open_close_id₀]
           apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
-          apply close_closed; rw [← List.length_cons]
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
           apply typing_closed; apply IHe₀; rfl
       apply Hlc
   case let𝕔 =>
@@ -653,7 +653,7 @@ theorem preservationℝ :
           rw [open_close_id₀]
           apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
-          apply close_closed; rw [← List.length_cons]
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
           apply typing_closed; apply IHe₀; rfl
         | reify _ _ _ _ _ IHe₀ =>
           rw [← List.singleton_append] at IHe₀
@@ -663,7 +663,7 @@ theorem preservationℝ :
           rw [open_close_id₀]
           apply IHe₀; apply typing_regular; apply IHe₀
           apply HwellBinds
-          apply close_closed; rw [← List.length_cons]
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
           apply typing_closed; apply IHe₀; rfl
       apply Hlc
   case run =>
@@ -1043,7 +1043,7 @@ theorem decompose𝔼 :
           apply IH; apply He
     case lets =>
       cases Hτ
-      case lets body Hclose _ φ₀ φ₁ HwellBinds HX Hclose Hbody =>
+      case lets body _ _ φ₀ φ₁ HwellBinds HX Hclose Hbody =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
         constructor
@@ -1139,7 +1139,7 @@ theorem preservationℚ :
         constructor; apply Hlc
         apply lc_ctx𝔼; apply HE; simp
         apply HwellBinds
-        apply close_closed; constructor
+        apply (close_closed _ _ _).mp; constructor
         apply closed_at_decompose𝔼 _ (.reflect e) _ HE
         rw [← List.length_cons]; apply typing_reification_closed; apply IHe
         apply closed_at𝔼; apply HE
@@ -1155,7 +1155,7 @@ theorem preservationℚ :
         constructor; apply Hlc
         apply lc_ctx𝔼; apply HE; simp
         apply HwellBinds
-        apply close_closed; constructor
+        apply (close_closed _ _ _).mp; constructor
         apply closed_at_decompose𝔼 _ (.reflect e) _ HE
         rw [← List.length_cons]; apply typing_reification_closed; apply IHe
         apply closed_at𝔼; apply HE
@@ -1200,7 +1200,241 @@ theorem decompose𝕄 :
       typing [] (σ₁ ++ σ₀) .stat loc (.ref .nat) ∅ →
       typing Γ (σ₁ ++ σ₀) .stat (M loc) τ φ :=
   by
-  admit
+  intros Γ σ₀ M v τ φ HM Hvalue Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing Γ τ φ with
+  | hole =>
+    cases Hτ
+    case alloc₁ Hτv =>
+      constructor
+      . cases Hvalue <;> try contradiction
+        apply typing.lit₁
+      . have Hpure : φ = ∅ := by
+          apply typing_value_pure
+          apply Hτv; apply Hvalue
+        rw [Hpure, ← List.append_nil Γ]
+        intro _ _; apply weakening
+  | cons𝔹 _ _ HB _ IH =>
+    cases HB
+    case appl₁ =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.app₁
+        apply IH; apply Hloc
+        apply weakening_store; apply Harg
+    case appr₁ =>
+      cases Hτ
+      case app₁ HX Hf =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.app₁
+        apply weakening_store; apply Hf
+        apply IH; apply Hloc
+    case appl₂ =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.app₂
+        apply IH; apply Hloc
+        apply weakening_store; apply Harg
+    case appr₂ =>
+      cases Hτ
+      case app₂ Hf HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.app₂
+        apply weakening_store; apply Hf
+        apply IH; apply Hloc
+    case plusl₁ =>
+      cases Hτ
+      case plus₁ HX Hr =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.plus₁
+        apply IH; apply Hloc
+        apply weakening_store; apply Hr
+    case plusr₁ =>
+      cases Hτ
+      case plus₁ Hl HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.plus₁
+        apply weakening_store; apply Hl
+        apply IH; apply Hloc
+    case plusl₂ =>
+      cases Hτ
+      case plus₂ HX Hr =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.plus₂
+        apply IH; apply Hloc
+        apply weakening_store; apply Hr
+    case plusr₂ =>
+      cases Hτ
+      case plus₂ Hl HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.plus₂
+        apply weakening_store; apply Hl
+        apply IH; apply Hloc
+    case lift =>
+      cases Hτ
+      case lift_lit HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.lift_lit
+        apply IH; apply Hloc
+      case lift_lam HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.lift_lam
+        apply IH; apply Hloc
+    case lets =>
+      cases Hτ
+      case lets HwellBinds HX Hclose He =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.lets
+        apply IH; apply Hloc
+        apply weakening_store; apply He
+        apply HwellBinds; apply Hclose
+    case load₁ =>
+      cases Hτ
+      case load₁ HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.load₁
+        apply IH; apply Hloc
+    case alloc₁ =>
+      cases Hτ
+      case alloc₁ HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.alloc₁
+        apply IH; apply Hloc
+  | consℝ _ _ HR HM IH =>
+    cases HR
+    case lam𝕔 =>
+      cases Hτ
+      case lam𝕔 HwellBinds Hclose Hτ =>
+        cases Hτ
+        case pure HX =>
+          rw [← HEqlvl] at HX IH Hclose
+          rw [← HEqlvl]
+          apply (close_closed _ _ _).mpr at Hclose
+          rw [open_close_id₀] at HX
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX rfl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.lam𝕔; apply typing_reification.pure
+          rw [open_close_id₀]; apply IH; apply Hloc
+          apply lc_ctx𝕄; apply HM; apply typing_regular; apply Hloc
+          apply HwellBinds
+          apply (close_closed _ _ _).mp
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+          apply lc_ctx𝕄; apply HM
+          simp; apply value_lc; apply Hvalue
+        case reify HX =>
+          rw [← HEqlvl] at HX IH Hclose
+          rw [← HEqlvl]
+          apply (close_closed _ _ _).mpr at Hclose
+          rw [open_close_id₀] at HX
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX rfl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.lam𝕔; apply typing_reification.reify
+          rw [open_close_id₀]; apply IH; apply Hloc
+          apply lc_ctx𝕄; apply HM; apply typing_regular; apply Hloc
+          apply HwellBinds
+          apply (close_closed _ _ _).mp
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+          apply lc_ctx𝕄; apply HM
+          simp; apply value_lc; apply Hvalue
+    case let𝕔 =>
+      cases Hτ
+      case let𝕔 HwellBinds Hτb Hclose Hτ =>
+        cases Hτ
+        case pure HX =>
+          rw [← HEqlvl] at HX IH Hclose
+          rw [← HEqlvl]
+          apply (close_closed _ _ _).mpr at Hclose
+          rw [open_close_id₀] at HX
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX rfl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.let𝕔; apply weakening_store; apply Hτb
+          apply typing_reification.pure
+          rw [open_close_id₀]; apply IH; apply Hloc
+          apply lc_ctx𝕄; apply HM; apply typing_regular; apply Hloc
+          apply HwellBinds
+          apply (close_closed _ _ _).mp
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+          apply lc_ctx𝕄; apply HM
+          simp; apply value_lc; apply Hvalue
+        case reify HX =>
+          rw [← HEqlvl] at HX IH Hclose
+          rw [← HEqlvl]
+          apply (close_closed _ _ _).mpr at Hclose
+          rw [open_close_id₀] at HX
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX rfl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.let𝕔; apply weakening_store; apply Hτb
+          apply typing_reification.reify
+          rw [open_close_id₀]; apply IH; apply Hloc
+          apply lc_ctx𝕄; apply HM; apply typing_regular; apply Hloc
+          apply HwellBinds
+          apply (close_closed _ _ _).mp
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+          apply lc_ctx𝕄; apply HM
+          simp; apply value_lc; apply Hvalue
+    case run =>
+      cases Hτ
+      case run Hclose Hτ =>
+        cases Hτ
+        case pure HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.run; apply typing_reification.pure
+          apply IH; apply Hloc
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+        case reify HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.run; apply typing_reification.reify
+          apply IH; apply Hloc
+          apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
+          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
 
 theorem preservation_alloc :
   ∀ Γ σ₀ st M v τ𝕓 φ,
