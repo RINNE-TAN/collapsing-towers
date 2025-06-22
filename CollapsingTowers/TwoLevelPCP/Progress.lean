@@ -254,7 +254,7 @@ theorem progress_strengthened :
       apply stepℝ _ _ _ _ _ _ _ ctxℝ.run; apply Hstep
   case loc => intros; left; constructor
   case load₁ =>
-    intros _ σ  _ _ _ _ H IH HwellStore HDyn HEq𝕊
+    intros _ σ  _ _ _ H IH HwellStore HDyn HEq𝕊
     right
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
@@ -277,7 +277,7 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₁; apply Hstep
   case alloc₁ =>
-    intros _ σ _ v _ _ H IH HwellStore HDyn HEq𝕊
+    intros _ σ _ v _ H IH HwellStore HDyn HEq𝕊
     right
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
