@@ -31,6 +31,8 @@ inductive ctx𝔹 : Ctx → Prop where
   | lets : ∀ e, closedb_at e 1 → ctx𝔹 (fun X => .lets X e)
   | load₁ : ctx𝔹 (fun X => .load₁ X)
   | alloc₁ : ctx𝔹 (fun X => .alloc₁ X)
+  | storel₁ : ∀ r, lc r → ctx𝔹 (fun X => .store₁ X r)
+  | storer₁ : ∀ v, value v → ctx𝔹 (fun X => .store₁ v X)
 
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
   | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 (close₀ lvl X))
@@ -176,13 +178,15 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
   | appl₂ _ IH
   | plusl₁ _ IH
   | plusl₂ _ IH
-  | lets _ IH =>
+  | lets _ IH
+  | storel₁ _ IH =>
     constructor; apply Hlc
     apply closedb_inc; apply IH; omega
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
-  | plusr₂ _ Hvalue =>
+  | plusr₂ _ Hvalue
+  | storer₁ _ Hvalue =>
     constructor
     apply closedb_inc; apply value_lc; apply Hvalue; omega
     apply Hlc
@@ -192,9 +196,9 @@ theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀
   by
   intros _ _ _ HB Hclose
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁ =>
     apply Hclose.left
-  | appr₁| appr₂| plusr₁| plusr₂ =>
+  | appr₁| appr₂| plusr₁| plusr₂| storer₁ =>
     apply Hclose.right
   | lift| load₁| alloc₁ => apply Hclose
 
@@ -202,9 +206,9 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁ =>
     constructor; apply He₁; apply He₀.right
-  | appr₁| appr₂| plusr₁| plusr₂ =>
+  | appr₁| appr₂| plusr₁| plusr₂| storer₁ =>
     constructor; apply He₀.left; apply He₁
   | lift| load₁| alloc₁ => apply He₁
 
@@ -216,10 +220,10 @@ theorem fv_at𝔹 :
   by
   intros B e₀ e₁ HB Hsubst
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁ =>
     apply Set.union_subset_union
     apply Hsubst; rfl
-  | appr₁| appr₂| plusr₁| plusr₂ =>
+  | appr₁| appr₂| plusr₁| plusr₂| storer₁ =>
     apply Set.union_subset_union
     rfl; apply Hsubst
   | lift| load₁| alloc₁ => apply Hsubst
@@ -237,20 +241,22 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦ope
   | appl₂ _ IH
   | plusl₁ _ IH
   | plusl₂ _ IH
-  | lets _ IH => simp; apply closedb_opening_id; apply IH
+  | lets _ IH
+  | storel₁ _ IH => simp; apply closedb_opening_id; apply IH
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
   | plusr₁ _ Hvalue
-  | plusr₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
+  | plusr₂ _ Hvalue
+  | storer₁ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
   | lift| load₁| alloc₁ => simp
 
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x → subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
   intros _ _ _ _ _ HB He₀
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets =>
+  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁ =>
     simp; apply subst_closed_id; apply He₀.right
-  | appr₁| appr₂| plusr₁| plusr₂ =>
+  | appr₁| appr₂| plusr₁| plusr₂| storer₁ =>
     simp; apply subst_closed_id; apply He₀.left
   | lift| load₁| alloc₁ => simp
 
@@ -385,8 +391,8 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x �
     simp at *; rw [← IH]; apply subst𝔹
     apply HB; apply He₀
     cases HB with
-    | appl₁| appl₂| plusl₁| plusl₂| lets => apply He₀.left
-    | appr₁| appr₂| plusr₁| plusr₂ => apply He₀.right
+    | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁ => apply He₀.left
+    | appr₁| appr₂| plusr₁| plusr₂| storer₁ => apply He₀.right
     | lift| load₁| alloc₁ => apply He₀
 
 -- properties of ℚ contexts
@@ -432,6 +438,7 @@ inductive head𝕄 : Expr → Expr → Prop where
 inductive shead𝕄 : (Store × Expr) → (Store × Expr) → Prop where
   | load₁ : ∀ st l e, binds l e st → shead𝕄 (st, (.load₁ (.loc l))) (st, e)
   | alloc₁ : ∀ st v, value v → shead𝕄 (st, (.alloc₁ v)) (v :: st, .loc (st.length))
+  | store₁ : ∀ st₀ st₁ l v, value v → patch l v st₀ st₁ → shead𝕄 (st₀, (.store₁ (.loc l) v)) (st₁, .lit₁ 0)
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
   | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)

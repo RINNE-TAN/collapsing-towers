@@ -288,6 +288,36 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.alloc₁; apply Hstep
+  case store₁ =>
+    intros _ σ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
+    right
+    cases IH₀ HwellStore HDyn HEq𝕊 with
+    | inl Hvalue₀ =>
+      cases IH₁ HwellStore HDyn HEq𝕊 with
+      | inl Hvalue₁ =>
+        cases Hvalue₀ with
+        | loc l =>
+          cases H₀
+          case loc HbindsLoc =>
+            have HLt : l < σ.length :=
+              by
+              apply (getr_iff_lt _ _).mpr
+              constructor; apply HbindsLoc
+            rw [HwellStore.left] at HLt
+            have ⟨st₁, Hpatch⟩ := (setr_iff_lt st₀ l e₁).mp HLt
+            exists st₁, .lit₁ 0
+            apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
+            simp; apply typing_regular; apply H₁
+            apply shead𝕄.store₁; apply Hvalue₁; apply Hpatch
+          | _ => nomatch H₀
+      | inr Hstep₁ =>
+        have ⟨st₁, _, Hstep₁⟩ := Hstep₁; exists st₁
+        apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storer₁ _ _); apply Hstep₁
+        apply Hvalue₀
+    | inr Hstep₀ =>
+      have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
+      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storel₁ _ _); apply Hstep₀
+      apply typing_regular; apply H₁
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

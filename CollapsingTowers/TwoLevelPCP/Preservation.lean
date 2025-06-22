@@ -234,6 +234,11 @@ theorem preservation_subst_strengthened :
     intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply Hτv
+  case store₁ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.store₁
+    apply IHl; apply HEqΓ; apply Hτv
+    apply IHr; apply HEqΓ; apply Hτv
   apply Hτe
 
 theorem preservation_subst :
@@ -447,6 +452,11 @@ theorem preservation_maping_strengthened :
     intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply Hτv
+  case store₁ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.store₁
+    apply IHl; apply HEqΓ; apply Hτv
+    apply IHr; apply HEqΓ; apply Hτv
   apply Hτe
 
 theorem preservation_maping :
@@ -765,6 +775,16 @@ theorem preservation𝔹 :
     case alloc₁ IHe =>
       apply typing.alloc₁
       apply IH; apply IHe
+  case storel₁ =>
+    cases Hτ
+    case store₁ IHl IHr =>
+      apply typing.store₁
+      apply IH; apply IHl; apply IHr
+  case storer₁ =>
+    cases Hτ
+    case store₁ IHl IHr =>
+      apply typing.store₁
+      apply IHl; apply IH; apply IHr
 
 theorem preservation𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -864,6 +884,16 @@ theorem pure𝔹 :
     case alloc₁ IHe =>
       cases φ <;> try contradiction
       constructor; apply IHe
+  case storel₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ IHl IHr =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHl
+  case storer₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ IHl IHr =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHr
 
 theorem decompose𝔼 :
   ∀ Γ σ E e τ φ,
@@ -1084,6 +1114,38 @@ theorem decompose𝔼 :
           intros e φ Δ He
           apply typing.alloc₁
           apply IH; apply He
+    case storel₁ =>
+      cases Hτ
+      case store₁ φ₀ φ₁ HX Hr =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
+        constructor
+        . rw [HEqφ]
+          cases φ₁ <;> cases φ𝕖 <;> cases φ𝔼 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ (φ₁ ∪ φ𝔼)) = ((φ ∪ φ𝔼) ∪ φ₁) :=
+            by cases φ₁ <;> cases φ <;> cases φ𝔼 <;> simp
+          rw [HEqφ]
+          apply typing.store₁
+          apply IH; apply He
+          apply weakening; apply Hr
+    case storer₁ =>
+      cases Hτ
+      case store₁ φ₀ φ₁ Hl HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, (φ₀ ∪ φ𝔼)
+        constructor
+        . rw [HEqφ]
+          cases φ₀ <;> cases φ𝕖 <;> cases φ𝔼 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ (φ₀ ∪ φ𝔼)) = (φ₀ ∪ (φ ∪ φ𝔼)) :=
+            by cases φ₀ <;> cases φ <;> cases φ𝔼 <;> simp
+          rw [HEqφ]
+          apply typing.store₁
+          apply weakening; apply Hl
+          apply IH; apply He
 
 theorem preservation_reflect :
   ∀ Γ σ E e τ φ,
@@ -1190,7 +1252,7 @@ theorem preservationℚ :
       apply fv_at𝔼; apply HE; simp
     apply Hτ
 
-theorem decompose𝕄 :
+theorem decompose𝕄_alloc :
   ∀ Γ σ₀ M v τ φ,
     ctx𝕄 Γ.length M →
     value v →
@@ -1329,6 +1391,24 @@ theorem decompose𝕄 :
         intros σ₁ loc Hloc
         apply typing.alloc₁
         apply IH; apply Hloc
+    case storel₁ =>
+      cases Hτ
+      case store₁ HX Hr =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.store₁
+        apply IH; apply Hloc
+        apply weakening_store; apply Hr
+    case storer₁ =>
+      cases Hτ
+      case store₁ Hl HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.store₁
+        apply weakening_store; apply Hl
+        apply IH; apply Hloc
   | consℝ _ _ HR HM IH =>
     cases HR
     case lam𝕔 =>
@@ -1448,9 +1528,9 @@ theorem preservation_alloc :
   by
   intros Γ σ₀ st M v τ𝕓 φ HM HwellStore Hvalue Hτ
   rw [← HwellStore.left]
-  have ⟨Hτv, IH⟩ := decompose𝕄 _ _ _ _ _ _ HM Hvalue Hτ
+  have ⟨Hτv, IH⟩ := decompose𝕄_alloc _ _ _ _ _ _ HM Hvalue Hτ
   exists [.nat]; constructor
-  . apply well_store_extend; apply HwellStore; apply Hτv
+  . apply well_store_alloc; apply HwellStore; apply Hτv
   . apply IH; apply typing.loc; simp
 
 theorem preservation_strengthened :
@@ -1519,6 +1599,21 @@ theorem preservation_strengthened :
         constructor; apply HwellStore
         constructor; apply typing_reification.reify
         apply Hτ; rfl
+    case store₁ Hvalue Hpatch =>
+      exists [], φ₀; constructor
+      . admit
+      . cases Hτ
+        all_goals
+          next Hτ =>
+          simp; constructor
+          apply preservation𝕄; apply HM; apply Hlc
+          . simp
+          . intros Γ _ _ Hτ
+            cases Hτ with
+            | store₁ _ _ _ _ _ _ _ Hl Hr =>
+              cases Hl; apply typing_value_pure at Hr
+              rw [Hr Hvalue]; apply typing.lit₁
+          apply Hτ
   case reflect P E e HP HE Hlc =>
     cases HP
     case hole =>

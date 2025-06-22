@@ -28,21 +28,47 @@ theorem getr_iff_lt : ∀ {α : Type} (l : List α) i, i < l.length ↔ ∃ a, g
       . simp [if_neg HEq]; apply IH; simp at H; omega
   . intro H; induction l
     case nil => nomatch H
-    case cons x xs IH =>
-      simp at H; by_cases HEq : xs.length = i
+    case cons tails IH =>
+      simp at H; by_cases HEq : tails.length = i
       . subst HEq; simp
       . simp [if_neg HEq] at H; simp
         have _ := IH H; omega
 
-abbrev TEnv :=
-  List (Ty × Stage)
-
-abbrev SEnv :=
-  List Ty
+theorem setr_iff_lt : ∀ {α : Type} (l₀ : List α) i a, i < l₀.length ↔ ∃ l₁, setr i a l₀ = some l₁ :=
+  by
+  intro α l₀ i a; constructor
+  . intro H; induction l₀
+    case nil => nomatch H
+    case cons head tails IH =>
+      simp; by_cases HEq : tails.length = i
+      . simp [HEq]
+      . simp [if_neg HEq]
+        have ⟨l₁, Hpatch⟩ : ∃ l₁, setr i a tails = some l₁ :=
+          by apply IH; simp at H; omega
+        exists head :: l₁; rw [Hpatch]; simp
+  . intro H; induction l₀
+    case nil => nomatch H
+    case cons head tails IH =>
+      simp at H; by_cases HEq : tails.length = i
+      . subst HEq; simp
+      . simp [if_neg HEq] at H; simp
+        have _ : i < tails.length :=
+          by
+          apply IH
+          have ⟨l₁, Hpatch⟩ := H
+          generalize HEq : setr i a tails = tailRes
+          cases tailRes
+          case none => rw [HEq] at Hpatch; nomatch Hpatch
+          case some l₁ => exists l₁
+        omega
 
 @[simp]
-def binds {α : Type} (x : ℕ) (a : α) (Γ : List α) :=
-  getr x Γ = some a
+def binds {α : Type} (x : ℕ) (a : α) (l : List α) :=
+  getr x l = some a
+
+@[simp]
+def patch {α : Type} (x : ℕ) (a : α) (l₀ : List α) (l₁ : List α) :=
+  setr x a l₀ = some l₁
 
 theorem binds_extend : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds x a (Δ ++ Γ) :=
   by
@@ -94,6 +120,12 @@ theorem binds_shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) 
     . repeat rw [if_pos HEq]; simp
     . repeat rw [if_neg HEq]
       apply IHtails
+
+abbrev TEnv :=
+  List (Ty × Stage)
+
+abbrev SEnv :=
+  List Ty
 
 @[simp]
 def escape : TEnv → TEnv
