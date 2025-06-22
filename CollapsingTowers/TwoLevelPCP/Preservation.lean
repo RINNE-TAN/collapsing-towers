@@ -1252,6 +1252,50 @@ theorem preservationℚ :
       apply fv_at𝔼; apply HE; simp
     apply Hτ
 
+theorem decompose𝕄 :
+  ∀ Γ σ M e τ φ,
+    ctx𝕄 Γ.length M →
+    lc e →
+    typing Γ σ .stat (M e) τ φ →
+    ∃ Γ𝕖 τ𝕖 φ𝕖,
+      typing Γ𝕖 σ .stat e τ𝕖 φ𝕖 :=
+  by
+  intros Γ σ M e τ φ HM Hlc Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing Γ τ φ with
+  | hole => exists Γ, τ, φ
+  | cons𝔹 _ _ HB _ IH =>
+    cases HB <;> cases Hτ
+    all_goals
+      apply IH; assumption; apply HEqlvl
+  | consℝ _ _ HR HM IH =>
+    cases HR
+    case lam𝕔 =>
+      cases Hτ
+      case lam𝕔 Hτ =>
+        cases Hτ
+        all_goals
+          next Hτ =>
+            rw [HEqlvl, open_close_id₀] at Hτ
+            apply IH; apply Hτ; simp; omega
+            apply lc_ctx𝕄; apply HM; apply Hlc
+    case let𝕔 =>
+      cases Hτ
+      case let𝕔 Hτ =>
+        cases Hτ
+        all_goals
+          next Hτ =>
+            rw [HEqlvl, open_close_id₀] at Hτ
+            apply IH; apply Hτ; simp; omega
+            apply lc_ctx𝕄; apply HM; apply Hlc
+    case run =>
+      cases Hτ
+      case run Hτ =>
+        cases Hτ
+        all_goals
+          apply IH; assumption; apply HEqlvl
+
 theorem decompose𝕄_alloc :
   ∀ Γ σ₀ M v τ φ,
     ctx𝕄 Γ.length M →
@@ -1601,8 +1645,18 @@ theorem preservation_strengthened :
         apply Hτ; rfl
     case store₁ Hvalue Hpatch =>
       exists [], φ₀; constructor
-      . apply well_store_store; apply HwellStore
-        all_goals admit
+      . cases Hτ
+        all_goals
+          next Hτ =>
+          have ⟨_, _, _, Hτ⟩ := decompose𝕄 _ _ _ _ _ _ HM Hlc Hτ
+          cases Hτ
+          case store₁ Hτloc Hτv =>
+            cases Hτloc
+            case loc HbindsLoc =>
+              apply well_store_store; apply HwellStore
+              apply Hpatch; apply HbindsLoc
+              cases Hvalue <;> try contradiction
+              apply typing.lit₁
       . cases Hτ
         all_goals
           next Hτ =>
