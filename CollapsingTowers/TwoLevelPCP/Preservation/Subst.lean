@@ -108,14 +108,14 @@ theorem preservation_subst_strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
-    apply typing.plus₁
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.binary₁
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
-    apply typing.plus₂
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.binary₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
   case lit₁ => intros; apply typing.lit₁
@@ -358,14 +358,14 @@ theorem preservation_maping_strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
-    apply typing.plus₁
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.binary₁
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
-    apply typing.plus₂
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Δ HEqΓ Hτv
+    apply typing.binary₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
   case lit₁ => intros; apply typing.lit₁

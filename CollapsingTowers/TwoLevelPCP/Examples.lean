@@ -27,48 +27,48 @@ def x₃ : Expr :=
   .fvar 3
 
 def expr₀ : Expr :=
-  .lift (.lam₁ (close₀ 0 (.plus₂ x₀ (.plus₂ x₀ x₀))))
+  .lift (.lam₁ (close₀ 0 (.binary₂ .add x₀ (.binary₂ .add x₀ x₀))))
 
 def expr₁ : Expr :=
-  .lam𝕔 (close₀ 0 (.plus₂ (.code x₀) (.plus₂ (.code x₀) (.code x₀))))
+  .lam𝕔 (close₀ 0 (.binary₂ .add (.code x₀) (.binary₂ .add (.code x₀) (.code x₀))))
 
 def expr₂ : Expr :=
-  .lam𝕔 (close₀ 0 (.plus₂ (.code x₀) (.reflect (.plus₁ x₀ x₀))))
+  .lam𝕔 (close₀ 0 (.binary₂ .add (.code x₀) (.reflect (.binary₁ .add x₀ x₀))))
 
 def expr₃ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.plus₂ (.code x₀) (.code x₁)))))
+  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.binary₂ .add (.code x₀) (.code x₁)))))
 
 def expr₄ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.reflect (.plus₁ x₀ x₁)))))
+  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.reflect (.binary₁ .add x₀ x₁)))))
 
 def expr₅ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.let𝕔 (.plus₁ x₀ x₁) (close₀ 2 (.code x₂))))))
+  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.let𝕔 (.binary₁ .add x₀ x₁) (close₀ 2 (.code x₂))))))
 
 def expr₆ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.plus₁ x₀ x₀) (close₀ 1 (.code (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.code (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
 
 def expr₇ : Expr :=
-  .lam𝕔 (close₀ 0 (.code (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+  .lam𝕔 (close₀ 0 (.code (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
 
 def expr₈ : Expr :=
-  .reflect (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂))))))
+  .reflect (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
 
 def expr₉ : Expr :=
-  .let𝕔 (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
+  .let𝕔 (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
 
 def expr𝕩 : Expr :=
-  .code (.lets (.lam₁ (close₀ 0 (.lets (.plus₁ x₀ x₀) (close₀ 1 (.lets (.plus₁ x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
+  .code (.lets (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
 example : step ([], expr₀) ([], expr₁) := by
   apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
   repeat constructor
 
 example : step ([], expr₁) ([], expr₂) := by
-  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝕄.hole))
+  apply step_lvl.step𝕄 _ _ _ _ (ctx𝕄.consℝ _ _ ctxℝ.lam𝕔 (ctx𝕄.cons𝔹 _ _ (ctx𝔹.binaryr₂ _ _ _) ctx𝕄.hole))
   repeat constructor
 
 example : step ([], expr₂) ([], expr₃) := by
-  apply step_lvl.reflect _ _ _ _ (ctxℙ.consℚ _ (ctxℚ.holeℝ _ ctxℝ.lam𝕔)) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.plusr₂ _ _) ctx𝔼.hole)
+  apply step_lvl.reflect _ _ _ _ (ctxℙ.consℚ _ (ctxℚ.holeℝ _ ctxℝ.lam𝕔)) (ctx𝔼.cons𝔹 _ _ (ctx𝔹.binaryr₂ _ _ _) ctx𝔼.hole)
   repeat constructor
 
 example : step ([], expr₃) ([], expr₄) := by
@@ -108,9 +108,9 @@ example : typing_reification [] [] expr₀ τ .reify :=
   apply typing_reification.reify
   apply typing.lift_lam
   apply typing.lam₁
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.fvar; repeat simp
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
@@ -120,9 +120,9 @@ example : typing_reification [] [] expr₁ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.reify
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.code_fragment; repeat simp
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.code_fragment; repeat simp
   apply typing.code_fragment; repeat simp
 
@@ -132,10 +132,10 @@ example : typing_reification [] [] expr₂ τ .reify :=
   apply typing_reification.reify
   apply typing.lam𝕔
   apply typing_reification.reify
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.code_fragment; repeat simp
   apply typing.reflect; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
@@ -146,11 +146,11 @@ example : typing_reification [] [] expr₃ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.reify
-  apply typing.plus₂
+  apply typing.binary₂
   apply typing.code_fragment; repeat simp
   apply typing.code_fragment; repeat simp
 
@@ -161,12 +161,12 @@ example : typing_reification [] [] expr₄ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.reify
   apply typing.reflect; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
 
@@ -177,12 +177,12 @@ example : typing_reification [] [] expr₅ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.pure
@@ -196,13 +196,13 @@ example : typing_reification [] [] expr₆ τ .reify :=
   apply typing.lam𝕔
   apply typing_reification.pure
   apply typing.let𝕔; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing_reification.pure
   apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
@@ -215,12 +215,12 @@ example : typing_reification [] [] expr₇ τ .reify :=
   apply typing_reification.pure
   apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   rw [← union_pure_left .pure]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
@@ -232,12 +232,12 @@ example : typing_reification [] [] expr₈ τ .reify :=
   apply typing.reflect
   apply typing.lam₁; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   rw [← union_pure_left .pure]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
@@ -249,11 +249,11 @@ example : typing_reification [] [] expr₉ τ .pure :=
   apply typing.let𝕔
   apply typing.lam₁
   apply typing.lets
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; simp; rfl; simp
   apply typing.fvar; repeat simp
   apply typing.lets
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
@@ -267,11 +267,11 @@ example : typing_reification [] [] expr𝕩 τ .pure :=
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.lam₁
   apply typing.lets
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; simp; rfl; simp
   apply typing.fvar; repeat simp
   apply typing.lets
-  apply typing.plus₁
+  apply typing.binary₁
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp

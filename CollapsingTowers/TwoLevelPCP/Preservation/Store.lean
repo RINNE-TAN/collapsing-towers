@@ -63,40 +63,40 @@ theorem decompose𝕄_alloc :
         apply typing.app₂
         apply weakening_store; apply Hf
         apply IH; apply Hloc
-    case plusl₁ =>
+    case binaryl₁ =>
       cases Hτ
-      case plus₁ HX Hr =>
+      case binary₁ HX Hr =>
         have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
         constructor; apply Hτv
         intros σ₁ loc Hloc
-        apply typing.plus₁
+        apply typing.binary₁
         apply IH; apply Hloc
         apply weakening_store; apply Hr
-    case plusr₁ =>
+    case binaryr₁ =>
       cases Hτ
-      case plus₁ Hl HX =>
+      case binary₁ Hl HX =>
         have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
         constructor; apply Hτv
         intros σ₁ loc Hloc
-        apply typing.plus₁
+        apply typing.binary₁
         apply weakening_store; apply Hl
         apply IH; apply Hloc
-    case plusl₂ =>
+    case binaryl₂ =>
       cases Hτ
-      case plus₂ HX Hr =>
+      case binary₂ HX Hr =>
         have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
         constructor; apply Hτv
         intros σ₁ loc Hloc
-        apply typing.plus₂
+        apply typing.binary₂
         apply IH; apply Hloc
         apply weakening_store; apply Hr
-    case plusr₂ =>
+    case binaryr₂ =>
       cases Hτ
-      case plus₂ Hl HX =>
+      case binary₂ Hl HX =>
         have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
         constructor; apply Hτv
         intros σ₁ loc Hloc
-        apply typing.plus₂
+        apply typing.binary₂
         apply weakening_store; apply Hl
         apply IH; apply Hloc
     case lift =>

@@ -44,20 +44,20 @@ theorem preservation_head𝕄 :
           apply typing.app₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
-  case plus₁ =>
+  case binary₁ =>
     cases Hτ
-    case plus₁ Hl Hr =>
+    case binary₁ Hl Hr =>
       cases Hl; cases Hr; apply typing.lit₁
-  case plus₂ =>
+  case binary₂ =>
     cases Hτ
-    case plus₂ Hτ₀ Hτ₁ =>
+    case binary₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
       case code_fragment HwellBinds₀ Hbinds₀ =>
         cases Hτ₁
         case code_fragment HwellBinds₁ Hbinds₁ =>
           apply typing.reflect
           rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
-          apply typing.plus₁
+          apply typing.binary₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
   case lift_lit =>

@@ -23,10 +23,10 @@ inductive ctx𝔹 : Ctx → Prop where
   | appr₁ : ∀ v, value v → ctx𝔹 (fun X => .app₁ v X)
   | appl₂ : ∀ arg, lc arg → ctx𝔹 (fun X => .app₂ X arg)
   | appr₂ : ∀ v, value v → ctx𝔹 (fun X => .app₂ v X)
-  | plusl₁ : ∀ r, lc r → ctx𝔹 (fun X => .plus₁ X r)
-  | plusr₁ : ∀ v, value v → ctx𝔹 (fun X => .plus₁ v X)
-  | plusl₂ : ∀ r, lc r → ctx𝔹 (fun X => .plus₂ X r)
-  | plusr₂ : ∀ v, value v → ctx𝔹 (fun X => .plus₂ v X)
+  | binaryl₁ : ∀ op r, lc r → ctx𝔹 (fun X => .binary₁ op X r)
+  | binaryr₁ : ∀ op v, value v → ctx𝔹 (fun X => .binary₁ op v X)
+  | binaryl₂ : ∀ op r, lc r → ctx𝔹 (fun X => .binary₂ op X r)
+  | binaryr₂ : ∀ op v, value v → ctx𝔹 (fun X => .binary₂ op v X)
   | lift : ctx𝔹 (fun X => .lift X)
   | lets : ∀ e, closedb_at e 1 → ctx𝔹 (fun X => .lets X e)
   | load₁ : ctx𝔹 (fun X => .load₁ X)
@@ -180,8 +180,8 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
   induction HB with
   | appl₁ _ IH
   | appl₂ _ IH
-  | plusl₁ _ IH
-  | plusl₂ _ IH
+  | binaryl₁ _ _ IH
+  | binaryl₂ _ _ IH
   | lets _ IH
   | storel₁ _ IH
   | storel₂ _ IH =>
@@ -189,8 +189,8 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
     apply closedb_inc; apply IH; omega
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
-  | plusr₁ _ Hvalue
-  | plusr₂ _ Hvalue
+  | binaryr₁ _ _ Hvalue
+  | binaryr₂ _ _ Hvalue
   | storer₁ _ Hvalue
   | storer₂ _ Hvalue =>
     constructor
@@ -202,9 +202,9 @@ theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀
   by
   intros _ _ _ HB Hclose
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁| storel₂ =>
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ =>
     apply Hclose.left
-  | appr₁| appr₂| plusr₁| plusr₂| storer₁| storer₂ =>
+  | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     apply Hclose.right
   | lift| load₁| alloc₁| load₂| alloc₂ => apply Hclose
 
@@ -212,9 +212,9 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x
   by
   intros _ _ _ _ HB He₀ He₁
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁| storel₂ =>
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ =>
     constructor; apply He₁; apply He₀.right
-  | appr₁| appr₂| plusr₁| plusr₂| storer₁| storer₂ =>
+  | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     constructor; apply He₀.left; apply He₁
   | lift| load₁| alloc₁| load₂| alloc₂ => apply He₁
 
@@ -226,10 +226,10 @@ theorem fv_at𝔹 :
   by
   intros B e₀ e₁ HB Hsubst
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁| storel₂ =>
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ =>
     apply Set.union_subset_union
     apply Hsubst; rfl
-  | appr₁| appr₂| plusr₁| plusr₂| storer₁| storer₂ =>
+  | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     apply Set.union_subset_union
     rfl; apply Hsubst
   | lift| load₁| alloc₁| load₂| alloc₂ => apply Hsubst
@@ -245,15 +245,15 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦ope
   cases HB with
   | appl₁ _ IH
   | appl₂ _ IH
-  | plusl₁ _ IH
-  | plusl₂ _ IH
+  | binaryl₁ _ _ IH
+  | binaryl₂ _ _ IH
   | lets _ IH
   | storel₁ _ IH
   | storel₂ _ IH => simp; apply closedb_opening_id; apply IH
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
-  | plusr₁ _ Hvalue
-  | plusr₂ _ Hvalue
+  | binaryr₁ _ _ Hvalue
+  | binaryr₂ _ _ Hvalue
   | storer₁ _ Hvalue
   | storer₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
   | lift| load₁| alloc₁| load₂| alloc₂ => simp
@@ -262,9 +262,9 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x �
   by
   intros _ _ _ _ _ HB He₀
   cases HB with
-  | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁| storel₂ =>
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ =>
     simp; apply subst_closed_id; apply He₀.right
-  | appr₁| appr₂| plusr₁| plusr₂| storer₁| storer₂ =>
+  | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     simp; apply subst_closed_id; apply He₀.left
   | lift| load₁| alloc₁| load₂| alloc₂ => simp
 
@@ -399,8 +399,8 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x �
     simp at *; rw [← IH]; apply subst𝔹
     apply HB; apply He₀
     cases HB with
-    | appl₁| appl₂| plusl₁| plusl₂| lets| storel₁| storel₂ => apply He₀.left
-    | appr₁| appr₂| plusr₁| plusr₂| storer₁| storer₂ => apply He₀.right
+    | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ => apply He₀.left
+    | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ => apply He₀.right
     | lift| load₁| alloc₁| load₂| alloc₂ => apply He₀
 
 -- properties of ℚ contexts
@@ -435,8 +435,8 @@ inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
   | app₁ : ∀ e v, value v → head𝕄 (.app₁ (.lam₁ e) v) (open_subst v e)
   | app₂ : ∀ f arg, head𝕄 (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
-  | plus₁ : ∀ l r, head𝕄 (.plus₁ (.lit₁ l) (.lit₁ r)) (.lit₁ (l + r))
-  | plus₂ : ∀ l r, head𝕄 (.plus₂ (.code l) (.code r)) (.reflect (.plus₁ l r))
+  | binary₁ : ∀ op l r, head𝕄 (.binary₁ op (.lit₁ l) (.lit₁ r)) (.lit₁ (eval op l r))
+  | binary₂ : ∀ op l r, head𝕄 (.binary₂ op (.code l) (.code r)) (.reflect (.binary₁ op l r))
   | lift_lit : ∀ n, head𝕄 (.lift (.lit₁ n)) (.reflect (.lit₁ n))
   | lift_lam : ∀ e, head𝕄 (.lift (.lam₁ e)) (.lam𝕔 (map𝕔₀ e))
   | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))

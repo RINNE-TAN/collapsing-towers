@@ -104,8 +104,8 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.appl₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
-  case plus₁ =>
-    intros _ _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
+  case binary₁ =>
+    intros _ _ _ op e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
     cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -115,21 +115,21 @@ theorem progress_strengthened :
         | lit₁ e₀ =>
           cases Hvalue₁ with
           | lit₁ e₁ =>
-            exists st₀, .lit₁ (e₀ + e₁)
+            exists st₀, .lit₁ (eval op e₀ e₁)
             apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
-            simp; apply head𝕄.plus₁
+            simp; apply head𝕄.binary₁
           | _ => nomatch H₁
         | _ => nomatch H₀
       | inr Hstep₁ =>
         have ⟨st₁, _, Hstep₁⟩ := Hstep₁; exists st₁
-        apply step𝔹 _ _ _ _ _ _ (ctx𝔹.plusr₁ _ _); apply Hstep₁
+        apply step𝔹 _ _ _ _ _ _ (ctx𝔹.binaryr₁ _ _ _); apply Hstep₁
         apply Hvalue₀
     | inr Hstep₀ =>
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
-      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.plusl₁ _ _); apply Hstep₀
+      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.binaryl₁ _ _ _); apply Hstep₀
       apply typing_regular; apply H₁
-  case plus₂ =>
-    intros _ _ e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
+  case binary₂ =>
+    intros _ _ op e₀ e₁ _ _ H₀ H₁ IH₀ IH₁ HwellStore HDyn HEq𝕊
     right
     cases IH₀ HwellStore HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -139,19 +139,19 @@ theorem progress_strengthened :
         | code e₀ Hlc₀ =>
           cases Hvalue₁ with
           | code e₁ Hlc₁ =>
-            exists st₀, .reflect (.plus₁ e₀ e₁)
+            exists st₀, .reflect (.binary₁ op e₀ e₁)
             apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
             constructor; apply Hlc₀; apply Hlc₁
-            apply head𝕄.plus₂
+            apply head𝕄.binary₂
           | _ => nomatch H₁
         | _ => nomatch H₀
       | inr Hstep₁ =>
         have ⟨st₁, _, Hstep₁⟩ := Hstep₁; exists st₁
-        apply step𝔹 _ _ _ _ _ _ (ctx𝔹.plusr₂ _ _); apply Hstep₁
+        apply step𝔹 _ _ _ _ _ _ (ctx𝔹.binaryr₂ _ _ _); apply Hstep₁
         apply Hvalue₀
     | inr Hstep₀ =>
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
-      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.plusl₂ _ _); apply Hstep₀
+      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.binaryl₂ _ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case lit₁ => intros; left; constructor
   case lift_lit =>

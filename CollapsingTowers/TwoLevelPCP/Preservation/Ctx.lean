@@ -123,25 +123,25 @@ theorem decompose𝔹 :
     case app₂ IHf IHarg =>
       apply typing.app₂
       apply IHf; apply IH; apply IHarg
-  case plusl₁ =>
+  case binaryl₁ =>
     cases Hτ
-    case plus₁ IHl IHr =>
-      apply typing.plus₁
+    case binary₁ IHl IHr =>
+      apply typing.binary₁
       apply IH; apply IHl; apply IHr
-  case plusr₁ =>
+  case binaryr₁ =>
     cases Hτ
-    case plus₁ IHl IHr =>
-      apply typing.plus₁
+    case binary₁ IHl IHr =>
+      apply typing.binary₁
       apply IHl; apply IH; apply IHr
-  case plusl₂ =>
+  case binaryl₂ =>
     cases Hτ
-    case plus₂ IHl IHr =>
-      apply typing.plus₂
+    case binary₂ IHl IHr =>
+      apply typing.binary₂
       apply IH; apply IHl; apply IHr
-  case plusr₂ =>
+  case binaryr₂ =>
     cases Hτ
-    case plus₂ IHl IHr =>
-      apply typing.plus₂
+    case binary₂ IHl IHr =>
+      apply typing.binary₂
       apply IHl; apply IH; apply IHr
   case lift =>
     cases Hτ
@@ -318,9 +318,9 @@ theorem decompose𝔼 :
           apply typing.app₂
           apply weakening; apply Hf
           apply IH; apply He
-    case plusl₁ =>
+    case binaryl₁ =>
       cases Hτ
-      case plus₁ φ₀ φ₁ HX Hr =>
+      case binary₁ φ₀ φ₁ HX Hr =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
         constructor
@@ -331,12 +331,12 @@ theorem decompose𝔼 :
           have HEqφ : (φ ∪ (φ₁ ∪ φ𝔼)) = ((φ ∪ φ𝔼) ∪ φ₁) :=
             by cases φ₁ <;> cases φ <;> cases φ𝔼 <;> simp
           rw [HEqφ]
-          apply typing.plus₁
+          apply typing.binary₁
           apply IH; apply He
           apply weakening; apply Hr
-    case plusr₁ =>
+    case binaryr₁ =>
       cases Hτ
-      case plus₁ φ₀ φ₁ Hl HX =>
+      case binary₁ φ₀ φ₁ Hl HX =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, (φ₀ ∪ φ𝔼)
         constructor
@@ -347,12 +347,12 @@ theorem decompose𝔼 :
           have HEqφ : (φ ∪ (φ₀ ∪ φ𝔼)) = (φ₀ ∪ (φ ∪ φ𝔼)) :=
             by cases φ₀ <;> cases φ <;> cases φ𝔼 <;> simp
           rw [HEqφ]
-          apply typing.plus₁
+          apply typing.binary₁
           apply weakening; apply Hl
           apply IH; apply He
-    case plusl₂ =>
+    case binaryl₂ =>
       cases Hτ
-      case plus₂ φ₀ φ₁ HX Hr =>
+      case binary₂ φ₀ φ₁ HX Hr =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, .reify
         constructor
@@ -362,12 +362,12 @@ theorem decompose𝔼 :
           have HEqφ : (φ ∪ .reify) = .reify :=
             by cases φ <;> simp
           rw [HEqφ]
-          apply typing.plus₂
+          apply typing.binary₂
           apply IH; apply He
           apply weakening; apply Hr
-    case plusr₂ =>
+    case binaryr₂ =>
       cases Hτ
-      case plus₂ φ₀ φ₁ Hl HX =>
+      case binary₂ φ₀ φ₁ Hl HX =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, .reify
         constructor
@@ -377,7 +377,7 @@ theorem decompose𝔼 :
           have HEqφ : (φ ∪ .reify) = .reify :=
             by cases φ <;> simp
           rw [HEqφ]
-          apply typing.plus₂
+          apply typing.binary₂
           apply weakening; apply Hl
           apply IH; apply He
     case lift =>

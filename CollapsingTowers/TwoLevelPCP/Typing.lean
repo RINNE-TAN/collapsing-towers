@@ -52,14 +52,14 @@ mutual
       typing Γ σ .stat f (.fragment (.arrow τ𝕒 τ𝕓 ∅)) φ₀ →
       typing Γ σ .stat arg (.fragment τ𝕒) φ₁ →
       typing Γ σ .stat (.app₂ f arg) (.fragment τ𝕓) .reify
-    | plus₁ : ∀ Γ σ 𝕊 l r φ₀ φ₁,
+    | binary₁ : ∀ Γ σ 𝕊 op l r φ₀ φ₁,
       typing Γ σ 𝕊 l .nat φ₀ →
       typing Γ σ 𝕊 r .nat φ₁ →
-      typing Γ σ 𝕊 (.plus₁ l r) .nat (φ₀ ∪ φ₁)
-    | plus₂ : ∀ Γ σ l r φ₀ φ₁,
+      typing Γ σ 𝕊 (.binary₁ op l r) .nat (φ₀ ∪ φ₁)
+    | binary₂ : ∀ Γ σ op l r φ₀ φ₁,
       typing Γ σ .stat l (.fragment .nat) φ₀ →
       typing Γ σ .stat r (.fragment .nat) φ₁ →
-      typing Γ σ .stat (.plus₂ l r) (.fragment .nat) .reify
+      typing Γ σ .stat (.binary₂ op l r) (.fragment .nat) .reify
     | lit₁ : ∀ Γ σ 𝕊 n,
       typing Γ σ 𝕊 (.lit₁ n) .nat ∅
     | lift_lit : ∀ Γ σ n φ,
@@ -154,11 +154,11 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ _ IHf IHarg
     constructor; apply IHf; apply IHarg
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ _ IHb IHe
@@ -194,11 +194,11 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ _ IHf IHarg
     constructor; apply IHf; apply IHarg
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case lit₁ => simp
   case code_fragment =>
@@ -265,8 +265,8 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     constructor
     . apply HwellBinds₁.right.right
     . rw [Hφ₁, Hφ₂, HwellBinds₁.left]; rfl
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
     have ⟨HwellBinds₁, Hφ₁⟩ := IHl HEq𝕊
     have ⟨HwellBinds₂, Hφ₂⟩ := IHr HEq𝕊
     rw [← HEq𝕊]
@@ -408,14 +408,14 @@ theorem typing_shrink_strengthened :
     simp at HcloseΔ; apply typing.app₂
     apply IHf; apply HEqΓ; apply HcloseΔ.left
     apply IHarg; apply HEqΓ; apply HcloseΔ.right
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ HcloseΔ
-    simp at HcloseΔ; apply typing.plus₁
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ HcloseΔ
+    simp at HcloseΔ; apply typing.binary₁
     apply IHl; apply HEqΓ; apply HcloseΔ.left
     apply IHr; apply HEqΓ; apply HcloseΔ.right
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ HcloseΔ
-    simp at HcloseΔ; apply typing.plus₂
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ HcloseΔ
+    simp at HcloseΔ; apply typing.binary₂
     apply IHl; apply HEqΓ; apply HcloseΔ.left
     apply IHr; apply HEqΓ; apply HcloseΔ.right
   case lit₁ => intros; apply typing.lit₁
@@ -619,14 +619,14 @@ theorem weakening_strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ
     apply IHarg; apply HEqΓ
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
-    apply typing.plus₁
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
+    apply typing.binary₁
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
-    apply typing.plus₂
+  case binary₂ =>
+    intros _ _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
+    apply typing.binary₂
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
   case lit₁ => intros; apply typing.lit₁
@@ -772,9 +772,9 @@ theorem typing_escape_strengthened :
     apply typing.app₁
     apply IHf; apply HEq𝕊
     apply IHarg; apply HEq𝕊
-  case plus₁ =>
-    intros _ _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
-    apply typing.plus₁
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
+    apply typing.binary₁
     apply IHl; apply HEq𝕊
     apply IHr; apply HEq𝕊
   case lit₁ => intros; apply typing.lit₁
@@ -844,12 +844,12 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ _ IHf IHarg
     apply typing.app₂; apply IHf; apply IHarg
-  case plus₁ =>
+  case binary₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ IHl IHr
+    apply typing.binary₁; apply IHl; apply IHr
+  case binary₂ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
-    apply typing.plus₁; apply IHl; apply IHr
-  case plus₂ =>
-    intros _ _ _ _ _ _ _ _ IHl IHr
-    apply typing.plus₂; apply IHl; apply IHr
+    apply typing.binary₂; apply IHl; apply IHr
   case lit₁ => intros; apply typing.lit₁
   case lift_lit =>
     intros _ _ _ _ _ IH

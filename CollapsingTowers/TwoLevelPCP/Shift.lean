@@ -11,8 +11,8 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftl_at x n f) (shiftl_at x n arg)
   | .app₂ f arg => .app₂ (shiftl_at x n f) (shiftl_at x n arg)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (shiftl_at x n l) (shiftl_at x n r)
-  | .plus₂ l r => .plus₂ (shiftl_at x n l) (shiftl_at x n r)
+  | .binary₁ op l r => .binary₁ op (shiftl_at x n l) (shiftl_at x n r)
+  | .binary₂ op l r => .binary₂ op (shiftl_at x n l) (shiftl_at x n r)
   | .run e => .run (shiftl_at x n e)
   | .code e => .code (shiftl_at x n e)
   | .reflect e => .reflect (shiftl_at x n e)
@@ -36,8 +36,8 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftr_at x f) (shiftr_at x arg)
   | .app₂ f arg => .app₂ (shiftr_at x f) (shiftr_at x arg)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (shiftr_at x l) (shiftr_at x r)
-  | .plus₂ l r => .plus₂ (shiftr_at x l) (shiftr_at x r)
+  | .binary₁ op l r => .binary₁ op (shiftr_at x l) (shiftr_at x r)
+  | .binary₂ op l r => .binary₂ op (shiftr_at x l) (shiftr_at x r)
   | .run e => .run (shiftr_at x e)
   | .code e => .code (shiftr_at x e)
   | .reflect e => .reflect (shiftr_at x e)
@@ -67,8 +67,8 @@ theorem shiftl_opening_comm :
     . simp; rw [if_neg HLe]; rfl
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -102,8 +102,8 @@ theorem shiftl_closed_at :
     . simp; rw [if_neg HLe]; simp at *; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -133,8 +133,8 @@ theorem shiftl_id :
   | fvar y => simp; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -170,8 +170,8 @@ theorem shiftr_opening_comm :
     . simp; rw [if_neg HLe]; rfl
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -206,8 +206,8 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
     . simp; rw [if_neg Hyz]; simp at *; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -239,8 +239,8 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
     . simp; rw [if_neg Hxz]; simp at *; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -270,8 +270,8 @@ theorem shiftr_id :
   | fvar y => simp; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁

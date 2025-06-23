@@ -5,6 +5,15 @@ inductive Stage : Type where
   | stat
   | dyn
 
+inductive BinOp : Type where
+  | add
+  | mul
+
+@[simp]
+def eval : BinOp → ℕ → ℕ → ℕ
+  | .add => Nat.add
+  | .mul => Nat.mul
+
 inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effects)
@@ -19,8 +28,8 @@ inductive Expr : Type where
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
   | lit₁ (n : ℕ)
-  | plus₁ (l : Expr) (r : Expr)
-  | plus₂ (l : Expr) (r : Expr)
+  | binary₁ (op : BinOp) (l : Expr) (r : Expr)
+  | binary₂ (op : BinOp) (l : Expr) (r : Expr)
   | lift (e : Expr)
   | run (e : Expr)
   | code (e : Expr)

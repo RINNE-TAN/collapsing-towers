@@ -11,8 +11,8 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .app₁ f arg => .app₁ (subst x v f) (subst x v arg)
   | .app₂ f arg => .app₂ (subst x v f) (subst x v arg)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (subst x v l) (subst x v r)
-  | .plus₂ l r => .plus₂ (subst x v l) (subst x v r)
+  | .binary₁ op l r => .binary₁ op (subst x v l) (subst x v r)
+  | .binary₂ op l r => .binary₂ op (subst x v l) (subst x v r)
   | .run e => .run (subst x v e)
   | .code e => .code (subst x v e)
   | .reflect e => .reflect (subst x v e)
@@ -37,8 +37,8 @@ def opening (i : ℕ) (x : Expr) : Expr → Expr
   | .app₁ f arg => .app₁ (opening i x f) (opening i x arg)
   | .app₂ f arg => .app₂ (opening i x f) (opening i x arg)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (opening i x l) (opening i x r)
-  | .plus₂ l r => .plus₂ (opening i x l) (opening i x r)
+  | .binary₁ op l r => .binary₁ op (opening i x l) (opening i x r)
+  | .binary₂ op l r => .binary₂ op (opening i x l) (opening i x r)
   | .run e => .run (opening i x e)
   | .code e => .code (opening i x e)
   | .reflect e => .reflect (opening i x e)
@@ -70,8 +70,8 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (closing i x f) (closing i x arg)
   | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (closing i x l) (closing i x r)
-  | .plus₂ l r => .plus₂ (closing i x l) (closing i x r)
+  | .binary₁ op l r => .binary₁ op (closing i x l) (closing i x r)
+  | .binary₂ op l r => .binary₂ op (closing i x l) (closing i x r)
   | .run e => .run (closing i x e)
   | .code e => .code (closing i x e)
   | .reflect e => .reflect (closing i x e)
@@ -101,8 +101,8 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   | .app₁ e1 e2 => closed_at e1 f ∧ closed_at e2 f
   | .app₂ e1 e2 => closed_at e1 f ∧ closed_at e2 f
   | .lit₁ _ => true
-  | .plus₁ l r => closed_at l f ∧ closed_at r f
-  | .plus₂ l r => closed_at l f ∧ closed_at r f
+  | .binary₁ _ l r => closed_at l f ∧ closed_at r f
+  | .binary₂ _ l r => closed_at l f ∧ closed_at r f
   | .run e => closed_at e f
   | .code e => closed_at e f
   | .reflect e => closed_at e f
@@ -128,8 +128,8 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .app₁ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .app₂ e1 e2 => closedb_at e1 b ∧ closedb_at e2 b
   | .lit₁ _ => true
-  | .plus₁ l r => closedb_at l b ∧ closedb_at r b
-  | .plus₂ l r => closedb_at l b ∧ closedb_at r b
+  | .binary₁ _ l r => closedb_at l b ∧ closedb_at r b
+  | .binary₂ _ l r => closedb_at l b ∧ closedb_at r b
   | .run e => closedb_at e b
   | .code e => closedb_at e b
   | .reflect e => closedb_at e b
@@ -157,8 +157,8 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .app₁ f arg => .app₁ (maping𝕔 f i) (maping𝕔 arg i)
   | .app₂ f arg => .app₂ (maping𝕔 f i) (maping𝕔 arg i)
   | .lit₁ n => .lit₁ n
-  | .plus₁ l r => .plus₁ (maping𝕔 l i) (maping𝕔 r i)
-  | .plus₂ l r => .plus₂ (maping𝕔 l i) (maping𝕔 r i)
+  | .binary₁ op l r => .binary₁ op (maping𝕔 l i) (maping𝕔 r i)
+  | .binary₂ op l r => .binary₂ op (maping𝕔 l i) (maping𝕔 r i)
   | .run e => .run (maping𝕔 e i)
   | .code e => .code (maping𝕔 e i)
   | .reflect e => .reflect (maping𝕔 e i)
@@ -185,8 +185,8 @@ def fv : Expr → Set ℕ
   | .app₁ f arg => fv f ∪ fv arg
   | .app₂ f arg => fv f ∪ fv arg
   | .lit₁ _ => ∅
-  | .plus₁ l r => fv l ∪ fv r
-  | .plus₂ l r => fv l ∪ fv r
+  | .binary₁ _ l r => fv l ∪ fv r
+  | .binary₂ _ l r => fv l ∪ fv r
   | .run e => fv e
   | .code e => fv e
   | .reflect e => fv e
@@ -225,8 +225,8 @@ lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x
     simp; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -255,8 +255,8 @@ lemma subst_closed_id : ∀ x e v, closed_at e x → subst x v e = e :=
     simp; apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
@@ -295,8 +295,8 @@ lemma closedb_inc: ∀ t i j,
     apply IH; apply Hclose; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -314,8 +314,8 @@ lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   | fvar z => simp at *; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -351,8 +351,8 @@ lemma subst_closedb_at : ∀ x e v i, closedb_at v i → closedb_at e i → clos
     apply IH; apply closedb_inc; apply Hv; omega; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     constructor
@@ -388,8 +388,8 @@ lemma subst_closed_at : ∀ x e v y, closed_at v y → closed_at e y → closed_
     apply IH; apply Hv; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -422,8 +422,8 @@ lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) →
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -466,8 +466,8 @@ lemma open_closedb : ∀ i x e, closedb_at (opening i (.fvar x) e) i ↔ closedb
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -504,8 +504,8 @@ lemma close_closed : ∀ e x i, closed_at e (x + 1) ↔ closed_at (closing i x e
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -542,8 +542,8 @@ lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → close
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -574,8 +574,8 @@ lemma open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) 
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -607,8 +607,8 @@ lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (clos
     apply IH; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -637,8 +637,8 @@ lemma closedb_opening_id : ∀ e v i, closedb_at e i → opening i v e = e :=
     simp; apply IH; apply Hclosedb
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -675,8 +675,8 @@ lemma open_close_id : ∀ i e x, closedb_at e i → opening i (.fvar x) (closing
     simp; apply IH; apply Hlc
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -710,8 +710,8 @@ lemma close_open_id : ∀ i e x, closed_at e x → closing i x (opening i (.fvar
     simp; apply IH; apply Hclose
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -738,8 +738,8 @@ lemma subst_opening_comm :
     . simp; rw [if_neg HEq]; simp
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
@@ -789,8 +789,8 @@ lemma maping𝕔_intro :
     simp at *; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -829,8 +829,8 @@ lemma maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e i
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -865,8 +865,8 @@ lemma fv_if_closed_at :
     apply IH; apply Hclose; apply HIn
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -900,8 +900,8 @@ lemma fv_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -950,8 +950,8 @@ lemma fv_closed_at_dec :
     apply IH; apply Hclose; apply HFv
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -982,8 +982,8 @@ lemma fv_maping𝕔 : ∀ e i, fv e = fv (maping𝕔 e i) :=
   | alloc₂ _ IH => apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -1010,8 +1010,8 @@ lemma fv_empty_iff_closed : ∀ e, fv e = ∅ ↔ closed_at e 0 :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -1052,8 +1052,8 @@ lemma fv_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -1090,8 +1090,8 @@ lemma fv_subset_closed :
     apply IH; apply HFv
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
-  | plus₁ _ _ IH₀ IH₁
-  | plus₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁

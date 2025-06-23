@@ -20,14 +20,14 @@ theorem pure𝔹 :
     case app₁ φ₀ φ₁ φ₂ IHarg IHf =>
       cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> try contradiction
       constructor; apply IHarg
-  case plusl₁ =>
+  case binaryl₁ =>
     cases Hτ
-    case plus₁ φ₀ φ₁ IHl IHr =>
+    case binary₁ φ₀ φ₁ IHl IHr =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHl
-  case plusr₁ =>
+  case binaryr₁ =>
     cases Hτ
-    case plus₁ φ₀ φ₁ IHl IHr =>
+    case binary₁ φ₀ φ₁ IHl IHr =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHr
   case lets =>
