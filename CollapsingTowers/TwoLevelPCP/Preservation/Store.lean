@@ -165,6 +165,14 @@ theorem decompose𝕄_alloc :
         intros σ₁ loc Hloc
         apply typing.load₂
         apply IH; apply Hloc
+    case alloc₂ =>
+      cases Hτ
+      case alloc₂ HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.alloc₂
+        apply IH; apply Hloc
   | consℝ _ _ HR HM IH =>
     cases HR
     case lam𝕔 =>

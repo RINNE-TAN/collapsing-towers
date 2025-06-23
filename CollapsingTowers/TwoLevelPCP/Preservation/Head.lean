@@ -149,3 +149,11 @@ theorem preservation_head𝕄 :
         apply typing.reflect
         apply typing.load₁
         apply typing.fvar; apply Hbinds; apply HwellBinds
+  case alloc₂ =>
+    cases Hτ
+    case alloc₂ Hτ =>
+      cases Hτ
+      case code_fragment HwellBinds Hbinds =>
+        apply typing.reflect
+        apply typing.alloc₁
+        apply typing.fvar; apply Hbinds; apply HwellBinds

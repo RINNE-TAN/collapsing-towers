@@ -333,6 +333,21 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₂; apply Hstep
+  case alloc₂ =>
+    intros _ _  _ _ _ IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | code e Hlc =>
+        exists st₀, .reflect (.alloc₁ e)
+        apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+        apply Hlc
+        apply head𝕄.alloc₂
+      | _ => contradiction
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.alloc₂; apply Hstep
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

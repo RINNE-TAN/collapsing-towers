@@ -112,6 +112,9 @@ mutual
     | load₂ : ∀ Γ σ e φ,
       typing Γ σ .stat e (.fragment (.ref .nat)) φ →
       typing Γ σ .stat (.load₂ e) (.fragment .nat) .reify
+    | alloc₂ : ∀ Γ σ e φ,
+      typing Γ σ .stat e (.fragment .nat) φ →
+      typing Γ σ .stat (.alloc₂ e) (.fragment (.ref .nat)) .reify
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -509,6 +512,10 @@ theorem typing_shrink_strengthened :
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.load₂
     apply IH; apply HEqΓ; apply HcloseΔ
+  case alloc₂ =>
+    intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    apply typing.alloc₂
+    apply IH; apply HEqΓ; apply HcloseΔ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -685,6 +692,10 @@ theorem weakening_strengthened :
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing.load₂
     apply IH; apply HEqΓ
+  case alloc₂ =>
+    intros _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.alloc₂
+    apply IH; apply HEqΓ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure
@@ -856,6 +867,9 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case load₂ =>
     intros _ _ _ _ _ IH
     apply typing.load₂; apply IH
+  case alloc₂ =>
+    intros _ _ _ _ _ IH
+    apply typing.alloc₂; apply IH
   case pure =>
     intros _ _ _ _ _ IH
     apply typing_reification.pure; apply IH
