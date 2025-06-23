@@ -157,6 +157,14 @@ theorem decompose𝕄_alloc :
         apply typing.store₁
         apply weakening_store; apply Hl
         apply IH; apply Hloc
+    case load₂ =>
+      cases Hτ
+      case load₂ HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.load₂
+        apply IH; apply Hloc
   | consℝ _ _ HR HM IH =>
     cases HR
     case lam𝕔 =>

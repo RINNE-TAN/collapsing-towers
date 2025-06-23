@@ -23,6 +23,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .load₁ e => .load₁ (shiftl_at x n e)
   | .alloc₁ e => .alloc₁ (shiftl_at x n e)
   | .store₁ l r => .store₁ (shiftl_at x n l) (shiftl_at x n r)
+  | .load₂ e => .load₂ (shiftl_at x n e)
 
 @[simp]
 def shiftr_at (x : ℕ) : Expr → Expr
@@ -45,6 +46,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .load₁ e => .load₁ (shiftr_at x e)
   | .alloc₁ e => .alloc₁ (shiftr_at x e)
   | .store₁ l r => .store₁ (shiftr_at x l) (shiftr_at x r)
+  | .load₂ e => .load₂ (shiftr_at x e)
 
 theorem shiftl_opening_comm :
     ∀ x y e n i, x ≤ y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
@@ -75,7 +77,8 @@ theorem shiftl_opening_comm :
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH
 
 theorem shiftl_open₀_comm : ∀ x y e n, x ≤ y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
@@ -109,7 +112,8 @@ theorem shiftl_closed_at :
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftl_id :
@@ -137,7 +141,8 @@ theorem shiftl_id :
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH
 
 theorem shiftr_opening_comm :
@@ -169,7 +174,8 @@ theorem shiftr_opening_comm :
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH
 
 theorem shiftr_open₀_comm : ∀ x y e, x < y → shiftr_at x (open₀ y e) = open₀ (y - 1) (shiftr_at x e) :=
@@ -204,7 +210,8 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x e) x :=
@@ -234,7 +241,8 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH; apply Hclose
 
 theorem shiftr_id :
@@ -262,5 +270,6 @@ theorem shiftr_id :
   | reflect _ IH
   | run _ IH
   | load₁ _ IH
-  | alloc₁ _ IH =>
+  | alloc₁ _ IH
+  | load₂ _ IH =>
     simp; apply IH

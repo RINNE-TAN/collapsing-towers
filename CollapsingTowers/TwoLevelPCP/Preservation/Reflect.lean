@@ -9,7 +9,7 @@ theorem pure𝔹 :
     ∃ τ, typing Γ σ Stage.stat e τ ∅  :=
   by
   intros Γ σ B e τ φ HB HEqφ Hτ
-  cases HB
+  cases HB <;> try (cases Hτ <;> contradiction)
   case appl₁ =>
     cases Hτ
     case app₁ φ₀ φ₁ φ₂ IHarg IHf =>
@@ -20,14 +20,6 @@ theorem pure𝔹 :
     case app₁ φ₀ φ₁ φ₂ IHarg IHf =>
       cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> try contradiction
       constructor; apply IHarg
-  case appl₂ =>
-    cases Hτ
-    case app₂ IHf IHarg =>
-      contradiction
-  case appr₂ =>
-    cases Hτ
-    case app₂ IHf IHarg =>
-      contradiction
   case plusl₁ =>
     cases Hτ
     case plus₁ φ₀ φ₁ IHl IHr =>
@@ -38,20 +30,6 @@ theorem pure𝔹 :
     case plus₁ φ₀ φ₁ IHl IHr =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHr
-  case plusl₂ =>
-    cases Hτ
-    case plus₂ IHl IHr =>
-      contradiction
-  case plusr₂ =>
-    cases Hτ
-    case plus₂ IHl IHr =>
-      contradiction
-  case lift =>
-    cases Hτ
-    case lift_lit IHn =>
-      contradiction
-    case lift_lam IHe =>
-      contradiction
   case lets =>
     cases Hτ
     case lets φ₀ φ₁ HwellBinds IHb Hclose IHe =>

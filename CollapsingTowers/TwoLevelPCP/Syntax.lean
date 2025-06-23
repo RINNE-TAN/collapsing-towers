@@ -32,3 +32,4 @@ inductive Expr : Type where
   | load₁ (e : Expr)
   | alloc₁ (e : Expr)
   | store₁ (l : Expr) (r : Expr)
+  | load₂ (e : Expr)

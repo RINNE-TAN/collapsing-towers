@@ -141,3 +141,11 @@ theorem preservation_head𝕄 :
           apply Hclose; apply Hτ
       | reify _ _ _ _ _ Hτ =>
         cases Hτ; contradiction
+  case load₂ =>
+    cases Hτ
+    case load₂ Hτ =>
+      cases Hτ
+      case code_fragment HwellBinds Hbinds =>
+        apply typing.reflect
+        apply typing.load₁
+        apply typing.fvar; apply Hbinds; apply HwellBinds

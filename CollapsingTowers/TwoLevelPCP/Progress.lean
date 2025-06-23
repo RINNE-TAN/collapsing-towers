@@ -318,6 +318,21 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storel₁ _ _); apply Hstep₀
       apply typing_regular; apply H₁
+  case load₂ =>
+    intros _ _  _ _ _ IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | code e Hlc =>
+        exists st₀, .reflect (.load₁ e)
+        apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+        apply Hlc
+        apply head𝕄.load₂
+      | _ => contradiction
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.load₂; apply Hstep
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl
