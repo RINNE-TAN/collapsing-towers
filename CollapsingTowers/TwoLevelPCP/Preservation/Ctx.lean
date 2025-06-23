@@ -187,6 +187,16 @@ theorem decompose𝔹 :
     case alloc₂ IHe =>
       apply typing.alloc₂
       apply IH; apply IHe
+  case storel₂ =>
+    cases Hτ
+    case store₂ IHl IHr =>
+      apply typing.store₂
+      apply IH; apply IHl; apply IHr
+  case storer₂ =>
+    cases Hτ
+    case store₂ IHl IHr =>
+      apply typing.store₂
+      apply IHl; apply IH; apply IHr
 
 theorem decompose𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -498,4 +508,34 @@ theorem decompose𝔼 :
             by cases φ <;> simp
           rw [HEqφ]
           apply typing.alloc₂
+          apply IH; apply He
+    case storel₂ =>
+      cases Hτ
+      case store₂ φ₀ φ₁ HX Hr =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.store₂
+          apply IH; apply He
+          apply weakening; apply Hr
+    case storer₂ =>
+      cases Hτ
+      case store₂ φ₀ φ₁ Hl HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.store₂
+          apply weakening; apply Hl
           apply IH; apply He

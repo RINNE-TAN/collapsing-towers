@@ -115,6 +115,10 @@ mutual
     | alloc₂ : ∀ Γ σ e φ,
       typing Γ σ .stat e (.fragment .nat) φ →
       typing Γ σ .stat (.alloc₂ e) (.fragment (.ref .nat)) .reify
+    | store₂ : ∀ Γ σ l r φ₀ φ₁,
+      typing Γ σ .stat l (.fragment (.ref .nat)) φ₀ →
+      typing Γ σ .stat r (.fragment .nat) φ₁ →
+      typing Γ σ .stat (.store₂ l r) (.fragment .nat) .reify
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -167,6 +171,9 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   case store₁ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
+  case store₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
   apply Hτ
 
 theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → closed_at e Γ.length :=
@@ -207,6 +214,9 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   case loc => simp
   case store₁ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
+    constructor; apply IHl; apply IHr
+  case store₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
 
 theorem typing_reification_closed : ∀ Γ σ e τ φ, typing_reification Γ σ e τ φ → closed_at e Γ.length :=
@@ -516,6 +526,11 @@ theorem typing_shrink_strengthened :
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.alloc₂
     apply IH; apply HEqΓ; apply HcloseΔ
+  case store₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ HcloseΔ
+    simp at HcloseΔ; apply typing.store₂
+    apply IHl; apply HEqΓ; apply HcloseΔ.left
+    apply IHr; apply HEqΓ; apply HcloseΔ.right
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -696,6 +711,11 @@ theorem weakening_strengthened :
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing.alloc₂
     apply IH; apply HEqΓ
+  case store₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr Ψ HEqΓ
+    apply typing.store₂
+    apply IHl; apply HEqΓ
+    apply IHr; apply HEqΓ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing_reification.pure
@@ -870,6 +890,9 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case alloc₂ =>
     intros _ _ _ _ _ IH
     apply typing.alloc₂; apply IH
+  case store₂ =>
+    intros _ _ _ _ _ _ _ _ IHl IHr
+    apply typing.store₂; apply IHl; apply IHr
   case pure =>
     intros _ _ _ _ _ IH
     apply typing_reification.pure; apply IH

@@ -25,6 +25,7 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .store₁ l r => .store₁ (subst x v l) (subst x v r)
   | .load₂ e => .load₂ (subst x v e)
   | .alloc₂ e => .alloc₂ (subst x v e)
+  | .store₂ l r => .store₂ (subst x v l) (subst x v r)
 
 -- opening i t1 t2 = [i → t1]t2
 @[simp]
@@ -50,6 +51,7 @@ def opening (i : ℕ) (x : Expr) : Expr → Expr
   | .store₁ l r => .store₁ (opening i x l) (opening i x r)
   | .load₂ e => .load₂ (opening i x e)
   | .alloc₂ e => .alloc₂ (opening i x e)
+  | .store₂ l r => .store₂ (opening i x l) (opening i x r)
 
 @[simp]
 def open₀ (x : ℕ) : Expr → Expr :=
@@ -82,6 +84,7 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .store₁ l r => .store₁ (closing i x l) (closing i x r)
   | .load₂ e => .load₂ (closing i x e)
   | .alloc₂ e => .alloc₂ (closing i x e)
+  | .store₂ l r => .store₂ (closing i x l) (closing i x r)
 
 @[simp]
 def close₀ : ℕ → Expr → Expr :=
@@ -112,6 +115,7 @@ def closed_at (e : Expr) (f : ℕ) : Prop :=
   | .store₁ l r => closed_at l f ∧ closed_at r f
   | .load₂ e => closed_at e f
   | .alloc₂ e => closed_at e f
+  | .store₂ l r => closed_at l f ∧ closed_at r f
 
 -- closedness condition for bound variables
 @[simp]
@@ -138,6 +142,7 @@ def closedb_at (e : Expr) (b : ℕ) : Prop :=
   | .store₁ l r => closedb_at l b ∧ closedb_at r b
   | .load₂ e => closedb_at e b
   | .alloc₂ e => closedb_at e b
+  | .store₂ l r => closedb_at l b ∧ closedb_at r b
 
 @[simp]
 def lc e := closedb_at e 0
@@ -166,6 +171,7 @@ def maping𝕔 (e : Expr) (i : ℕ) : Expr :=
   | .store₁ l r => .store₁ (maping𝕔 l i) (maping𝕔 r i)
   | .load₂ e => .load₂ (maping𝕔 e i)
   | .alloc₂ e => .alloc₂ (maping𝕔 e i)
+  | .store₂ l r => .store₂ (maping𝕔 l i) (maping𝕔 r i)
 
 @[simp]
 def map𝕔₀ (e : Expr) : Expr := maping𝕔 e 0
@@ -193,6 +199,7 @@ def fv : Expr → Set ℕ
   | .store₁ l r => fv l ∪ fv r
   | .load₂ e => fv e
   | .alloc₂ e => fv e
+  | .store₂ l r => fv l ∪ fv r
 
 -- Properties
 lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x) e) = opening i v e :=
@@ -222,7 +229,8 @@ lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclosed.left
     apply IH₁; apply Hclosed.right
@@ -249,7 +257,8 @@ lemma subst_closed_id : ∀ x e v, closed_at e x → subst x v e = e :=
   | app₂ _ _ IH₀ IH₁
   | plus₁ _ _ IH₀ IH₁
   | plus₂ _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
@@ -290,7 +299,8 @@ lemma closedb_inc: ∀ t i j,
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     apply And.intro
     . apply IH₀; apply Hclose.left; omega
     . apply IH₁; apply Hclose.right; omega
@@ -308,7 +318,8 @@ lemma closed_inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
@@ -342,7 +353,8 @@ lemma subst_closedb_at : ∀ x e v i, closedb_at v i → closedb_at e i → clos
   | app₂ _ _ IH₀ IH₁
   | plus₁ _ _ IH₀ IH₁
   | plus₂ _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     apply IH₀; apply Hv; apply He.left
     apply IH₁; apply Hv; apply He.right
@@ -380,7 +392,8 @@ lemma subst_closed_at : ∀ x e v y, closed_at v y → closed_at e y → closed_
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     apply IH₀; apply Hv; apply He.left
     apply IH₁; apply Hv; apply He.right
@@ -413,7 +426,8 @@ lemma subst_closed_at_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) →
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
@@ -456,7 +470,8 @@ lemma open_closedb : ∀ i x e, closedb_at (opening i (.fvar x) e) i ↔ closedb
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     . intro Hclosedb
       constructor
@@ -493,7 +508,8 @@ lemma close_closed : ∀ e x i, closed_at e (x + 1) ↔ closed_at (closing i x e
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     . intro Hclose; constructor
       apply (IH₀ _).mp; apply Hclose.left
@@ -530,7 +546,8 @@ lemma open_subst_closed : ∀ x e v i, closed_at e x → closed_at v x → close
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
@@ -561,7 +578,8 @@ lemma open_closed : ∀ e x i, closed_at e x → closed_at (opening i (.fvar x) 
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     intro Hclose; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
@@ -593,7 +611,8 @@ lemma close_closedb : ∀ e x i j, j < i → closedb_at e i → closedb_at (clos
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     intro Hclose; constructor
     apply IH₀; omega; apply Hclose.left
     apply IH₁; omega; apply Hclose.right
@@ -622,7 +641,8 @@ lemma closedb_opening_id : ∀ e v i, closedb_at e i → opening i v e = e :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclosedb.left
     apply IH₁; apply Hclosedb.right
@@ -659,7 +679,8 @@ lemma open_close_id : ∀ i e x, closedb_at e i → opening i (.fvar x) (closing
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hlc.left
     apply IH₁; apply Hlc.right
@@ -693,7 +714,8 @@ lemma close_open_id : ∀ i e x, closed_at e x → closing i x (opening i (.fvar
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
@@ -718,7 +740,8 @@ lemma subst_opening_comm :
   | app₂ _ _ IH₀ IH₁
   | plus₁ _ _ IH₀ IH₁
   | plus₂ _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hclosedb
     apply IH₁; apply Hclosedb
@@ -770,7 +793,8 @@ lemma maping𝕔_intro :
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp at *; constructor
     apply IH₀; apply Hclosed.left
     apply IH₁; apply Hclosed.right
@@ -809,7 +833,8 @@ lemma maping𝕔_closed : ∀ x e i, closed_at e x → closed_at (maping𝕔 e i
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     apply IH₀; apply He.left
     apply IH₁; apply He.right
@@ -844,7 +869,8 @@ lemma fv_if_closed_at :
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     cases HIn
     case inl H₀ =>
       apply IH₀; apply Hclose.left; apply H₀
@@ -878,7 +904,8 @@ lemma fv_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     apply Set.Subset.trans; apply IH₀
     apply Set.union_subset_union; rfl; simp
@@ -927,7 +954,8 @@ lemma fv_closed_at_dec :
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp at HFv; constructor
     apply IH₀; apply Hclose.left; apply HFv.left
     apply IH₁; apply Hclose.right; apply HFv.right
@@ -958,7 +986,8 @@ lemma fv_maping𝕔 : ∀ e i, fv e = fv (maping𝕔 e i) :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
 
 lemma fv_empty_iff_closed : ∀ e, fv e = ∅ ↔ closed_at e 0 :=
@@ -985,7 +1014,8 @@ lemma fv_empty_iff_closed : ∀ e, fv e = ∅ ↔ closed_at e 0 :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     constructor
     . intro HFv; simp at HFv
       constructor
@@ -1026,7 +1056,8 @@ lemma fv_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
     rw [Set.union_diff_distrib]
 
@@ -1063,7 +1094,8 @@ lemma fv_subset_closed :
   | plus₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁
-  | store₁ _ _ IH₀ IH₁ =>
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp at HFv
     constructor
     apply IH₀; apply HFv.left

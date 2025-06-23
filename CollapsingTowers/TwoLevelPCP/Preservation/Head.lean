@@ -157,3 +157,15 @@ theorem preservation_head𝕄 :
         apply typing.reflect
         apply typing.alloc₁
         apply typing.fvar; apply Hbinds; apply HwellBinds
+  case store₂ =>
+    cases Hτ
+    case store₂ Hτ₀ Hτ₁ =>
+      cases Hτ₀
+      case code_fragment HwellBinds₀ Hbinds₀ =>
+        cases Hτ₁
+        case code_fragment HwellBinds₁ Hbinds₁ =>
+          apply typing.reflect
+          rw [← union_pure_right ∅, ← union_pure_right (∅ ∪ ∅)]
+          apply typing.store₁
+          apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
+          apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
