@@ -26,6 +26,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .load₂ e => .load₂ (shiftl_at x n e)
   | .alloc₂ e => .alloc₂ (shiftl_at x n e)
   | .store₂ l r => .store₂ (shiftl_at x n l) (shiftl_at x n r)
+  | .ifz₁ c l r => .ifz₁ (shiftl_at x n c) (shiftl_at x n l) (shiftl_at x n r)
 
 @[simp]
 def shiftr_at (x : ℕ) : Expr → Expr
@@ -51,6 +52,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .load₂ e => .load₂ (shiftr_at x e)
   | .alloc₂ e => .alloc₂ (shiftr_at x e)
   | .store₂ l r => .store₂ (shiftr_at x l) (shiftr_at x r)
+  | .ifz₁ c l r => .ifz₁ (shiftr_at x c) (shiftr_at x l) (shiftr_at x r)
 
 theorem shiftl_opening_comm :
     ∀ x y e n i, x ≤ y → shiftl_at x n (opening i (.fvar y) e) = opening i (.fvar (y + n)) (shiftl_at x n e) :=
@@ -86,6 +88,10 @@ theorem shiftl_opening_comm :
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    simp; constructor
+    apply IH₀; constructor
+    apply IH₁; apply IH₂
 
 theorem shiftl_open₀_comm : ∀ x y e n, x ≤ y → shiftl_at x n (open₀ y e) = open₀ (y + n) (shiftl_at x n e) := by
   intros _ _ _ _; apply shiftl_opening_comm
@@ -123,6 +129,11 @@ theorem shiftl_closed_at :
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH; apply Hclose
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    simp; constructor
+    apply IH₀; apply Hclose.left; constructor
+    apply IH₁; apply Hclose.right.left
+    apply IH₂; apply Hclose.right.right
 
 theorem shiftl_id :
     ∀ x e n, closed_at e x → shiftl_at x n e = e :=
@@ -154,6 +165,11 @@ theorem shiftl_id :
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    intro Hclose; simp; constructor
+    apply IH₀; apply Hclose.left; constructor
+    apply IH₁; apply Hclose.right.left
+    apply IH₂; apply Hclose.right.right
 
 theorem shiftr_opening_comm :
     ∀ x y e i, x < y → shiftr_at x (opening i (.fvar y) e) = opening i (.fvar (y - 1)) (shiftr_at x e) :=
@@ -189,6 +205,10 @@ theorem shiftr_opening_comm :
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    simp; constructor
+    apply IH₀; constructor
+    apply IH₁; apply IH₂
 
 theorem shiftr_open₀_comm : ∀ x y e, x < y → shiftr_at x (open₀ y e) = open₀ (y - 1) (shiftr_at x e) :=
   by
@@ -227,6 +247,11 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH; apply Hclose
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    simp; constructor
+    apply IH₀; apply Hclose.left; constructor
+    apply IH₁; apply Hclose.right.left
+    apply IH₂; apply Hclose.right.right
 
 theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x e) x :=
   by
@@ -260,6 +285,11 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH; apply Hclose
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    simp; constructor
+    apply IH₀; apply Hclose.left; constructor
+    apply IH₁; apply Hclose.right.left
+    apply IH₂; apply Hclose.right.right
 
 theorem shiftr_id :
     ∀ x e, closed_at e (x + 1) → shiftr_at x e = e :=
@@ -291,3 +321,8 @@ theorem shiftr_id :
   | load₂ _ IH
   | alloc₂ _ IH =>
     simp; apply IH
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂ =>
+    intro Hclose; simp; constructor
+    apply IH₀; apply Hclose.left; constructor
+    apply IH₁; apply Hclose.right.left
+    apply IH₂; apply Hclose.right.right
