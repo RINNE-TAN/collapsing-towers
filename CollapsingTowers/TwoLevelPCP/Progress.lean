@@ -373,7 +373,36 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storel₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
-  case ifz₁ => admit
+  case ifz₁ =>
+    intros _ _ c l r _ _ _ _ Hl Hr IH _ _ HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | lit₁ n =>
+        cases n with
+        | zero =>
+          exists st₀, l
+          apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+          constructor; simp
+          constructor
+          apply typing_regular; apply Hl
+          apply typing_regular; apply Hr
+          apply head𝕄.ifz₁_left
+        | succ =>
+          exists st₀, r
+          apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+          constructor; simp
+          constructor
+          apply typing_regular; apply Hl
+          apply typing_regular; apply Hr
+          apply head𝕄.ifz₁_right
+      | _ => contradiction
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.ifz₁ _ _ _ _); apply Hstep
+      apply typing_regular; apply Hl
+      apply typing_regular; apply Hr
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

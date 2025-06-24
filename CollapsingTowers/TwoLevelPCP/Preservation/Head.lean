@@ -12,8 +12,7 @@ theorem preservation_head𝕄 :
   cases Hhead
   case lets Hvalue =>
     cases Hτ
-    case lets e v τ φ _ _ Hτv Hclose
-      Hτe =>
+    case lets e v τ φ _ _ Hτv Hclose Hτe =>
       have Hpure : φ = ∅ := by
         apply typing_value_pure
         apply Hτv; apply Hvalue
@@ -24,8 +23,7 @@ theorem preservation_head𝕄 :
     cases Hτ
     case app₁ φ Hτv Hτf =>
       cases Hτf
-      case lam₁ Hclose _
-        Hτe =>
+      case lam₁ Hclose _ Hτe =>
         have Hpure : φ = ∅ := by
           apply typing_value_pure
           apply Hτv; apply Hvalue
@@ -169,5 +167,17 @@ theorem preservation_head𝕄 :
           apply typing.store₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
-  case ifz₁_left => admit
-  case ifz₁_right => admit
+  case ifz₁_left =>
+    cases Hτ
+    case ifz₁ φ _ Hτv Hτl Hτr =>
+        have Hpure : φ = ∅ := by
+          apply typing_value_pure
+          apply Hτv; constructor
+        rw [Hpure, union_pure_left]; apply Hτl
+  case ifz₁_right =>
+    cases Hτ
+    case ifz₁ φ _ Hτv Hτl Hτr =>
+        have Hpure : φ = ∅ := by
+          apply typing_value_pure
+          apply Hτv; constructor
+        rw [Hpure, union_pure_left]; apply Hτr

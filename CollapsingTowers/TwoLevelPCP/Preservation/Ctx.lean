@@ -197,7 +197,11 @@ theorem decompose𝔹 :
     case store₂ IHl IHr =>
       apply typing.store₂
       apply IHl; apply IH; apply IHr
-  case ifz₁ => admit
+  case ifz₁ =>
+    cases Hτ
+    case ifz₁ IHc IHl IHr =>
+      apply typing.ifz₁
+      apply IH; apply IHc; apply IHl; apply IHr
 
 theorem decompose𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -540,4 +544,20 @@ theorem decompose𝔼 :
           apply typing.store₂
           apply weakening; apply Hl
           apply IH; apply He
-    case ifz₁ => admit
+    case ifz₁ =>
+      cases Hτ
+      case ifz₁ φ₀ φ₁ HX Hl Hr =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
+        constructor
+        . rw [HEqφ]
+          cases φ₁ <;> cases φ𝕖 <;> cases φ𝔼 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ (φ₁ ∪ φ𝔼)) = ((φ ∪ φ𝔼) ∪ φ₁) :=
+            by cases φ₁ <;> cases φ <;> cases φ𝔼 <;> simp
+          rw [HEqφ]
+          apply typing.ifz₁
+          apply IH; apply He
+          apply weakening; apply Hl
+          apply weakening; apply Hr
