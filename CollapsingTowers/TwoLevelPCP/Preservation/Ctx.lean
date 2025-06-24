@@ -197,6 +197,7 @@ theorem decompose𝔹 :
     case store₂ IHl IHr =>
       apply typing.store₂
       apply IHl; apply IH; apply IHr
+  case ifz₁ => admit
 
 theorem decompose𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -539,3 +540,4 @@ theorem decompose𝔼 :
           apply typing.store₂
           apply weakening; apply Hl
           apply IH; apply He
+    case ifz₁ => admit

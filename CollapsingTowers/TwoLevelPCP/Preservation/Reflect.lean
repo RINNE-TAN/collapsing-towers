@@ -55,6 +55,7 @@ theorem pure𝔹 :
     case store₁ φ₀ φ₁ IHl IHr =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHr
+  case ifz₁ => admit
 
 theorem preservation_reflect :
   ∀ Γ σ E e τ φ,

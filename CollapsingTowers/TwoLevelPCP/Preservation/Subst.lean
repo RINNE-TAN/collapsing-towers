@@ -243,6 +243,7 @@ theorem preservation_subst_strengthened :
     apply typing.store₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
+  case ifz₁ => admit
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -474,6 +475,7 @@ theorem preservation_maping_strengthened :
     apply typing.store₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
+  case ifz₁ => admit
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure

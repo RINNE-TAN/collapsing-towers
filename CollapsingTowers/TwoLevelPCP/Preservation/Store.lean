@@ -191,6 +191,7 @@ theorem decompose𝕄_alloc :
         apply typing.store₂
         apply weakening_store; apply Hl
         apply IH; apply Hloc
+    case ifz₁ => admit
   | consℝ _ _ HR HM IH =>
     cases HR
     case lam𝕔 =>

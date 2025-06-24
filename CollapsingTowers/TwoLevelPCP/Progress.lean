@@ -373,6 +373,7 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storel₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
+  case ifz₁ => admit
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

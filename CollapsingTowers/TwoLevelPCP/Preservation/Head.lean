@@ -169,3 +169,5 @@ theorem preservation_head𝕄 :
           apply typing.store₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
+  case ifz₁_left => admit
+  case ifz₁_right => admit

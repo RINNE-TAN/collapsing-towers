@@ -37,6 +37,7 @@ inductive ctx𝔹 : Ctx → Prop where
   | alloc₂ : ctx𝔹 (fun X => .alloc₂ X)
   | storel₂ : ∀ r, lc r → ctx𝔹 (fun X => .store₂ X r)
   | storer₂ : ∀ v, value v → ctx𝔹 (fun X => .store₂ v X)
+  | ifz₁ : ∀ l r, lc l → lc r → ctx𝔹 (fun X => .ifz₁ X l r)
 
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
   | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 (close₀ lvl X))
@@ -197,6 +198,11 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
     apply closedb_inc; apply value_lc; apply Hvalue; omega
     apply Hlc
   | lift| load₁| alloc₁| load₂| alloc₂ => apply Hlc
+  | ifz₁ _ _ IH₀ IH₁ =>
+    constructor; apply Hlc
+    constructor
+    apply closedb_inc; apply IH₀; omega
+    apply closedb_inc; apply IH₁; omega
 
 theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₀ x :=
   by
@@ -207,6 +213,7 @@ theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀
   | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     apply Hclose.right
   | lift| load₁| alloc₁| load₂| alloc₂ => apply Hclose
+  | ifz₁ => apply Hclose.left
 
 theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₁ x → closed_at B⟦e₁⟧ x :=
   by
@@ -217,6 +224,7 @@ theorem closed_at𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x
   | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     constructor; apply He₀.left; apply He₁
   | lift| load₁| alloc₁| load₂| alloc₂ => apply He₁
+  | ifz₁ => constructor; apply He₁; apply He₀.right
 
 theorem fv_at𝔹 :
   ∀ B e₀ e₁,
@@ -233,11 +241,17 @@ theorem fv_at𝔹 :
     apply Set.union_subset_union
     rfl; apply Hsubst
   | lift| load₁| alloc₁| load₂| alloc₂ => apply Hsubst
+  | ifz₁ =>
+    apply Set.union_subset_union
+    apply Set.union_subset_union
+    apply Hsubst; rfl; rfl
 
 theorem fv_decompose𝔹 : ∀ B e, ctx𝔹 B → fv e ⊆ fv B⟦e⟧ :=
   by
   intros _ _ HB
   cases HB <;> simp
+  case ifz₁ =>
+    rw [Set.union_assoc]; simp
 
 theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦open₀ x e⟧ :=
   by
@@ -257,6 +271,10 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦ope
   | storer₁ _ Hvalue
   | storer₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
   | lift| load₁| alloc₁| load₂| alloc₂ => simp
+  | ifz₁ _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply closedb_opening_id; apply IH₀
+    apply closedb_opening_id; apply IH₁
 
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x → subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
@@ -267,6 +285,10 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x �
   | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ =>
     simp; apply subst_closed_id; apply He₀.left
   | lift| load₁| alloc₁| load₂| alloc₂ => simp
+  | ifz₁ =>
+    simp; constructor
+    apply subst_closed_id; apply He₀.right.left
+    apply subst_closed_id; apply He₀.right.right
 
 -- properties of ℝ contexts
 
@@ -402,6 +424,7 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x �
     | appl₁| appl₂| binaryl₁| binaryl₂| lets| storel₁| storel₂ => apply He₀.left
     | appr₁| appr₂| binaryr₁| binaryr₂| storer₁| storer₂ => apply He₀.right
     | lift| load₁| alloc₁| load₂| alloc₂ => apply He₀
+    | ifz₁ => apply He₀.left
 
 -- properties of ℚ contexts
 
@@ -445,6 +468,8 @@ inductive head𝕄 : Expr → Expr → Prop where
   | load₂ : ∀ e, head𝕄 (.load₂ (.code e)) (.reflect (.load₁ e))
   | alloc₂ : ∀ e, head𝕄 (.alloc₂ (.code e)) (.reflect (.alloc₁ e))
   | store₂ : ∀ l r, head𝕄 (.store₂ (.code l) (.code r)) (.reflect (.store₁ l r))
+  | ifz₁_left : ∀ l r, head𝕄 (.ifz₁ (.lit₁ 0) l r) l
+  | ifz₁_right : ∀ l r n, head𝕄 (.ifz₁ (.lit₁ (.succ n)) l r) r
 
 inductive shead𝕄 : (Store × Expr) → (Store × Expr) → Prop where
   | load₁ : ∀ st l e, binds l e st → shead𝕄 (st, (.load₁ (.loc l))) (st, e)
