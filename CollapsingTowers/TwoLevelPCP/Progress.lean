@@ -444,6 +444,20 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.ifz₂ _ _ _ _); apply Hstep
       apply typing_reification_regular; apply H₁
       apply typing_reification_regular; apply H₂
+  case fix₁ =>
+    intros _ _ _ e _ _ _ H IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | lam₁ e Hlc =>
+        exists st₀, open_subst (.fix₁ (.lam₁ e)) e
+        apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+        apply Hlc; apply head𝕄.fix₁
+      | _ => nomatch H
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.fix₁; apply Hstep
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

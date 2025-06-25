@@ -60,6 +60,11 @@ theorem pure𝔹 :
     case ifz₁ φ₀ φ₁ IHc IHl IHr =>
       cases φ₀ <;> cases φ₁ <;> try contradiction
       constructor; apply IHc
+  case fix₁ =>
+    cases Hτ
+    case fix₁ φ₀ φ₁ IHe =>
+      cases φ₀ <;> cases φ₁ <;> try contradiction
+      constructor; apply IHe
 
 theorem preservation_reflect :
   ∀ Γ σ E e τ φ,

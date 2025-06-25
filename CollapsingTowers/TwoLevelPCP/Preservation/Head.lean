@@ -201,3 +201,9 @@ theorem preservation_head𝕄 :
         | reify _ _ _ _ _ Hτr =>
           cases Hτr; apply typing.fvar
           assumption; assumption
+  case fix₁ =>
+    cases Hτ
+    case fix₁ φ₀ φ₁ Hτ =>
+      cases Hτ
+      case lam₁ e Hclose HwellBinds Hτe =>
+        admit
