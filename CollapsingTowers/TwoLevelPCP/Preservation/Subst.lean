@@ -244,8 +244,14 @@ theorem preservation_subst_strengthened :
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
     apply typing.ifz₁
+    apply IHc; apply HEqΓ; apply Hτv
+    apply IHl; apply HEqΓ; apply Hτv
+    apply IHr; apply HEqΓ; apply Hτv
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
+    apply typing.ifz₂
     apply IHc; apply HEqΓ; apply Hτv
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
@@ -481,8 +487,14 @@ theorem preservation_maping_strengthened :
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
     apply typing.ifz₁
+    apply IHc; apply HEqΓ; apply Hτv
+    apply IHl; apply HEqΓ; apply Hτv
+    apply IHr; apply HEqΓ; apply Hτv
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Δ HEqΓ Hτv
+    apply typing.ifz₂
     apply IHc; apply HEqΓ; apply Hτv
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv

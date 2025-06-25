@@ -120,10 +120,15 @@ mutual
       typing Γ σ .stat r (.fragment .nat) φ₁ →
       typing Γ σ .stat (.store₂ l r) (.fragment .nat) .reify
     | ifz₁ : ∀ Γ σ c l r τ φ₀ φ₁,
-      typing Γ σ .stat c .nat φ₀ →
-      typing Γ σ .stat l τ φ₁ →
-      typing Γ σ .stat r τ φ₁ →
-      typing Γ σ .stat (.ifz₁ c l r) τ (φ₀ ∪ φ₁)
+      typing Γ σ 𝕊 c .nat φ₀ →
+      typing Γ σ 𝕊 l τ φ₁ →
+      typing Γ σ 𝕊 r τ φ₁ →
+      typing Γ σ 𝕊 (.ifz₁ c l r) τ (φ₀ ∪ φ₁)
+    | ifz₂ : ∀ Γ σ c l r τ φ₀ φ₁ φ₂,
+      typing Γ σ .stat c (.fragment .nat) φ₀ →
+      typing_reification Γ σ l (.rep τ) φ₁ →
+      typing_reification Γ σ r (.rep τ) φ₂ →
+      typing Γ σ .stat (.ifz₂ c l r) (.fragment τ) .reify
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -180,10 +185,19 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
     intros _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    constructor; apply IHc
+    constructor; apply IHl; apply IHr
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
     constructor; apply IHc
     constructor; apply IHl; apply IHr
   apply Hτ
+
+theorem typing_reification_regular : ∀ Γ σ e τ φ, typing_reification Γ σ e τ φ → lc e :=
+  by
+  intros Γ σ e τ φ Hτ
+  cases Hτ <;> (apply typing_regular; assumption)
 
 theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → closed_at e Γ.length :=
   by
@@ -228,7 +242,11 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
     intros _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    constructor; apply IHc
+    constructor; apply IHl; apply IHr
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
     constructor; apply IHc
     constructor; apply IHl; apply IHr
 
@@ -321,6 +339,14 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     constructor
     . simp
     . rw [Hφ₁, Hφ₂]; rfl
+  case ifz₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr HEq𝕊
+    have ⟨HwellBinds₀, Hφ₀⟩ := IHc HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHl HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHr HEq𝕊
+    constructor
+    . apply HwellBinds₁
+    . rw [Hφ₀, Hφ₁]; rfl
   case pure => simp
   case reify => simp
 
@@ -545,8 +571,14 @@ theorem typing_shrink_strengthened :
     apply IHl; apply HEqΓ; apply HcloseΔ.left
     apply IHr; apply HEqΓ; apply HcloseΔ.right
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ HcloseΔ
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ HcloseΔ
     simp at HcloseΔ; apply typing.ifz₁
+    apply IHc; apply HEqΓ; apply HcloseΔ.left.left
+    apply IHl; apply HEqΓ; apply HcloseΔ.left.right
+    apply IHr; apply HEqΓ; apply HcloseΔ.right
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ HcloseΔ
+    simp at HcloseΔ; apply typing.ifz₂
     apply IHc; apply HEqΓ; apply HcloseΔ.left.left
     apply IHl; apply HEqΓ; apply HcloseΔ.left.right
     apply IHr; apply HEqΓ; apply HcloseΔ.right
@@ -736,8 +768,14 @@ theorem weakening_strengthened :
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ
     apply typing.ifz₁
+    apply IHc; apply HEqΓ
+    apply IHl; apply HEqΓ
+    apply IHr; apply HEqΓ
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr Ψ HEqΓ
+    apply typing.ifz₂
     apply IHc; apply HEqΓ
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
@@ -765,6 +803,22 @@ theorem weakening1 : ∀ Γ σ 𝕊 e τ𝕒 τ𝕓 φ, typing Γ σ 𝕊 e τ�
   intros Γ σ 𝕊 e τ𝕒 τ𝕓 φ
   rw [← List.singleton_append]
   apply weakening
+
+theorem weakening_reification : ∀ Γ Δ σ e τ φ, typing_reification Γ σ e τ φ → typing_reification (Δ ++ Γ) σ e τ φ :=
+  by
+  intros Γ Δ σ e τ φ Hτ
+  rw [← List.nil_append Δ]
+  rw [← shiftl_id _ e]
+  cases Hτ
+  case pure Hτ =>
+    apply typing_reification.pure
+    apply weakening_strengthened
+    apply Hτ; rfl
+  case reify Hτ =>
+    apply typing_reification.reify
+    apply weakening_strengthened
+    apply Hτ; rfl
+  apply typing_reification_closed; apply Hτ
 
 theorem typing_escape_strengthened :
   ∀ Γ σ e τ,
@@ -822,6 +876,12 @@ theorem typing_escape_strengthened :
   case store₁ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr HEq𝕊
     apply typing.store₁
+    apply IHl; apply HEq𝕊
+    apply IHr; apply HEq𝕊
+  case ifz₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr HEq𝕊
+    apply typing.ifz₁
+    apply IHc; apply HEq𝕊
     apply IHl; apply HEq𝕊
     apply IHr; apply HEq𝕊
   case pure => simp
@@ -919,8 +979,11 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
     intros _ _ _ _ _ _ _ _ IHl IHr
     apply typing.store₂; apply IHl; apply IHr
   case ifz₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
     apply typing.ifz₁; apply IHc; apply IHl; apply IHr
+  case ifz₂ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
+    apply typing.ifz₂; apply IHc; apply IHl; apply IHr
   case pure =>
     intros _ _ _ _ _ IH
     apply typing_reification.pure; apply IH
@@ -928,6 +991,17 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
     intros _ _ _ _ _ _ IH
     apply typing_reification.reify; apply IH
   apply Hτ
+
+theorem weakening_store_reification : ∀ Γ σ₀ σ₁ e τ φ, typing_reification Γ σ₀ e τ φ → typing_reification Γ (σ₁ ++ σ₀) e τ φ :=
+  by
+  intros Γ σ₀ σ₁ e τ φ Hτ
+  cases Hτ
+  case pure Hτ =>
+    apply typing_reification.pure
+    apply weakening_store; apply Hτ
+  case reify Hτ =>
+    apply typing_reification.reify
+    apply weakening_store; apply Hτ
 
 theorem weakening1_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 e τ φ → typing Γ (σ₁ :: σ₀) 𝕊 e τ φ :=
   by

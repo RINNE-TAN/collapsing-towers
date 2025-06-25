@@ -374,7 +374,7 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.storel₂ _ _); apply Hstep₀
       apply typing_regular; apply H₁
   case ifz₁ =>
-    intros _ _ c l r _ _ _ _ Hl Hr IH _ _ HwellStore HDyn HEq𝕊
+    intros _ _ _ c l r _ _ _ _ Hl Hr IH _ _ HwellStore HDyn HEq𝕊
     right
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
@@ -403,6 +403,47 @@ theorem progress_strengthened :
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.ifz₁ _ _ _ _); apply Hstep
       apply typing_regular; apply Hl
       apply typing_regular; apply Hr
+  case ifz₂ =>
+    intros _ _ c l r _ _ _ _ H₀ H₁ H₂ IH₀ IH₁ IH₂ HwellStore HDyn HEq𝕊
+    right
+    cases IH₀ HwellStore HDyn HEq𝕊 with
+    | inl Hvalue₀ =>
+      cases IH₁ HwellStore HDyn with
+      | inl Hvalue₁ =>
+        cases IH₂ HwellStore HDyn with
+        | inl Hvalue₂ =>
+          cases Hvalue₀ with
+          | code e₀ Hlc₀ =>
+            cases Hvalue₁ with
+            | code e₁ Hlc₁ =>
+              cases Hvalue₂ with
+              | code e₂ Hlc₂ =>
+                exists st₀, .reflect (.ifz₁ e₀ e₁ e₂)
+                apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+                constructor; apply Hlc₀
+                constructor; apply Hlc₁
+                apply Hlc₂
+                apply head𝕄.ifz₂
+              | _ => nomatch H₂
+            | _ => nomatch H₁
+          | _ => nomatch H₀
+        | inr Hstep =>
+          have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+          constructor
+          apply stepℝ _ _ _ _ _ _ _ (ctxℝ.ifzr₂ _ _ _ _); apply Hstep
+          apply Hvalue₀
+          apply Hvalue₁
+      | inr Hstep =>
+        have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+        constructor
+        apply stepℝ _ _ _ _ _ _ _ (ctxℝ.ifzl₂ _ _ _ _); apply Hstep
+        apply Hvalue₀
+        apply typing_reification_regular; apply H₂
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ (ctx𝔹.ifz₂ _ _ _ _); apply Hstep
+      apply typing_reification_regular; apply H₁
+      apply typing_reification_regular; apply H₂
   case pure =>
     intros _ _ _ _ _ IH HwellStore HDyn
     apply IH; apply HwellStore; apply HDyn; rfl

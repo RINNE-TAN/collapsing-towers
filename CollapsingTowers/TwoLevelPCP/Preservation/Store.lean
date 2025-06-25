@@ -201,6 +201,16 @@ theorem decompose𝕄_alloc :
         apply IH; apply Hloc
         apply weakening_store; apply Hl
         apply weakening_store; apply Hr
+    case ifz₂ =>
+      cases Hτ
+      case ifz₂ HX Hl Hr =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.ifz₂
+        apply IH; apply Hloc
+        apply weakening_store_reification; apply Hl
+        apply weakening_store_reification; apply Hr
   | consℝ _ _ HR HM IH =>
     cases HR
     case lam𝕔 =>
@@ -307,6 +317,46 @@ theorem decompose𝕄_alloc :
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
           rw [(fv_empty_iff_closed loc).mpr]; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
+    case ifzl₂ =>
+      cases Hτ
+      case ifz₂ Hτc HX Hτr =>
+        cases HX
+        case pure HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.ifz₂
+          apply weakening_store; apply Hτc
+          apply typing_reification.pure; apply IH; apply Hloc
+          apply weakening_store_reification; apply Hτr
+        case reify HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.ifz₂
+          apply weakening_store; apply Hτc
+          apply typing_reification.reify; apply IH; apply Hloc
+          apply weakening_store_reification; apply Hτr
+    case ifzr₂ =>
+      cases Hτ
+      case ifz₂ Hτc Hτl HX =>
+        cases HX
+        case pure HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.ifz₂
+          apply weakening_store; apply Hτc
+          apply weakening_store_reification; apply Hτl
+          apply typing_reification.pure; apply IH; apply Hloc
+        case reify HX =>
+          have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+          constructor; apply Hτv
+          intros σ₁ loc Hloc
+          apply typing.ifz₂
+          apply weakening_store; apply Hτc
+          apply weakening_store_reification; apply Hτl
+          apply typing_reification.reify; apply IH; apply Hloc
 
 theorem decompose𝕄_store :
   ∀ Γ σ M e τ φ,
@@ -348,6 +398,18 @@ theorem decompose𝕄_store :
     case run =>
       cases Hτ
       case run Hτ =>
+        cases Hτ
+        all_goals
+          apply IH; assumption; apply HEqlvl
+    case ifzl₂ =>
+      cases Hτ
+      case ifz₂ Hτ _ =>
+        cases Hτ
+        all_goals
+          apply IH; assumption; apply HEqlvl
+    case ifzr₂ =>
+      cases Hτ
+      case ifz₂ Hτ =>
         cases Hτ
         all_goals
           apply IH; assumption; apply HEqlvl

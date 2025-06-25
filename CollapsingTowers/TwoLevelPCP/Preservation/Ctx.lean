@@ -90,6 +90,38 @@ theorem decomposeℝ :
         rw [← fv_empty_iff_closed] at Hclose
         rw [Hclose] at Hsubst
         simp at Hsubst; apply Hsubst
+  case ifzl₂ =>
+    cases Hτ
+    case ifz₂ Hτc Hτl Hτr =>
+      cases Hτl
+      case pure Hτl =>
+        apply typing.ifz₂
+        apply Hτc
+        apply typing_reification.pure
+        rw [← List.nil_append Γ]; apply IH; rfl
+        apply Hτl; apply Hτr
+      case reify Hτl =>
+        apply typing.ifz₂
+        apply Hτc
+        apply typing_reification.reify
+        rw [← List.nil_append Γ]; apply IH; rfl
+        apply Hτl; apply Hτr
+  case ifzr₂ =>
+    cases Hτ
+    case ifz₂ Hτc Hτl Hτr =>
+      cases Hτr
+      case pure Hτr =>
+        apply typing.ifz₂
+        apply Hτc; apply Hτl
+        apply typing_reification.pure
+        rw [← List.nil_append Γ]; apply IH; rfl
+        apply Hτr
+      case reify Hτr =>
+        apply typing.ifz₂
+        apply Hτc; apply Hτl
+        apply typing_reification.reify
+        rw [← List.nil_append Γ]; apply IH; rfl
+        apply Hτr
 
 theorem decompose𝔹 :
   ∀ Γ σ B e₀ e₁ τ φ,
@@ -201,6 +233,11 @@ theorem decompose𝔹 :
     cases Hτ
     case ifz₁ IHc IHl IHr =>
       apply typing.ifz₁
+      apply IH; apply IHc; apply IHl; apply IHr
+  case ifz₂ =>
+    cases Hτ
+    case ifz₂ IHc IHl IHr =>
+      apply typing.ifz₂
       apply IH; apply IHc; apply IHl; apply IHr
 
 theorem decompose𝕄 :
@@ -561,3 +598,19 @@ theorem decompose𝔼 :
           apply IH; apply He
           apply weakening; apply Hl
           apply weakening; apply Hr
+    case ifz₂ =>
+      cases Hτ
+      case ifz₂ φ₀ φ₁ φ₂ HX Hl Hr =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.ifz₂
+          apply IH; apply He
+          apply weakening_reification; apply Hl
+          apply weakening_reification; apply Hr

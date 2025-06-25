@@ -147,6 +147,21 @@ theorem decomposeℚ_reflect :
         apply closed_at_decompose𝔼 _ (.reflect e) _ HE
         apply Hclose
         apply closed_at𝔼; apply HE; apply Hclose; simp
+    case ifzl₂ =>
+      cases Hτ
+      case ifz₂ Hτc IH Hτr =>
+        apply typing.ifz₂
+        apply Hτc
+        apply preservation_reflect
+        apply HE; apply IH
+        apply Hτr
+    case ifzr₂ =>
+      cases Hτ
+      case ifz₂ Hτc Hτl IH =>
+        apply typing.ifz₂
+        apply Hτc; apply Hτl
+        apply preservation_reflect
+        apply HE; apply IH
   | cons𝔹 _ _ HB _ IHQ =>
     simp; apply decompose𝔹
     apply HB; intros _ _ IHτ

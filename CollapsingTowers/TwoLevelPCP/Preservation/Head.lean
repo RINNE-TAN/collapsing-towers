@@ -181,3 +181,23 @@ theorem preservation_head𝕄 :
           apply typing_value_pure
           apply Hτv; constructor
         rw [Hpure, union_pure_left]; apply Hτr
+  case ifz₂ =>
+    cases Hτ
+    case ifz₂ Hτc Hτl Hτr =>
+      cases Hτc
+      case code_fragment HwellBinds Hbinds =>
+        apply typing.reflect; rw [← union_pure_right ∅]
+        apply typing.ifz₁
+        apply typing.fvar; apply Hbinds; apply HwellBinds
+        cases Hτl with
+        | pure _ _ _ _ Hτl =>
+          cases Hτl; assumption
+        | reify _ _ _ _ _ Hτl =>
+          cases Hτl; apply typing.fvar
+          assumption; assumption
+        cases Hτr with
+        | pure _ _ _ _ Hτr =>
+          cases Hτr; assumption
+        | reify _ _ _ _ _ Hτr =>
+          cases Hτr; apply typing.fvar
+          assumption; assumption
