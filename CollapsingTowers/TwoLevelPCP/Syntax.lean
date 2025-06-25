@@ -45,3 +45,4 @@ inductive Expr : Type where
   | alloc₂ (e : Expr)
   | store₂ (l : Expr) (r : Expr)
   | ifz₁ (c : Expr) (l : Expr) (r : Expr)
+  | ifz₂ (c : Expr) (l : Expr) (r : Expr)

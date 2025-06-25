@@ -74,7 +74,7 @@ theorem preservation_reflect :
     induction HE generalizing τ with
     | hole => nomatch Hτ
     | cons𝔹 _ _ HB _ IH =>
-      have ⟨_, Hτ⟩ := pure𝔹 _ _ _ _ _ _ HB (by rfl) Hτ
+      have ⟨_, Hτ⟩ := pure𝔹 _ _ _ _ _ _ HB rfl Hτ
       apply IH; apply Hτ
   case reify τ Hτ =>
     have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := decompose𝔼 _ _ _ _ _ _ HE Hτ
