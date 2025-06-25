@@ -46,3 +46,4 @@ inductive Expr : Type where
   | store₂ (l : Expr) (r : Expr)
   | ifz₁ (c : Expr) (l : Expr) (r : Expr)
   | ifz₂ (c : Expr) (l : Expr) (r : Expr)
+  | fix₁ (e : Expr)
