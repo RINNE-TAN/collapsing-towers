@@ -47,3 +47,4 @@ inductive Expr : Type where
   | ifz₁ (c : Expr) (l : Expr) (r : Expr)
   | ifz₂ (c : Expr) (l : Expr) (r : Expr)
   | fix₁ (e : Expr)
+  | fix₂ (e : Expr)
