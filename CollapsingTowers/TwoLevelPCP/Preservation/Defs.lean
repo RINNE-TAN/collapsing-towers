@@ -14,18 +14,32 @@ theorem preservation_strengthened :
   by
   intro Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀ Hstep HwellStore Hτ
   cases Hstep
-  case step𝕄 HM Hlc Hhead𝕄 =>
-    exists [], φ₀; constructor
-    . apply HwellStore
-    . cases Hτ
-      all_goals
-        next Hτ =>
-        simp; constructor
-        apply decompose𝕄
-        apply HM; apply Hlc
-        apply fv_head𝕄; apply Hhead𝕄; intros _ _ _
-        apply preservation_head𝕄; apply Hhead𝕄; apply Hlc
-        apply Hτ
+  case step𝕄 M e₀ e₁ HM Hlc Hhead𝕄 =>
+    have HFv : fv e₁ ⊆ fv e₀ := by apply fv_head𝕄; apply Hhead𝕄
+    have IH :
+      ∀ Γ τ φ₀,
+        typing Γ σ₀ .stat e₀ τ φ₀ →
+        ∃ φ₁,
+          typing Γ σ₀ .stat e₁ τ φ₁ ∧
+          φ₁ ≤ φ₀ :=
+      by
+      intros _ _ _; apply preservation_head𝕄
+      apply Hhead𝕄; apply Hlc
+    exists []
+    cases Hτ
+    case pure Hτ =>
+      have ⟨φ₁, Hτ, Hφ⟩ := decompose𝕄_head _ _ _ _ _ _ _ HM Hlc HFv IH Hτ
+      rw [le_pure _ Hφ] at Hτ
+      exists ∅
+      constructor; apply HwellStore
+      constructor; apply typing_reification.pure; apply Hτ
+      rfl
+    case reify Hτ =>
+      have ⟨φ₁, Hτ, Hφ⟩ := decompose𝕄_head _ _ _ _ _ _ _ HM Hlc HFv IH Hτ
+      exists φ₁
+      constructor; apply HwellStore
+      constructor; apply typing_reification.reify; apply Hτ
+      apply Hφ
   case store𝕄 HM Hlc Hstore𝕄 =>
     cases Hτ
     case pure Hτ =>

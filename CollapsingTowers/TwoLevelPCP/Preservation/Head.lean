@@ -2,15 +2,18 @@
 import CollapsingTowers.TwoLevelPCP.Typing
 import CollapsingTowers.TwoLevelPCP.Preservation.Subst
 theorem preservation_head𝕄 :
-  ∀ Γ σ e₀ e₁ τ φ,
+  ∀ Γ σ e₀ e₁ τ φ₀,
     head𝕄 e₀ e₁ →
     lc e₀ →
-    typing Γ σ .stat e₀ τ φ →
-    typing Γ σ .stat e₁ τ φ :=
+    typing Γ σ .stat e₀ τ φ₀ →
+    ∃ φ₁,
+      typing Γ σ .stat e₁ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
   by
-  intros Γ σ e₀ e₁ τ φ Hhead Hlc Hτ
+  intros Γ σ e₀ e₁ τ φ₀ Hhead Hlc Hτ
   cases Hhead
   case lets Hvalue =>
+    exists φ₀; constructor
     cases Hτ
     case lets e v τ φ _ _ Hτv Hclose Hτe =>
       have Hpure : φ = ∅ := by
@@ -19,7 +22,9 @@ theorem preservation_head𝕄 :
       rw [Hpure] at Hτv; rw [Hpure, open_subst, union_pure_left]
       rw [← subst_intro]; apply preservation_subst
       apply Hτv; apply Hτe; apply Hclose
+    rfl
   case app₁ Hvalue =>
+    exists φ₀; constructor
     cases Hτ
     case app₁ φ Hτv Hτf =>
       cases Hτf
@@ -30,7 +35,9 @@ theorem preservation_head𝕄 :
         rw [Hpure] at Hτv; rw [Hpure, open_subst, union_pure_right, union_pure_right]
         rw [← subst_intro]; apply preservation_subst
         apply Hτv; apply Hτe; apply Hclose
+    rfl
   case app₂ =>
+    exists φ₀; constructor
     cases Hτ
     case app₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -42,11 +49,15 @@ theorem preservation_head𝕄 :
           apply typing.app₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
+    rfl
   case binary₁ =>
+    exists φ₀; constructor
     cases Hτ
     case binary₁ Hl Hr =>
       cases Hl; cases Hr; apply typing.lit₁
+    rfl
   case binary₂ =>
+    exists φ₀; constructor
     cases Hτ
     case binary₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -58,13 +69,17 @@ theorem preservation_head𝕄 :
           apply typing.binary₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
+    rfl
   case lift_lit =>
+    exists φ₀; constructor
     cases Hτ
     case lift_lit Hτ =>
       apply typing.reflect
       apply typing.lit₁
     case lift_lam => contradiction
+    rfl
   case lift_lam e =>
+    exists φ₀; constructor
     cases Hτ
     case lift_lit => contradiction
     case lift_lam Hτ =>
@@ -82,7 +97,9 @@ theorem preservation_head𝕄 :
         apply HwellBinds
         apply (close_closed _ _ _).mp; apply subst_closed_at; simp; apply open_closed; apply Hclose
         apply Hclose
+    rfl
   case lam𝕔 e =>
+    exists φ₀; constructor
     cases Hτ
     case lam𝕔 HwellBinds Hclose Hτ =>
       apply typing.reflect
@@ -104,7 +121,9 @@ theorem preservation_head𝕄 :
           apply Hbinds; apply HwellBinds
       apply HwellBinds
       apply Hclose
+    rfl
   case let𝕔 e =>
+    exists φ₀; constructor
     cases Hτ
     case let𝕔 HwellBinds Hτb Hclose Hτe =>
       apply typing.code_rep
@@ -128,7 +147,9 @@ theorem preservation_head𝕄 :
           apply Hbinds; apply HwellBinds
       apply HwellBinds
       apply Hclose
+    rfl
   case run =>
+    exists φ₀; constructor
     cases Hτ
     case run Hclose Hτ =>
       cases Hτ with
@@ -139,7 +160,9 @@ theorem preservation_head𝕄 :
           apply Hclose; apply Hτ
       | reify _ _ _ _ _ Hτ =>
         cases Hτ; contradiction
+    rfl
   case load₂ =>
+    exists φ₀; constructor
     cases Hτ
     case load₂ Hτ =>
       cases Hτ
@@ -147,7 +170,9 @@ theorem preservation_head𝕄 :
         apply typing.reflect
         apply typing.load₁
         apply typing.fvar; apply Hbinds; apply HwellBinds
+    rfl
   case alloc₂ =>
+    exists φ₀; constructor
     cases Hτ
     case alloc₂ Hτ =>
       cases Hτ
@@ -155,7 +180,9 @@ theorem preservation_head𝕄 :
         apply typing.reflect
         apply typing.alloc₁
         apply typing.fvar; apply Hbinds; apply HwellBinds
+    rfl
   case store₂ =>
+    exists φ₀; constructor
     cases Hτ
     case store₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -167,21 +194,27 @@ theorem preservation_head𝕄 :
           apply typing.store₁
           apply typing.fvar; apply Hbinds₀; apply HwellBinds₀
           apply typing.fvar; apply Hbinds₁; apply HwellBinds₁
+    rfl
   case ifz₁_left =>
+    exists φ₀; constructor
     cases Hτ
     case ifz₁ φ _ Hτv Hτl Hτr =>
         have Hpure : φ = ∅ := by
           apply typing_value_pure
           apply Hτv; constructor
         rw [Hpure, union_pure_left]; apply Hτl
+    rfl
   case ifz₁_right =>
+    exists φ₀; constructor
     cases Hτ
     case ifz₁ φ _ Hτv Hτl Hτr =>
         have Hpure : φ = ∅ := by
           apply typing_value_pure
           apply Hτv; constructor
         rw [Hpure, union_pure_left]; apply Hτr
+    rfl
   case ifz₂ =>
+    exists φ₀; constructor
     cases Hτ
     case ifz₂ Hτc Hτl Hτr =>
       cases Hτc
@@ -201,7 +234,9 @@ theorem preservation_head𝕄 :
         | reify _ _ _ _ _ Hτr =>
           cases Hτr; apply typing.fvar
           assumption; assumption
+    rfl
   case fix₁ =>
+    exists φ₀; constructor
     cases Hτ
     case fix₁ Hτ =>
       cases Hτ
@@ -210,7 +245,9 @@ theorem preservation_head𝕄 :
         apply typing.fix₁; apply typing.lam₁
         apply Hτe; apply HwellBinds; apply Hclose
         apply Hτe; apply Hclose
+    rfl
   case fix₂ =>
+    exists φ₀; constructor
     cases Hτ
     case fix₂ Hτ =>
       cases Hτ
@@ -218,3 +255,4 @@ theorem preservation_head𝕄 :
         apply typing.reflect
         apply typing.fix₁
         apply typing.fvar; apply Hbinds; apply HwellBinds
+    rfl

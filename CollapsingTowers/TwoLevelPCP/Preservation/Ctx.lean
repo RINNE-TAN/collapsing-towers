@@ -1,6 +1,389 @@
 
 import Mathlib.Tactic
 import CollapsingTowers.TwoLevelPCP.Typing
+theorem decomposeℝ_head :
+  ∀ intro Γ σ R e₀ e₁ τ φ₀,
+    ctxℝ intro Γ.length R →
+    lc e₀ →
+    (∀ Δ τ φ₀,
+      Δ.length = intro →
+      typing (Δ ++ Γ) σ .stat e₀ τ φ₀ →
+      ∃ φ₁,
+        typing (Δ ++ Γ) σ .stat e₁ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    fv e₁ ⊆ fv e₀ →
+    typing Γ σ .stat (R e₀) τ φ₀ →
+    ∃ φ₁,
+      typing Γ σ .stat (R e₁) τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros intro Γ σ R e₀ e₁ τ φ₀ HR Hlc IH Hsubst Hτ
+  cases HR
+  case lam𝕔 =>
+    cases Hτ
+    case lam𝕔 HwellBinds Hclose IHe =>
+      rw [open_close_id₀] at IHe
+      . cases IHe with
+        | pure _ _ _ _ IHe₀ =>
+          rw [← List.singleton_append] at IHe₀
+          have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+          rw [le_pure _ Hφ] at IHe₀
+          constructor; constructor
+          apply typing.lam𝕔
+          apply typing_reification.pure
+          rw [open_close_id₀]
+          apply IHe₀; apply typing_regular; apply IHe₀
+          apply HwellBinds
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
+          apply typing_closed; apply IHe₀; rfl
+        | reify _ _ _ _ _ IHe₀ =>
+          rw [← List.singleton_append] at IHe₀
+          have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+          constructor; constructor
+          apply typing.lam𝕔
+          apply typing_reification.reify
+          rw [open_close_id₀]
+          apply IHe₀; apply typing_regular; apply IHe₀
+          apply HwellBinds
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
+          apply typing_closed; apply IHe₀; rfl
+      apply Hlc
+  case let𝕔 =>
+    cases Hτ
+    case let𝕔 HwellBinds IHb Hclose IHe =>
+      rw [open_close_id₀] at IHe
+      . cases IHe with
+        | pure _ _ _ _ IHe₀ =>
+          rw [← List.singleton_append] at IHe₀
+          have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+          rw [le_pure _ Hφ] at IHe₀
+          constructor; constructor
+          apply typing.let𝕔; apply IHb
+          apply typing_reification.pure
+          rw [open_close_id₀]
+          apply IHe₀; apply typing_regular; apply IHe₀
+          apply HwellBinds
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
+          apply typing_closed; apply IHe₀; rfl
+        | reify _ _ _ _ _ IHe₀ =>
+          rw [← List.singleton_append] at IHe₀
+          have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+          constructor; constructor
+          apply typing.let𝕔; apply IHb
+          apply typing_reification.reify
+          rw [open_close_id₀]
+          apply IHe₀; apply typing_regular; apply IHe₀
+          apply HwellBinds
+          apply (close_closed _ _ _).mp; rw [← List.length_cons]
+          apply typing_closed; apply IHe₀; rfl
+      apply Hlc
+  case run =>
+    cases Hτ
+    case run Hclose Hτ =>
+      cases Hτ with
+      | pure _ _ _ _ IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        rw [le_pure _ Hφ] at IHe₀
+        constructor; constructor
+        apply typing.run
+        apply typing_reification.pure
+        apply IHe₀
+        rw [← fv_empty_iff_closed]
+        rw [← fv_empty_iff_closed] at Hclose
+        rw [Hclose] at Hsubst
+        simp at Hsubst; apply Hsubst; rfl
+      | reify _ _ _ _ _ IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        constructor; constructor
+        apply typing.run
+        apply typing_reification.reify
+        apply IHe₀
+        rw [← fv_empty_iff_closed]
+        rw [← fv_empty_iff_closed] at Hclose
+        rw [Hclose] at Hsubst
+        simp at Hsubst; apply Hsubst; rfl
+  case ifzl₂ =>
+    cases Hτ
+    case ifz₂ Hτc IHe₀ Hτr =>
+      cases IHe₀
+      case pure IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        rw [le_pure _ Hφ] at IHe₀
+        constructor; constructor
+        apply typing.ifz₂
+        apply Hτc
+        apply typing_reification.pure
+        apply IHe₀; apply Hτr; rfl
+      case reify IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        constructor; constructor
+        apply typing.ifz₂
+        apply Hτc
+        apply typing_reification.reify
+        apply IHe₀; apply Hτr; rfl
+  case ifzr₂ =>
+    cases Hτ
+    case ifz₂ Hτc Hτl IHe₀ =>
+      cases IHe₀
+      case pure IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        rw [le_pure _ Hφ] at IHe₀
+        constructor; constructor
+        apply typing.ifz₂
+        apply Hτc; apply Hτl
+        apply typing_reification.pure
+        apply IHe₀; rfl
+      case reify IHe₀ =>
+        rw [← List.nil_append Γ] at IHe₀
+        have ⟨_, IHe₀, Hφ⟩ := IH _ _ _ rfl IHe₀
+        constructor; constructor
+        apply typing.ifz₂
+        apply Hτc; apply Hτl
+        apply typing_reification.reify
+        apply IHe₀; rfl
+
+theorem decompose𝔹_head :
+  ∀ Γ σ B e₀ e₁ τ φ₀,
+    ctx𝔹 B →
+    (∀ τ φ₀,
+      typing Γ σ .stat e₀ τ φ₀ →
+      ∃ φ₁,
+        typing Γ σ .stat e₁ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    typing Γ σ .stat (B e₀) τ φ₀ →
+    ∃ φ₁,
+      typing Γ σ .stat (B e₁) τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros Γ σ B e₀ e₁ τ φ₀ HB IH Hτ
+  cases HB
+  case appl₁ =>
+    cases Hτ
+    case app₁ IHarg IHf =>
+      have ⟨_, IHf, Hφ⟩ := IH _ _ IHf
+      constructor; constructor
+      apply typing.app₁
+      apply IHf; apply IHarg
+      apply le_union_left; apply le_union_right; apply Hφ
+  case appr₁ =>
+    cases Hτ
+    case app₁ IHarg IHf =>
+      have ⟨_, IHarg, Hφ⟩ := IH _ _ IHarg
+      constructor; constructor
+      apply typing.app₁
+      apply IHf; apply IHarg
+      apply le_union_right; apply Hφ
+  case appl₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      have ⟨_, IHf, Hφ⟩ := IH _ _ IHf
+      constructor; constructor
+      apply typing.app₂
+      apply IHf; apply IHarg
+      rfl
+  case appr₂ =>
+    cases Hτ
+    case app₂ IHf IHarg =>
+      have ⟨_, IHarg, Hφ⟩ := IH _ _ IHarg
+      constructor; constructor
+      apply typing.app₂
+      apply IHf; apply IHarg
+      rfl
+  case binaryl₁ =>
+    cases Hτ
+    case binary₁ IHl IHr =>
+      have ⟨_, IHl, Hφ⟩ := IH _ _ IHl
+      constructor; constructor
+      apply typing.binary₁
+      apply IHl; apply IHr
+      apply le_union_left; apply Hφ
+  case binaryr₁ =>
+    cases Hτ
+    case binary₁ IHl IHr =>
+      have ⟨_, IHr, Hφ⟩ := IH _ _ IHr
+      constructor; constructor
+      apply typing.binary₁
+      apply IHl; apply IHr
+      apply le_union_right; apply Hφ
+  case binaryl₂ =>
+    cases Hτ
+    case binary₂ IHl IHr =>
+      have ⟨_, IHl, Hφ⟩ := IH _ _ IHl
+      constructor; constructor
+      apply typing.binary₂
+      apply IHl; apply IHr
+      rfl
+  case binaryr₂ =>
+    cases Hτ
+    case binary₂ IHl IHr =>
+      have ⟨_, IHr, Hφ⟩ := IH _ _ IHr
+      constructor; constructor
+      apply typing.binary₂
+      apply IHl; apply IHr
+      rfl
+  case lift =>
+    cases Hτ
+    case lift_lit IHn =>
+      have ⟨_, IHn, Hφ⟩ := IH _ _ IHn
+      constructor; constructor
+      apply typing.lift_lit
+      apply IHn
+      rfl
+    case lift_lam IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.lift_lam
+      apply IHe
+      rfl
+  case lets =>
+    cases Hτ
+    case lets HwellBinds IHb Hclose IHe =>
+      have ⟨_, IHb, Hφ⟩ := IH _ _ IHb
+      constructor; constructor
+      apply typing.lets
+      apply IHb; apply IHe
+      apply HwellBinds; apply Hclose
+      apply le_union_left; apply Hφ
+  case load₁ =>
+    cases Hτ
+    case load₁ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.load₁
+      apply IHe
+      apply Hφ
+  case alloc₁ =>
+    cases Hτ
+    case alloc₁ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.alloc₁
+      apply IHe
+      apply Hφ
+  case storel₁ =>
+    cases Hτ
+    case store₁ IHl IHr =>
+      have ⟨_, IHl, Hφ⟩ := IH _ _ IHl
+      constructor; constructor
+      apply typing.store₁
+      apply IHl; apply IHr
+      apply le_union_left; apply Hφ
+  case storer₁ =>
+    cases Hτ
+    case store₁ IHl IHr =>
+      have ⟨_, IHr, Hφ⟩ := IH _ _ IHr
+      constructor; constructor
+      apply typing.store₁
+      apply IHl; apply IHr
+      apply le_union_right; apply Hφ
+  case load₂ =>
+    cases Hτ
+    case load₂ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.load₂
+      apply IHe
+      rfl
+  case alloc₂ =>
+    cases Hτ
+    case alloc₂ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.alloc₂
+      apply IHe
+      rfl
+  case storel₂ =>
+    cases Hτ
+    case store₂ IHl IHr =>
+      have ⟨_, IHl, Hφ⟩ := IH _ _ IHl
+      constructor; constructor
+      apply typing.store₂
+      apply IHl; apply IHr
+      rfl
+  case storer₂ =>
+    cases Hτ
+    case store₂ IHl IHr =>
+      have ⟨_, IHr, Hφ⟩ := IH _ _ IHr
+      constructor; constructor
+      apply typing.store₂
+      apply IHl; apply IHr
+      rfl
+  case ifz₁ =>
+    cases Hτ
+    case ifz₁ IHc IHl IHr =>
+      have ⟨_, IHc, Hφ⟩ := IH _ _ IHc
+      constructor; constructor
+      apply typing.ifz₁
+      apply IHc; apply IHl; apply IHr
+      apply le_union_left; apply Hφ
+  case ifz₂ =>
+    cases Hτ
+    case ifz₂ IHc IHl IHr =>
+      have ⟨_, IHc, Hφ⟩ := IH _ _ IHc
+      constructor; constructor
+      apply typing.ifz₂
+      apply IHc; apply IHl; apply IHr
+      rfl
+  case fix₁ =>
+    cases Hτ
+    case fix₁ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.fix₁
+      apply IHe
+      apply Hφ
+  case fix₂ =>
+    cases Hτ
+    case fix₂ IHe =>
+      have ⟨_, IHe, Hφ⟩ := IH _ _ IHe
+      constructor; constructor
+      apply typing.fix₂
+      apply IHe
+      rfl
+
+theorem decompose𝕄_head :
+  ∀ Γ σ M e₀ e₁ τ φ₀,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    fv e₁ ⊆ fv e₀ →
+    (∀ Γ τ φ₀,
+      typing Γ σ .stat e₀ τ φ₀ →
+      ∃ φ₁,
+        typing Γ σ .stat e₁ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    typing Γ σ .stat (M e₀) τ φ₀ →
+    ∃ φ₁,
+      typing Γ σ .stat (M e₁) τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros Γ σ M e₀ e₁ τ φ₀ HM Hlc HFv IH Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing τ φ₀ Γ with
+  | hole => apply IH; apply Hτ
+  | cons𝔹 _ _ HB _ IHM =>
+    rw [← ctx_comp]; apply decompose𝔹_head
+    apply HB; intros _ _ IHτ
+    apply IHM; apply IHτ; apply HEqlvl; apply Hτ
+  | consℝ _ _ HR HM IHM =>
+    rw [← ctx_comp]; apply decomposeℝ_head
+    rw [HEqlvl]; apply HR
+    apply lc_ctx𝕄
+    apply HM; apply Hlc
+    . intros _ _ _ _ IHτ
+      apply IHM; apply IHτ; simp; omega
+    . apply fv_at𝕄; apply HM
+      apply HFv
+    apply Hτ
+
 theorem decomposeℝ :
   ∀ intro Γ σ R e₀ e₁ τ φ,
     ctxℝ intro Γ.length R →
