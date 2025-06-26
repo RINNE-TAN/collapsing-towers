@@ -132,6 +132,9 @@ mutual
     | fix₁ : ∀ Γ σ 𝕊 e τ φ,
       typing Γ σ 𝕊 e (.arrow τ τ ∅) φ →
       typing Γ σ 𝕊 (.fix₁ e) τ φ
+    | fix₂ : ∀ Γ σ e τ φ,
+      typing Γ σ .stat e (.fragment (.arrow τ τ ∅)) φ →
+      typing Γ σ .stat (.fix₂ e) (.fragment τ) .reify
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -597,6 +600,10 @@ theorem typing_shrink_strengthened :
     intros _ _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.fix₁
     apply IH; apply HEqΓ; apply HcloseΔ
+  case fix₂ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    apply typing.fix₂
+    apply IH; apply HEqΓ; apply HcloseΔ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing_reification.pure
@@ -797,6 +804,10 @@ theorem weakening_strengthened :
   case fix₁ =>
     intros _ _ _ _ _ _ _ IH Ψ HEqΓ
     apply typing.fix₁
+    apply IH; apply HEqΓ
+  case fix₂ =>
+    intros _ _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.fix₂
     apply IH; apply HEqΓ
   case pure =>
     intros _ _ _ _ _ IH Ψ HEqΓ
@@ -1009,8 +1020,10 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
     apply typing.ifz₂; apply IHc; apply IHl; apply IHr
   case fix₁ =>
     intros _ _ _ _ _ _ _ IH
-    apply typing.fix₁
-    apply IH
+    apply typing.fix₁; apply IH
+  case fix₂ =>
+    intros _ _ _ _ _ _ IH
+    apply typing.fix₂; apply IH
   case pure =>
     intros _ _ _ _ _ IH
     apply typing_reification.pure; apply IH

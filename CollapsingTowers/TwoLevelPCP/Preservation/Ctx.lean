@@ -244,6 +244,11 @@ theorem decompose𝔹 :
     case fix₁ IHe =>
       apply typing.fix₁
       apply IH; apply IHe
+  case fix₂ =>
+    cases Hτ
+    case fix₂ IHe =>
+      apply typing.fix₂
+      apply IH; apply IHe
 
 theorem decompose𝕄 :
   ∀ Γ σ M e₀ e₁ τ φ,
@@ -629,4 +634,18 @@ theorem decompose𝔼 :
         . constructor; apply He
           intros e φ Δ He
           apply typing.fix₁
+          apply IH; apply He
+    case fix₂ =>
+      cases Hτ
+      case fix₂ HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.fix₂
           apply IH; apply He

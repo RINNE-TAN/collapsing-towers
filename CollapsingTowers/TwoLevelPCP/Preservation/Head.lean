@@ -210,3 +210,11 @@ theorem preservation_head𝕄 :
         apply typing.fix₁; apply typing.lam₁
         apply Hτe; apply HwellBinds; apply Hclose
         apply Hτe; apply Hclose
+  case fix₂ =>
+    cases Hτ
+    case fix₂ Hτ =>
+      cases Hτ
+      case code_fragment HwellBinds Hbinds =>
+        apply typing.reflect
+        apply typing.fix₁
+        apply typing.fvar; apply Hbinds; apply HwellBinds

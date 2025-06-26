@@ -259,6 +259,10 @@ theorem preservation_subst_strengthened :
     intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.fix₁
     apply IH; apply HEqΓ; apply Hτv
+  case fix₂ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.fix₂
+    apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing_reification.pure
@@ -505,6 +509,10 @@ theorem preservation_maping_strengthened :
   case fix₁ =>
     intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.fix₁
+    apply IH; apply HEqΓ; apply Hτv
+  case fix₂ =>
+    intros _ _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.fix₂
     apply IH; apply HEqΓ; apply Hτv
   case pure =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
