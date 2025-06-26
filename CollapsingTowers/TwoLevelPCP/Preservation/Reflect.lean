@@ -62,8 +62,8 @@ theorem pure𝔹 :
       constructor; apply IHc
   case fix₁ =>
     cases Hτ
-    case fix₁ φ₀ φ₁ IHe =>
-      cases φ₀ <;> cases φ₁ <;> try contradiction
+    case fix₁ IHe =>
+      cases φ <;> try contradiction
       constructor; apply IHe
 
 theorem preservation_reflect :

@@ -445,7 +445,7 @@ theorem progress_strengthened :
       apply typing_reification_regular; apply H₁
       apply typing_reification_regular; apply H₂
   case fix₁ =>
-    intros _ _ _ e _ _ _ H IH HwellStore HDyn HEq𝕊
+    intros _ _ _ e _ _ H IH HwellStore HDyn HEq𝕊
     right
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>

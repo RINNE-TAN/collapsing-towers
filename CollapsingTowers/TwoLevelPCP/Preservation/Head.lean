@@ -203,7 +203,10 @@ theorem preservation_head𝕄 :
           assumption; assumption
   case fix₁ =>
     cases Hτ
-    case fix₁ φ₀ φ₁ Hτ =>
+    case fix₁ Hτ =>
       cases Hτ
       case lam₁ e Hclose HwellBinds Hτe =>
-        admit
+        rw [open_subst, ← subst_intro]; apply preservation_subst
+        apply typing.fix₁; apply typing.lam₁
+        apply Hτe; apply HwellBinds; apply Hclose
+        apply Hτe; apply Hclose

@@ -129,9 +129,9 @@ mutual
       typing_reification Γ σ l (.rep τ) φ₁ →
       typing_reification Γ σ r (.rep τ) φ₂ →
       typing Γ σ .stat (.ifz₂ c l r) (.fragment τ) .reify
-    | fix₁ : ∀ Γ σ 𝕊 e τ φ₀ φ₁,
-      typing Γ σ 𝕊 e (.arrow τ τ φ₀) φ₁ →
-      typing Γ σ 𝕊 (.fix₁ e) τ (φ₀ ∪ φ₁)
+    | fix₁ : ∀ Γ σ 𝕊 e τ φ,
+      typing Γ σ 𝕊 e (.arrow τ τ ∅) φ →
+      typing Γ σ 𝕊 (.fix₁ e) τ φ
 
   inductive typing_reification : TEnv → SEnv → Expr → Ty → Effects → Prop
     | pure : ∀ Γ σ e τ, typing Γ σ .stat e τ ∅ → typing_reification Γ σ e τ ∅
@@ -351,13 +351,13 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     . apply HwellBinds₁
     . rw [Hφ₀, Hφ₁]; rfl
   case fix₁ =>
-    intros _ _ _ _ _ _ _ _ IH HEq𝕊
+    intros _ _ _ _ _ _ _ IH HEq𝕊
     rw [← HEq𝕊]
     have ⟨HwellBinds, Hφ⟩ := IH HEq𝕊
     rw [← HEq𝕊] at HwellBinds
     constructor
     . apply HwellBinds.right.left
-    . rw [Hφ, HwellBinds.left]; rfl
+    . rw [Hφ]
   case pure => simp
   case reify => simp
 
@@ -594,7 +594,7 @@ theorem typing_shrink_strengthened :
     apply IHl; apply HEqΓ; apply HcloseΔ.left.right
     apply IHr; apply HEqΓ; apply HcloseΔ.right
   case fix₁ =>
-    intros _ _ _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    intros _ _ _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.fix₁
     apply IH; apply HEqΓ; apply HcloseΔ
   case pure =>
@@ -795,7 +795,7 @@ theorem weakening_strengthened :
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
   case fix₁ =>
-    intros _ _ _ _ _ _ _ _ IH Ψ HEqΓ
+    intros _ _ _ _ _ _ _ IH Ψ HEqΓ
     apply typing.fix₁
     apply IH; apply HEqΓ
   case pure =>
@@ -904,7 +904,7 @@ theorem typing_escape_strengthened :
     apply IHl; apply HEq𝕊
     apply IHr; apply HEq𝕊
   case fix₁ =>
-    intros _ _ _ _ _ _ _ _ IH HEq𝕊
+    intros _ _ _ _ _ _ _ IH HEq𝕊
     apply typing.fix₁
     apply IH; apply HEq𝕊
   case pure => simp
@@ -1008,7 +1008,7 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
     intros _ _ _ _ _ _ _ _ _ _ _ _ IHc IHl IHr
     apply typing.ifz₂; apply IHc; apply IHl; apply IHr
   case fix₁ =>
-    intros _ _ _ _ _ _ _ _ IH
+    intros _ _ _ _ _ _ _ IH
     apply typing.fix₁
     apply IH
   case pure =>

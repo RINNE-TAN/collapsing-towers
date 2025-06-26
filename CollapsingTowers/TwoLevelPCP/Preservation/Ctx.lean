@@ -621,16 +621,12 @@ theorem decompose𝔼 :
           apply weakening_reification; apply Hr
     case fix₁ =>
       cases Hτ
-      case fix₁ φ₀ φ₁ HX =>
+      case fix₁ HX =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
-        exists τ𝕖, φ𝕖, (φ₀ ∪ φ𝔼)
+        exists τ𝕖, φ𝕖, φ𝔼
         constructor
         . rw [HEqφ]
-          cases φ₀ <;> cases φ𝕖 <;> cases φ𝔼 <;> simp
         . constructor; apply He
           intros e φ Δ He
-          have HEqφ : (φ ∪ (φ₀ ∪ φ𝔼)) = (φ₀ ∪ (φ ∪ φ𝔼)) :=
-            by cases φ₀ <;> cases φ <;> cases φ𝔼 <;> simp
-          rw [HEqφ]
           apply typing.fix₁
           apply IH; apply He
