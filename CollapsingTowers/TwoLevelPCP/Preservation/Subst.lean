@@ -123,6 +123,11 @@ theorem preservation_subst_strengthened :
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply Hτv
+  case unit => intros; apply typing.unit
+  case lift_unit =>
+    intros _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.lift_unit
+    apply IH; apply HEqΓ; apply Hτv
   case code_fragment =>
     intros _ _ x _ Hbinds HwellBinds Δ HEqΓ Hτv
     rw [HEqΓ] at Hbinds; simp
@@ -392,6 +397,11 @@ theorem preservation_maping_strengthened :
   case lift_lit =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.lift_lit
+    apply IH; apply HEqΓ; apply Hτv
+  case unit => intros; apply typing.unit
+  case lift_unit =>
+    intros _ _ _ _ _ IH Δ HEqΓ Hτv
+    apply typing.lift_unit
     apply IH; apply HEqΓ; apply Hτv
   case code_fragment =>
     intros _ _ x _ Hbinds HwellBinds Δ HEqΓ Hτv

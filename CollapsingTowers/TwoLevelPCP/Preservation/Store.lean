@@ -107,6 +107,12 @@ theorem decompose𝕄_alloc :
         intros σ₁ loc Hloc
         apply typing.lift_lit
         apply IH; apply Hloc
+      case lift_unit HX =>
+        have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
+        constructor; apply Hτv
+        intros σ₁ loc Hloc
+        apply typing.lift_unit
+        apply IH; apply Hloc
       case lift_lam HX =>
         have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
         constructor; apply Hτv
@@ -487,5 +493,5 @@ theorem preservation_store𝕄 :
           cases Hτ with
           | store₁ _ _ _ _ _ _ _ Hl Hr =>
             cases Hl; apply typing_value_pure at Hr
-            rw [Hr Hvalue]; apply typing.lit
+            rw [Hr Hvalue]; apply typing.unit
         . apply Hτ

@@ -5,11 +5,13 @@ import CollapsingTowers.TwoLevelPCP.SmallStep
 @[simp]
 def well_binding_time : Stage → Ty → Prop
   | .stat, .nat => true
+  | .stat, .unit => true
   | .stat, (.arrow τ𝕒 τ𝕓 _) => well_binding_time .stat τ𝕒 ∧ well_binding_time .stat τ𝕓
   | .stat, (.fragment τ) => well_binding_time .dyn τ
   | .stat, (.ref τ) => well_binding_time .stat τ
   | .stat, _ => false
   | .dyn, .nat => true
+  | .dyn, .unit => true
   | .dyn, (.arrow τ𝕒 τ𝕓 φ) => φ = ∅ ∧ well_binding_time .dyn τ𝕒 ∧ well_binding_time .dyn τ𝕓
   | .dyn, (.ref τ) => well_binding_time .dyn τ
   | .dyn, _ => false
@@ -21,7 +23,7 @@ theorem well_binding_time_escape : ∀ 𝕊 τ, well_binding_time 𝕊 τ → we
   case stat => assumption
   case dyn =>
     induction τ with
-    | nat => simp
+    | nat| unit => simp
     | arrow _ _ _ IH₀ IH₁ =>
       constructor
       apply IH₀; apply HwellBinds.right.left
@@ -65,6 +67,11 @@ mutual
     | lift_lit : ∀ Γ σ n φ,
       typing Γ σ .stat n .nat φ →
       typing Γ σ .stat (.lift n) (.fragment .nat) .reify
+    | unit : ∀ Γ σ 𝕊,
+      typing Γ σ 𝕊 .unit .unit ∅
+    | lift_unit : ∀ Γ σ e φ,
+      typing Γ σ .stat e .unit φ →
+      typing Γ σ .stat (.lift e) (.fragment .unit) .reify
     | code_fragment : ∀ Γ σ x τ,
       binds x (τ, .dyn) Γ →
       well_binding_time .dyn τ →
@@ -108,7 +115,7 @@ mutual
     | store₁ : ∀ Γ σ 𝕊 l r φ₀ φ₁,
       typing Γ σ 𝕊 l (.ref .nat) φ₀ →
       typing Γ σ 𝕊 r .nat φ₁ →
-      typing Γ σ 𝕊 (.store₁ l r) .nat (φ₀ ∪ φ₁)
+      typing Γ σ 𝕊 (.store₁ l r) .unit (φ₀ ∪ φ₁)
     | load₂ : ∀ Γ σ e φ,
       typing Γ σ .stat e (.fragment (.ref .nat)) φ →
       typing Γ σ .stat (.load₂ e) (.fragment .nat) .reify
@@ -118,7 +125,7 @@ mutual
     | store₂ : ∀ Γ σ l r φ₀ φ₁,
       typing Γ σ .stat l (.fragment (.ref .nat)) φ₀ →
       typing Γ σ .stat r (.fragment .nat) φ₁ →
-      typing Γ σ .stat (.store₂ l r) (.fragment .nat) .reify
+      typing Γ σ .stat (.store₂ l r) (.fragment .unit) .reify
     | ifz₁ : ∀ Γ σ 𝕊 c l r τ φ₀ φ₁,
       typing Γ σ 𝕊 c .nat φ₀ →
       typing Γ σ 𝕊 l τ φ₁ →
@@ -230,6 +237,7 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
     intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
   case lit => simp
+  case unit => simp
   case code_fragment =>
     intros _ _ _ _ Hbinds _
     apply (getr_iff_lt _ _).mpr; constructor
@@ -312,6 +320,12 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     . rw [Hφ₁, Hφ₂]; rfl
   case lit =>
     intros _ _ _ _ HEq𝕊
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rfl
+  case unit =>
+    intros _ _ _ HEq𝕊
     rw [← HEq𝕊]
     constructor
     . simp
@@ -475,6 +489,11 @@ theorem typing_shrink_strengthened :
   case lift_lit =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.lift_lit
+    apply IH; apply HEqΓ; apply HcloseΔ
+  case unit => intros; apply typing.unit
+  case lift_unit =>
+    intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
+    apply typing.lift_unit
     apply IH; apply HEqΓ; apply HcloseΔ
   case code_fragment =>
     intros _ _ x _ Hbinds HwellBinds Ψ HEqΓ HcloseΔ
@@ -707,6 +726,11 @@ theorem weakening_strengthened :
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing.lift_lit
     apply IH; apply HEqΓ
+  case unit => intros; apply typing.unit
+  case lift_unit =>
+    intros _ _ _ _ _ IH Ψ HEqΓ
+    apply typing.lift_unit
+    apply IH; apply HEqΓ
   case code_fragment =>
     intros _ _ x _ Hbinds HwellBinds Ψ HEqΓ
     rw [HEqΓ] at Hbinds
@@ -887,6 +911,7 @@ theorem typing_escape_strengthened :
     apply IHl; apply HEq𝕊
     apply IHr; apply HEq𝕊
   case lit => intros; apply typing.lit
+  case unit => intros; apply typing.unit
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe HEq𝕊
     rw [← HEq𝕊, escape] at IHe
@@ -973,6 +998,10 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case lift_lit =>
     intros _ _ _ _ _ IH
     apply typing.lift_lit; apply IH
+  case unit => intros; apply typing.unit
+  case lift_unit =>
+    intros _ _ _ _ _ IH
+    apply typing.lift_unit; apply IH
   case code_fragment =>
     intros _ _ x _ Hbinds HwellBinds
     apply typing.code_fragment; apply Hbinds; apply HwellBinds

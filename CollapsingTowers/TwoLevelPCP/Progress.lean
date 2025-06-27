@@ -17,6 +17,7 @@ theorem dyn_env_extend :
   . rw [if_neg HEqx] at Hbinds
     apply HDyn; apply Hbinds; rfl
 
+set_option maxHeartbeats 2000000 in
 theorem progress_strengthened :
   ∀ Γ σ st₀ e₀ τ φ,
     well_store σ st₀ →
@@ -168,6 +169,21 @@ theorem progress_strengthened :
     | inr Hstep =>
       have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
       apply step𝔹 _ _ _ _ _ _ ctx𝔹.lift; apply Hstep
+  case unit => intros; left; constructor
+  case lift_unit =>
+    intros _ _ _ _ H IH HwellStore HDyn HEq𝕊
+    right
+    cases IH HwellStore HDyn HEq𝕊 with
+    | inl Hvalue =>
+      cases Hvalue with
+      | unit =>
+        exists st₀, .reflect .unit
+        apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
+        simp; apply head𝕄.lift_unit
+      | _ => nomatch H
+    | inr Hstep =>
+      have ⟨st₁, _, Hstep⟩ := Hstep; exists st₁
+      apply step𝔹 _ _ _ _ _ _ ctx𝔹.lift; apply Hstep
   case code_fragment => intros; left; constructor; simp
   case code_rep =>
     intros _ _ _ _ H IH HwellStore HDyn HEq𝕊
@@ -305,7 +321,7 @@ theorem progress_strengthened :
               constructor; apply HbindsLoc
             rw [HwellStore.left] at HLt
             have ⟨st₁, Hpatch⟩ := (setr_iff_lt st₀ l e₁).mp HLt
-            exists st₁, .lit 0
+            exists st₁, .unit
             apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
             simp; apply typing_regular; apply H₁
             apply shead𝕄.store₁; apply Hvalue₁; apply Hpatch

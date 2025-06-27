@@ -11,6 +11,7 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftl_at x n f) (shiftl_at x n arg)
   | .app₂ f arg => .app₂ (shiftl_at x n f) (shiftl_at x n arg)
   | .lit n => .lit n
+  | .unit => .unit
   | .binary₁ op l r => .binary₁ op (shiftl_at x n l) (shiftl_at x n r)
   | .binary₂ op l r => .binary₂ op (shiftl_at x n l) (shiftl_at x n r)
   | .run e => .run (shiftl_at x n e)
@@ -40,6 +41,7 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftr_at x f) (shiftr_at x arg)
   | .app₂ f arg => .app₂ (shiftr_at x f) (shiftr_at x arg)
   | .lit n => .lit n
+  | .unit => .unit
   | .binary₁ op l r => .binary₁ op (shiftr_at x l) (shiftr_at x r)
   | .binary₂ op l r => .binary₂ op (shiftr_at x l) (shiftr_at x r)
   | .run e => .run (shiftr_at x e)
@@ -82,7 +84,7 @@ theorem shiftl_opening_comm :
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -126,7 +128,7 @@ theorem shiftl_closed_at :
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -165,7 +167,7 @@ theorem shiftl_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -208,7 +210,7 @@ theorem shiftr_opening_comm :
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     simp; constructor; apply IH₀; apply IH₁
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -253,7 +255,7 @@ theorem shiftr_closed_at : ∀ x y e, y < x → closed_at e (x + 1) → closed_a
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -294,7 +296,7 @@ theorem shiftr_closed_at_id : ∀ x e, closed_at e x → closed_at (shiftr_at x 
     simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
@@ -333,7 +335,7 @@ theorem shiftr_id :
     intro Hclose; simp; constructor
     apply IH₀; apply Hclose.left
     apply IH₁; apply Hclose.right
-  | lit| loc => simp
+  | lit| loc| unit => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH

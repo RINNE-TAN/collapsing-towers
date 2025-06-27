@@ -15,6 +15,7 @@ notation:max a "⟦" b "⟧" => a b
 inductive value : Expr → Prop where
   | lam : ∀ e, lc (.lam e) → value (.lam e)
   | lit : ∀ n, value (.lit n)
+  | unit : value .unit
   | code : ∀ e, lc e → value (.code e)
   | loc : ∀ l, value (.loc l)
 
@@ -175,6 +176,7 @@ theorem value_lc : ∀ e, value e → lc e := by
   cases Hvalue with
   | lam _ Hclose => apply Hclose
   | lit => constructor
+  | unit => constructor
   | code _ Hclose => apply Hclose
   | loc => constructor
 
@@ -486,6 +488,7 @@ inductive head𝕄 : Expr → Expr → Prop where
   | binary₁ : ∀ op l r, head𝕄 (.binary₁ op (.lit l) (.lit r)) (.lit (eval op l r))
   | binary₂ : ∀ op l r, head𝕄 (.binary₂ op (.code l) (.code r)) (.reflect (.binary₁ op l r))
   | lift_lit : ∀ n, head𝕄 (.lift (.lit n)) (.reflect (.lit n))
+  | lift_unit : head𝕄 (.lift .unit) (.reflect .unit)
   | lift_lam : ∀ e, head𝕄 (.lift (.lam e)) (.lam𝕔 (map𝕔₀ e))
   | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam e))
   | let𝕔 : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
@@ -500,9 +503,9 @@ inductive head𝕄 : Expr → Expr → Prop where
   | fix₂ : ∀ e, head𝕄 (.fix₂ (.code e)) (.reflect (.fix₁ e))
 
 inductive shead𝕄 : (Store × Expr) → (Store × Expr) → Prop where
-  | load₁ : ∀ st l e, binds l e st → shead𝕄 (st, (.load₁ (.loc l))) (st, e)
-  | alloc₁ : ∀ st v, value v → shead𝕄 (st, (.alloc₁ v)) (v :: st, .loc (st.length))
-  | store₁ : ∀ st₀ st₁ l v, value v → patch l v st₀ st₁ → shead𝕄 (st₀, (.store₁ (.loc l) v)) (st₁, .lit 0)
+  | load₁ : ∀ st l e, binds l e st → shead𝕄 (st, .load₁ (.loc l)) (st, e)
+  | alloc₁ : ∀ st v, value v → shead𝕄 (st, .alloc₁ v) (v :: st, .loc (st.length))
+  | store₁ : ∀ st₀ st₁ l v, value v → patch l v st₀ st₁ → shead𝕄 (st₀, .store₁ (.loc l) v) (st₁, .unit)
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
   | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)

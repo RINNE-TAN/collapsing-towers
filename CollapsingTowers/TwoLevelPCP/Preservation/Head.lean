@@ -63,10 +63,17 @@ theorem preservation_head𝕄 :
     case lift_lit Hτ =>
       apply typing.reflect
       apply typing.lit
+    case lift_unit => contradiction
+    case lift_lam => contradiction
+  case lift_unit =>
+    cases Hτ
+    case lift_unit Hτ =>
+      apply typing.reflect
+      apply typing.unit
+    case lift_lit => contradiction
     case lift_lam => contradiction
   case lift_lam e =>
     cases Hτ
-    case lift_lit => contradiction
     case lift_lam Hτ =>
       cases Hτ
       case lam Hclose HwellBinds Hτe =>
@@ -82,6 +89,8 @@ theorem preservation_head𝕄 :
         apply HwellBinds
         apply (close_closed _ _ _).mp; apply subst_closed_at; simp; apply open_closed; apply Hclose
         apply Hclose
+    case lift_lit => contradiction
+    case lift_unit => contradiction
   case lam𝕔 e =>
     cases Hτ
     case lam𝕔 HwellBinds Hclose Hτ =>

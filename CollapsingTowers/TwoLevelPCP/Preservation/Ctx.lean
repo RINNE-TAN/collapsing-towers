@@ -180,6 +180,9 @@ theorem decompose𝔹 :
     case lift_lit IHn =>
       apply typing.lift_lit
       apply IH; apply IHn
+    case lift_unit IHn =>
+      apply typing.lift_unit
+      apply IH; apply IHn
     case lift_lam IHe =>
       apply typing.lift_lam
       apply IH; apply IHe
@@ -445,6 +448,18 @@ theorem decompose𝔼 :
             by cases φ <;> simp
           rw [HEqφ]
           apply typing.lift_lit
+          apply IH; apply He
+      case lift_unit HX =>
+        have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
+        exists τ𝕖, φ𝕖, .reify
+        constructor
+        . cases φ𝕖 <;> simp
+        . constructor; apply He
+          intros e φ Δ He
+          have HEqφ : (φ ∪ .reify) = .reify :=
+            by cases φ <;> simp
+          rw [HEqφ]
+          apply typing.lift_unit
           apply IH; apply He
       case lift_lam HX =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX

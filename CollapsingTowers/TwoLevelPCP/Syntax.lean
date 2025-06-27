@@ -16,6 +16,7 @@ def eval : BinOp → ℕ → ℕ → ℕ
 
 inductive Ty : Type where
   | nat
+  | unit
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effects)
   | fragment (τ : Ty)
   | rep (τ : Ty)
@@ -28,6 +29,7 @@ inductive Expr : Type where
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
   | lit (n : ℕ)
+  | unit
   | binary₁ (op : BinOp) (l : Expr) (r : Expr)
   | binary₂ (op : BinOp) (l : Expr) (r : Expr)
   | lift (e : Expr)
