@@ -8,7 +8,7 @@ namespace Example1
 lift x. x +₂ (x +₂ x)
 →⋆
 code {
-  lets f = lam₁ x.
+  lets f = lam x.
     lets y = x + x in
     lets z = x + y in z
   in f
@@ -27,7 +27,7 @@ def x₃ : Expr :=
   .fvar 3
 
 def expr₀ : Expr :=
-  .lift (.lam₁ (close₀ 0 (.binary₂ .add x₀ (.binary₂ .add x₀ x₀))))
+  .lift (.lam (close₀ 0 (.binary₂ .add x₀ (.binary₂ .add x₀ x₀))))
 
 def expr₁ : Expr :=
   .lam𝕔 (close₀ 0 (.binary₂ .add (.code x₀) (.binary₂ .add (.code x₀) (.code x₀))))
@@ -51,13 +51,13 @@ def expr₇ : Expr :=
   .lam𝕔 (close₀ 0 (.code (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
 
 def expr₈ : Expr :=
-  .reflect (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
+  .reflect (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
 
 def expr₉ : Expr :=
-  .let𝕔 (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
+  .let𝕔 (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
 
 def expr𝕩 : Expr :=
-  .code (.lets (.lam₁ (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
+  .code (.lets (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
 
 example : step ([], expr₀) ([], expr₁) := by
   apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
@@ -107,7 +107,7 @@ example : typing_reification [] [] expr₀ τ .reify :=
   rw [expr₀, x₀, τ]
   apply typing_reification.reify
   apply typing.lift_lam
-  apply typing.lam₁
+  apply typing.lam
   apply typing.binary₂
   apply typing.fvar; repeat simp
   apply typing.binary₂
@@ -230,7 +230,7 @@ example : typing_reification [] [] expr₈ τ .reify :=
   rw [expr₈, x₀, x₁, x₂, τ]
   apply typing_reification.reify
   apply typing.reflect
-  apply typing.lam₁; rw [← union_pure_left ∅]
+  apply typing.lam; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
   apply typing.binary₁
   apply typing.fvar; repeat simp
@@ -247,7 +247,7 @@ example : typing_reification [] [] expr₉ τ .pure :=
   rw [expr₉, x₀, x₁, x₂, τ]
   apply typing_reification.pure
   apply typing.let𝕔
-  apply typing.lam₁
+  apply typing.lam
   apply typing.lets
   apply typing.binary₁
   apply typing.fvar; simp; rfl; simp
@@ -265,7 +265,7 @@ example : typing_reification [] [] expr𝕩 τ .pure :=
   apply typing_reification.pure
   apply typing.code_rep; rw [← union_pure_left ∅]
   apply typing.lets; rw [← union_pure_left ∅]
-  apply typing.lam₁
+  apply typing.lam
   apply typing.lets
   apply typing.binary₁
   apply typing.fvar; simp; rfl; simp
@@ -348,7 +348,7 @@ example : ∀ b e τ φ, ¬typing_reification [] [] (.lets (.code (.lets b (.bva
 -- E ~ fragment τ -> rep τ
 -- let x = reflect e
 -- in 1
-example : ∀ e τ φ, ¬typing_reification [] [] (.lets (.reflect e) (.lit₁ 1)) τ φ :=
+example : ∀ e τ φ, ¬typing_reification [] [] (.lets (.reflect e) (.lit 1)) τ φ :=
   by
   intros _ _ _ Hτ
   cases Hτ

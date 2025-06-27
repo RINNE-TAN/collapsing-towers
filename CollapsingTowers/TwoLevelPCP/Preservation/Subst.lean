@@ -54,11 +54,11 @@ theorem preservation_subst_strengthened :
       constructor
       apply binds_extend; apply binds_shrink
       omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ Hτv
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
     rw [subst_open₀_comm, shiftr_open₀_comm] at IH
-    apply typing.lam₁
+    apply typing.lam
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply Hτv; apply HwellBinds
@@ -118,7 +118,7 @@ theorem preservation_subst_strengthened :
     apply typing.binary₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lift_lit =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.lift_lit
@@ -339,11 +339,11 @@ theorem preservation_maping_strengthened :
       apply typing.fvar
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ Hτv
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, subst_open₀_comm, List.length_append, List.length_cons] at IH
-    apply typing.lam₁
+    apply typing.lam
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
     apply weakening1; apply Hτv; apply HwellBinds
@@ -388,7 +388,7 @@ theorem preservation_maping_strengthened :
     apply typing.binary₂
     apply IHl; apply HEqΓ; apply Hτv
     apply IHr; apply HEqΓ; apply Hτv
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lift_lit =>
     intros _ _ _ _ _ IH Δ HEqΓ Hτv
     apply typing.lift_lit

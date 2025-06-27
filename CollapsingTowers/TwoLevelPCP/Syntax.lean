@@ -24,10 +24,10 @@ inductive Ty : Type where
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
-  | lam₁ (e : Expr)
+  | lam (e : Expr)
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
-  | lit₁ (n : ℕ)
+  | lit (n : ℕ)
   | binary₁ (op : BinOp) (l : Expr) (r : Expr)
   | binary₂ (op : BinOp) (l : Expr) (r : Expr)
   | lift (e : Expr)

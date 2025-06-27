@@ -36,11 +36,11 @@ mutual
       binds x (τ, 𝕊) Γ →
       well_binding_time 𝕊 τ →
       typing Γ σ 𝕊 (.fvar x) τ ∅
-    | lam₁ : ∀ Γ σ 𝕊 e τ𝕒 τ𝕓 φ,
+    | lam : ∀ Γ σ 𝕊 e τ𝕒 τ𝕓 φ,
       typing ((τ𝕒, 𝕊) :: Γ) σ 𝕊 (open₀ Γ.length e) τ𝕓 φ →
       well_binding_time 𝕊 τ𝕒 →
       closed_at e Γ.length →
-      typing Γ σ 𝕊 (.lam₁ e) (.arrow τ𝕒 τ𝕓 φ) ∅
+      typing Γ σ 𝕊 (.lam e) (.arrow τ𝕒 τ𝕓 φ) ∅
     | lift_lam : ∀ Γ σ e τ𝕒 τ𝕓 φ₀ φ₁,
       typing Γ σ .stat e (.arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀) φ₁ →
       typing Γ σ .stat (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reify
@@ -60,8 +60,8 @@ mutual
       typing Γ σ .stat l (.fragment .nat) φ₀ →
       typing Γ σ .stat r (.fragment .nat) φ₁ →
       typing Γ σ .stat (.binary₂ op l r) (.fragment .nat) .reify
-    | lit₁ : ∀ Γ σ 𝕊 n,
-      typing Γ σ 𝕊 (.lit₁ n) .nat ∅
+    | lit : ∀ Γ σ 𝕊 n,
+      typing Γ σ 𝕊 (.lit n) .nat ∅
     | lift_lit : ∀ Γ σ n φ,
       typing Γ σ .stat n .nat φ →
       typing Γ σ .stat (.lift n) (.fragment .nat) .reify
@@ -158,7 +158,7 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
       (fun Γ σ 𝕊 e τ φ (H : typing Γ σ 𝕊 e τ φ) => lc e)
       (fun Γ σ e τ φ (H : typing_reification Γ σ e τ φ) => lc e)
   <;> (try simp)
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ _ _ IH
     apply (open_closedb _ _ _).mp; apply IH
   case lam𝕔 =>
@@ -229,7 +229,7 @@ theorem typing_closed : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → cl
   case binary₂ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
-  case lit₁ => simp
+  case lit => simp
   case code_fragment =>
     intros _ _ _ _ Hbinds _
     apply (getr_iff_lt _ _).mpr; constructor
@@ -283,7 +283,7 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
   case fvar =>
     intros _ _ _ x _ Hbinds HwellBinds HEq𝕊
     constructor; apply HwellBinds; rfl
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds₀ Hclose IH HEq𝕊
     have ⟨HwellBinds₁, Hφ₀⟩ := IH HEq𝕊
     rw [← HEq𝕊]
@@ -310,7 +310,7 @@ theorem typing_dyn_pure : ∀ Γ σ e τ φ, typing Γ σ .dyn e τ φ → well_
     constructor
     . simp
     . rw [Hφ₁, Hφ₂]; rfl
-  case lit₁ =>
+  case lit =>
     intros _ _ _ _ HEq𝕊
     rw [← HEq𝕊]
     constructor
@@ -409,11 +409,11 @@ theorem typing_shrink_strengthened :
       apply typing.fvar
       apply binds_extend; apply binds_shrink
       omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ HcloseΔ
     rw [HEqΓ, shiftr_open₀_comm] at IH
     rw [HEqΓ] at Hclose
-    apply typing.lam₁
+    apply typing.lam
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply fv_open₀; apply HcloseΔ; omega
@@ -471,7 +471,7 @@ theorem typing_shrink_strengthened :
     simp at HcloseΔ; apply typing.binary₂
     apply IHl; apply HEqΓ; apply HcloseΔ.left
     apply IHr; apply HEqΓ; apply HcloseΔ.right
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lift_lit =>
     intros _ _ _ _ _ IH Ψ HEqΓ HcloseΔ
     apply typing.lift_lit
@@ -656,13 +656,13 @@ theorem weakening_strengthened :
     . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.fvar
       apply binds_extend; apply binds_shrink
       omega; apply Hbinds; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH Ψ HEqΓ
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
     rw [shiftl_open₀_comm] at IH
     rw [List.length_append, Nat.add_right_comm] at IH
-    apply typing.lam₁
+    apply typing.lam
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
     apply IH; rfl; apply HwellBinds
     rw [List.length_append, List.length_append, Nat.add_right_comm]
@@ -702,7 +702,7 @@ theorem weakening_strengthened :
     apply typing.binary₂
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lift_lit =>
     intros _ _ _ _ _ IH Ψ HEqΓ
     apply typing.lift_lit
@@ -869,10 +869,10 @@ theorem typing_escape_strengthened :
     apply typing.fvar
     apply binds_escape; apply Hbinds
     apply well_binding_time_escape; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH HEq𝕊
     rw [← HEq𝕊, escape] at IH
-    apply typing.lam₁; rw [← length_escape]
+    apply typing.lam; rw [← length_escape]
     apply IH; rfl
     apply well_binding_time_escape; apply HwellBinds
     rw [← length_escape]; apply Hclose
@@ -886,7 +886,7 @@ theorem typing_escape_strengthened :
     apply typing.binary₁
     apply IHl; apply HEq𝕊
     apply IHr; apply HEq𝕊
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe HEq𝕊
     rw [← HEq𝕊, escape] at IHe
@@ -948,9 +948,9 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case fvar =>
     intros _ _ _ x _ Hbinds HwellBinds
     apply typing.fvar; apply Hbinds; apply HwellBinds
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IH
-    apply typing.lam₁; apply IH; apply HwellBinds; apply Hclose
+    apply typing.lam; apply IH; apply HwellBinds; apply Hclose
   case lift_lam =>
     intros _ _ _ _ _ _ _ _ IH
     apply typing.lift_lam; apply IH
@@ -969,7 +969,7 @@ theorem weakening_store : ∀ Γ σ₀ σ₁ 𝕊 e τ φ, typing Γ σ₀ 𝕊 
   case binary₂ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
     apply typing.binary₂; apply IHl; apply IHr
-  case lit₁ => intros; apply typing.lit₁
+  case lit => intros; apply typing.lit
   case lift_lit =>
     intros _ _ _ _ _ IH
     apply typing.lift_lit; apply IH

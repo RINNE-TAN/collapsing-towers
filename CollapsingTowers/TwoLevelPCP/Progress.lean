@@ -39,7 +39,7 @@ theorem progress_strengthened :
   case fvar =>
     intros _ _ _ x _ Hbinds HwellBinds HwellStore HDyn HEq𝕊
     exfalso; apply HDyn; apply Hbinds; apply HEq𝕊
-  case lam₁ =>
+  case lam =>
     intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HwellStore HDyn HEq𝕊
     left; constructor
     apply (open_closedb _ _ _).mp; apply typing_regular; apply H
@@ -49,7 +49,7 @@ theorem progress_strengthened :
     cases IH HwellStore HDyn rfl with
     | inl Hvalue =>
       cases Hvalue with
-      | lam₁ e Hlc =>
+      | lam e Hlc =>
         exists st₀, .lam𝕔 (map𝕔₀ e)
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
         apply Hlc; apply head𝕄.lift_lam
@@ -65,7 +65,7 @@ theorem progress_strengthened :
       cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
-        | lam₁ e₀ Hlc₀ =>
+        | lam e₀ Hlc₀ =>
           exists st₀, open_subst e₁ e₀
           apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
           constructor; apply Hlc₀; apply value_lc; apply Hvalue₁
@@ -112,10 +112,10 @@ theorem progress_strengthened :
       cases IH₁ HwellStore HDyn HEq𝕊 with
       | inl Hvalue₁ =>
         cases Hvalue₀ with
-        | lit₁ e₀ =>
+        | lit e₀ =>
           cases Hvalue₁ with
-          | lit₁ e₁ =>
-            exists st₀, .lit₁ (eval op e₀ e₁)
+          | lit e₁ =>
+            exists st₀, .lit (eval op e₀ e₁)
             apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
             simp; apply head𝕄.binary₁
           | _ => nomatch H₁
@@ -153,15 +153,15 @@ theorem progress_strengthened :
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.binaryl₂ _ _ _); apply Hstep₀
       apply typing_regular; apply H₁
-  case lit₁ => intros; left; constructor
+  case lit => intros; left; constructor
   case lift_lit =>
     intros _ _ _ _ H IH HwellStore HDyn HEq𝕊
     right
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
       cases Hvalue with
-      | lit₁ e =>
-        exists st₀, .reflect (.lit₁ e)
+      | lit e =>
+        exists st₀, .reflect (.lit e)
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
         simp; apply head𝕄.lift_lit
       | _ => nomatch H
@@ -188,7 +188,7 @@ theorem progress_strengthened :
       rw [HEqe] at Hvalue H
       cases Hvalue with
       | code e Hlc =>
-        exists st₀, .reflect (.lam₁ (close₀ Γ.length e))
+        exists st₀, .reflect (.lam (close₀ Γ.length e))
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
         apply close_closedb; omega
         apply closedb_inc; apply Hlc; omega
@@ -305,7 +305,7 @@ theorem progress_strengthened :
               constructor; apply HbindsLoc
             rw [HwellStore.left] at HLt
             have ⟨st₁, Hpatch⟩ := (setr_iff_lt st₀ l e₁).mp HLt
-            exists st₁, .lit₁ 0
+            exists st₁, .lit 0
             apply step_lvl.store𝕄 _ _ _ _ _ ctx𝕄.hole
             simp; apply typing_regular; apply H₁
             apply shead𝕄.store₁; apply Hvalue₁; apply Hpatch
@@ -379,7 +379,7 @@ theorem progress_strengthened :
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
       cases Hvalue with
-      | lit₁ n =>
+      | lit n =>
         cases n with
         | zero =>
           exists st₀, l
@@ -450,8 +450,8 @@ theorem progress_strengthened :
     cases IH HwellStore HDyn HEq𝕊 with
     | inl Hvalue =>
       cases Hvalue with
-      | lam₁ e Hlc =>
-        exists st₀, open_subst (.fix₁ (.lam₁ e)) e
+      | lam e Hlc =>
+        exists st₀, open_subst (.fix₁ (.lam e)) e
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
         apply Hlc; apply head𝕄.fix₁
       | _ => nomatch H

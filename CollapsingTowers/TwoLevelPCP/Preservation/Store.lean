@@ -19,7 +19,7 @@ theorem decompose𝕄_alloc :
     case alloc₁ Hτv =>
       constructor
       . cases Hvalue <;> try contradiction
-        apply typing.lit₁
+        apply typing.lit
       . have Hpure : φ = ∅ := by
           apply typing_value_pure
           apply Hτv; apply Hvalue
@@ -480,12 +480,12 @@ theorem preservation_store𝕄 :
             apply well_store_store; apply HwellStore
             apply Hpatch; apply HbindsLoc
             cases Hvalue <;> try contradiction
-            apply typing.lit₁
+            apply typing.lit
       . apply decompose𝕄; apply HM; apply Hlc
         . simp
         . intros Γ _ _ Hτ
           cases Hτ with
           | store₁ _ _ _ _ _ _ _ Hl Hr =>
             cases Hl; apply typing_value_pure at Hr
-            rw [Hr Hvalue]; apply typing.lit₁
+            rw [Hr Hvalue]; apply typing.lit
         . apply Hτ

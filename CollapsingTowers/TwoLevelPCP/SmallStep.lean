@@ -13,8 +13,8 @@ theorem ctx_swap : (f : Ctx) → ∀ e, f (id e) = id (f e) := by simp
 notation:max a "⟦" b "⟧" => a b
 
 inductive value : Expr → Prop where
-  | lam₁ : ∀ e, lc (.lam₁ e) → value (.lam₁ e)
-  | lit₁ : ∀ n, value (.lit₁ n)
+  | lam : ∀ e, lc (.lam e) → value (.lam e)
+  | lit : ∀ n, value (.lit n)
   | code : ∀ e, lc e → value (.code e)
   | loc : ∀ l, value (.loc l)
 
@@ -173,8 +173,8 @@ theorem ctxℙ_iff_ctxℙ' : ∀ P lvl, ctxℙ' lvl P ↔ ctxℙ lvl P :=
 theorem value_lc : ∀ e, value e → lc e := by
   intro e Hvalue
   cases Hvalue with
-  | lam₁ _ Hclose => apply Hclose
-  | lit₁ => constructor
+  | lam _ Hclose => apply Hclose
+  | lit => constructor
   | code _ Hclose => apply Hclose
   | loc => constructor
 
@@ -481,28 +481,28 @@ theorem fv_atℚ :
 
 inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
-  | app₁ : ∀ e v, value v → head𝕄 (.app₁ (.lam₁ e) v) (open_subst v e)
+  | app₁ : ∀ e v, value v → head𝕄 (.app₁ (.lam e) v) (open_subst v e)
   | app₂ : ∀ f arg, head𝕄 (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
-  | binary₁ : ∀ op l r, head𝕄 (.binary₁ op (.lit₁ l) (.lit₁ r)) (.lit₁ (eval op l r))
+  | binary₁ : ∀ op l r, head𝕄 (.binary₁ op (.lit l) (.lit r)) (.lit (eval op l r))
   | binary₂ : ∀ op l r, head𝕄 (.binary₂ op (.code l) (.code r)) (.reflect (.binary₁ op l r))
-  | lift_lit : ∀ n, head𝕄 (.lift (.lit₁ n)) (.reflect (.lit₁ n))
-  | lift_lam : ∀ e, head𝕄 (.lift (.lam₁ e)) (.lam𝕔 (map𝕔₀ e))
-  | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam₁ e))
+  | lift_lit : ∀ n, head𝕄 (.lift (.lit n)) (.reflect (.lit n))
+  | lift_lam : ∀ e, head𝕄 (.lift (.lam e)) (.lam𝕔 (map𝕔₀ e))
+  | lam𝕔 : ∀ e, head𝕄 (.lam𝕔 (.code e)) (.reflect (.lam e))
   | let𝕔 : ∀ b e, head𝕄 (.let𝕔 b (.code e)) (.code (.lets b e))
   | run : ∀ e, head𝕄 (.run (.code e)) e
   | load₂ : ∀ e, head𝕄 (.load₂ (.code e)) (.reflect (.load₁ e))
   | alloc₂ : ∀ e, head𝕄 (.alloc₂ (.code e)) (.reflect (.alloc₁ e))
   | store₂ : ∀ l r, head𝕄 (.store₂ (.code l) (.code r)) (.reflect (.store₁ l r))
-  | ifz₁_left : ∀ l r, head𝕄 (.ifz₁ (.lit₁ 0) l r) l
-  | ifz₁_right : ∀ l r n, head𝕄 (.ifz₁ (.lit₁ (.succ n)) l r) r
+  | ifz₁_left : ∀ l r, head𝕄 (.ifz₁ (.lit 0) l r) l
+  | ifz₁_right : ∀ l r n, head𝕄 (.ifz₁ (.lit (.succ n)) l r) r
   | ifz₂ : ∀ c l r, head𝕄 (.ifz₂ (.code c) (.code l) (.code r)) (.reflect (.ifz₁ c l r))
-  | fix₁ : ∀ e, head𝕄 (.fix₁ (.lam₁ e)) (open_subst (.fix₁ (.lam₁ e)) e)
+  | fix₁ : ∀ e, head𝕄 (.fix₁ (.lam e)) (open_subst (.fix₁ (.lam e)) e)
   | fix₂ : ∀ e, head𝕄 (.fix₂ (.code e)) (.reflect (.fix₁ e))
 
 inductive shead𝕄 : (Store × Expr) → (Store × Expr) → Prop where
   | load₁ : ∀ st l e, binds l e st → shead𝕄 (st, (.load₁ (.loc l))) (st, e)
   | alloc₁ : ∀ st v, value v → shead𝕄 (st, (.alloc₁ v)) (v :: st, .loc (st.length))
-  | store₁ : ∀ st₀ st₁ l v, value v → patch l v st₀ st₁ → shead𝕄 (st₀, (.store₁ (.loc l) v)) (st₁, .lit₁ 0)
+  | store₁ : ∀ st₀ st₁ l v, value v → patch l v st₀ st₁ → shead𝕄 (st₀, (.store₁ (.loc l) v)) (st₁, .lit 0)
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
   | step𝕄 : ∀ M e₀ e₁ st, ctx𝕄 lvl M → lc e₀ → head𝕄 e₀ e₁ → step_lvl lvl (st, M⟦e₀⟧) (st, M⟦e₁⟧)
@@ -586,6 +586,6 @@ theorem fv_head𝕄 : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ 
   case lift_lam =>
     rw [← fv_maping𝕔]
   case fix₁ e =>
-    have HEq : fv (.fix₁ (.lam₁ e)) ∪ fv e = fv e := by simp
+    have HEq : fv (.fix₁ (.lam e)) ∪ fv e = fv e := by simp
     rw [← HEq]
     apply fv_opening

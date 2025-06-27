@@ -23,7 +23,7 @@ theorem preservation_head𝕄 :
     cases Hτ
     case app₁ φ Hτv Hτf =>
       cases Hτf
-      case lam₁ Hclose _ Hτe =>
+      case lam Hclose _ Hτe =>
         have Hpure : φ = ∅ := by
           apply typing_value_pure
           apply Hτv; apply Hvalue
@@ -45,7 +45,7 @@ theorem preservation_head𝕄 :
   case binary₁ =>
     cases Hτ
     case binary₁ Hl Hr =>
-      cases Hl; cases Hr; apply typing.lit₁
+      cases Hl; cases Hr; apply typing.lit
   case binary₂ =>
     cases Hτ
     case binary₂ Hτ₀ Hτ₁ =>
@@ -62,14 +62,14 @@ theorem preservation_head𝕄 :
     cases Hτ
     case lift_lit Hτ =>
       apply typing.reflect
-      apply typing.lit₁
+      apply typing.lit
     case lift_lam => contradiction
   case lift_lam e =>
     cases Hτ
     case lift_lit => contradiction
     case lift_lam Hτ =>
       cases Hτ
-      case lam₁ Hclose HwellBinds Hτe =>
+      case lam Hclose HwellBinds Hτe =>
         rw [← map𝕔₀_intro Γ.length]
         apply typing.lam𝕔
         simp; rw [open_close_id]
@@ -86,7 +86,7 @@ theorem preservation_head𝕄 :
     cases Hτ
     case lam𝕔 HwellBinds Hclose Hτ =>
       apply typing.reflect
-      apply typing.lam₁
+      apply typing.lam
       cases Hτ with
       | pure _ _ _ _ Hτ =>
         simp at *
@@ -205,9 +205,9 @@ theorem preservation_head𝕄 :
     cases Hτ
     case fix₁ Hτ =>
       cases Hτ
-      case lam₁ e Hclose HwellBinds Hτe =>
+      case lam e Hclose HwellBinds Hτe =>
         rw [open_subst, ← subst_intro]; apply preservation_subst
-        apply typing.fix₁; apply typing.lam₁
+        apply typing.fix₁; apply typing.lam
         apply Hτe; apply HwellBinds; apply Hclose
         apply Hτe; apply Hclose
   case fix₂ =>
