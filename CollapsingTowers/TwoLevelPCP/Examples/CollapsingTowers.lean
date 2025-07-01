@@ -1,19 +1,15 @@
 
-import Mathlib.Data.Finset.Basic
-import CollapsingTowers.TwoLevelPCP.SmallStep
 import CollapsingTowers.TwoLevelPCP.Typing
-namespace Example1
-
-/-- Example 1:
-lift x. x +₂ (x +₂ x)
-→⋆
-code {
-  lets f = lam x.
-    lets y = x + x in
-    lets z = x + y in z
-  in f
-}
--/
+namespace Fig4
+-- Fig. 4. Example of small-step derivation in λ↑↓
+-- lift (λx . x +₂ (x *₂ x))  -->⋆
+-- code (
+--   lets f = λx₀.
+--     lets x₁ = x₀ * x₀ in
+--     lets x₂ = x₀ + x₁ in
+--     x₂
+--   in f
+-- )
 def x₀ : Expr :=
   .fvar 0
 
@@ -23,41 +19,75 @@ def x₁ : Expr :=
 def x₂ : Expr :=
   .fvar 2
 
-def x₃ : Expr :=
+def f : Expr :=
   .fvar 3
 
 def expr₀ : Expr :=
-  .lift (.lam (close₀ 0 (.binary₂ .add x₀ (.binary₂ .add x₀ x₀))))
+  .lift (
+    .lam (close₀ 0 (
+      .binary₂ .add x₀ (.binary₂ .mul x₀ x₀))))
 
 def expr₁ : Expr :=
-  .lam𝕔 (close₀ 0 (.binary₂ .add (.code x₀) (.binary₂ .add (.code x₀) (.code x₀))))
+  .lam𝕔 (close₀ 0 (
+    .binary₂ .add (.code x₀) (.binary₂ .mul (.code x₀) (.code x₀))))
 
 def expr₂ : Expr :=
-  .lam𝕔 (close₀ 0 (.binary₂ .add (.code x₀) (.reflect (.binary₁ .add x₀ x₀))))
+  .lam𝕔 (close₀ 0 (
+    .binary₂ .add (.code x₀) (.reflect (.binary₁ .mul x₀ x₀))))
 
 def expr₃ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.binary₂ .add (.code x₀) (.code x₁)))))
+  .lam𝕔 (close₀ 0 (
+    .let𝕔 (.binary₁ .mul x₀ x₀) (close₀ 1 (
+    .binary₂ .add (.code x₀) (.code x₁)))))
 
 def expr₄ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.reflect (.binary₁ .add x₀ x₁)))))
+  .lam𝕔 (close₀ 0 (
+    .let𝕔 (.binary₁ .mul x₀ x₀) (close₀ 1 (
+    .reflect (.binary₁ .add x₀ x₁)))))
 
 def expr₅ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.let𝕔 (.binary₁ .add x₀ x₁) (close₀ 2 (.code x₂))))))
+  .lam𝕔 (close₀ 0 (
+    .let𝕔 (.binary₁ .mul x₀ x₀) (close₀ 1 (
+    .let𝕔 (.binary₁ .add x₀ x₁) (close₀ 2 (
+    .code x₂))))))
 
 def expr₆ : Expr :=
-  .lam𝕔 (close₀ 0 (.let𝕔 (.binary₁ .add x₀ x₀) (close₀ 1 (.code (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
+  .lam𝕔 (close₀ 0 (
+    .let𝕔 (.binary₁ .mul x₀ x₀) (close₀ 1 (
+    .code (
+      .lets (.binary₁ .add x₀ x₁) (close₀ 2
+      x₂))))))
 
 def expr₇ : Expr :=
-  .lam𝕔 (close₀ 0 (.code (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
+  .lam𝕔 (close₀ 0 (
+    .code (
+      .lets (.binary₁ .mul x₀ x₀) (close₀ 1 (
+      .lets (.binary₁ .add x₀ x₁) (close₀ 2
+      x₂))))))
 
 def expr₈ : Expr :=
-  .reflect (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂))))))
+  .reflect (
+    .lam (close₀ 0 (
+      .lets (.binary₁ .mul x₀ x₀) (close₀ 1 (
+      .lets (.binary₁ .add x₀ x₁) (close₀ 2
+      x₂))))))
 
 def expr₉ : Expr :=
-  .let𝕔 (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 (.code x₃))
+  .let𝕔 (
+    .lam (close₀ 0 (
+      .lets (.binary₁ .mul x₀ x₀) (close₀ 1 (
+      .lets (.binary₁ .add x₀ x₁) (close₀ 2
+      x₂)))))) (close₀ 3 (
+  .code f))
 
 def expr𝕩 : Expr :=
-  .code (.lets (.lam (close₀ 0 (.lets (.binary₁ .add x₀ x₀) (close₀ 1 (.lets (.binary₁ .add x₀ x₁) (close₀ 2 x₂)))))) (close₀ 3 x₃))
+  .code (
+    .lets (
+      .lam (close₀ 0 (
+        .lets (.binary₁ .mul x₀ x₀) (close₀ 1 (
+        .lets (.binary₁ .add x₀ x₁) (close₀ 2
+        x₂)))))) (close₀ 3
+    f))
 
 example : step ([], expr₀) ([], expr₁) := by
   apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
@@ -277,90 +307,4 @@ example : typing_reification [] [] expr𝕩 τ .pure :=
   apply typing.fvar; repeat simp
   repeat constructor
 
-end Example1
-
-namespace PhaseConsistency
-
--- stuck example
--- letc x (* phase 2 *) = eff in
--- x (* phase 1 *)
-example : ∀ b τ φ, ¬typing_reification [] [] (.let𝕔 b (.bvar 0)) τ φ :=
-  by
-  intros _ _ _ Hτ
-  cases Hτ <;> contradiction
-
--- cross stage persistence
--- let x (* phase 1 *) = ref 0 in
--- code x (* phase 2 *)
-example : ∀ b τ φ, ¬typing_reification [] [] (.lets b (.code (.bvar 0))) τ φ :=
-  by
-  intros _ _ _ Hτ
-  cases Hτ
-  case pure Hτ =>
-    generalize HEqφ : (∅ : Effects) = φ
-    rw [HEqφ] at Hτ
-    cases Hτ; contradiction
-  case reify Hτ =>
-    cases Hτ; contradiction
-
-end PhaseConsistency
-
-namespace Reification
-
--- reify under B context
--- let x =
---    letc x0 = eff in
---    code x0
--- in e
-example : ∀ b e τ φ, ¬typing_reification [] [] (.lets (.let𝕔 b (.code (.bvar 0))) e) τ φ :=
-  by
-  intros _ _ _ _ Hτ
-  cases Hτ
-  case pure Hτ =>
-    generalize HEqφ : (∅ : Effects) = φ
-    rw [HEqφ] at Hτ
-    cases Hτ
-    case lets Hcode _ _ => cases Hcode; contradiction
-  case reify Hτ =>
-    cases Hτ
-    case lets Hcode _ _ => cases Hcode; contradiction
-
--- reify result under B context
--- let x = code {
---    let x0 = eff in
---    x0
--- }
--- in e
-example : ∀ b e τ φ, ¬typing_reification [] [] (.lets (.code (.lets b (.bvar 0))) e) τ φ :=
-  by
-  intros _ _ _ _ Hτ
-  cases Hτ
-  case pure Hτ =>
-    generalize HEqφ : (∅ : Effects) = φ
-    rw [HEqφ] at Hτ
-    cases Hτ
-    case lets Hcode _ _ => cases Hcode; contradiction
-  case reify Hτ =>
-    cases Hτ
-    case lets Hcode _ _ => cases Hcode; contradiction
-
--- E context must has
--- E ~ fragment τ -> rep τ
--- let x = reflect e
--- in 1
-example : ∀ e τ φ, ¬typing_reification [] [] (.lets (.reflect e) (.lit 1)) τ φ :=
-  by
-  intros _ _ _ Hτ
-  cases Hτ
-  case pure Hτ =>
-    generalize HEqφ : (∅ : Effects) = φ
-    rw [HEqφ] at Hτ
-    cases Hτ
-    case lets Hreflect _ _ =>
-      cases Hreflect
-      simp at HEqφ
-  case reify Hτ =>
-    cases Hτ
-    contradiction
-
-end Reification
+end Fig4

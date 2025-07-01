@@ -8,11 +8,13 @@ inductive Stage : Type where
 inductive BinOp : Type where
   | add
   | mul
+  | sub
 
 @[simp]
 def eval : BinOp → ℕ → ℕ → ℕ
   | .add => Nat.add
   | .mul => Nat.mul
+  | .sub => Nat.sub
 
 inductive Ty : Type where
   | nat
