@@ -64,7 +64,7 @@ def expr₃ : Expr :=
       .ifz₁ n (
         .lit 1) (
         .binary₁ .mul (
-          .lit 2) (
+          .lit 47) (
           .app₁ (
             .fix₁ (
               .lam (close₀ 2 (
@@ -239,9 +239,101 @@ def expr𝕩₄ : Expr :=
 
 def expr𝕩₅ : Expr := .lit 2209
 
+example : step ([], expr₀) ([], expr₁) := by
+  apply step_lvl.step𝕄 id
+  repeat constructor
+
+example : step ([], expr₁) ([], expr₂) := by
+  apply step_lvl.step𝕄 (fun X => .app₁ X _)
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : step ([], expr₂) ([], expr₃) := by
+  apply step_lvl.step𝕄 (fun X => .app₁ X _)
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : step ([], expr₃) ([], expr₄) := by
+  apply step_lvl.step𝕄 id
+  repeat constructor
+
+example : step ([], expr₄) ([], expr₅) := by
+  apply step_lvl.step𝕄 id
+  repeat constructor
+
+example : step ([], expr₅) ([], expr₆) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.app₁ X _))
+  apply ctx𝕄.cons𝔹 (fun X => .binary₁ .mul _ X)
+  repeat constructor
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : step ([], expr₆) ([], expr₇) := by
+  let left : Expr :=
+    .lam (close₀ 3 (
+      .ifz₁ n (
+        .lit 1) (
+        .binary₁ .mul (
+          .lit 47) (
+          .app₁ (.fix₁ (
+            .lam (close₀ 2 (
+            .lam (close₀ 3 (
+              .ifz₁ n (
+                .lit 1) (
+                .binary₁ .mul (.lit 47) (.app₁ f (.binary₁ .sub n (.lit 1)))))))))) (
+          .binary₁ .sub n (.lit 1))))))
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.app₁ left X))
+  repeat constructor
+
+example : step ([], expr₇) ([], expr₈) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ X)
+  repeat constructor
+
+example : step ([], expr₈) ([], expr₉) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ X)
+  repeat constructor
+
+example : step ([], expr₉) ([], expr𝕩₀) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.binary₁ .mul _ (.app₁ X _)))
+  repeat constructor
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : step ([], expr𝕩₀) ([], expr𝕩₁) := by
+  let left : Expr :=
+    .lam (close₀ 3 (
+      .ifz₁ n (
+        .lit 1) (
+        .binary₁ .mul (
+          .lit 47) (
+          .app₁ (.fix₁ (
+            .lam (close₀ 2 (
+            .lam (close₀ 3 (
+              .ifz₁ n (
+                .lit 1) (
+                .binary₁ .mul (.lit 47) (.app₁ f (.binary₁ .sub n (.lit 1)))))))))) (
+          .binary₁ .sub n (.lit 1))))))
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.binary₁ .mul _ (.app₁ left X)))
+  repeat constructor
+
+example : step ([], expr𝕩₁) ([], expr𝕩₂) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.binary₁ .mul _ X))
+  repeat constructor
+
+example : step ([], expr𝕩₂) ([], expr𝕩₃) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ (.binary₁ .mul _ X))
+  repeat constructor
+
+example : step ([], expr𝕩₃) ([], expr𝕩₄) := by
+  apply step_lvl.step𝕄 (fun X => .binary₁ .mul _ X)
+  repeat constructor
+
+example : step ([], expr𝕩₄) ([], expr𝕩₅) := by
+  apply step_lvl.step𝕄 id
+  repeat constructor
+
 example : typing_reification [] [] expr₀ .nat ∅ :=
   by
-  rw [expr₀, power, x, f, n]
   repeat
     first
     | constructor
@@ -249,7 +341,6 @@ example : typing_reification [] [] expr₀ .nat ∅ :=
 
 example : typing_reification [] [] expr₁ .nat ∅ :=
   by
-  rw [expr₁, x, f, n]
   repeat
     first
     | constructor
@@ -257,7 +348,6 @@ example : typing_reification [] [] expr₁ .nat ∅ :=
 
 example : typing_reification [] [] expr₂ .nat ∅ :=
   by
-  rw [expr₂, f, n]
   repeat
     first
     | constructor
@@ -265,7 +355,6 @@ example : typing_reification [] [] expr₂ .nat ∅ :=
 
 example : typing_reification [] [] expr₃ .nat ∅ :=
   by
-  rw [expr₃, f, n]
   repeat
     first
     | constructor
@@ -273,7 +362,6 @@ example : typing_reification [] [] expr₃ .nat ∅ :=
 
 example : typing_reification [] [] expr₄ .nat ∅ :=
   by
-  rw [expr₄, f, n]
   repeat
     first
     | constructor
@@ -281,7 +369,6 @@ example : typing_reification [] [] expr₄ .nat ∅ :=
 
 example : typing_reification [] [] expr₅ .nat ∅ :=
   by
-  rw [expr₅, f, n]
   repeat
     first
     | constructor
@@ -289,7 +376,6 @@ example : typing_reification [] [] expr₅ .nat ∅ :=
 
 example : typing_reification [] [] expr₆ .nat ∅ :=
   by
-  rw [expr₆, f, n]
   repeat
     first
     | constructor
@@ -297,7 +383,6 @@ example : typing_reification [] [] expr₆ .nat ∅ :=
 
 example : typing_reification [] [] expr₇ .nat ∅ :=
   by
-  rw [expr₇, f, n]
   repeat
     first
     | constructor
@@ -305,7 +390,6 @@ example : typing_reification [] [] expr₇ .nat ∅ :=
 
 example : typing_reification [] [] expr₈ .nat ∅ :=
   by
-  rw [expr₈, f, n]
   repeat
     first
     | constructor
@@ -313,7 +397,6 @@ example : typing_reification [] [] expr₈ .nat ∅ :=
 
 example : typing_reification [] [] expr₉ .nat ∅ :=
   by
-  rw [expr₉, f, n]
   repeat
     first
     | constructor
@@ -322,7 +405,6 @@ example : typing_reification [] [] expr₉ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₀ .nat ∅ :=
   by
-  rw [expr𝕩₀, f, n]
   repeat
     first
     | constructor
@@ -330,7 +412,6 @@ example : typing_reification [] [] expr𝕩₀ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₁ .nat ∅ :=
   by
-  rw [expr𝕩₁, f, n]
   repeat
     first
     | constructor
@@ -338,7 +419,6 @@ example : typing_reification [] [] expr𝕩₁ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₂ .nat ∅ :=
   by
-  rw [expr𝕩₂, f, n]
   repeat
     first
     | constructor
@@ -346,7 +426,6 @@ example : typing_reification [] [] expr𝕩₂ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₃ .nat ∅ :=
   by
-  rw [expr𝕩₃]
   repeat
     first
     | constructor
@@ -354,7 +433,6 @@ example : typing_reification [] [] expr𝕩₃ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₄ .nat ∅ :=
   by
-  rw [expr𝕩₄]
   repeat
     first
     | constructor
@@ -362,7 +440,6 @@ example : typing_reification [] [] expr𝕩₄ .nat ∅ :=
 
 example : typing_reification [] [] expr𝕩₅ .nat ∅ :=
   by
-  rw [expr𝕩₅]
   repeat
     first
     | constructor
