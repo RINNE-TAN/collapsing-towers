@@ -43,3 +43,11 @@ theorem union_pure_right : forall φ : Effects, φ ∪ ∅ = φ := by
 theorem union_pure_left : forall φ : Effects, ∅ ∪ φ = φ := by
   intro φ
   cases φ <;> rfl
+
+theorem union_reify_right : forall φ : Effects, φ ∪ .reify = .reify := by
+  intro φ
+  cases φ <;> rfl
+
+theorem union_reify_left : forall φ : Effects, .reify ∪ φ = .reify := by
+  intro φ
+  cases φ <;> rfl
