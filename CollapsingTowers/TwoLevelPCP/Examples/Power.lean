@@ -457,8 +457,8 @@ namespace MutablePower
 --         ifz₁ n
 --           then load₁ ref
 --           else
---            let _ = store₁ ref (x * (load₁ ref)) in
---            f(n - 1)
+--             let _ = store₁ ref (x * (load₁ ref)) in
+--             f(n - 1)
 --     ) in
 -- power(47)(2)
 def ref : Expr :=
@@ -1126,40 +1126,3 @@ example : typing_reification [] [.nat] expr𝕩𝕩₄ .nat ∅ :=
     | constructor
     | rw [← union_pure_left ∅]
 end MutablePower
-
-namespace StagePower
--- stage power function xⁿ
--- let (power : <ℕ> → ℕ → <ℕ>) =
---   λ(x : <ℕ>).
---     fix₁ (
---       λ(f : ℕ → <ℕ>).
---       λ(n : ℕ).
---         ifz₁ n
---           then (lift 1)
---           else x *₂ f(n - 1)
---     ) in
--- lift (
---   λ(y : <ℕ>).
---     power(y)(2)
--- )
-end StagePower
-
-namespace StageMutablePower
--- stage mutable power function xⁿ
--- let ref = alloc₂ (lift 1) in
--- let (power : <ℕ> → ℕ → <ℕ>) =
---   λ(x : <ℕ>).
---     fix₁ (
---       λ(f : ℕ → <ℕ>).
---       λ(n : ℕ).
---         ifz₁ n
---           then load₂ ref
---           else
---            let _ = store₂ ref (x *₂ (load₂ ref)) in
---            f(n - 1)
---     ) in
--- lift (
---   λ(y : <ℕ>).
---     power(y)(2)
--- )
-end StageMutablePower

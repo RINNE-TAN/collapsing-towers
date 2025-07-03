@@ -306,5 +306,4 @@ example : typing_reification [] [] expr𝕩 τ .pure :=
   apply typing.fvar; repeat simp
   apply typing.fvar; repeat simp
   repeat constructor
-
 end Fig4
