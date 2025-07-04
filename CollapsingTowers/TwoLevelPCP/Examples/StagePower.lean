@@ -648,6 +648,22 @@ namespace StageMutablePower
 --   λ(y : <ℕ>).
 --     power(y)(2)
 -- )
+-- -->*
+-- code (
+--   let x₀ = 1 in
+--   let x₁ = alloc₁ x₀ in
+--   let f₀ =
+--     λ(x₂ : ℕ).
+--       let x₃ = load₁ x₁ in
+--       let x₄ = x₂ * x₃ in
+--       let x₅ = store₁ x₁ x₄ in
+--       let x₆ = load₁ x₁ in
+--       let x₇ = x₂ * x₆ in
+--       let x₈ = store₁ x₁ x₇ in
+--       let x₉ = load₁ x₁ in
+--       x₉
+--   in f₀
+-- )
 def x₀ : Expr :=
   .fvar 0
 
@@ -677,6 +693,9 @@ def x₈ : Expr :=
 
 def x₉ : Expr :=
   .fvar 9
+
+def f₀ : Expr :=
+  .fvar 10
 
 def ref : Expr :=
   .fvar 100
@@ -1340,6 +1359,181 @@ def expr𝕩𝕩𝕩₅ : Expr :=
       .let𝕔 (.store₁ x₁ x₇) (close₀ 8 (
       .let𝕔 (.load₁ x₁) (close₀ 9 (
       .code x₉))))))))))))))))))))
+
+def expr𝕩𝕩𝕩₆ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+      .let𝕔 (.load₁ x₁) (close₀ 6 (
+      .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 (
+      .let𝕔 (.store₁ x₁ x₇) (close₀ 8 (
+      .code (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩₇ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+      .let𝕔 (.load₁ x₁) (close₀ 6 (
+      .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 (
+      .code (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩₈ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+      .let𝕔 (.load₁ x₁) (close₀ 6 (
+      .code (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩₉ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+      .code (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩𝕩₀ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .code (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩𝕩₁ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .let𝕔 (.load₁ x₁) (close₀ 3 (
+      .code (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩𝕩₂ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .lam𝕔 (close₀ 2 (
+      .code (
+        .lets (.load₁ x₁) (close₀ 3 (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩𝕩₃ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+    .reflect (
+      .lam (close₀ 2 (
+        .lets (.load₁ x₁) (close₀ 3 (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉)))))))))))))))))))))
+
+def expr𝕩𝕩𝕩𝕩₄ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+  .let𝕔 (
+    .lam (close₀ 2 (
+      .lets (.load₁ x₁) (close₀ 3 (
+      .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+      .lets (.store₁ x₁ x₄) (close₀ 5 (
+      .lets (.load₁ x₁) (close₀ 6 (
+      .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+      .lets (.store₁ x₁ x₇) (close₀ 8 (
+      .lets (.load₁ x₁) (close₀ 9 (
+      x₉))))))))))))))))) (close₀ 10 (
+  .code f₀))))))
+
+def expr𝕩𝕩𝕩𝕩₅ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+  .code (
+    .lets (
+      .lam (close₀ 2 (
+        .lets (.load₁ x₁) (close₀ 3 (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉))))))))))))))))) (close₀ 10 (
+    f₀)))))))
+
+def expr𝕩𝕩𝕩𝕩₆ : Expr :=
+  .let𝕔 (.lit 1) (close₀ 0 (
+  .code (
+    .lets (.alloc₁ x₀) (close₀ 1 (
+    .lets (
+      .lam (close₀ 2 (
+        .lets (.load₁ x₁) (close₀ 3 (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉))))))))))))))))) (close₀ 10 (
+    f₀)))))))
+
+def expr𝕩𝕩𝕩𝕩₇ : Expr :=
+  .code (
+    .lets (.lit 1) (close₀ 0 (
+    .lets (.alloc₁ x₀) (close₀ 1 (
+    .lets (
+      .lam (close₀ 2 (
+        .lets (.load₁ x₁) (close₀ 3 (
+        .lets (.binary₁ .mul x₂ x₃) (close₀ 4 (
+        .lets (.store₁ x₁ x₄) (close₀ 5 (
+        .lets (.load₁ x₁) (close₀ 6 (
+        .lets (.binary₁ .mul x₂ x₆) (close₀ 7 (
+        .lets (.store₁ x₁ x₇) (close₀ 8 (
+        .lets (.load₁ x₁) (close₀ 9 (
+        x₉))))))))))))))))) (close₀ 10 (
+    f₀)))))))
 
 example : step ([], expr₀) ([], expr₁) := by
   apply step_lvl.step𝕄 (fun X => .lets (.alloc₂ X) _)
@@ -2124,6 +2318,214 @@ example : step ([], expr𝕩𝕩𝕩₄) ([], expr𝕩𝕩𝕩₅) := by
   apply ctxℝ.let𝕔; constructor; constructor; constructor
   repeat constructor
 
+example : step ([], expr𝕩𝕩𝕩₅) ([], expr𝕩𝕩𝕩₆) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 (
+          .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+          .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+          .let𝕔 (.load₁ x₁) (close₀ 6 (
+          .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 (
+          .let𝕔 (.store₁ x₁ x₇) (close₀ 8 X))))))))))))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.store₁ x₁ x₄) (close₀ 5 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 6 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.store₁ x₁ x₇) (close₀ 8 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩₆) ([], expr𝕩𝕩𝕩₇) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 (
+          .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+          .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+          .let𝕔 (.load₁ x₁) (close₀ 6 (
+          .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 X))))))))))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.store₁ x₁ x₄) (close₀ 5 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 6 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₆) (close₀ 7 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩₇) ([], expr𝕩𝕩𝕩₈) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 (
+          .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+          .let𝕔 (.store₁ x₁ x₄) (close₀ 5 (
+          .let𝕔 (.load₁ x₁) (close₀ 6 X))))))))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.store₁ x₁ x₄) (close₀ 5 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 6 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩₈) ([], expr𝕩𝕩𝕩₉) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 (
+          .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 (
+          .let𝕔 (.store₁ x₁ x₄) (close₀ 5 X))))))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.store₁ x₁ x₄) (close₀ 5 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩₉) ([], expr𝕩𝕩𝕩𝕩₀) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 (
+          .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.binary₁ .mul x₂ x₃) (close₀ 4 X))
+  apply ctxℝ.let𝕔; constructor; constructor; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₀) ([], expr𝕩𝕩𝕩𝕩₁) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 (
+          .let𝕔 (.load₁ x₁) (close₀ 3 X))))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.load₁ x₁) (close₀ 3 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₁) ([], expr𝕩𝕩𝕩𝕩₂) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 (
+        .lam𝕔 (close₀ 2 X))))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 (close₀ 2 X))
+  apply ctxℝ.lam𝕔
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₂) ([], expr𝕩𝕩𝕩𝕩₃) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 X))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₃) ([], expr𝕩𝕩𝕩𝕩₄) := by
+  apply step_lvl.reflect
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 X))))
+    id
+  apply ctxℙ.consℚ
+  apply ctxℚ.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctxℚ.holeℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₄) ([], expr𝕩𝕩𝕩𝕩₅) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 (
+      .let𝕔 (.alloc₁ x₀) (close₀ 1 X))))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.alloc₁ x₀) (close₀ 1 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₅) ([], expr𝕩𝕩𝕩𝕩₆) := by
+  apply step_lvl.step𝕄
+    (fun X =>
+      .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctx𝕄.consℝ (fun X => .let𝕔 (.lit 1) (close₀ 0 X))
+  apply ctxℝ.let𝕔; constructor
+  repeat constructor
+
+example : step ([], expr𝕩𝕩𝕩𝕩₆) ([], expr𝕩𝕩𝕩𝕩₇) := by
+  apply step_lvl.step𝕄 id
+  repeat constructor
+
 set_option maxRecDepth 1000 in
 example : typing_reification [] [] expr₀ (.rep (.arrow .nat .nat ∅)) .reify :=
   by
@@ -2132,4 +2534,12 @@ example : typing_reification [] [] expr₀ (.rep (.arrow .nat .nat ∅)) .reify 
   rw [← union_reify_right .reify]; repeat constructor
   rw [← union_pure_right .reify, ← union_pure_right .reify]; repeat constructor
   rw [← union_pure_left ∅]; repeat constructor
+
+set_option maxRecDepth 2000 in
+example : typing_reification [] [] expr𝕩𝕩𝕩𝕩₇ (.rep (.arrow .nat .nat ∅)) ∅ :=
+  by
+  repeat
+    first
+    | constructor
+    | rw [← union_pure_left ∅]
 end StageMutablePower

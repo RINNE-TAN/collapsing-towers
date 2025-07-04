@@ -1,4 +1,4 @@
 
-import CollapsingTowers.TwoLevelPCP.Examples.CollapsingTowers
 import CollapsingTowers.TwoLevelPCP.Examples.Counterexamples
 import CollapsingTowers.TwoLevelPCP.Examples.Power
+import CollapsingTowers.TwoLevelPCP.Examples.StagePower
