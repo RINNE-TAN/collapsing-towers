@@ -1,7 +1,7 @@
 
 import Mathlib.Tactic
-import CollapsingTowers.TwoLevelPCP.Typing
-import CollapsingTowers.TwoLevelPCP.Shift
+import CollapsingTowers.TwoLevelFull.Typing
+import CollapsingTowers.TwoLevelFull.Shift
 theorem preservation_subst_strengthened :
   ∀ Γ Δ Φ σ v e τ𝕒 τ𝕓 φ,
     typing Γ σ .stat e τ𝕓 φ →

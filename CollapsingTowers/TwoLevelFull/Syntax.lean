@@ -1,6 +1,6 @@
 
 import Mathlib.Data.Nat.Basic
-import CollapsingTowers.TwoLevelPCP.Effect
+import CollapsingTowers.TwoLevelFull.Effect
 inductive Stage : Type where
   | stat
   | dyn

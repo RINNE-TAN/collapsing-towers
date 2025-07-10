@@ -1,6 +1,6 @@
 
 import Mathlib.Data.Nat.Basic
-import CollapsingTowers.TwoLevelPCP.Syntax
+import CollapsingTowers.TwoLevelFull.Syntax
 @[simp]
 def getr {α : Type} (x : ℕ) (l : List α) : Option α :=
   match l with

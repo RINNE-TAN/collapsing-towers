@@ -1,6 +1,6 @@
 
 import Mathlib.Tactic
-import CollapsingTowers.TwoLevelPCP.Typing
+import CollapsingTowers.TwoLevelFull.Typing
 theorem decomposeℝ :
   ∀ intro Γ σ R e₀ e₁ τ φ,
     ctxℝ intro Γ.length R →

@@ -1,6 +1,6 @@
 
-import CollapsingTowers.TwoLevelPCP.Syntax
-import CollapsingTowers.TwoLevelPCP.OpenClose
+import CollapsingTowers.TwoLevelFull.Syntax
+import CollapsingTowers.TwoLevelFull.OpenClose
 
 @[simp]
 def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr

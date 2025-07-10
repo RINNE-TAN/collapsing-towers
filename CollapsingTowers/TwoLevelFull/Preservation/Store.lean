@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevelPCP.Preservation.Ctx
+import CollapsingTowers.TwoLevelFull.Preservation.Ctx
 theorem decompose𝕄_alloc :
   ∀ Γ σ₀ M v τ φ,
     ctx𝕄 Γ.length M →
@@ -253,7 +253,7 @@ theorem decompose𝕄_alloc :
           apply HwellBinds
           apply (close_closed _ _ _).mp
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
           apply lc_ctx𝕄; apply HM
           simp; apply value_lc; apply Hvalue
@@ -271,7 +271,7 @@ theorem decompose𝕄_alloc :
           apply HwellBinds
           apply (close_closed _ _ _).mp
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
           apply lc_ctx𝕄; apply HM
           simp; apply value_lc; apply Hvalue
@@ -294,7 +294,7 @@ theorem decompose𝕄_alloc :
           apply HwellBinds
           apply (close_closed _ _ _).mp
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
           apply lc_ctx𝕄; apply HM
           simp; apply value_lc; apply Hvalue
@@ -313,7 +313,7 @@ theorem decompose𝕄_alloc :
           apply HwellBinds
           apply (close_closed _ _ _).mp
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
           apply lc_ctx𝕄; apply HM
           simp; apply value_lc; apply Hvalue
@@ -328,7 +328,7 @@ theorem decompose𝕄_alloc :
           apply typing.run; apply typing_reification.pure
           apply IH; apply Hloc
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
         case reify HX =>
           have ⟨Hτv, IH⟩ := IH _ _ _ HX HEqlvl
@@ -337,7 +337,7 @@ theorem decompose𝕄_alloc :
           apply typing.run; apply typing_reification.reify
           apply IH; apply Hloc
           apply fv_subset_closed; apply fv_at𝕄 _ _ (.alloc₁ v) loc; apply HM
-          rw [(fv_empty_iff_closed loc).mpr]; simp
+          rw [(fv_empty_iff_closed loc).mpr]; simp; simp
           rw [← List.length_nil]; apply typing_closed; apply Hloc; apply Hclose
     case ifzl₂ =>
       cases Hτ
@@ -458,7 +458,7 @@ theorem preservation_store𝕄 :
       exists []; constructor
       . apply HwellStore
       . apply decompose𝕄; apply HM; apply Hlc
-        . simp; rw [fv_empty_iff_closed, ← List.length_nil]
+        . simp; simp [fv_empty_iff_closed]; rw [← List.length_nil]
           apply typing_closed; apply HwellStore.right
           apply HbindsLoc; apply HbindsLocTy
         . intros Γ _ _ Hτ

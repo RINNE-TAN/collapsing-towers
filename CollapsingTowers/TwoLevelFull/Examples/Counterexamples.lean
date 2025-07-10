@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevelPCP.Typing
+import CollapsingTowers.TwoLevelFull.Typing
 namespace PhaseConsistency
 
 -- stuck example

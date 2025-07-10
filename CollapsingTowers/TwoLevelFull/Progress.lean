@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevelPCP.Typing
+import CollapsingTowers.TwoLevelFull.Typing
 @[simp]
 def dyn_env (Γ : TEnv) : Prop :=
   ∀ x τ 𝕊, binds x (τ, 𝕊) Γ → ¬𝕊 = .stat
@@ -43,7 +43,7 @@ theorem progress_strengthened :
   case lam =>
     intros _ _ _ _ _ _ _ H HwellBinds Hclose IH HwellStore HDyn HEq𝕊
     left; constructor
-    apply (open_closedb _ _ _).mp; apply typing_regular; apply H
+    apply (open_lc _ _ _).mp; apply typing_regular; apply H
   case lift_lam =>
     intros _ _ _ _ _ _ _ H IH HwellStore HDyn HEq𝕊
     right
@@ -206,8 +206,8 @@ theorem progress_strengthened :
       | code e Hlc =>
         exists st₀, .reflect (.lam (close₀ Γ.length e))
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
-        apply close_closedb; omega
-        apply closedb_inc; apply Hlc; omega
+        apply close_lc; omega
+        apply lc_inc; apply Hlc; omega
         apply head𝕄.lam𝕔
       | _ => contradiction
     | inr Hstep =>
@@ -223,12 +223,12 @@ theorem progress_strengthened :
       apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
       constructor
       apply value_lc; apply Hvalue₀
-      apply (open_closedb _ _ _).mp; apply typing_regular; apply H₁
+      apply (open_lc _ _ _).mp; apply typing_regular; apply H₁
       apply head𝕄.lets; apply Hvalue₀
     | inr Hstep₀ =>
       have ⟨st₁, _, Hstep₀⟩ := Hstep₀; exists st₁
       apply step𝔹 _ _ _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
-      apply (open_closedb _ _ _).mp; apply typing_regular; apply H₁
+      apply (open_lc _ _ _).mp; apply typing_regular; apply H₁
   case let𝕔 =>
     intros Γ _ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HwellStore HDyn HEq𝕊
     right
@@ -243,8 +243,8 @@ theorem progress_strengthened :
         apply step_lvl.step𝕄 _ _ _ _ ctx𝕄.hole
         constructor
         apply typing_regular; apply H₀
-        apply close_closedb; omega
-        apply closedb_inc; apply Hlc; omega
+        apply close_lc; omega
+        apply lc_inc; apply Hlc; omega
         apply head𝕄.let𝕔
       | _ => contradiction
     | inr Hstep =>

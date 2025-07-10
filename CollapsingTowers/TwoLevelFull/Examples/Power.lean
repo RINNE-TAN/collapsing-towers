@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevelPCP.Typing
+import CollapsingTowers.TwoLevelFull.Typing
 namespace Power
 -- naive power function xⁿ
 -- let (power : ℕ → ℕ → ℕ) =

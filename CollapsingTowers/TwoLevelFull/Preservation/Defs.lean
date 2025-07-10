@@ -1,7 +1,7 @@
 
-import CollapsingTowers.TwoLevelPCP.Preservation.Head
-import CollapsingTowers.TwoLevelPCP.Preservation.Store
-import CollapsingTowers.TwoLevelPCP.Preservation.Reflect
+import CollapsingTowers.TwoLevelFull.Preservation.Head
+import CollapsingTowers.TwoLevelFull.Preservation.Store
+import CollapsingTowers.TwoLevelFull.Preservation.Reflect
 theorem preservation_strengthened :
   ∀ Γ σ₀ st₀ st₁ e₀ e₁ τ φ₀,
     step_lvl Γ.length (st₀, e₀) (st₁, e₁) →

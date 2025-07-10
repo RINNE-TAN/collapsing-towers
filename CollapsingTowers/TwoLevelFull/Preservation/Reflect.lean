@@ -1,6 +1,6 @@
 
-import CollapsingTowers.TwoLevelPCP.Typing
-import CollapsingTowers.TwoLevelPCP.Preservation.Ctx
+import CollapsingTowers.TwoLevelFull.Typing
+import CollapsingTowers.TwoLevelFull.Preservation.Ctx
 theorem pure𝔹 :
   ∀ Γ σ B e τ φ,
     ctx𝔹 B →

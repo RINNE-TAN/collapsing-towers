@@ -1,6 +1,6 @@
 
-import CollapsingTowers.TwoLevelPCP.Typing
-import CollapsingTowers.TwoLevelPCP.Preservation.Subst
+import CollapsingTowers.TwoLevelFull.Typing
+import CollapsingTowers.TwoLevelFull.Preservation.Subst
 theorem preservation_head𝕄 :
   ∀ Γ σ e₀ e₁ τ φ,
     head𝕄 e₀ e₁ →
@@ -85,7 +85,7 @@ theorem preservation_head𝕄 :
         apply Hτe
         apply typing.code_fragment; simp
         apply HwellBinds
-        apply subst_closedb_at; simp; apply (open_closedb _ _ _).mpr; apply Hlc
+        apply subst_lc_at; simp; apply (open_lc _ _ _).mpr; apply Hlc
         apply HwellBinds
         apply (close_closed _ _ _).mp; apply subst_closed_at; simp; apply open_closed; apply Hclose
         apply Hclose

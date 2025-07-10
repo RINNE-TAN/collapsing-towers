@@ -1,6 +1,6 @@
 
-import CollapsingTowers.TwoLevelPCP.Progress
-import CollapsingTowers.TwoLevelPCP.Preservation.Defs
+import CollapsingTowers.TwoLevelFull.Progress
+import CollapsingTowers.TwoLevelFull.Preservation.Defs
 @[simp]
 def stuck (st₀ : Store) (e₀ : Expr) : Prop :=
   ¬(∃ st₁ e₁, step (st₀, e₀) (st₁, e₁)) ∧ ¬value e₀

@@ -1,8 +1,8 @@
 
-import CollapsingTowers.TwoLevelPCP.Syntax
-import CollapsingTowers.TwoLevelPCP.Store
-import CollapsingTowers.TwoLevelPCP.OpenClose
-import CollapsingTowers.TwoLevelPCP.Env
+import CollapsingTowers.TwoLevelFull.Syntax
+import CollapsingTowers.TwoLevelFull.Store
+import CollapsingTowers.TwoLevelFull.OpenClose
+import CollapsingTowers.TwoLevelFull.Env
 abbrev Ctx :=
   Expr → Expr
 
@@ -29,7 +29,7 @@ inductive ctx𝔹 : Ctx → Prop where
   | binaryl₂ : ∀ op r, lc r → ctx𝔹 (fun X => .binary₂ op X r)
   | binaryr₂ : ∀ op v, value v → ctx𝔹 (fun X => .binary₂ op v X)
   | lift : ctx𝔹 (fun X => .lift X)
-  | lets : ∀ e, closedb_at e 1 → ctx𝔹 (fun X => .lets X e)
+  | lets : ∀ e, lc_at e 1 → ctx𝔹 (fun X => .lets X e)
   | load₁ : ctx𝔹 (fun X => .load₁ X)
   | alloc₁ : ctx𝔹 (fun X => .alloc₁ X)
   | storel₁ : ∀ r, lc r → ctx𝔹 (fun X => .store₁ X r)
@@ -182,7 +182,7 @@ theorem value_lc : ∀ e, value e → lc e := by
 
 -- properties of 𝔹 contexts
 
-theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦e⟧ n :=
+theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → lc_at e n → lc_at B⟦e⟧ n :=
   by
   intros _ _ _ HB Hlc
   induction HB with
@@ -194,7 +194,7 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
   | storel₁ _ IH
   | storel₂ _ IH =>
     constructor; apply Hlc
-    apply closedb_inc; apply IH; omega
+    apply lc_inc; apply IH; omega
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
   | binaryr₁ _ _ Hvalue
@@ -202,15 +202,15 @@ theorem lc_ctx𝔹 : ∀ B e n, ctx𝔹 B → closedb_at e n → closedb_at B⟦
   | storer₁ _ Hvalue
   | storer₂ _ Hvalue =>
     constructor
-    apply closedb_inc; apply value_lc; apply Hvalue; omega
+    apply lc_inc; apply value_lc; apply Hvalue; omega
     apply Hlc
   | lift| load₁| alloc₁| load₂| alloc₂| fix₁| fix₂ => apply Hlc
   | ifz₁ _ _ IH₀ IH₁
   | ifz₂ _ _ IH₀ IH₁ =>
     constructor; apply Hlc
     constructor
-    apply closedb_inc; apply IH₀; omega
-    apply closedb_inc; apply IH₁; omega
+    apply lc_inc; apply IH₀; omega
+    apply lc_inc; apply IH₁; omega
 
 theorem closed_at_decompose𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₀ x :=
   by
@@ -271,19 +271,19 @@ theorem open_ctx𝔹_map : ∀ B e x, ctx𝔹 B → open₀ x B⟦e⟧ = B⟦ope
   | binaryl₂ _ _ IH
   | lets _ IH
   | storel₁ _ IH
-  | storel₂ _ IH => simp; apply closedb_opening_id; apply IH
+  | storel₂ _ IH => simp; apply lc_opening_id; apply IH
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
   | binaryr₁ _ _ Hvalue
   | binaryr₂ _ _ Hvalue
   | storer₁ _ Hvalue
-  | storer₂ _ Hvalue => simp; apply closedb_opening_id; apply value_lc; apply Hvalue
+  | storer₂ _ Hvalue => simp; apply lc_opening_id; apply value_lc; apply Hvalue
   | lift| load₁| alloc₁| load₂| alloc₂| fix₁| fix₂ => simp
   | ifz₁ _ _ IH₀ IH₁
   | ifz₂ _ _ IH₀ IH₁ =>
     simp; constructor
-    apply closedb_opening_id; apply IH₀
-    apply closedb_opening_id; apply IH₁
+    apply lc_opening_id; apply IH₀
+    apply lc_opening_id; apply IH₁
 
 theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x → subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
   by
@@ -301,28 +301,28 @@ theorem subst𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x �
 
 -- properties of ℝ contexts
 
-theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → closedb_at e n → closedb_at R⟦e⟧ n :=
+theorem lc_ctxℝ : ∀ R e n intro lvl, ctxℝ intro lvl R → lc_at e n → lc_at R⟦e⟧ n :=
   by
   intros _ _ _ _ _ HR Hlc
   cases HR with
   | lam𝕔 =>
-    apply close_closedb; omega
-    apply closedb_inc; apply Hlc; omega
+    apply close_lc; omega
+    apply lc_inc; apply Hlc; omega
   | let𝕔 _ Hlcb =>
     constructor
-    apply closedb_inc; apply Hlcb; omega
-    apply close_closedb; omega
-    apply closedb_inc; apply Hlc; omega
+    apply lc_inc; apply Hlcb; omega
+    apply close_lc; omega
+    apply lc_inc; apply Hlc; omega
   | run =>
     apply Hlc
   | ifzl₂ _ _ Hvalue Hlcr =>
-    constructor; apply closedb_inc; apply value_lc; apply Hvalue; omega
-    constructor; apply closedb_inc; apply Hlc; omega
-    apply closedb_inc; apply Hlcr; omega
+    constructor; apply lc_inc; apply value_lc; apply Hvalue; omega
+    constructor; apply lc_inc; apply Hlc; omega
+    apply lc_inc; apply Hlcr; omega
   | ifzr₂ _ _ Hvalue₀ Hvalue₁ =>
-    constructor; apply closedb_inc; apply value_lc; apply Hvalue₀; omega
-    constructor; apply closedb_inc; apply value_lc; apply Hvalue₁; omega
-    apply closedb_inc; apply Hlc; omega
+    constructor; apply lc_inc; apply value_lc; apply Hvalue₀; omega
+    constructor; apply lc_inc; apply value_lc; apply Hvalue₁; omega
+    apply lc_inc; apply Hlc; omega
 
 theorem fv_atℝ :
   ∀ intro lvl R e₀ e₁,
@@ -357,7 +357,7 @@ theorem fv_atℝ :
 
 -- properties of 𝕄 contexts
 
-theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M → closedb_at e n → closedb_at M⟦e⟧ n :=
+theorem lc_ctx𝕄 : ∀ M e n lvl, ctx𝕄 lvl M → lc_at e n → lc_at M⟦e⟧ n :=
   by
   intros _ _ _ _ HM Hlc
   induction HM with
@@ -383,7 +383,7 @@ theorem fv_at𝕄 :
 
 -- properties of 𝔼 contexts
 
-theorem lc_ctx𝔼 : ∀ E e n, ctx𝔼 E → closedb_at e n → closedb_at E⟦e⟧ n :=
+theorem lc_ctx𝔼 : ∀ E e n, ctx𝔼 E → lc_at e n → lc_at E⟦e⟧ n :=
   by
   intros _ _ _ HE Hlc
   induction HE with
@@ -455,7 +455,7 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x �
 
 -- properties of ℚ contexts
 
-theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q → closedb_at e n → closedb_at Q⟦e⟧ n :=
+theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q → lc_at e n → lc_at Q⟦e⟧ n :=
   by
   intros _ _ _ _ HQ Hlc
   induction HQ with

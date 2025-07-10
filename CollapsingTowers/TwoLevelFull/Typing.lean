@@ -1,7 +1,7 @@
 
-import CollapsingTowers.TwoLevelPCP.Syntax
-import CollapsingTowers.TwoLevelPCP.Shift
-import CollapsingTowers.TwoLevelPCP.SmallStep
+import CollapsingTowers.TwoLevelFull.Syntax
+import CollapsingTowers.TwoLevelFull.Shift
+import CollapsingTowers.TwoLevelFull.SmallStep
 @[simp]
 def well_binding_time : Stage → Ty → Prop
   | .stat, .nat => true
@@ -101,7 +101,7 @@ mutual
       typing Γ σ .stat (.let𝕔 b e) (.rep τ𝕓) ∅
     | run : ∀ Γ σ e τ φ,
       typing_reification Γ σ e (.rep τ) φ →
-      closed_at e 0 →
+      closed e →
       typing Γ σ .stat (.run e) τ ∅
     | loc : ∀ Γ σ l,
       binds l .nat σ →
@@ -167,10 +167,10 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   <;> (try simp)
   case lam =>
     intros _ _ _ _ _ _ _ _ _ _ IH
-    apply (open_closedb _ _ _).mp; apply IH
+    apply (open_lc _ _ _).mp; apply IH
   case lam𝕔 =>
     intros _ _ _ _ _ _ _ _ _ IH
-    apply (open_closedb _ _ _).mp; apply IH
+    apply (open_lc _ _ _).mp; apply IH
   case app₁ =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ IHf IHarg
     constructor; apply IHf; apply IHarg
@@ -186,11 +186,11 @@ theorem typing_regular : ∀ Γ σ 𝕊 e τ φ, typing Γ σ 𝕊 e τ φ → l
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ _ _ IHb IHe
     constructor
-    apply IHb; apply (open_closedb _ _ _).mp; apply IHe
+    apply IHb; apply (open_lc _ _ _).mp; apply IHe
   case let𝕔 =>
     intros _ _ _ _ _ _ _ _ _ _ _ IHb IHe
     constructor
-    apply IHb; apply (open_closedb _ _ _).mp; apply IHe
+    apply IHb; apply (open_lc _ _ _).mp; apply IHe
   case store₁ =>
     intros _ _ _ _ _ _ _ _ _ IHl IHr
     constructor; apply IHl; apply IHr
@@ -949,7 +949,7 @@ theorem typing_escape_strengthened :
 
 theorem typing_escape :
   ∀ Γ σ e τ,
-    closed_at e 0 →
+    closed e →
     typing Γ σ .dyn e τ ∅ →
     typing Γ σ .stat e τ ∅ :=
   by
