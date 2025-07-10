@@ -96,17 +96,30 @@ theorem length_eraseTEnv : ∀ Γ, Γ.length = (eraseTEnv Γ).length :=
   case nil => rfl
   case cons IH => simp; apply IH
 
+theorem binds_eraseTEnv : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x ((eraseTy τ), .stat) (eraseTEnv Γ) :=
+  by
+  intros x τ 𝕊 Γ Hbinds
+  induction Γ
+  case nil => nomatch Hbinds
+  case cons tails IH =>
+    by_cases HEq : tails.length = x
+    . simp [if_pos HEq] at Hbinds
+      simp [← length_eraseTEnv, if_pos HEq, Hbinds]
+    . simp [if_neg HEq] at Hbinds
+      simp [← length_eraseTEnv, if_neg HEq]
+      apply IH; apply Hbinds
+
 theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (eraseTEnv Γ) .stat (erase e) (eraseTy τ) ∅ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (eraseTEnv Γ) .stat (erase e) (eraseTy τ) ∅)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing_reification (eraseTEnv Γ) (erase e) (eraseTy τ) ∅)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (eraseTEnv Γ) .stat (erase e) (eraseTy τ) ∅)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply typing.fvar
-    admit
+    apply binds_eraseTEnv; apply Hbinds
     apply eraseTy_well_binding_time
   case lam =>
     intros _ _ _ _ _ _ _ HwellBinds Hclose IH
@@ -138,7 +151,7 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
   case code_fragment =>
     intros _ x _ Hbinds HwellBinds
     apply typing.fvar
-    admit
+    simp; apply binds_eraseTEnv; apply Hbinds
     apply eraseTy_well_binding_time
   case code_rep =>
     intros _ _ _ _ IH
@@ -147,9 +160,13 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     intros _ _ _ _ IH
     apply IH
   case lam𝕔 =>
-    intros _ _ _ _ _ _ _ _ IH
+    intros _ _ _ _ _ _ _ Hclose IH
     apply typing.lam
-    all_goals admit
+    rw [← length_eraseTEnv, ← erase_open₀_comm]
+    apply IH
+    apply eraseTy_well_binding_time
+    rw [← length_eraseTEnv]
+    apply erase_closed_at; apply Hclose
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ Hclose IHb IHe
     rw [← union_pure_left ∅]
@@ -166,16 +183,17 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     apply typing.lets
     apply IHb
     rw [← length_eraseTEnv, ← erase_open₀_comm]
-    all_goals admit
+    apply IHe
+    apply eraseTy_well_binding_time
+    rw [← length_eraseTEnv]
+    apply erase_closed_at; apply Hclose
   case run =>
-    intros _ _ _ _ _ Hclose IH
-    all_goals admit
+    intros _ _ _ _ _ _ IH
+    apply IH
   case pure =>
     intros _ _ _ _ IH
-    apply typing_reification.pure
     apply IH
   case reify =>
     intros _ _ _ _ _ IH
-    apply typing_reification.pure
     apply IH
   apply Hτ
