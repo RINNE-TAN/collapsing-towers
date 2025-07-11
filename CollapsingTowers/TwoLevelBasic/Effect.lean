@@ -36,6 +36,8 @@ instance : PartialOrder Effects where
     cases x <;> cases y <;> simp
     all_goals intro _ _; contradiction
 
+theorem pure_empty : ∅ = Effects.pure := by simp
+
 theorem union_pure_right : forall φ : Effects, φ ∪ ∅ = φ := by
   intro φ
   cases φ <;> rfl

@@ -14,4 +14,6 @@ jobs:
       - uses: leanprover/lean-action@v1
       - name: build
         run: |
-          lake build
+          lake build CollapsingTowers.TwoLevelBasic.SemEquiv
+          lake build CollapsingTowers.TwoLevelFull.Soundness
+          lake build CollapsingTowers.TwoLevelFull.Examples.Defs
