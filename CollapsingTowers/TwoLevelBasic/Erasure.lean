@@ -197,3 +197,11 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     intros _ _ _ _ _ IH
     apply IH
   apply Hτ
+
+theorem erase_reification_safety : ∀ Γ e τ φ, typing_reification Γ e τ φ → typing_reification (eraseTEnv Γ) (erase e) (eraseTy τ) ∅ :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;>
+  next Hτ =>
+    apply typing_reification.pure
+    apply erase_safety _ _ _ _ _ Hτ
