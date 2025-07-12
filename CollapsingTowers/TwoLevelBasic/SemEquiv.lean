@@ -40,7 +40,7 @@ def sem_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     sem_equiv_env γ₀ γ₁ Γ →
     sem_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
 
-theorem sem_equiv_value_lam :
+theorem sem_equiv_value_arrow_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,
     sem_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
     ∃ e₀ e₁,
@@ -49,6 +49,20 @@ theorem sem_equiv_value_lam :
   intros f₀ f₁ τ𝕒 τ𝕓 H
   cases f₀ <;> cases f₁ <;> simp at H
   simp
+
+theorem sem_equiv_expr_stepn :
+  ∀ e₀ e₁ r₀ r₁ τ,
+    sem_equiv_expr r₀ r₁ τ →
+    stepn e₀ r₀ → stepn e₁ r₁ →
+    sem_equiv_expr e₀ e₁ τ :=
+  by
+  intros e₀ e₁ r₀ r₁ τ Hsem_expr Hstepr₀ Hstepr₁
+  simp only [sem_equiv_expr] at *
+  have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
+  exists v₀, v₁; constructor
+  apply stepn_trans; apply Hstepr₀ ; apply Hstepv₀; constructor
+  apply stepn_trans; apply Hstepr₁ ; apply Hstepv₁
+  apply Hsem_value
 
 theorem fundamental :
   ∀ Γ 𝕊 e τ φ,
@@ -76,10 +90,11 @@ theorem fundamental :
     intros γ₀ γ₁ semΓ
     simp only [sem_equiv_typing, sem_equiv_expr] at IHarg IHf
     have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := IHarg γ₀ γ₁ semΓ
-    have ⟨f₀, f₁, Hstepf₀, Hstepf₁, Hsem_value_lam⟩ := IHf γ₀ γ₁ semΓ
-    have ⟨e₀, e₁, HEq₀, HEq₁⟩ := sem_equiv_value_lam f₀ f₁ _ _ Hsem_value_lam
+    have ⟨lam₀, lam₁, Hsteplam₀, Hsteplam₁, Hsem_value_lam⟩ := IHf γ₀ γ₁ semΓ
+    have ⟨e₀, e₁, HEq₀, HEq₁⟩ := sem_equiv_value_arrow_iff_lam lam₀ lam₁ _ _ Hsem_value_lam
     rw [HEq₀, HEq₁, erase_ty, pure_empty, sem_equiv_value] at Hsem_value_lam
-    admit
+    apply sem_equiv_expr_stepn; apply Hsem_value_lam; apply Hsem_value
+    all_goals admit
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ IHf IHarg
     admit

@@ -420,3 +420,10 @@ def step : Expr → Expr → Prop :=
 inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
   | multi : ∀ e₀ e₁ e₂, stepn e₀ e₁ → step e₁ e₂ → stepn e₀ e₂
+
+theorem stepn_trans : ∀ e₀ e₁ e₂, stepn e₀ e₁ → stepn e₁ e₂ → stepn e₀ e₂ := by
+  intros e₀ e₁ e₂ Hstep₀ Hstep₁
+  induction Hstep₁
+  case refl => apply Hstep₀
+  case multi H IH =>
+    apply stepn.multi; apply IH; apply H
