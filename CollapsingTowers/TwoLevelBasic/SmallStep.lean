@@ -471,3 +471,18 @@ theorem pure_stepn_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_stepn e₀ e₁ 
   case multi H IH =>
     apply pure_stepn.multi
     apply IH; apply pure_step_at𝔹; apply HB; apply H
+
+theorem pure_step_lc : ∀ e₀ e₁, pure_step e₀ e₁ → lc e₀ :=
+  by
+  intros e₀ e₁ Hstep
+  cases Hstep
+  case pure_step𝕄 HM Hlc Hhead =>
+    apply lc_ctx𝕄; apply HM; apply Hlc
+
+theorem pure_stepn_lc : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e₀ :=
+  by
+  intros e₀ e₁ Hstepn Hlc
+  induction Hstepn
+  case refl => apply Hlc
+  case multi H IH =>
+    apply IH; apply pure_step_lc; apply H
