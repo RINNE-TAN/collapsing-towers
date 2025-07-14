@@ -28,6 +28,26 @@ def erase_env : TEnv → TEnv
   | [] => []
   | (τ, _) :: Γ => (erase_ty τ, .stat) :: erase_env Γ
 
+theorem erase_lc_at : ∀ e i, lc_at e i → lc_at (erase e) i :=
+  by
+  intros e i Hclose
+  induction e generalizing i with
+  | fvar| lit| bvar => assumption
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH =>
+    apply IH; apply Hclose
+
 theorem erase_closed_at : ∀ e x, closed_at e x → closed_at (erase e) x :=
   by
   intros e x Hclose
