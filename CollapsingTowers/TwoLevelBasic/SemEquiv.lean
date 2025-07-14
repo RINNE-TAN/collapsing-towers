@@ -8,6 +8,14 @@ def multi_subst : Subst → Expr → Expr
   | [], e => e
   | v :: γ, e => subst (γ.length) v (multi_subst γ e)
 
+@[simp]
+theorem multi_subst_app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
+  by
+  intros γ f arg
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
 mutual
 @[simp]
 def sem_equiv_value : Expr → Expr → Ty → Prop
@@ -21,8 +29,8 @@ def sem_equiv_value : Expr → Expr → Ty → Prop
 @[simp]
 def sem_equiv_expr (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     ∃ v₀ v₁,
-      stepn e₀ v₀ ∧
-      stepn e₁ v₁ ∧
+      pure_stepn e₀ v₀ ∧
+      pure_stepn e₁ v₁ ∧
       sem_equiv_value v₀ v₁ τ
 end
 
@@ -53,15 +61,15 @@ theorem sem_equiv_value_arrow_iff_lam :
 theorem sem_equiv_expr_stepn :
   ∀ e₀ e₁ r₀ r₁ τ,
     sem_equiv_expr r₀ r₁ τ →
-    stepn e₀ r₀ → stepn e₁ r₁ →
+    pure_stepn e₀ r₀ → pure_stepn e₁ r₁ →
     sem_equiv_expr e₀ e₁ τ :=
   by
   intros e₀ e₁ r₀ r₁ τ Hsem_expr Hstepr₀ Hstepr₁
   simp only [sem_equiv_expr] at *
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
   exists v₀, v₁; constructor
-  apply stepn_trans; apply Hstepr₀ ; apply Hstepv₀; constructor
-  apply stepn_trans; apply Hstepr₁ ; apply Hstepv₁
+  apply pure_stepn_trans; apply Hstepr₀ ; apply Hstepv₀; constructor
+  apply pure_stepn_trans; apply Hstepr₁ ; apply Hstepv₁
   apply Hsem_value
 
 theorem fundamental :
@@ -94,7 +102,8 @@ theorem fundamental :
     have ⟨e₀, e₁, HEq₀, HEq₁⟩ := sem_equiv_value_arrow_iff_lam lam₀ lam₁ _ _ Hsem_value_lam
     rw [HEq₀, HEq₁, erase_ty, pure_empty, sem_equiv_value] at Hsem_value_lam
     apply sem_equiv_expr_stepn; apply Hsem_value_lam; apply Hsem_value
-    all_goals admit
+    . all_goals admit
+    . all_goals admit
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ IHf IHarg
     admit
