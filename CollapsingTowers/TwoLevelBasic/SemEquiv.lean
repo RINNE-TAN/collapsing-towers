@@ -1,46 +1,17 @@
 
 import CollapsingTowers.TwoLevelBasic.Erasure
-abbrev Subst :=
-  List Expr
-
-@[simp]
-def multi_subst : Subst → Expr → Expr
-  | [], e => e
-  | v :: γ, e => subst (γ.length) v (multi_subst γ e)
-
-@[simp]
-def multi_lc : Subst → Prop
-  | [] => true
-  | v :: γ => lc v ∧ multi_lc γ
-
-@[simp]
-theorem multi_subst_app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
-  by
-  intros γ f arg
-  induction γ
-  case nil => rfl
-  case cons IH => simp [IH]
-
-@[simp]
-theorem multi_subst_lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
-  by
-  intros γ n
-  induction γ
-  case nil => rfl
-  case cons IH => simp [IH]
-
 mutual
 -- 𝓥⟦nat⟧ ≜ {(n, n) | n ∈ ℕ}
--- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. lc (λ.e₀) ∧ lc (λ.e₁) ∧ (e₀⟦0/v₀⟧, e₁⟦0/v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
+-- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. lc (λ.e₀) ∧ lc (λ.e₁) ∧ (e₀⟦0 ↦ v₀⟧, e₁⟦0 ↦ v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
 @[simp]
 def sem_equiv_value : Expr → Expr → Ty → Prop
   | .lit n₀, .lit n₁, .nat => n₀ = n₁
   | .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
-    lc (.lam e₀) ∧
-    lc (.lam e₁) ∧
-    ∀ v₀ v₁,
-      sem_equiv_value v₀ v₁ τ𝕒 →
-      sem_equiv_expr (open_subst v₀ e₀) (open_subst v₁ e₁) τ𝕓
+      lc (.lam e₀) ∧
+      lc (.lam e₁) ∧
+      ∀ v₀ v₁,
+        sem_equiv_value v₀ v₁ τ𝕒 →
+        sem_equiv_expr (open_subst v₀ e₀) (open_subst v₁ e₁) τ𝕓
   | _, _, _ => false
 
 -- 𝓔⟦τ⟧ ≜ {(e₀, e₁) | ∃v₀ v₁. e₀ ↦* v₀ ∧ e₁ ↦* v₁ ∧ (v₀, v₁) ∈ 𝓥⟦τ⟧}
@@ -108,6 +79,20 @@ theorem sem_equiv_env_impl_multi_lc :
       apply sem_equiv_value_impl_value
       apply Hsem_value; apply IH.right
 
+theorem sem_equiv_env_impl_length_eq :
+  ∀ γ₀ γ₁ Γ,
+    sem_equiv_env γ₀ γ₁ Γ →
+    γ₀.length = Γ.length ∧
+    γ₁.length = Γ.length :=
+  by
+  intros γ₀ γ₁ Γ H
+  induction H
+  case nil => simp
+  case cons IH =>
+    constructor
+    . simp; apply IH.left
+    . simp; apply IH.right
+
 theorem sem_equiv_value_arrow_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,
     sem_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
@@ -134,6 +119,7 @@ theorem sem_equiv_expr_stepn :
 
 -- Γ ⊧ f₀ ≈ f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≈ arg₁ : τ𝕒
+-- ——————————————————————————————
 -- Γ ⊧ f₀ @ arg₀ ≈ f₁ @ arg₁ : τ𝕓
 theorem compatibility_app :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
@@ -185,7 +171,41 @@ theorem compatibility_app :
     constructor; apply Hlc₁; apply value_lc; apply Hvalue₁
     apply head𝕄.app₁; apply Hvalue₁
 
--- Γ ⊢ e : τ → |Γ| ⊧ |e| ≈ |e| : |τ|
+-- τ𝕒, Γ ⊧ e₀⟦0 ↦ 𝓛(Γ)⟧ ≈ e₁⟦0 ↦ 𝓛(Γ)⟧ : τ𝕓
+-- —————————————————————————————————————————
+-- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
+theorem compatibility_lam :
+  ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
+    lc (.lam e₀) →
+    lc (.lam e₁) →
+    sem_equiv_typing ((τ𝕒, .stat) :: Γ) (open₀ Γ.length e₀) (open₀ Γ.length e₁) τ𝕓 →
+    sem_equiv_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hlc₀ Hlc₁ Hsem
+  intros γ₀ γ₁ semΓ
+  have ⟨Hmulti_lc₀, Hmulti_lc₁⟩ := sem_equiv_env_impl_multi_lc _ _ _ semΓ
+  have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ semΓ
+  simp only [multi_subst_lam, sem_equiv_expr]
+  exists .lam (multi_subst γ₀ e₀),.lam (multi_subst γ₁ e₁)
+  constructor; apply pure_stepn.refl
+  constructor; apply pure_stepn.refl
+  simp only [pure_empty, sem_equiv_value]
+  constructor; rw [← multi_subst_lam]; apply multi_subst_lc; apply Hmulti_lc₀; apply Hlc₀
+  constructor; rw [← multi_subst_lam]; apply multi_subst_lc; apply Hmulti_lc₁; apply Hlc₁
+  intros v₀ v₁ Hsem_value
+  simp only [sem_equiv_typing] at Hsem
+  rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
+  rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
+  rw [← multi_subst_opening_comm, ← multi_subst, HEq₀]
+  rw [← multi_subst_opening_comm, ← multi_subst, HEq₁]
+  apply Hsem; apply sem_equiv_env.cons; apply Hsem_value; apply semΓ
+  omega; apply Hmulti_lc₁; omega; apply Hmulti_lc₀
+  admit
+  admit
+
+-- Γ ⊢ e : τ
+-- —————————————————————
+-- |Γ| ⊧ |e| ≈ |e| : |τ|
 theorem fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →

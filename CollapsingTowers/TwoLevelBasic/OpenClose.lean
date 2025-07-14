@@ -141,6 +141,19 @@ def fv : Expr → Set ℕ
   | .lets b e => fv b ∪ fv e
   | .let𝕔 b e => fv b ∪ fv e
 
+abbrev Subst :=
+  List Expr
+
+@[simp]
+def multi_subst : Subst → Expr → Expr
+  | [], e => e
+  | v :: γ, e => subst (γ.length) v (multi_subst γ e)
+
+@[simp]
+def multi_lc : Subst → Prop
+  | [] => true
+  | v :: γ => lc v ∧ multi_lc γ
+
 -- Properties
 lemma subst_intro : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x) e) = opening i v e :=
   by
@@ -839,3 +852,50 @@ lemma fv_subset_closed :
     simp at HFv; constructor
     apply IH₀; apply HFv.left
     apply IH₁; apply HFv.right
+
+@[simp]
+theorem multi_subst_app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
+  by
+  intros γ f arg
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+theorem multi_subst_lam : ∀ γ e, multi_subst γ (.lam e) = .lam (multi_subst γ e) :=
+  by
+  intros γ e
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+theorem multi_subst_lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
+  by
+  intros γ n
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+theorem multi_subst_lc : ∀ γ e, multi_lc γ → lc e → lc (multi_subst γ e) :=
+  by
+  intros γ e Hγ He
+  induction γ
+  case nil => apply He
+  case cons IH =>
+    rw [multi_subst]
+    apply subst_lc_at; apply Hγ.left
+    apply IH; apply Hγ.right
+
+theorem multi_subst_opening_comm :
+    ∀ γ e x i, x ≥ γ.length → multi_lc γ → multi_subst γ (opening i (.fvar x) e) = opening i (.fvar x) (multi_subst γ e) :=
+    by
+    intros γ e x i HGe Hγ
+    induction γ
+    case nil => rfl
+    case cons IH =>
+      simp at HGe
+      rw [multi_subst, multi_subst, IH]
+      apply subst_opening_comm
+      omega; apply lc_inc; apply Hγ.left; omega
+      omega; apply Hγ.right
