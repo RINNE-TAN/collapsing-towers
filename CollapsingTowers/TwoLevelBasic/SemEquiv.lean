@@ -21,6 +21,8 @@ mutual
 def sem_equiv_value : Expr → Expr → Ty → Prop
   | .lit n₀, .lit n₁, .nat => n₀ = n₁
   | .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
+    lc (.lam e₀) ∧
+    lc (.lam e₁) ∧
     ∀ v₀ v₁,
       sem_equiv_value v₀ v₁ τ𝕒 →
       sem_equiv_expr (open_subst v₀ e₀) (open_subst v₁ e₁) τ𝕓
@@ -48,14 +50,35 @@ def sem_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     sem_equiv_env γ₀ γ₁ Γ →
     sem_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
 
+theorem sem_equiv_value_impl_value :
+  ∀ v₀ v₁ τ,
+    sem_equiv_value v₀ v₁ τ →
+    value v₀ ∧
+    value v₁ :=
+  by
+  intros v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    constructor
+    apply value.lit
+    apply value.lit
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨Hlc₀, Hlc₁, _⟩ := Hsem_value
+    constructor
+    apply value.lam; apply Hlc₀
+    apply value.lam; apply Hlc₁
+  all_goals simp at Hsem_value
+
 theorem sem_equiv_value_arrow_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,
     sem_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
     ∃ e₀ e₁,
       f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
   by
-  intros f₀ f₁ τ𝕒 τ𝕓 H
-  cases f₀ <;> cases f₁ <;> simp at H
+  intros f₀ f₁ τ𝕒 τ𝕓 Hsem_value
+  cases f₀ <;> cases f₁ <;> simp at Hsem_value
   simp
 
 theorem sem_equiv_expr_stepn :
@@ -101,8 +124,12 @@ theorem fundamental :
     have ⟨lam₀, lam₁, Hsteplam₀, Hsteplam₁, Hsem_value_lam⟩ := IHf γ₀ γ₁ semΓ
     have ⟨e₀, e₁, HEq₀, HEq₁⟩ := sem_equiv_value_arrow_iff_lam lam₀ lam₁ _ _ Hsem_value_lam
     rw [HEq₀, HEq₁, erase_ty, pure_empty, sem_equiv_value] at Hsem_value_lam
+    have ⟨Hlc₀, Hlc₁, Hsem_value_lam⟩ := Hsem_value_lam
     apply sem_equiv_expr_stepn; apply Hsem_value_lam; apply Hsem_value
-    . all_goals admit
+    . simp
+      apply pure_stepn_trans
+      apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.appl₁ _ _) Hsteplam₀
+      all_goals admit
     . all_goals admit
   case app₂ =>
     intros _ _ _ _ _ _ _ _ _ IHf IHarg
