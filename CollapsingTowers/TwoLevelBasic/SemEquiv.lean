@@ -2,13 +2,13 @@
 import CollapsingTowers.TwoLevelBasic.Erasure
 mutual
 -- 𝓥⟦nat⟧ ≜ {(n, n) | n ∈ ℕ}
--- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. lc (λ.e₀) ∧ lc (λ.e₁) ∧ (e₀⟦0 ↦ v₀⟧, e₁⟦0 ↦ v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
+-- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. wf (λ.e₀) ∧ wf (λ.e₁) ∧ (e₀⟦0 ↦ v₀⟧, e₁⟦0 ↦ v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
 @[simp]
 def sem_equiv_value : Expr → Expr → Ty → Prop
   | .lit n₀, .lit n₁, .nat => n₀ = n₁
   | .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
-      lc (.lam e₀) ∧
-      lc (.lam e₁) ∧
+      wf (.lam e₀) ∧
+      wf (.lam e₁) ∧
       ∀ v₀ v₁,
         sem_equiv_value v₀ v₁ τ𝕒 →
         sem_equiv_expr (open_subst v₀ e₀) (open_subst v₁ e₁) τ𝕓
@@ -53,30 +53,46 @@ theorem sem_equiv_value_impl_value :
     apply value.lit
   case arrow φ =>
     cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
-    have ⟨Hlc₀, Hlc₁, _⟩ := Hsem_value
+    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
     constructor
-    apply value.lam; apply Hlc₀
-    apply value.lam; apply Hlc₁
+    apply value.lam; apply Hwf₀.left
+    apply value.lam; apply Hwf₁.left
   all_goals simp at Hsem_value
 
-theorem sem_equiv_env_impl_multi_lc :
+theorem sem_equiv_value_impl_wf :
+  ∀ v₀ v₁ τ,
+    sem_equiv_value v₀ v₁ τ →
+    wf v₀ ∧
+    wf v₁ :=
+  by
+  intros v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    repeat constructor
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
+    constructor
+    apply Hwf₀; apply Hwf₁
+  all_goals simp at Hsem_value
+
+theorem sem_equiv_env_impl_multi_wf :
   ∀ γ₀ γ₁ Γ,
     sem_equiv_env γ₀ γ₁ Γ →
-    multi_lc γ₀ ∧
-    multi_lc γ₁ :=
+    multi_wf γ₀ ∧
+    multi_wf γ₁ :=
   by
   intros γ₀ γ₁ Γ H
   induction H
   case nil => repeat constructor
   case cons Hsem_value _ IH =>
     constructor
-    . constructor
-      apply value_lc; apply And.left
-      apply sem_equiv_value_impl_value
+    . constructor; apply And.left
+      apply sem_equiv_value_impl_wf
       apply Hsem_value; apply IH.left
-    . constructor
-      apply value_lc; apply And.right
-      apply sem_equiv_value_impl_value
+    . constructor; apply And.right
+      apply sem_equiv_value_impl_wf
       apply Hsem_value; apply IH.right
 
 theorem sem_equiv_env_impl_length_eq :
@@ -117,6 +133,46 @@ theorem sem_equiv_expr_stepn :
   apply pure_stepn_trans; apply Hstepr₁ ; apply Hstepv₁
   apply Hsem_value
 
+-- τ𝕒, Γ ⊧ e₀⟦0 ↦ 𝓛(Γ)⟧ ≈ e₁⟦0 ↦ 𝓛(Γ)⟧ : τ𝕓
+-- —————————————————————————————————————————
+-- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
+theorem compatibility_lam :
+  ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
+    lc (.lam e₀) →
+    lc (.lam e₁) →
+    closed_at (.lam e₀) Γ.length →
+    closed_at (.lam e₁) Γ.length →
+    sem_equiv_typing ((τ𝕒, .stat) :: Γ) (open₀ Γ.length e₀) (open₀ Γ.length e₁) τ𝕓 →
+    sem_equiv_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hlc₀ Hlc₁ Hclosed₀ Hclosed₁ Hsem
+  intros γ₀ γ₁ semΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ semΓ
+  have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ semΓ
+  simp only [multi_subst_lam, sem_equiv_expr]
+  exists .lam (multi_subst γ₀ e₀),.lam (multi_subst γ₁ e₁)
+  constructor; apply pure_stepn.refl
+  constructor; apply pure_stepn.refl
+  simp only [pure_empty, sem_equiv_value]
+  constructor; rw [← multi_subst_lam]; constructor
+  . apply multi_subst_lc; apply Hmulti_wf₀; apply Hlc₀
+  . apply multi_subst_closed; apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀
+  constructor; rw [← multi_subst_lam]; constructor
+  . apply multi_subst_lc; apply Hmulti_wf₁; apply Hlc₁
+  . apply multi_subst_closed; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
+  intros v₀ v₁ Hsem_value
+  simp only [sem_equiv_typing] at Hsem
+  rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
+  rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
+  rw [← multi_subst_opening_comm, ← multi_subst, HEq₀]
+  rw [← multi_subst_opening_comm, ← multi_subst, HEq₁]
+  apply Hsem; apply sem_equiv_env.cons; apply Hsem_value; apply semΓ
+  omega; apply Hmulti_wf₁; omega; apply Hmulti_wf₀
+  . apply closed_inc; apply multi_subst_closed
+    apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁; omega
+  . apply closed_inc; apply multi_subst_closed
+    apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀; omega
+
 -- Γ ⊧ f₀ ≈ f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≈ arg₁ : τ𝕒
 -- ——————————————————————————————
@@ -130,13 +186,13 @@ theorem compatibility_app :
   intros Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓 Hf Harg
   intros γ₀ γ₁ semΓ
   simp only [sem_equiv_typing, sem_equiv_expr] at Hf Harg
-  have ⟨Hmulti_lc₀, Hmulti_lc₁⟩ := sem_equiv_env_impl_multi_lc _ _ _ semΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ semΓ
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Harg γ₀ γ₁ semΓ
   have ⟨Hvalue₀, Hvalue₁⟩ := sem_equiv_value_impl_value _ _ _ Hsem_value
   have ⟨lam₀, lam₁, Hsteplam₀, Hsteplam₁, Hsem_value_lam⟩ := Hf γ₀ γ₁ semΓ
   have ⟨e₀, e₁, HEq₀, HEq₁⟩ := sem_equiv_value_arrow_iff_lam lam₀ lam₁ _ _ Hsem_value_lam
   rw [HEq₀, HEq₁, pure_empty, sem_equiv_value] at Hsem_value_lam
-  have ⟨Hlc₀, Hlc₁, Hsem_value_lam⟩ := Hsem_value_lam
+  have ⟨Hwf₀, Hwf₁, Hsem_value_lam⟩ := Hsem_value_lam
   apply sem_equiv_expr_stepn; apply Hsem_value_lam; apply Hsem_value
   . simp
     -- left step
@@ -148,11 +204,11 @@ theorem compatibility_app :
     -- right step
     apply pure_stepn_trans
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.appr₁ _ _) Hstepv₀
-    apply value.lam; apply Hlc₀
+    apply value.lam; apply Hwf₀.left
     -- head step
     apply pure_stepn.multi; apply pure_stepn.refl
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
-    constructor; apply Hlc₀; apply value_lc; apply Hvalue₀
+    constructor; apply Hwf₀.left; apply value_lc; apply Hvalue₀
     apply head𝕄.app₁; apply Hvalue₀
   . simp
     -- left step
@@ -164,44 +220,12 @@ theorem compatibility_app :
     -- right step
     apply pure_stepn_trans
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.appr₁ _ _) Hstepv₁
-    apply value.lam; apply Hlc₁
+    apply value.lam; apply Hwf₁.left
     -- head step
     apply pure_stepn.multi; apply pure_stepn.refl
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
-    constructor; apply Hlc₁; apply value_lc; apply Hvalue₁
+    constructor; apply Hwf₁.left; apply value_lc; apply Hvalue₁
     apply head𝕄.app₁; apply Hvalue₁
-
--- τ𝕒, Γ ⊧ e₀⟦0 ↦ 𝓛(Γ)⟧ ≈ e₁⟦0 ↦ 𝓛(Γ)⟧ : τ𝕓
--- —————————————————————————————————————————
--- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
-theorem compatibility_lam :
-  ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
-    lc (.lam e₀) →
-    lc (.lam e₁) →
-    sem_equiv_typing ((τ𝕒, .stat) :: Γ) (open₀ Γ.length e₀) (open₀ Γ.length e₁) τ𝕓 →
-    sem_equiv_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
-  by
-  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hlc₀ Hlc₁ Hsem
-  intros γ₀ γ₁ semΓ
-  have ⟨Hmulti_lc₀, Hmulti_lc₁⟩ := sem_equiv_env_impl_multi_lc _ _ _ semΓ
-  have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ semΓ
-  simp only [multi_subst_lam, sem_equiv_expr]
-  exists .lam (multi_subst γ₀ e₀),.lam (multi_subst γ₁ e₁)
-  constructor; apply pure_stepn.refl
-  constructor; apply pure_stepn.refl
-  simp only [pure_empty, sem_equiv_value]
-  constructor; rw [← multi_subst_lam]; apply multi_subst_lc; apply Hmulti_lc₀; apply Hlc₀
-  constructor; rw [← multi_subst_lam]; apply multi_subst_lc; apply Hmulti_lc₁; apply Hlc₁
-  intros v₀ v₁ Hsem_value
-  simp only [sem_equiv_typing] at Hsem
-  rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
-  rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
-  rw [← multi_subst_opening_comm, ← multi_subst, HEq₀]
-  rw [← multi_subst_opening_comm, ← multi_subst, HEq₁]
-  apply Hsem; apply sem_equiv_env.cons; apply Hsem_value; apply semΓ
-  omega; apply Hmulti_lc₁; omega; apply Hmulti_lc₀
-  admit
-  admit
 
 -- Γ ⊢ e : τ
 -- —————————————————————
@@ -222,8 +246,14 @@ theorem fundamental :
     intros _ _ _ _ Hbinds _
     admit
   case lam =>
-    intros _ _ _ _ _ _ _ HwellBinds Hclose IH
-    admit
+    intros _ _ _ _ _ _ H HwellBinds Hclose IH
+    apply compatibility_lam
+    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
+    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
+    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    apply IH
   case lift_lam =>
     intros _ _ _ _ _ _ _ IH
     apply IH
@@ -254,8 +284,14 @@ theorem fundamental :
     intros _ _ _ _ IH
     apply IH
   case lam𝕔 =>
-    intros _ _ _ _ _ _ _ Hclose IH
-    admit
+    intros _ _ _ _ _ H _ Hclose IH
+    apply compatibility_lam
+    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_reification_regular; apply H
+    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_reification_regular; apply H
+    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    apply IH
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ Hclose IHb IHe
     admit
