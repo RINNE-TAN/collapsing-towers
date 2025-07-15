@@ -915,14 +915,23 @@ lemma multi_subst_lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
   case nil => rfl
   case cons IH => simp [IH]
 
-lemma multi_subst_lc : ∀ γ e, multi_wf γ → lc e → lc (multi_subst γ e) :=
+@[simp]
+lemma multi_subst_lets : ∀ γ b e, multi_subst γ (.lets b e) = .lets (multi_subst γ b) (multi_subst γ e) :=
   by
-  intros γ e Hγ He
+  intros γ b e
+  induction γ generalizing b e
+  case nil => rfl
+  case cons IH => simp [IH]
+
+lemma multi_subst_lc : ∀ i γ e, multi_wf γ → lc_at e i → lc_at (multi_subst γ e) i :=
+  by
+  intros i γ e Hγ He
   induction γ generalizing e
   case nil => apply He
   case cons IH =>
     apply IH; apply Hγ.right
-    apply subst_lc_at; apply Hγ.left.left; apply He
+    apply subst_lc_at; apply lc_inc
+    apply Hγ.left.left; omega; apply He
 
 lemma multi_subst_comm : ∀ x γ v e, x ≥ γ.length → closed v →  multi_wf γ → subst x v (multi_subst γ e) = multi_subst γ (subst x v e) :=
   by
