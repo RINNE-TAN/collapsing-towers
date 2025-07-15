@@ -150,7 +150,7 @@ abbrev Subst :=
 @[simp]
 def multi_subst : Subst → Expr → Expr
   | [], e => e
-  | v :: γ, e => subst (γ.length) v (multi_subst γ e)
+  | v :: γ, e => multi_subst γ (subst γ.length v e)
 
 @[simp]
 def multi_wf : Subst → Prop
@@ -895,7 +895,7 @@ lemma fv_subset_closed :
 lemma multi_subst_app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
   by
   intros γ f arg
-  induction γ
+  induction γ generalizing f arg
   case nil => rfl
   case cons IH => simp [IH]
 
@@ -903,7 +903,7 @@ lemma multi_subst_app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app�
 lemma multi_subst_lam : ∀ γ e, multi_subst γ (.lam e) = .lam (multi_subst γ e) :=
   by
   intros γ e
-  induction γ
+  induction γ generalizing e
   case nil => rfl
   case cons IH => simp [IH]
 
@@ -918,23 +918,22 @@ lemma multi_subst_lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
 lemma multi_subst_lc : ∀ γ e, multi_wf γ → lc e → lc (multi_subst γ e) :=
   by
   intros γ e Hγ He
-  induction γ
+  induction γ generalizing e
   case nil => apply He
   case cons IH =>
-    rw [multi_subst]
-    apply subst_lc_at; apply Hγ.left.left
     apply IH; apply Hγ.right
+    apply subst_lc_at; apply Hγ.left.left; apply He
 
 lemma multi_subst_comm : ∀ x γ v e, x ≥ γ.length → closed v →  multi_wf γ → subst x v (multi_subst γ e) = multi_subst γ (subst x v e) :=
   by
   intro x γ v e HGe Hclose Hγ
-  induction γ
+  induction γ generalizing e
   case nil => simp
   case cons IH =>
     simp at HGe
-    rw [multi_subst, multi_subst, ← IH]
-    apply subst_comm; omega; apply Hclose
-    apply Hγ.left.right; omega; apply Hγ.right
+    rw [multi_subst, multi_subst, IH, subst_comm]
+    omega; apply Hclose; apply Hγ.left.right
+    omega; apply Hγ.right
 
 lemma multi_subst_closed : ∀ γ e, multi_wf γ → closed_at e γ.length → closed (multi_subst γ e) :=
   by
@@ -942,21 +941,29 @@ lemma multi_subst_closed : ∀ γ e, multi_wf γ → closed_at e γ.length → c
   induction γ generalizing e
   case nil => apply He
   case cons IH =>
-    rw [multi_subst, multi_subst_comm]
     apply IH; apply Hγ.right
     apply subst_closed_at_dec; apply closed_inc; apply Hγ.left.right; omega
-    apply He; omega
-    apply Hγ.left.right; apply Hγ.right
+    apply He
 
 lemma multi_subst_opening_comm :
     ∀ γ e x i, x ≥ γ.length → multi_wf γ → multi_subst γ (opening i (.fvar x) e) = opening i (.fvar x) (multi_subst γ e) :=
     by
     intros γ e x i HGe Hγ
-    induction γ
+    induction γ generalizing e
     case nil => rfl
     case cons IH =>
       simp at HGe
-      rw [multi_subst, multi_subst, IH]
-      apply subst_opening_comm
-      omega; apply lc_inc; apply Hγ.left.left; omega
+      rw [multi_subst, multi_subst, subst_opening_comm, IH]
       omega; apply Hγ.right
+      omega; apply lc_inc; apply Hγ.left.left; omega
+
+lemma multi_subst_closed_id : ∀ γ e, closed e → multi_subst γ e = e :=
+  by
+  intro γ e Hclose
+  induction γ generalizing e
+  case nil => rfl
+  case cons IH =>
+    rw [multi_subst, IH, subst_closed_id]
+    apply closed_inc; apply Hclose; omega
+    rw [subst_closed_id]; apply Hclose
+    apply closed_inc; apply Hclose; omega

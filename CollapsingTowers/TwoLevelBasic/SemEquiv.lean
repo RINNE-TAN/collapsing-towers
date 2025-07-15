@@ -133,6 +133,33 @@ theorem sem_equiv_expr_stepn :
   apply pure_stepn_trans; apply Hstepr₁ ; apply Hstepv₁
   apply Hsem_value
 
+-- Γ ⊧ x ≈ x : Γ(x)
+theorem compatibility_fvar :
+  ∀ Γ x τ,
+    binds x (τ, .stat) Γ →
+    sem_equiv_typing Γ (.fvar x) (.fvar x) τ :=
+  by
+  intros Γ x τ Hbinds
+  intros γ₀ γ₁ semΓ
+  simp only [sem_equiv_expr]
+  exists multi_subst γ₀ (.fvar x), multi_subst γ₁ (.fvar x)
+  constructor; apply pure_stepn.refl
+  constructor; apply pure_stepn.refl
+  induction semΓ
+  case nil => nomatch Hbinds
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value semΓ IH =>
+    have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
+    have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ semΓ
+    simp [HEq₀, HEq₁]
+    by_cases HEqx : Γ.length = x
+    . simp [if_pos HEqx]
+      simp [if_pos HEqx] at Hbinds
+      rw [← Hbinds, multi_subst_closed_id, multi_subst_closed_id]
+      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
+    . simp [if_neg HEqx]
+      simp [if_neg HEqx] at Hbinds
+      apply IH; apply Hbinds
+
 -- τ𝕒, Γ ⊧ e₀⟦0 ↦ 𝓛(Γ)⟧ ≈ e₁⟦0 ↦ 𝓛(Γ)⟧ : τ𝕓
 -- —————————————————————————————————————————
 -- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
@@ -161,13 +188,15 @@ theorem compatibility_lam :
   . apply multi_subst_lc; apply Hmulti_wf₁; apply Hlc₁
   . apply multi_subst_closed; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   intros v₀ v₁ Hsem_value
+  have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
   simp only [sem_equiv_typing] at Hsem
   rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
   rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
-  rw [← multi_subst_opening_comm, ← multi_subst, HEq₀]
-  rw [← multi_subst_opening_comm, ← multi_subst, HEq₁]
+  rw [← multi_subst_opening_comm, multi_subst_comm, ← multi_subst, HEq₀]
+  rw [← multi_subst_opening_comm, multi_subst_comm, ← multi_subst, HEq₁]
   apply Hsem; apply sem_equiv_env.cons; apply Hsem_value; apply semΓ
-  omega; apply Hmulti_wf₁; omega; apply Hmulti_wf₀
+  omega; apply Hwf₁.right; apply Hmulti_wf₁; omega; apply Hmulti_wf₁
+  omega; apply Hwf₀.right; apply Hmulti_wf₀; omega; apply Hmulti_wf₀
   . apply closed_inc; apply multi_subst_closed
     apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁; omega
   . apply closed_inc; apply multi_subst_closed
@@ -244,9 +273,10 @@ theorem fundamental :
           sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ))
   case fvar =>
     intros _ _ _ _ Hbinds _
-    admit
+    apply compatibility_fvar
+    apply binds_erase_env; apply Hbinds
   case lam =>
-    intros _ _ _ _ _ _ H HwellBinds Hclose IH
+    intros _ _ _ _ _ _ H _ Hclose IH
     apply compatibility_lam
     apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
     apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
@@ -275,8 +305,9 @@ theorem fundamental :
     intros _ _ _ _ IH
     apply IH
   case code_fragment =>
-    intros _ x _ Hbinds HwellBinds
-    admit
+    intros _ x _ Hbinds _
+    apply compatibility_fvar; rw [erase_ty]
+    apply binds_erase_env; apply Hbinds
   case code_rep =>
     intros _ _ _ _ IH
     apply IH
@@ -296,7 +327,7 @@ theorem fundamental :
     intros _ _ _ _ _ _ _ _ _ _ _ Hclose IHb IHe
     admit
   case let𝕔 =>
-    intros _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe
+    intros _ _ _ _ _ _ _ _ _ Hclose IHb IHe
     admit
   case run =>
     intros _ _ _ _ _ _ IH
