@@ -6,22 +6,31 @@ theorem multi_subst_erase_value :
     sem_equiv_env γ₀ γ₁ (erase_env Γ) →
     value v →
     well_binding_time .stat τ →
-    value (multi_subst γ₀ (erase v)) :=
+    value (multi_subst γ₀ (erase v)) ∧ value (multi_subst γ₁ (erase v)) :=
   by
   intros Γ v τ φ γ₀ γ₁ Hτ HsemΓ Hvalue HwellBinds
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   cases Hvalue
   case lam Hlc =>
-    simp; apply value.lam
-    apply multi_subst_lc_at; apply Hmulti_wf₀
-    apply erase_lc_at; apply Hlc
+    simp
+    constructor
+    . apply value.lam
+      apply multi_subst_lc_at; apply Hmulti_wf₀
+      apply erase_lc_at; apply Hlc
+    . apply value.lam
+      apply multi_subst_lc_at; apply Hmulti_wf₁
+      apply erase_lc_at; apply Hlc
   case lit =>
     simp; apply value.lit
   case code e _ =>
     cases e <;> cases Hτ <;> try simp at HwellBinds
-    apply And.left; apply sem_equiv_value_impl_value
-    apply sem_equiv_env_impl_sem_equiv_value
-    apply HsemΓ; apply binds_erase_env; assumption
+    constructor
+    . apply And.left; apply sem_equiv_value_impl_value
+      apply sem_equiv_env_impl_sem_equiv_value
+      apply HsemΓ; apply binds_erase_env; assumption
+    . apply And.right; apply sem_equiv_value_impl_value
+      apply sem_equiv_env_impl_sem_equiv_value
+      apply HsemΓ; apply binds_erase_env; assumption
 
 theorem sem_preservation_head :
   ∀ Γ e₀ e₁ τ φ,
@@ -33,10 +42,18 @@ theorem sem_preservation_head :
   intros Γ e₀ e₁ τ φ Hhead Hτ₀ Hτ₁
   cases Hhead <;> try apply fundamental; apply Hτ₀
   case lets Hvalue =>
+    constructor; constructor
+    . apply erase_lc_at; apply typing_regular; apply Hτ₀
+    . rw [← length_erase_env]; apply erase_closed_at
+      apply typing_closed; apply Hτ₀
+    constructor; constructor
+    . apply erase_lc_at; apply typing_regular; apply Hτ₁
+    . rw [← length_erase_env]; apply erase_closed_at
+      apply typing_closed; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
-    apply fundamental; apply Hτ₁; apply HsemΓ
+    apply (fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
@@ -44,7 +61,7 @@ theorem sem_preservation_head :
       simp; apply head𝕄.lets
       cases Hτ₀ with
       | lets _ _ _ _ _ _ _ _ Hτv _ HwellBinds _ =>
-          apply multi_subst_erase_value
+          apply And.left; apply multi_subst_erase_value
           apply Hτv; apply HsemΓ; apply Hvalue; apply HwellBinds
     . apply pure_stepn.refl
   case app₁ Hvalue =>
@@ -80,10 +97,18 @@ theorem sem_preservation_head :
     -- value n  value λ.e        value (code x)  value (code e)
     -- ———————  ———————————————  ——————————————  ——————————————————
     -- value n  value λ.γ₀(|e|)  value γ₀(x)     Binding Time Error
+    constructor; constructor
+    . apply erase_lc_at; apply typing_regular; apply Hτ₀
+    . rw [← length_erase_env]; apply erase_closed_at
+      apply typing_closed; apply Hτ₀
+    constructor; constructor
+    . apply erase_lc_at; apply typing_regular; apply Hτ₁
+    . rw [← length_erase_env]; apply erase_closed_at
+      apply typing_closed; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
-    apply fundamental; apply Hτ₁; apply HsemΓ
+    apply (fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
@@ -93,7 +118,7 @@ theorem sem_preservation_head :
       | app₁ _ _ _ _ _ _ _ _ _ Hτe Hτv =>
         cases Hτe with
         | lam _ _ _ _ _ _ _ HwellBinds =>
-          apply multi_subst_erase_value
+          apply And.left; apply multi_subst_erase_value
           apply Hτv; apply HsemΓ; apply Hvalue; apply HwellBinds
     . apply pure_stepn.refl
   case lift_lam e =>
@@ -101,6 +126,73 @@ theorem sem_preservation_head :
       by simp [erase_maping𝕔]
     rw [HEq]; apply fundamental; apply Hτ₀
 
+-- Γ ⊢ e₀ : τ →
+-- |Γ| ⊨ |e₀| ≈ |e₁| : |τ|
+-- ————————————————————————————
+-- Γ ⊢ B⟦e₀⟧ : τ →
+-- |Γ| ⊨ |B⟦e₀⟧| ≈ |B⟦e₁⟧| : |τ|
+theorem sem_decompose𝔹 :
+  ∀ Γ B e₀ e₁ τ φ,
+    ctx𝔹 B →
+    (∀ τ φ,
+      typing Γ .stat e₀ τ φ →
+      sem_equiv_typing (erase_env Γ) (erase e₀) (erase e₁) (erase_ty τ)
+    ) →
+    typing Γ .stat (B e₀) τ φ →
+    sem_equiv_typing (erase_env Γ) (erase (B e₀)) (erase (B e₁)) (erase_ty τ) :=
+  by
+  intros Γ B e₀ e₁ τ φ HB IH Hτ
+  cases HB
+  case appl₁ =>
+    cases Hτ
+    case app₁ τ𝕒 _ _ _ Harg HX =>
+      apply compatibility_app
+      apply IH (.arrow τ𝕒 τ _); apply HX
+      apply fundamental; apply Harg
+  case appr₁ =>
+    cases Hτ
+    case app₁ τ𝕒 _ _ _ HX Hf =>
+      apply compatibility_app
+      apply fundamental _ _ _ (.arrow τ𝕒 τ _); apply Hf
+      apply IH; apply HX
+  case appl₂ =>
+    cases Hτ
+    case app₂ τ𝕒 τ𝕓 _ _ HX Harg =>
+      apply compatibility_app
+      apply IH (.fragment (.arrow τ𝕒 τ𝕓 _)); apply HX
+      apply fundamental _ _ _ (.fragment τ𝕒); apply Harg
+  case appr₂ =>
+    cases Hτ
+    case app₂ τ𝕒 τ𝕓 _ _ Hf HX =>
+      apply compatibility_app
+      apply fundamental _ _ _ (.fragment (.arrow τ𝕒 τ𝕓 _)); apply Hf
+      apply IH (.fragment τ𝕒); apply HX
+  case lift =>
+    cases Hτ
+    case lift_lam τ𝕒 τ𝕓 _ _ HX =>
+      apply IH (.arrow (.fragment τ𝕒) (.fragment τ𝕓) _); apply HX
+    case lift_lit HX =>
+      apply IH .nat; apply HX
+  case lets Hlc =>
+    cases Hτ
+    case lets HX Hclose He =>
+      have Hsem := IH _ _ HX
+      have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
+      apply compatibility_lets
+      constructor
+      . apply Hwf₀.right
+      . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+      constructor
+      . apply Hwf₁.right
+      . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+      apply Hsem
+      rw [← erase_env, ← erase_open₀_comm]; apply fundamental
+      rw [← length_erase_env]; apply He
+
+-- e₀ ↦ e₁ (under Γ)
+-- Γ ⊢ e₀ : τ
+-- ———————————————————————
+-- |Γ| ⊨ |e₀| ≈ |e₁| : |τ|
 theorem sem_preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ,
     step_lvl Γ.length e₀ e₁ →
@@ -117,8 +209,11 @@ theorem sem_preservation_strengthened :
       apply sem_preservation_head
       apply Hhead𝕄; apply Hτ
       admit
-    case cons𝔹 HB HM IH =>
-      admit
+    case cons𝔹 B M HB HM IH =>
+      rw [← ctx_comp B M]
+      apply sem_decompose𝔹; apply HB
+      intros _ _; apply IH
+      apply HEqlvl; apply Hτ
     case consℝ =>
       admit
   case reflect => admit

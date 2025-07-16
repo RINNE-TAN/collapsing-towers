@@ -142,7 +142,10 @@ def fv : Expr → Set ℕ
   | .let𝕔 b e => fv b ∪ fv e
 
 @[simp]
-def wf (e : Expr) : Prop := lc e ∧ closed e
+def wf_at (e : Expr) (x : ℕ) : Prop := lc e ∧ closed_at e x
+
+@[simp]
+def wf (e : Expr) : Prop := wf_at e 0
 
 abbrev Subst :=
   List Expr

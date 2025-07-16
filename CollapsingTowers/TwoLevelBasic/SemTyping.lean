@@ -34,6 +34,8 @@ inductive sem_equiv_env : Subst → Subst → TEnv → Prop where
 -- Γ ⊧ e₀ ≈ e₁ : τ ≜ ∀ (γ₀, γ₁) ∈ 𝓖⟦Γ⟧. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧
 @[simp]
 def sem_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+  wf_at e₀ Γ.length ∧
+  wf_at e₁ Γ.length ∧
   ∀ γ₀ γ₁,
     sem_equiv_env γ₀ γ₁ Γ →
     sem_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ

@@ -154,6 +154,9 @@ theorem binds_erase_env : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x ((
       simp [← length_erase_env, if_neg HEq]
       apply IH; apply Hbinds
 
+-- Γ ⊢ e₀ : τ
+-- ————————————————
+-- |Γ| ⊢ |e₀| : |τ|
 theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) .stat (erase e) (erase_ty τ) ∅ :=
   by
   intros Γ 𝕊 e τ φ Hτ

@@ -21,6 +21,14 @@ theorem compatibility_fvar :
     sem_equiv_typing Γ (.fvar x) (.fvar x) τ :=
   by
   intros Γ x τ Hbinds
+  constructor; constructor
+  . constructor
+  . simp [getr_iff_lt]
+    exists τ, .stat
+  constructor; constructor
+  . constructor
+  . simp [getr_iff_lt]
+    exists τ, .stat
   intros γ₀ γ₁ HsemΓ
   simp only [sem_equiv_expr]
   exists multi_subst γ₀ (.fvar x), multi_subst γ₁ (.fvar x)
@@ -29,19 +37,42 @@ theorem compatibility_fvar :
   apply sem_equiv_env_impl_sem_equiv_value
   apply HsemΓ; apply Hbinds
 
+-- Γ ⊧ n ≈ n : nat
+theorem compatibility_lit :
+  ∀ Γ n, sem_equiv_typing Γ (.lit n) (.lit n) .nat :=
+  by
+  intros _ n
+  constructor; constructor
+  . constructor
+  . constructor
+  constructor; constructor
+  . constructor
+  . constructor
+  intros γ₀ γ₁ semΓ
+  simp only [sem_equiv_expr]
+  exists .lit n, .lit n
+  simp; apply pure_stepn.refl
+
 -- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≈ e₁⟦0 ↦ x⟧ : τ𝕓
 -- —————————————————————————————————————————
 -- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
 theorem compatibility_lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
-    lc (.lam e₀) →
-    lc (.lam e₁) →
     closed_at (.lam e₀) Γ.length →
     closed_at (.lam e₁) Γ.length →
     sem_equiv_typing ((τ𝕒, .stat) :: Γ) (open₀ Γ.length e₀) (open₀ Γ.length e₁) τ𝕓 →
     sem_equiv_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
-  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hlc₀ Hlc₁ Hclosed₀ Hclosed₁ Hsem
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hsem
+  have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
+  have Hlc₀ : lc (.lam e₀) := by apply (open_lc _ _ _).mp; apply Hwf₀.left
+  have Hlc₁ : lc (.lam e₁) := by apply (open_lc _ _ _).mp; apply Hwf₁.left
+  constructor; constructor
+  . apply Hlc₀
+  . apply Hclosed₀
+  constructor; constructor
+  . apply Hlc₁
+  . apply Hclosed₁
   intros γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
@@ -58,7 +89,6 @@ theorem compatibility_lam :
   . apply multi_subst_closed; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   intros v₀ v₁ Hsem_value
   have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
-  simp only [sem_equiv_typing] at Hsem
   rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
   rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
   rw [← multi_subst_open₀_comm, multi_subst_comm, ← multi_subst, HEq₀]
@@ -82,8 +112,16 @@ theorem compatibility_app :
     sem_equiv_typing Γ (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
   by
   intros Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓 Hf Harg
+  have ⟨Hwf_f₀, Hwf_f₁, Hf⟩ := Hf
+  have ⟨Hwf_arg₀, Hwf_arg₁, Harg⟩ := Harg
+  constructor; constructor
+  . constructor; apply Hwf_f₀.left; apply Hwf_arg₀.left
+  . constructor; apply Hwf_f₀.right; apply Hwf_arg₀.right
+  constructor; constructor
+  . constructor; apply Hwf_f₁.left; apply Hwf_arg₁.left
+  . constructor; apply Hwf_f₁.right; apply Hwf_arg₁.right
   intros γ₀ γ₁ HsemΓ
-  simp only [sem_equiv_typing, sem_equiv_expr] at Hf Harg
+  simp only [sem_equiv_expr] at Hf Harg
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Harg γ₀ γ₁ HsemΓ
   have ⟨Hvalue₀, Hvalue₁⟩ := sem_equiv_value_impl_value _ _ _ Hsem_value
@@ -131,17 +169,31 @@ theorem compatibility_app :
 -- Γ ⊧ lets b₀ e₀ ≈ lets b₁ e₁ : τ𝕓
 theorem compatibility_lets :
   ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
-    lc (.lets b₀ e₀) →
-    lc (.lets b₁ e₁) →
     closed_at (.lets b₀ e₀) Γ.length →
     closed_at (.lets b₁ e₁) Γ.length →
     sem_equiv_typing Γ b₀ b₁ τ𝕒 →
     sem_equiv_typing ((τ𝕒, .stat) :: Γ) (open₀ Γ.length e₀) (open₀ Γ.length e₁) τ𝕓 →
     sem_equiv_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
   by
-  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hlc₀ Hlc₁ Hclosed₀ Hclosed₁ Hb He
+  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hb He
+  have ⟨Hwf_b₀, Hwf_b₁, Hb⟩ := Hb
+  have ⟨Hwf_e₀, Hwf_e₁, He⟩ := He
+  have Hlc₀ : lc (.lets b₀ e₀) :=
+    by
+    constructor; apply Hwf_b₀.left
+    apply (open_lc _ _ _).mp; apply Hwf_e₀.left
+  have Hlc₁ : lc (.lets b₁ e₁) :=
+    by
+    constructor; apply Hwf_b₁.left
+    apply (open_lc _ _ _).mp; apply Hwf_e₁.left
+  constructor; constructor
+  . apply Hlc₀
+  . apply Hclosed₀
+  constructor; constructor
+  . apply Hlc₁
+  . apply Hclosed₁
   intros γ₀ γ₁ HsemΓ
-  simp only [sem_equiv_typing, sem_equiv_expr] at Hb
+  simp only [sem_equiv_expr] at Hb
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hb γ₀ γ₁ HsemΓ
@@ -204,8 +256,6 @@ theorem fundamental :
   case lam =>
     intros _ _ _ _ _ _ H _ Hclose IH
     apply compatibility_lam
-    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
-    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_regular; apply H
     rw [← length_erase_env]; apply erase_closed_at; apply Hclose
     rw [← length_erase_env]; apply erase_closed_at; apply Hclose
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
@@ -223,10 +273,7 @@ theorem fundamental :
     apply IHf; apply IHarg
   case lit =>
     intros _ _ n
-    intros γ₀ γ₁ semΓ
-    simp only [sem_equiv_expr]
-    exists .lit n, .lit n
-    simp; apply pure_stepn.refl
+    apply compatibility_lit
   case lift_lit =>
     intros _ _ _ _ IH
     apply IH
@@ -243,8 +290,6 @@ theorem fundamental :
   case lam𝕔 =>
     intros _ _ _ _ _ H _ Hclose IH
     apply compatibility_lam
-    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_reification_regular; apply H
-    apply erase_lc_at; apply (open_lc _ _ _).mp; apply typing_reification_regular; apply H
     rw [← length_erase_env]; apply erase_closed_at; apply Hclose
     rw [← length_erase_env]; apply erase_closed_at; apply Hclose
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
@@ -252,12 +297,6 @@ theorem fundamental :
   case lets =>
     intros _ _ _ _ _ _ _ _ Hb He _ Hclose IHb IHe
     apply compatibility_lets
-    constructor
-    . apply erase_lc_at; apply typing_regular; apply Hb
-    . apply erase_lc_at; apply (open_lc _ _ _).mp;apply typing_regular; apply He
-    constructor
-    . apply erase_lc_at; apply typing_regular; apply Hb
-    . apply erase_lc_at; apply (open_lc _ _ _).mp;apply typing_regular; apply He
     constructor
     . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
     . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
@@ -270,12 +309,6 @@ theorem fundamental :
   case let𝕔 =>
     intros _ _ _ _ _ _ Hb He _ Hclose IHb IHe
     apply compatibility_lets
-    constructor
-    . apply erase_lc_at; apply typing_regular; apply Hb
-    . apply erase_lc_at; apply (open_lc _ _ _).mp;apply typing_reification_regular; apply He
-    constructor
-    . apply erase_lc_at; apply typing_regular; apply Hb
-    . apply erase_lc_at; apply (open_lc _ _ _).mp;apply typing_reification_regular; apply He
     constructor
     . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
     . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
