@@ -189,6 +189,53 @@ theorem sem_decompose𝔹 :
       rw [← erase_env, ← erase_open₀_comm]; apply fundamental
       rw [← length_erase_env]; apply He
 
+theorem sem_decomposeℝ :
+  ∀ intro Γ R e₀ e₁ τ φ,
+    ctxℝ intro Γ.length R →
+    lc e₀ →
+    (∀ Δ τ φ,
+      Δ.length = intro →
+      typing (Δ ++ Γ) .stat e₀ τ φ →
+      sem_equiv_typing (erase_env (Δ ++ Γ)) (erase e₀) (erase e₁) (erase_ty τ)
+    ) →
+    typing Γ .stat (R e₀) τ φ →
+    sem_equiv_typing (erase_env Γ) (erase (R e₀)) (erase (R e₁)) (erase_ty τ) :=
+  by
+  intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
+  cases HR
+  case lam𝕔 =>
+    cases Hτ
+    case lam𝕔 τ𝕒 τ𝕓 _ _ Hτ Hclose =>
+      cases Hτ
+      case pure Hτ =>
+        rw [← List.singleton_append, open_close_id₀ _ _ Hlc] at Hτ
+        have Hsem := IH _ _ _ (by simp) Hτ
+        have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
+        apply compatibility_lam
+        . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+        . admit
+        rw [← erase_open₀_comm, ← erase_open₀_comm]
+        rw [← length_erase_env, open_close_id₀, open_close_id₀]
+        apply Hsem
+        . admit
+        . apply Hlc
+      case reify =>
+        apply compatibility_lam
+        . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+        . admit
+        admit
+  case let𝕔 => admit
+  case run =>
+    cases Hτ
+    case run Hτ =>
+      cases Hτ
+      case pure Hτ =>
+        apply IH [] (.rep τ)
+        simp; apply Hτ
+      case reify Hτ =>
+        apply IH [] (.fragment τ)
+        simp; apply Hτ
+
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ———————————————————————
@@ -214,6 +261,10 @@ theorem sem_preservation_strengthened :
       apply sem_decompose𝔹; apply HB
       intros _ _; apply IH
       apply HEqlvl; apply Hτ
-    case consℝ =>
-      admit
+    case consℝ R M HR HM IH =>
+      rw [← ctx_comp R M]
+      apply sem_decomposeℝ; rw [HEqlvl]; apply HR
+      apply lc_ctx𝕄; apply HM; apply Hlc
+      intros _ _ _ HEqintro; apply IH
+      simp; omega; apply Hτ
   case reflect => admit
