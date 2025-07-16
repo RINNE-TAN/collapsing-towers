@@ -94,6 +94,27 @@ theorem erase_open₀_comm : ∀ x e, erase (open₀ x e) = open₀ x (erase e) 
   by
   intros x e; apply erase_opening_comm
 
+theorem erase_maping𝕔 : ∀ i e, erase (maping𝕔 e i) = erase e :=
+  by
+  intros i e
+  induction e generalizing i with
+  | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
+  | fvar y => simp
+  | lam _ IH
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | lam𝕔 _ IH
+  | run _ IH =>
+    simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | lit => simp
+
 theorem erase_ty_well_binding_time : ∀ 𝕊 τ, well_binding_time 𝕊 (erase_ty τ) :=
   by
   intros 𝕊 τ
