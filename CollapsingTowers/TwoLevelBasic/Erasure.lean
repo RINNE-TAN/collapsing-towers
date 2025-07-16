@@ -68,9 +68,9 @@ theorem erase_closed_at : ∀ e x, closed_at e x → closed_at (erase e) x :=
   | lam𝕔 _ IH =>
     apply IH; apply Hclose
 
-theorem erase_opening_comm : ∀ i x e, erase (opening i (.fvar x) e) = opening i (.fvar x) (erase e) :=
+theorem erase_opening_comm : ∀ i v e, erase (opening i v e) = opening i (erase v) (erase e) :=
   by
-  intros i x e
+  intros i v e
   induction e generalizing i with
   | bvar j =>
     by_cases HEq : j = i
@@ -93,6 +93,10 @@ theorem erase_opening_comm : ∀ i x e, erase (opening i (.fvar x) e) = opening 
 theorem erase_open₀_comm : ∀ x e, erase (open₀ x e) = open₀ x (erase e) :=
   by
   intros x e; apply erase_opening_comm
+
+theorem erase_open_subst_comm : ∀ v e, erase (open_subst v e) = open_subst (erase v) (erase e) :=
+  by
+  intros v e; apply erase_opening_comm
 
 theorem erase_maping𝕔 : ∀ i e, erase (maping𝕔 e i) = erase e :=
   by

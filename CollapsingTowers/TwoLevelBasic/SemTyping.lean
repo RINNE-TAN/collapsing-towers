@@ -118,3 +118,25 @@ theorem sem_equiv_value_arrow_iff_lam :
   intros f₀ f₁ τ𝕒 τ𝕓 Hsem_value
   cases f₀ <;> cases f₁ <;> simp at Hsem_value
   simp
+
+theorem sem_equiv_env_impl_sem_equiv_value :
+  ∀ γ₀ γ₁ Γ x τ,
+    sem_equiv_env γ₀ γ₁ Γ →
+    binds x (τ, .stat) Γ →
+    sem_equiv_value (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
+  by
+  intros γ₀ γ₁ Γ x τ HsemΓ Hbinds
+  induction HsemΓ
+  case nil => nomatch Hbinds
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
+    have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
+    have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
+    simp [HEq₀, HEq₁]
+    by_cases HEqx : Γ.length = x
+    . simp [if_pos HEqx]
+      simp [if_pos HEqx] at Hbinds
+      rw [← Hbinds, multi_subst_closed_id, multi_subst_closed_id]
+      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
+    . simp [if_neg HEqx]
+      simp [if_neg HEqx] at Hbinds
+      apply IH; apply Hbinds

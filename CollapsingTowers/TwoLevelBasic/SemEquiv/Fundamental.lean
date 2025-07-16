@@ -26,20 +26,8 @@ theorem compatibility_fvar :
   exists multi_subst γ₀ (.fvar x), multi_subst γ₁ (.fvar x)
   constructor; apply pure_stepn.refl
   constructor; apply pure_stepn.refl
-  induction HsemΓ
-  case nil => nomatch Hbinds
-  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
-    have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
-    have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
-    simp [HEq₀, HEq₁]
-    by_cases HEqx : Γ.length = x
-    . simp [if_pos HEqx]
-      simp [if_pos HEqx] at Hbinds
-      rw [← Hbinds, multi_subst_closed_id, multi_subst_closed_id]
-      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
-    . simp [if_neg HEqx]
-      simp [if_neg HEqx] at Hbinds
-      apply IH; apply Hbinds
+  apply sem_equiv_env_impl_sem_equiv_value
+  apply HsemΓ; apply Hbinds
 
 -- τ𝕒, Γ ⊧ e₀⟦0 ↦ 𝓛(Γ)⟧ ≈ e₁⟦0 ↦ 𝓛(Γ)⟧ : τ𝕓
 -- —————————————————————————————————————————
@@ -63,18 +51,18 @@ theorem compatibility_lam :
   constructor; apply pure_stepn.refl
   simp only [pure_empty, sem_equiv_value]
   constructor; rw [← multi_subst_lam]; constructor
-  . apply multi_subst_lc; apply Hmulti_wf₀; apply Hlc₀
+  . apply multi_subst_lc_at; apply Hmulti_wf₀; apply Hlc₀
   . apply multi_subst_closed; apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀
   constructor; rw [← multi_subst_lam]; constructor
-  . apply multi_subst_lc; apply Hmulti_wf₁; apply Hlc₁
+  . apply multi_subst_lc_at; apply Hmulti_wf₁; apply Hlc₁
   . apply multi_subst_closed; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   intros v₀ v₁ Hsem_value
   have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
   simp only [sem_equiv_typing] at Hsem
   rw [open_subst, ← subst_intro γ₀.length (multi_subst γ₀ e₀)]
   rw [open_subst, ← subst_intro γ₁.length (multi_subst γ₁ e₁)]
-  rw [← multi_subst_opening_comm, multi_subst_comm, ← multi_subst, HEq₀]
-  rw [← multi_subst_opening_comm, multi_subst_comm, ← multi_subst, HEq₁]
+  rw [← multi_subst_open₀_comm, multi_subst_comm, ← multi_subst, HEq₀]
+  rw [← multi_subst_open₀_comm, multi_subst_comm, ← multi_subst, HEq₁]
   apply Hsem; apply sem_equiv_env.cons; apply Hsem_value; apply HsemΓ
   omega; apply Hwf₁.right; apply Hmulti_wf₁; omega; apply Hmulti_wf₁
   omega; apply Hwf₀.right; apply Hmulti_wf₀; omega; apply Hmulti_wf₀
@@ -165,13 +153,13 @@ theorem compatibility_lets :
     -- left step
     apply pure_stepn_trans
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₀
-    apply multi_subst_lc; apply Hmulti_wf₀; apply Hlc₀.right
+    apply multi_subst_lc_at; apply Hmulti_wf₀; apply Hlc₀.right
     -- head step
     apply pure_stepn.multi; apply pure_stepn.refl
-    rw [← multi_subst_comm, multi_subst_opening_comm, HEq₀, subst_intro, ← open_subst]
+    rw [← multi_subst_comm, multi_subst_open₀_comm, HEq₀, subst_intro, ← open_subst]
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply value_lc; apply Hvalue₀
-    apply multi_subst_lc; apply Hmulti_wf₀; apply Hlc₀.right
+    apply multi_subst_lc_at; apply Hmulti_wf₀; apply Hlc₀.right
     apply head𝕄.lets; apply Hvalue₀
     apply closed_inc; apply multi_subst_closed
     apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀.right
@@ -181,13 +169,13 @@ theorem compatibility_lets :
     -- left step
     apply pure_stepn_trans
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₁
-    apply multi_subst_lc; apply Hmulti_wf₁; apply Hlc₁.right
+    apply multi_subst_lc_at; apply Hmulti_wf₁; apply Hlc₁.right
     -- head step
     apply pure_stepn.multi; apply pure_stepn.refl
-    rw [← multi_subst_comm, multi_subst_opening_comm, HEq₁, subst_intro, ← open_subst]
+    rw [← multi_subst_comm, multi_subst_open₀_comm, HEq₁, subst_intro, ← open_subst]
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply value_lc; apply Hvalue₁
-    apply multi_subst_lc; apply Hmulti_wf₁; apply Hlc₁.right
+    apply multi_subst_lc_at; apply Hmulti_wf₁; apply Hlc₁.right
     apply head𝕄.lets; apply Hvalue₁
     apply closed_inc; apply multi_subst_closed
     apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁.right
