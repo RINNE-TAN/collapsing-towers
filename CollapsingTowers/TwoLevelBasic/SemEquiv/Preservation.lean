@@ -48,6 +48,38 @@ theorem sem_preservation_head :
           apply Hτv; apply HsemΓ; apply Hvalue; apply HwellBinds
     . apply pure_stepn.refl
   case app₁ Hvalue =>
+    --
+    --
+    -- value v
+    -- ——————————————————————————————————
+    -- |Γ| ⊧ |λ.e @ v| ≈ |e⟦0 ↦ v⟧| : |τ|
+    --
+    --
+    -- value v
+    -- (γ₀, γ₁) ∈ 𝓖⟦Γ⟧
+    -- ————————————————————————————————————————
+    -- (γ₀(|λ.e @ v|), γ₁(|e⟦0 ↦ v⟧|)) ∈ 𝓔⟦|τ|⟧
+    --
+    --
+    -- value v
+    -- (γ₀, γ₁) ∈ 𝓖⟦Γ⟧
+    -- ————————————————————————————————————————————————————
+    -- (λ.γ₀(|e|) @ γ₀(|v|), γ₁(|e|)⟦0 ↦ γ₁(|v|)⟧) ∈ 𝓔⟦|τ|⟧
+    --
+    --
+    -- value v
+    -- ————————————————————————————————————————————
+    -- λ.γ₀(|e|) @ γ₀(|v|) ↦* γ₁(|e|)⟦0 ↦ γ₁(|v|)⟧
+    --
+    --
+    -- value v
+    -- —————————————
+    -- value γ₀(|v|)
+    --
+    --
+    -- value n  value λ.e        value (code x)  value (code e)
+    -- ———————  ———————————————  ——————————————  ——————————————————
+    -- value n  value λ.γ₀(|e|)  value γ₀(x)     Binding Time Error
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
@@ -80,11 +112,13 @@ theorem sem_preservation_strengthened :
   intros Hstep Hτ
   cases Hstep
   case step𝕄 HM Hlc Hhead𝕄 =>
-    induction HM
+    induction HM generalizing Γ τ φ
     case hole =>
       apply sem_preservation_head
       apply Hhead𝕄; apply Hτ
       admit
-    case cons𝔹 HB HM IH => admit
-    case consℝ => admit
+    case cons𝔹 HB HM IH =>
+      admit
+    case consℝ =>
+      admit
   case reflect => admit
