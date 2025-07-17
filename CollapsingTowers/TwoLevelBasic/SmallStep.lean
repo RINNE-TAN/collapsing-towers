@@ -486,3 +486,15 @@ theorem pure_stepn_lc : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e
   case refl => apply Hlc
   case multi H IH =>
     apply IH; apply pure_step_lc; apply H
+
+theorem fv_head𝕄 : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+  by
+  intros e₀ e₁ Hhead
+  cases Hhead <;> simp
+  case lets =>
+    apply fv_opening
+  case app₁ =>
+    rw [Set.union_comm]
+    apply fv_opening
+  case lift_lam =>
+    rw [← fv_maping𝕔]
