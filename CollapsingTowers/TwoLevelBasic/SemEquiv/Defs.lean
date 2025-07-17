@@ -1,6 +1,6 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Fundamental
-import CollapsingTowers.TwoLevelBasic.Preservation.Head
+import CollapsingTowers.TwoLevelBasic.Preservation.Defs
 theorem multi_subst_erase_value :
   ∀ Γ v τ φ γ₀ γ₁,
     typing Γ .stat v τ φ →
@@ -263,13 +263,77 @@ theorem sem_decomposeℝ :
         apply IH [] (.fragment τ)
         simp; apply Hτ
 
+theorem sem_decompose𝔼 :
+  ∀ Γ E e τ φ,
+    ctx𝔼 E →
+    typing Γ .stat E⟦e⟧ τ φ →
+    ∃ τ𝕖,
+    ∀ γ₀ γ₁,
+      sem_equiv_env γ₀ γ₁ (erase_env Γ) →
+      ∃ v₀ v₁,
+        pure_stepn (multi_subst γ₀ (erase e)) v₀ ∧
+        pure_stepn (multi_subst γ₁ (erase e)) v₁ ∧
+        sem_equiv_value v₀ v₁ (erase_ty τ𝕖) ∧
+        sem_equiv_expr
+          (subst γ₀.length v₀ (multi_subst γ₀ (erase E⟦.fvar γ₀.length⟧)))
+          (subst γ₁.length v₁ (multi_subst γ₁ (erase E⟦.fvar γ₁.length⟧)))
+          (erase_ty τ) :=
+  by
+  intros Γ E e τ φ HE Hτ
+  induction HE
+  case hole =>
+    exists τ
+    intros γ₀ γ₁ semΓ
+    have ⟨_, _, Hsem⟩ := fundamental _ _ _ _ _ Hτ
+    have Hsem := Hsem γ₀ γ₁ semΓ
+    rw [sem_equiv_expr] at Hsem
+    have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem
+    exists v₀, v₁
+    constructor; apply Hstepv₀
+    constructor; apply Hstepv₁
+    constructor; apply Hsem_value
+    rw [sem_equiv_expr]
+    exists v₀, v₁
+    constructor; simp; apply pure_stepn.refl
+    constructor; simp; apply pure_stepn.refl
+    apply Hsem_value
+  case cons𝔹 B E HB HE IH =>
+    admit
+
 theorem sem_reflect :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
     typing Γ .stat (E (.reflect b)) τ φ →
     sem_equiv_typing (erase_env Γ) (erase E⟦.reflect b⟧) (.lets (erase b) (erase E⟦.code (.bvar 0)⟧)) (erase_ty τ) :=
   by
-  admit
+  intros Γ E b τ φ HE Hτ
+  have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := decompose𝔼 _ _ _ _ _ HE Hτ
+  constructor; constructor
+  . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ
+  . rw [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hτ
+  constructor; constructor
+  . constructor
+    . rw [← erase_lc_at]; apply typing_regular _ _ _ _ _ Hτr
+    . rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
+  . constructor
+    . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed _ _ _ _ _ Hτr
+    . simp [← length_erase_env, ← erase_closed_at]; apply closed_at𝔼; apply HE
+      apply typing_closed _ _ _ _ _ Hτ; simp
+  intros γ₀ γ₁ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
+  have ⟨τ𝕖, Hsem⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
+  have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value, Hsem𝔼⟩ := Hsem γ₀ γ₁ HsemΓ
+  apply sem_equiv_expr_stepn; apply Hsem𝔼
+  . admit
+  . simp
+    -- left step
+    apply pure_stepn_trans
+    apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₁
+    apply multi_subst_lc_at; apply Hmulti_wf₁
+    rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
+    -- head step
+    apply pure_stepn.multi; apply pure_stepn.refl
+    all_goals admit
 
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
