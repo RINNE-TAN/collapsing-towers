@@ -189,6 +189,11 @@ theorem sem_decompose𝔹 :
       rw [← erase_env, ← erase_open₀_comm]; apply fundamental
       rw [← length_erase_env]; apply He
 
+-- Γ ⊢ e₀ : τ →
+-- |Γ| ⊨ |e₀| ≈ |e₁| : |τ|
+-- ————————————————————————————
+-- Γ ⊢ R⟦e₀⟧ : τ →
+-- |Γ| ⊨ |R⟦e₀⟧| ≈ |R⟦e₁⟧| : |τ|
 theorem sem_decomposeℝ :
   ∀ intro Γ R e₀ e₁ τ φ,
     ctxℝ intro Γ.length R →
@@ -205,26 +210,47 @@ theorem sem_decomposeℝ :
   cases HR
   case lam𝕔 =>
     cases Hτ
-    case lam𝕔 τ𝕒 τ𝕓 _ _ Hτ Hclose =>
+    case lam𝕔 _ _ _ _ Hτ Hclose =>
       cases Hτ
-      case pure Hτ =>
+      all_goals
+      next Hτ =>
         rw [← List.singleton_append, open_close_id₀ _ _ Hlc] at Hτ
         have Hsem := IH _ _ _ (by simp) Hτ
         have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
         apply compatibility_lam
         . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
-        . admit
+        . simp [← length_erase_env, ← erase_closed_at, ← close_closed]
+          rw [← length_erase_env] at Hwf₁
+          rw [erase_closed_at]; apply Hwf₁.right
         rw [← erase_open₀_comm, ← erase_open₀_comm]
         rw [← length_erase_env, open_close_id₀, open_close_id₀]
         apply Hsem
-        . admit
+        . rw [lc, erase_lc_at]; apply Hwf₁.left
         . apply Hlc
-      case reify =>
-        apply compatibility_lam
+  case let𝕔 =>
+    cases Hτ
+    case let𝕔 Hτb Hτe Hclose =>
+      cases Hτe
+      all_goals
+      next Hτe =>
+        rw [← List.singleton_append, open_close_id₀ _ _ Hlc] at Hτe
+        have Hsem := IH _ _ _ (by simp) Hτe
+        have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
+        apply compatibility_lets
+        constructor
+        . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hτb
         . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
-        . admit
-        admit
-  case let𝕔 => admit
+        constructor
+        . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hτb
+        . simp [← length_erase_env, ← erase_closed_at, ← close_closed]
+          rw [← length_erase_env] at Hwf₁
+          rw [erase_closed_at]; apply Hwf₁.right
+        apply fundamental; apply Hτb
+        rw [← erase_open₀_comm, ← erase_open₀_comm]
+        rw [← length_erase_env, open_close_id₀, open_close_id₀]
+        apply Hsem
+        . rw [lc, erase_lc_at]; apply Hwf₁.left
+        . apply Hlc
   case run =>
     cases Hτ
     case run Hτ =>
