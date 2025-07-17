@@ -486,6 +486,52 @@ theorem pure_stepn_lc : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e
   case refl => apply Hlc
   case multi H IH =>
     apply IH; apply pure_step_lc; apply H
+-- properties of step
+
+theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
+  by
+  intros lvl B e₀ e₁ HB Hstep
+  cases Hstep with
+  | step𝕄 M _ _ HM Hlc Hhead =>
+    rw [ctx_comp B M]
+    constructor; apply step_lvl.step𝕄
+    apply ctx𝕄.cons𝔹; apply HB; apply HM
+    apply Hlc; apply Hhead
+  | reflect P E _ HP HE Hlc =>
+    cases HP
+    case hole =>
+      constructor
+      rw [ctx_swap B, ctx_comp B E]
+      apply step_lvl.reflect
+      apply ctxℙ.hole; apply ctx𝔼.cons𝔹
+      apply HB; apply HE; apply Hlc
+    case consℚ HQ =>
+      constructor
+      rw [ctx_comp B P]
+      apply step_lvl.reflect
+      apply ctxℙ.consℚ; apply ctxℚ.cons𝔹
+      apply HB; apply HQ; apply HE; apply Hlc
+
+theorem stepℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → step_lvl (lvl + intro) e₀ e₁ → step_lvl lvl R⟦e₀⟧ R⟦e₁⟧ :=
+  by
+  intros intro lvl R e₀ e₁ HR Hstep
+  cases Hstep with
+  | step𝕄 M _ _ HM Hlc Hhead =>
+    repeat rw [ctx_comp R M]
+    apply step_lvl.step𝕄
+    apply ctx𝕄.consℝ; apply HR; apply HM
+    apply Hlc; apply Hhead
+  | reflect P _ _ HP HE Hlc =>
+    cases HP
+    case hole =>
+      apply step_lvl.reflect
+      apply ctxℙ.consℚ; apply ctxℚ.holeℝ
+      apply HR; apply HE; apply Hlc
+    case consℚ HQ =>
+      rw [ctx_comp R P]
+      apply step_lvl.reflect
+      apply ctxℙ.consℚ; apply ctxℚ.consℝ
+      apply HR; apply HQ; apply HE; apply Hlc
 
 theorem fv_head𝕄 : ∀ e₀ e₁, head𝕄 e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
