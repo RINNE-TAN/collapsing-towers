@@ -138,8 +138,8 @@ theorem sem_decompose𝔹 :
       typing Γ .stat e₀ τ φ →
       sem_equiv_typing (erase_env Γ) (erase e₀) (erase e₁) (erase_ty τ)
     ) →
-    typing Γ .stat (B e₀) τ φ →
-    sem_equiv_typing (erase_env Γ) (erase (B e₀)) (erase (B e₁)) (erase_ty τ) :=
+    typing Γ .stat B⟦e₀⟧ τ φ →
+    sem_equiv_typing (erase_env Γ) (erase B⟦e₀⟧) (erase B⟦e₁⟧) (erase_ty τ) :=
   by
   intros Γ B e₀ e₁ τ φ HB IH Hτ
   cases HB
@@ -203,8 +203,8 @@ theorem sem_decomposeℝ :
       typing (Δ ++ Γ) .stat e₀ τ φ →
       sem_equiv_typing (erase_env (Δ ++ Γ)) (erase e₀) (erase e₁) (erase_ty τ)
     ) →
-    typing Γ .stat (R e₀) τ φ →
-    sem_equiv_typing (erase_env Γ) (erase (R e₀)) (erase (R e₁)) (erase_ty τ) :=
+    typing Γ .stat R⟦e₀⟧ τ φ →
+    sem_equiv_typing (erase_env Γ) (erase R⟦e₀⟧) (erase R⟦e₁⟧) (erase_ty τ) :=
   by
   intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
   cases HR
@@ -262,6 +262,14 @@ theorem sem_decomposeℝ :
         apply IH [] (.fragment τ)
         simp; apply Hτ
 
+theorem sem_reflect :
+  ∀ Γ E b τ φ,
+    ctx𝔼 E →
+    typing Γ .stat (E (.reflect b)) τ φ →
+    sem_equiv_typing (erase_env Γ) (erase E⟦.reflect b⟧) (.lets (erase b) (erase E⟦.code (.bvar 0)⟧)) (erase_ty τ) :=
+  by
+  admit
+
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ———————————————————————
@@ -293,4 +301,25 @@ theorem sem_preservation_strengthened :
       apply lc_ctx𝕄; apply HM; apply Hlc
       intros _ _ _ HEqintro; apply IH
       simp; omega; apply Hτ
-  case reflect => admit
+  case reflect HP HE Hlc =>
+    cases HP
+    case hole => apply sem_reflect; apply HE; apply Hτ
+    case consℚ HQ =>
+      induction HQ generalizing Γ τ φ
+      case holeℝ HR =>
+        apply sem_decomposeℝ; rw [HEqlvl]; apply HR
+        apply lc_ctx𝔼; apply HE; apply Hlc
+        intros _ _ _ _ Hτ
+        apply sem_reflect; apply HE; apply Hτ; apply Hτ
+      case cons𝔹 B Q HB HQ IH =>
+        rw [← ctx_comp B Q]
+        apply sem_decompose𝔹; apply HB
+        intros _ _; apply IH
+        apply HEqlvl; apply Hτ
+      case consℝ R Q HR HQ IH =>
+        rw [← ctx_comp R Q]
+        apply sem_decomposeℝ; rw [HEqlvl]; apply HR
+        apply lc_ctxℚ; apply HQ
+        apply lc_ctx𝔼; apply HE; apply Hlc
+        intros _ _ _ HEqintro; apply IH
+        simp; omega; apply Hτ
