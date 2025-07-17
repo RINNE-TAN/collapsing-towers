@@ -28,45 +28,43 @@ def erase_env : TEnv → TEnv
   | [] => []
   | (τ, _) :: Γ => (erase_ty τ, .stat) :: erase_env Γ
 
-theorem erase_lc_at : ∀ e i, lc_at e i → lc_at (erase e) i :=
+theorem erase_lc_at : ∀ e i, lc_at e i ↔ lc_at (erase e) i :=
   by
-  intros e i Hclose
+  intros e i
   induction e generalizing i with
-  | fvar| lit| bvar => assumption
+  | fvar| lit| bvar => simp
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
-    constructor
-    apply IH₀; apply Hclose.left
-    apply IH₁; apply Hclose.right
+    apply and_congr
+    apply IH₀; apply IH₁
   | code _ IH
   | reflect _ IH
   | lift _ IH
   | run _ IH
   | lam _ IH
   | lam𝕔 _ IH =>
-    apply IH; apply Hclose
+    apply IH
 
-theorem erase_closed_at : ∀ e x, closed_at e x → closed_at (erase e) x :=
+theorem erase_closed_at : ∀ e x, closed_at e x ↔ closed_at (erase e) x :=
   by
-  intros e x Hclose
+  intros e x
   induction e with
-  | fvar| lit| bvar => assumption
+  | fvar| lit| bvar => simp
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | let𝕔 _ _ IH₀ IH₁ =>
-    constructor
-    apply IH₀; apply Hclose.left
-    apply IH₁; apply Hclose.right
+    apply and_congr
+    apply IH₀; apply IH₁
   | code _ IH
   | reflect _ IH
   | lift _ IH
   | run _ IH
   | lam _ IH
   | lam𝕔 _ IH =>
-    apply IH; apply Hclose
+    apply IH
 
 theorem erase_opening_comm : ∀ i v e, erase (opening i v e) = opening i (erase v) (erase e) :=
   by
@@ -175,8 +173,8 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     rw [← length_erase_env, ← erase_open₀_comm]
     apply IH
     apply erase_ty_well_binding_time
-    rw [← length_erase_env]
-    apply erase_closed_at; apply Hclose
+    rw [← length_erase_env, ← erase_closed_at]
+    apply Hclose
   case lift_lam =>
     intros _ _ _ _ _ _ _ IH
     apply IH
@@ -213,8 +211,8 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     rw [← length_erase_env, ← erase_open₀_comm]
     apply IH
     apply erase_ty_well_binding_time
-    rw [← length_erase_env]
-    apply erase_closed_at; apply Hclose
+    rw [← length_erase_env, ← erase_closed_at]
+    apply Hclose
   case lets =>
     intros _ _ _ _ _ _ _ _ _ _ _ Hclose IHb IHe
     rw [← union_pure_left ∅]
@@ -223,8 +221,8 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     rw [← length_erase_env, ← erase_open₀_comm]
     apply IHe
     apply erase_ty_well_binding_time
-    rw [← length_erase_env]
-    apply erase_closed_at; apply Hclose
+    rw [← length_erase_env, ← erase_closed_at]
+    apply Hclose
   case let𝕔 =>
     intros _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe
     rw [← union_pure_left ∅]
@@ -233,8 +231,8 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     rw [← length_erase_env, ← erase_open₀_comm]
     apply IHe
     apply erase_ty_well_binding_time
-    rw [← length_erase_env]
-    apply erase_closed_at; apply Hclose
+    rw [← length_erase_env, ← erase_closed_at]
+    apply Hclose
   case run =>
     intros _ _ _ _ _ _ IH
     apply IH

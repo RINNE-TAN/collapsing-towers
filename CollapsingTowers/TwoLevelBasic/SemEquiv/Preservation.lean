@@ -16,10 +16,10 @@ theorem multi_subst_erase_value :
     constructor
     . apply value.lam
       apply multi_subst_lc_at; apply Hmulti_wf₀
-      apply erase_lc_at; apply Hlc
+      rw [← erase_lc_at]; apply Hlc
     . apply value.lam
       apply multi_subst_lc_at; apply Hmulti_wf₁
-      apply erase_lc_at; apply Hlc
+      rw [← erase_lc_at]; apply Hlc
   case lit =>
     simp; apply value.lit
   case code e _ =>
@@ -43,12 +43,12 @@ theorem sem_preservation_head :
   cases Hhead <;> try apply fundamental; apply Hτ₀
   case lets Hvalue =>
     constructor; constructor
-    . apply erase_lc_at; apply typing_regular; apply Hτ₀
-    . rw [← length_erase_env]; apply erase_closed_at
+    . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ₀
+    . rw [← length_erase_env, ← erase_closed_at]
       apply typing_closed; apply Hτ₀
     constructor; constructor
-    . apply erase_lc_at; apply typing_regular; apply Hτ₁
-    . rw [← length_erase_env]; apply erase_closed_at
+    . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ₁
+    . rw [← length_erase_env, ← erase_closed_at]
       apply typing_closed; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
@@ -57,7 +57,7 @@ theorem sem_preservation_head :
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
-      apply multi_subst_lc_at; apply Hmulti_wf₀; apply erase_lc_at; apply typing_regular; apply Hτ₀
+      apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply typing_regular; apply Hτ₀
       simp; apply head𝕄.lets
       cases Hτ₀ with
       | lets _ _ _ _ _ _ _ _ Hτv _ HwellBinds _ =>
@@ -98,12 +98,12 @@ theorem sem_preservation_head :
     -- ———————  ———————————————  ——————————————  ——————————————————
     -- value n  value λ.γ₀(|e|)  value γ₀(x)     Binding Time Error
     constructor; constructor
-    . apply erase_lc_at; apply typing_regular; apply Hτ₀
-    . rw [← length_erase_env]; apply erase_closed_at
+    . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ₀
+    . rw [← length_erase_env, ← erase_closed_at]
       apply typing_closed; apply Hτ₀
     constructor; constructor
-    . apply erase_lc_at; apply typing_regular; apply Hτ₁
-    . rw [← length_erase_env]; apply erase_closed_at
+    . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ₁
+    . rw [← length_erase_env, ← erase_closed_at]
       apply typing_closed; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
@@ -112,7 +112,7 @@ theorem sem_preservation_head :
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
-      apply multi_subst_lc_at; apply Hmulti_wf₀; apply erase_lc_at; apply typing_regular; apply Hτ₀
+      apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply typing_regular; apply Hτ₀
       simp; apply head𝕄.app₁
       cases Hτ₀ with
       | app₁ _ _ _ _ _ _ _ _ _ Hτe Hτv =>
@@ -181,10 +181,10 @@ theorem sem_decompose𝔹 :
       apply compatibility_lets
       constructor
       . apply Hwf₀.right
-      . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+      . rw [← length_erase_env, ← erase_closed_at]; apply Hclose
       constructor
       . apply Hwf₁.right
-      . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+      . rw [← length_erase_env, ← erase_closed_at]; apply Hclose
       apply Hsem
       rw [← erase_env, ← erase_open₀_comm]; apply fundamental
       rw [← length_erase_env]; apply He
@@ -212,7 +212,7 @@ theorem sem_decomposeℝ :
         have Hsem := IH _ _ _ (by simp) Hτ
         have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
         apply compatibility_lam
-        . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+        . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
         . admit
         rw [← erase_open₀_comm, ← erase_open₀_comm]
         rw [← length_erase_env, open_close_id₀, open_close_id₀]
@@ -221,7 +221,7 @@ theorem sem_decomposeℝ :
         . apply Hlc
       case reify =>
         apply compatibility_lam
-        . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+        . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
         . admit
         admit
   case let𝕔 => admit

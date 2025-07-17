@@ -256,8 +256,8 @@ theorem fundamental :
   case lam =>
     intros _ _ _ _ _ _ H _ Hclose IH
     apply compatibility_lam
-    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
-    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    simp [← length_erase_env, ← erase_closed_at]; apply Hclose
+    simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
     apply IH
   case lift_lam =>
@@ -290,19 +290,19 @@ theorem fundamental :
   case lam𝕔 =>
     intros _ _ _ _ _ H _ Hclose IH
     apply compatibility_lam
-    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
-    rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    simp [← length_erase_env, ← erase_closed_at]; apply Hclose
+    simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
     apply IH
   case lets =>
     intros _ _ _ _ _ _ _ _ Hb He _ Hclose IHb IHe
     apply compatibility_lets
     constructor
-    . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
-    . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
+    . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     constructor
-    . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
-    . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
+    . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     apply IHb
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
     apply IHe
@@ -310,11 +310,11 @@ theorem fundamental :
     intros _ _ _ _ _ _ Hb He _ Hclose IHb IHe
     apply compatibility_lets
     constructor
-    . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
-    . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
+    . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     constructor
-    . rw [← length_erase_env]; apply erase_closed_at; apply typing_closed; apply Hb
-    . rw [← length_erase_env]; apply erase_closed_at; apply Hclose
+    . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
+    . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     apply IHb
     rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
     apply IHe
