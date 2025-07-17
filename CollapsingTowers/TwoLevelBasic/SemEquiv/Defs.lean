@@ -1,5 +1,6 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Fundamental
+import CollapsingTowers.TwoLevelBasic.Preservation.Head
 theorem multi_subst_erase_value :
   ∀ Γ v τ φ γ₀ γ₁,
     typing Γ .stat v τ φ →
@@ -289,7 +290,8 @@ theorem sem_preservation_strengthened :
     case hole =>
       apply sem_preservation_head
       apply Hhead𝕄; apply Hτ
-      admit
+      apply preservation_head𝕄
+      apply Hhead𝕄; apply Hlc; apply Hτ
     case cons𝔹 B M HB HM IH =>
       rw [← ctx_comp B M]
       apply sem_decompose𝔹; apply HB
