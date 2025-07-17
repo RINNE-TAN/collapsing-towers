@@ -15,5 +15,6 @@ jobs:
       - name: build
         run: |
           lake build CollapsingTowers.TwoLevelBasic.SemEquiv.Defs
-          lake build CollapsingTowers.TwoLevelFull.Soundness
+          lake build CollapsingTowers.TwoLevelBasic.Soundness
           lake build CollapsingTowers.TwoLevelFull.Examples.Defs
+          lake build CollapsingTowers.TwoLevelFull.Soundness
