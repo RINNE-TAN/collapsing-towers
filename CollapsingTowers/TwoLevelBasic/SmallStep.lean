@@ -463,6 +463,14 @@ theorem pure_step_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_step e₀ e₁ �
     apply ctx𝕄.cons𝔹; apply HB; apply HM
     apply Hlc; apply Hhead
 
+theorem pure_step_at𝔼 : ∀ E e₀ e₁, ctx𝔼 E → pure_step e₀ e₁ → pure_step E⟦e₀⟧ E⟦e₁⟧ :=
+  by
+  intros E e₀ e₁ HE Hstep
+  induction HE
+  case hole => apply Hstep
+  case cons𝔹 HB _ IH =>
+    simp; apply pure_step_at𝔹; apply HB; apply IH
+
 theorem pure_stepn_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_stepn e₀ e₁ → pure_stepn B⟦e₀⟧ B⟦e₁⟧ :=
   by
   intros B e₀ e₁ HB Hstepn
@@ -471,6 +479,15 @@ theorem pure_stepn_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_stepn e₀ e₁ 
   case multi H IH =>
     apply pure_stepn.multi
     apply IH; apply pure_step_at𝔹; apply HB; apply H
+
+theorem pure_stepn_at𝔼 : ∀ E e₀ e₁, ctx𝔼 E → pure_stepn e₀ e₁ → pure_stepn E⟦e₀⟧ E⟦e₁⟧ :=
+  by
+  intros E e₀ e₁ HE Hstepn
+  induction Hstepn
+  case refl => apply pure_stepn.refl
+  case multi H IH =>
+    apply pure_stepn.multi
+    apply IH; apply pure_step_at𝔼; apply HE; apply H
 
 theorem pure_step_lc : ∀ e₀ e₁, pure_step e₀ e₁ → lc e₀ :=
   by

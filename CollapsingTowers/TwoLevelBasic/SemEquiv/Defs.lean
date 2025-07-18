@@ -351,10 +351,205 @@ theorem sem_decompose𝔼 :
             apply Hclose; rfl
           rw [HEq]; apply weakening_strengthened; apply He; rfl
 
+theorem erase_intro_ctx𝔼 :
+  ∀ E₀ Γ e τ φ γ₀ γ₁,
+    ctx𝔼 E₀ →
+    typing Γ .stat E₀⟦e⟧ τ φ →
+    sem_equiv_env γ₀ γ₁ (erase_env Γ) →
+    (∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₀ (erase E₀⟦e⟧) = E₁⟦multi_subst γ₀ (erase e)⟧)) ∧
+    (∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₁ (erase E₀⟦e⟧) = E₁⟦multi_subst γ₁ (erase e)⟧)) :=
+  by
+  intros E₀ Γ e τ φ γ₀ γ₁ HE₀ Hτ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
+  induction HE₀ generalizing τ φ
+  case hole =>
+    constructor
+    . exists id
+      constructor; apply ctx𝔼.hole
+      constructor; apply typing_closed; apply Hτ
+      intro e; rfl
+    . exists id
+      constructor; apply ctx𝔼.hole
+      constructor; apply typing_closed; apply Hτ
+      intro e; rfl
+  case cons𝔹 HB HE IH =>
+    cases HB
+    case appl₁ arg Hlc =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists (fun X => .app₁ X (multi_subst γ₀ (erase arg))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₀
+            rw [← erase_closed_at]
+            rw [HEq₀, ← length_erase_env]
+            apply typing_closed; apply Harg; omega
+          simp; apply IHγ
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists (fun X => .app₁ X (multi_subst γ₁ (erase arg))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₁; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₁
+            rw [← erase_closed_at]
+            rw [HEq₁, ← length_erase_env]
+            apply typing_closed; apply Harg; omega
+          simp; apply IHγ
+    case appr₁ f Hvalue =>
+      cases Hτ
+      case app₁ HX Hf =>
+        cases Hvalue with
+        | lam e Hlc =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists (fun X => .app₁ (multi_subst γ₀ (erase (.lam e))) X) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+          simp; apply value.lam
+          apply multi_subst_lc_at; apply Hmulti_wf₀
+          rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₀
+            rw [← erase_closed_at]
+            rw [HEq₀, ← length_erase_env]
+            apply typing_closed; apply Hf; omega
+          . apply HcloseE
+          simp; apply IHγ
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists (fun X => .app₁ (multi_subst γ₁ (erase (.lam e))) X) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+          simp; apply value.lam
+          apply multi_subst_lc_at; apply Hmulti_wf₁
+          rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₁
+            rw [← erase_closed_at]
+            rw [HEq₁, ← length_erase_env]
+            apply typing_closed; apply Hf; omega
+          . apply HcloseE
+          simp; apply IHγ
+        | _ => cases Hf
+    case appl₂ arg Hlc =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists (fun X => .app₁ X (multi_subst γ₀ (erase arg))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₀
+            rw [← erase_closed_at]
+            rw [HEq₀, ← length_erase_env]
+            apply typing_closed; apply Harg; omega
+          simp; apply IHγ
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists (fun X => .app₁ X (multi_subst γ₁ (erase arg))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₁; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₁
+            rw [← erase_closed_at]
+            rw [HEq₁, ← length_erase_env]
+            apply typing_closed; apply Harg; omega
+          simp; apply IHγ
+    case appr₂ f Hvalue =>
+      cases Hτ
+      case app₂ Hf HX =>
+        cases Hvalue with
+        | code e Hlc =>
+          cases Hf with
+          | code_fragment _ x _ Hbinds =>
+            have ⟨IH₀, IH₁⟩ := IH _ _ HX
+            constructor
+            . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+              exists (fun X => .app₁ (multi_subst γ₀ (erase (.code (.fvar x)))) X) ∘ E
+              constructor
+              apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+              apply And.left; apply sem_equiv_value_impl_value
+              apply sem_equiv_env_impl_sem_equiv_value
+              apply HsemΓ; apply binds_erase_env; assumption
+              constructor
+              constructor
+              . apply closed_inc
+                apply multi_subst_closed; apply Hmulti_wf₀
+                rw [← erase_closed_at]
+                simp [HEq₀, ← length_erase_env]
+                rw [getr_iff_lt]; constructor; apply Hbinds
+                omega
+              . apply HcloseE
+              simp; apply IHγ
+            . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+              exists (fun X => .app₁ (multi_subst γ₁ (erase (.code (.fvar x)))) X) ∘ E
+              constructor
+              apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+              apply And.right; apply sem_equiv_value_impl_value
+              apply sem_equiv_env_impl_sem_equiv_value
+              apply HsemΓ; apply binds_erase_env; assumption
+              constructor
+              constructor
+              . apply closed_inc
+                apply multi_subst_closed; apply Hmulti_wf₁
+                rw [← erase_closed_at]
+                simp [HEq₁, ← length_erase_env]
+                rw [getr_iff_lt]; constructor; apply Hbinds
+                omega
+              . apply HcloseE
+              simp; apply IHγ
+        | _ => cases Hf
+    case lift =>
+      cases Hτ
+      case lift_lam HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists E
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists E
+      case lift_lit HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists E
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists E
+    case lets =>
+      cases Hτ
+      case lets =>
+        admit
+
 theorem sem_reflect :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
-    typing Γ .stat (E (.reflect b)) τ φ →
+    typing Γ .stat E⟦.reflect b⟧ τ φ →
     sem_equiv_typing (erase_env Γ) (erase E⟦.reflect b⟧) (.lets (erase b) (erase E⟦.code (.bvar 0)⟧)) (erase_ty τ) :=
   by
   intros Γ E b τ φ HE Hτ
@@ -382,7 +577,13 @@ theorem sem_reflect :
   have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
   have Hsem𝔼 := Hsem𝔼.right.right (v₀ :: γ₀) (v₁ :: γ₁) (sem_equiv_env.cons _ _ _ _ _ _ Hsem_value HsemΓ)
   apply sem_equiv_expr_stepn; apply Hsem𝔼
-  . admit
+  . have ⟨IH₀, IH₁⟩ := erase_intro_ctx𝔼 _ _ _ _ _ _ _ HE Hτ HsemΓ
+    have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+    rw [multi_subst, ← multi_subst_comm, IHγ, IHγ]
+    simp [HEq₀, ← length_erase_env]
+    rw [subst𝔼 _ _ _ _ _ HE HcloseE]
+    apply pure_stepn_at𝔼 _ _ _ HE; simp; apply Hstepv₀
+    rfl; apply Hwf₀.right; apply Hmulti_wf₀
   . simp
     -- left step
     apply pure_stepn_trans
