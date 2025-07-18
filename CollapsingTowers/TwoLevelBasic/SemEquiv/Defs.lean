@@ -373,8 +373,46 @@ theorem sem_reflect :
   intros γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
-  have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
-  admit
+  have ⟨τ𝕖, Hsem𝕖, Hsem𝔼⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
+  rw [sem_equiv_typing] at Hsem𝕖 Hsem𝔼
+  have Hsem𝕖 := Hsem𝕖.right.right γ₀ γ₁ HsemΓ
+  rw [sem_equiv_expr] at Hsem𝕖
+  have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem𝕖
+  have ⟨Hvalue₀, Hvalue₁⟩ := sem_equiv_value_impl_value _ _ _ Hsem_value
+  have ⟨Hwf₀, Hwf₁⟩ := sem_equiv_value_impl_wf _ _ _ Hsem_value
+  have Hsem𝔼 := Hsem𝔼.right.right (v₀ :: γ₀) (v₁ :: γ₁) (sem_equiv_env.cons _ _ _ _ _ _ Hsem_value HsemΓ)
+  apply sem_equiv_expr_stepn; apply Hsem𝔼
+  . admit
+  . simp
+    -- left step
+    apply pure_stepn_trans
+    apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₁
+    apply multi_subst_lc_at; apply Hmulti_wf₁
+    rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
+    -- head step
+    apply pure_stepn.multi; apply pure_stepn.refl
+    have HEq :
+      open_subst v₁ (multi_subst γ₁ (erase E⟦.code (.bvar 0)⟧)) =
+      multi_subst γ₁ (subst γ₁.length v₁ (erase E⟦.fvar Γ.length⟧)) :=
+      by
+        rw [← multi_subst_comm, open_subst, ← subst_intro γ₁.length]
+        rw [← multi_subst_open₀_comm, ← open₀, ← erase_open₀_comm]
+        rw [open_ctx𝔼_map, erase_ctx𝔼_map]
+        rw [HEq₁, ← length_erase_env]; rfl
+        apply HE; apply HE; rfl; apply Hmulti_wf₁
+        apply closed_inc
+        apply multi_subst_closed; apply Hmulti_wf₁
+        rw [HEq₁, ← length_erase_env, ← erase_closed_at]
+        apply closed_at𝔼; apply HE
+        apply typing_closed; apply Hτ; simp
+        omega; omega; apply Hwf₁.right; apply Hmulti_wf₁
+    rw [← HEq]; apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
+    constructor
+    . apply value_lc; apply Hvalue₁
+    . apply multi_subst_lc_at; apply Hmulti_wf₁
+      rw [← erase_lc_at]
+      apply lc_ctx𝔼; apply HE; simp
+    apply head𝕄.lets; apply Hvalue₁
 
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
