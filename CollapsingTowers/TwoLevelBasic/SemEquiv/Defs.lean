@@ -263,6 +263,11 @@ theorem sem_decomposeℝ :
         apply IH [] (.fragment τ)
         simp; apply Hτ
 
+-- Γ ⊢ E⟦e⟧ : τ
+-- ————————————————————————————————————
+-- ∃ τ𝕖,
+--   |Γ| ⊨ |e| ≈ |e| : |τ| ∧
+--   |x ↦ τ𝕖, Γ| ⊨ |E⟦x⟧| ≈ |E⟦x⟧| : |τ|
 theorem sem_decompose𝔼 :
   ∀ Γ E e τ φ,
     ctx𝔼 E →
@@ -541,11 +546,41 @@ theorem erase_intro_ctx𝔼 :
           exists E
         . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
           exists E
-    case lets =>
+    case lets e Hlc =>
       cases Hτ
-      case lets =>
-        admit
+      case lets HX Hclose He =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        constructor
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₀
+          exists (fun X => .lets X (multi_subst γ₀ (erase e))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₀
+            rw [← erase_closed_at]
+            rw [HEq₀, ← length_erase_env]; apply Hclose; omega
+          simp; apply IHγ
+        . have ⟨E, HE, HcloseE, IHγ⟩ := IH₁
+          exists (fun X => .lets X (multi_subst γ₁ (erase e))) ∘ E
+          constructor
+          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE
+          apply multi_subst_lc_at; apply Hmulti_wf₁; rw [← erase_lc_at]; apply Hlc
+          constructor
+          constructor
+          . apply HcloseE
+          . apply closed_inc
+            apply multi_subst_closed; apply Hmulti_wf₁
+            rw [← erase_closed_at]
+            rw [HEq₁, ← length_erase_env]; apply Hclose; omega
+          simp; apply IHγ
 
+-- Γ ⊢ E⟦reflect b⟧ : τ
+-- ——————————————————————————————————————————————————————
+-- |Γ| ⊨ |E⟦reflect b⟧| ≈ |let𝕔 x = b in |E⟦code x⟧| : |τ|
 theorem sem_reflect :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
@@ -669,3 +704,16 @@ theorem sem_preservation_strengthened :
         apply lc_ctx𝔼; apply HE; apply Hlc
         intros _ _ _ HEqintro; apply IH
         simp; omega; apply Hτ
+
+-- e₀ ↦ e₁
+-- ∅ ⊢ e₀ : τ
+-- —————————————————————
+-- ∅ ⊨ |e₀| ≈ |e₁| : |τ|
+theorem sem_preservation :
+  ∀ e₀ e₁ τ φ,
+    step e₀ e₁ →
+    typing [] .stat e₀ τ φ →
+    sem_equiv_typing [] (erase e₀) (erase e₁) (erase_ty τ) :=
+  by
+  intros e₀ e₁ τ φ
+  apply sem_preservation_strengthened []
