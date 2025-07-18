@@ -152,6 +152,46 @@ theorem binds_erase_env : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x ((
       simp [← length_erase_env, if_neg HEq]
       apply IH; apply Hbinds
 
+theorem erase_erase : ∀ e, erase (erase e) = erase e :=
+  by
+  intros e
+  induction e with
+  | bvar j => rfl
+  | fvar y => rfl
+  | lam _ IH
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | lam𝕔 _ IH
+  | run _ IH =>
+    simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | let𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | lit => rfl
+
+theorem erase_ctx𝔹_map :
+  ∀ B e,
+    ctx𝔹 B →
+    erase B⟦e⟧ = erase B⟦erase e⟧ :=
+  by
+  intros B e HB
+  cases HB <;> simp [erase_erase]
+
+theorem erase_ctx𝔼_map :
+  ∀ E e,
+    ctx𝔼 E →
+    erase E⟦e⟧ = erase E⟦erase e⟧ :=
+  by
+  intros E e HE
+  induction HE generalizing e
+  case hole => simp [erase_erase]
+  case cons𝔹 B E HB HE IH =>
+    simp; rw [erase_ctx𝔹_map _ _ HB, IH, ← erase_ctx𝔹_map _ _ HB]
+
 -- Γ ⊢ e₀ : τ
 -- ————————————————
 -- |Γ| ⊢ |e₀| : |τ|

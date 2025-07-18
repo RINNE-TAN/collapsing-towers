@@ -280,7 +280,7 @@ theorem sem_decompose𝔼 :
           (erase_ty τ) :=
   by
   intros Γ E e τ φ HE Hτ
-  induction HE
+  induction HE generalizing τ φ
   case hole =>
     exists τ
     intros γ₀ γ₁ semΓ
@@ -298,7 +298,19 @@ theorem sem_decompose𝔼 :
     constructor; simp; apply pure_stepn.refl
     apply Hsem_value
   case cons𝔹 B E HB HE IH =>
-    admit
+    cases HB
+    case appl₁ =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨τ𝕖, IH⟩ := IH _ _ HX
+        exists τ𝕖; intros γ₀ γ₁ semΓ
+        have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value, IH⟩ := IH γ₀ γ₁ semΓ
+        exists v₀, v₁
+        constructor; apply Hstepv₀
+        constructor; apply Hstepv₁
+        constructor; apply Hsem_value
+        admit
+    all_goals admit
 
 theorem sem_reflect :
   ∀ Γ E b τ φ,
@@ -321,8 +333,10 @@ theorem sem_reflect :
       apply typing_closed _ _ _ _ _ Hτ; simp
   intros γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
   have ⟨τ𝕖, Hsem⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value, Hsem𝔼⟩ := Hsem γ₀ γ₁ HsemΓ
+  have ⟨Hvalue₀, Hvalue₁⟩ := sem_equiv_value_impl_value _ _ _ Hsem_value
   apply sem_equiv_expr_stepn; apply Hsem𝔼
   . admit
   . simp
@@ -333,7 +347,26 @@ theorem sem_reflect :
     rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
     -- head step
     apply pure_stepn.multi; apply pure_stepn.refl
-    all_goals admit
+    have HEq :
+      open_subst v₁ (multi_subst γ₁ (erase E⟦.code (.bvar 0)⟧)) =
+      subst γ₁.length v₁ (multi_subst γ₁ (erase E⟦.fvar γ₁.length⟧)) :=
+      by
+      rw [open_subst, ← subst_intro γ₁.length]
+      rw [← multi_subst_open₀_comm, ← open₀, ← erase_open₀_comm]
+      rw [open_ctx𝔼_map, erase_ctx𝔼_map]; rfl
+      apply HE; apply HE; rfl; apply Hmulti_wf₁
+      apply closed_inc
+      apply multi_subst_closed; apply Hmulti_wf₁
+      rw [HEq₁, ← length_erase_env, ← erase_closed_at]
+      apply closed_at𝔼; apply HE
+      apply typing_closed; apply Hτ; simp; omega
+    rw [← HEq]; apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
+    constructor
+    . apply value_lc; apply Hvalue₁
+    . apply multi_subst_lc_at; apply Hmulti_wf₁
+      rw [← erase_lc_at]
+      apply lc_ctx𝔼; apply HE; simp
+    apply head𝕄.lets; apply Hvalue₁
 
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
