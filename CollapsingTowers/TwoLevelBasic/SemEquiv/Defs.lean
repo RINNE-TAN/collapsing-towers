@@ -268,49 +268,88 @@ theorem sem_decompose𝔼 :
     ctx𝔼 E →
     typing Γ .stat E⟦e⟧ τ φ →
     ∃ τ𝕖,
-    ∀ γ₀ γ₁,
-      sem_equiv_env γ₀ γ₁ (erase_env Γ) →
-      ∃ v₀ v₁,
-        pure_stepn (multi_subst γ₀ (erase e)) v₀ ∧
-        pure_stepn (multi_subst γ₁ (erase e)) v₁ ∧
-        sem_equiv_value v₀ v₁ (erase_ty τ𝕖) ∧
-        sem_equiv_expr
-          (subst γ₀.length v₀ (multi_subst γ₀ (erase E⟦.fvar γ₀.length⟧)))
-          (subst γ₁.length v₁ (multi_subst γ₁ (erase E⟦.fvar γ₁.length⟧)))
-          (erase_ty τ) :=
+      sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ𝕖) ∧
+      sem_equiv_typing (erase_env ((τ𝕖, .stat) :: Γ)) (erase E⟦.fvar Γ.length⟧) (erase E⟦.fvar Γ.length⟧) (erase_ty τ) :=
   by
   intros Γ E e τ φ HE Hτ
   induction HE generalizing τ φ
   case hole =>
     exists τ
-    intros γ₀ γ₁ semΓ
-    have ⟨_, _, Hsem⟩ := fundamental _ _ _ _ _ Hτ
-    have Hsem := Hsem γ₀ γ₁ semΓ
-    rw [sem_equiv_expr] at Hsem
-    have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem
-    exists v₀, v₁
-    constructor; apply Hstepv₀
-    constructor; apply Hstepv₁
-    constructor; apply Hsem_value
-    rw [sem_equiv_expr]
-    exists v₀, v₁
-    constructor; simp; apply pure_stepn.refl
-    constructor; simp; apply pure_stepn.refl
-    apply Hsem_value
+    constructor; apply fundamental; apply Hτ
+    apply compatibility_fvar
+    apply binds_erase_env; simp; rfl
   case cons𝔹 B E HB HE IH =>
     cases HB
     case appl₁ =>
       cases Hτ
       case app₁ Harg HX =>
-        have ⟨τ𝕖, IH⟩ := IH _ _ HX
-        exists τ𝕖; intros γ₀ γ₁ semΓ
-        have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value, IH⟩ := IH γ₀ γ₁ semΓ
-        exists v₀, v₁
-        constructor; apply Hstepv₀
-        constructor; apply Hstepv₁
-        constructor; apply Hsem_value
-        admit
-    all_goals admit
+        have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
+        exists τ𝕖
+        constructor; apply Hsem𝕖
+        apply compatibility_app
+        apply HsemX
+        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
+    case appr₁ =>
+      cases Hτ
+      case app₁ HX Hf =>
+        have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
+        exists τ𝕖
+        constructor; apply Hsem𝕖
+        apply compatibility_app
+        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
+        apply HsemX
+    case appl₂ =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
+        exists τ𝕖
+        constructor; apply Hsem𝕖
+        apply compatibility_app
+        apply HsemX
+        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
+    case appr₂ =>
+      cases Hτ
+      case app₂ Hf HX =>
+        have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
+        exists τ𝕖
+        constructor; apply Hsem𝕖
+        apply compatibility_app
+        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
+        apply HsemX
+    case lift =>
+      cases Hτ
+      case lift_lam τ𝕒 τ𝕓 _ _ HX =>
+        apply IH (.arrow (.fragment τ𝕒) (.fragment τ𝕓) _); apply HX
+      case lift_lit HX =>
+        apply IH .nat; apply HX
+    case lets e _ =>
+      cases Hτ
+      case lets HX Hclose He =>
+        have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
+        exists τ𝕖
+        constructor; apply Hsem𝕖
+        apply compatibility_lets
+        . constructor
+          . rw [← length_erase_env, ← erase_closed_at]
+            apply closed_at𝔼; apply HE
+            apply closed_inc; apply typing_closed; apply HX; simp; simp
+          . rw [← length_erase_env, ← erase_closed_at]
+            apply closed_inc; apply Hclose; simp
+        . constructor
+          . rw [← length_erase_env, ← erase_closed_at]
+            apply closed_at𝔼; apply HE
+            apply closed_inc; apply typing_closed; apply HX; simp; simp
+          . rw [← length_erase_env, ← erase_closed_at]
+            apply closed_inc; apply Hclose; simp
+        . apply HsemX
+        . rw [← erase_env, ← erase_open₀_comm]
+          apply fundamental
+          rw [← List.singleton_append, List.append_cons, ← length_erase_env]
+          have HEq : open₀ ((τ𝕖, Stage.stat) :: Γ).length e = shiftl_at Γ.length [(τ𝕖, Stage.stat)].length (open₀ Γ.length e) :=
+            by
+            rw [shiftl_open₀_comm, shiftl_id]; rfl
+            apply Hclose; rfl
+          rw [HEq]; apply weakening_strengthened; apply He; rfl
 
 theorem sem_reflect :
   ∀ Γ E b τ φ,
@@ -334,39 +373,8 @@ theorem sem_reflect :
   intros γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := sem_equiv_env_impl_length_eq _ _ _ HsemΓ
-  have ⟨τ𝕖, Hsem⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
-  have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value, Hsem𝔼⟩ := Hsem γ₀ γ₁ HsemΓ
-  have ⟨Hvalue₀, Hvalue₁⟩ := sem_equiv_value_impl_value _ _ _ Hsem_value
-  apply sem_equiv_expr_stepn; apply Hsem𝔼
-  . admit
-  . simp
-    -- left step
-    apply pure_stepn_trans
-    apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₁
-    apply multi_subst_lc_at; apply Hmulti_wf₁
-    rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
-    -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
-    have HEq :
-      open_subst v₁ (multi_subst γ₁ (erase E⟦.code (.bvar 0)⟧)) =
-      subst γ₁.length v₁ (multi_subst γ₁ (erase E⟦.fvar γ₁.length⟧)) :=
-      by
-      rw [open_subst, ← subst_intro γ₁.length]
-      rw [← multi_subst_open₀_comm, ← open₀, ← erase_open₀_comm]
-      rw [open_ctx𝔼_map, erase_ctx𝔼_map]; rfl
-      apply HE; apply HE; rfl; apply Hmulti_wf₁
-      apply closed_inc
-      apply multi_subst_closed; apply Hmulti_wf₁
-      rw [HEq₁, ← length_erase_env, ← erase_closed_at]
-      apply closed_at𝔼; apply HE
-      apply typing_closed; apply Hτ; simp; omega
-    rw [← HEq]; apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
-    constructor
-    . apply value_lc; apply Hvalue₁
-    . apply multi_subst_lc_at; apply Hmulti_wf₁
-      rw [← erase_lc_at]
-      apply lc_ctx𝔼; apply HE; simp
-    apply head𝕄.lets; apply Hvalue₁
+  have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := sem_decompose𝔼 _ _ _ _ _ HE Hτ
+  admit
 
 -- e₀ ↦ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
