@@ -128,7 +128,7 @@ def obs_equiv {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ) : Prop :=
   ∀ C,
     ObsCtxℂ Γ τ C [] .nat →
     ∀ v,
-      stepn C⟦e₀.expr⟧ v ↔ stepn C⟦e₁.expr⟧ v
+      stepn (erase C⟦e₀.expr⟧) v ↔ stepn (erase C⟦e₁.expr⟧) v
 
 theorem obs_equiv_symm :
   ∀ {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ),
@@ -148,29 +148,24 @@ theorem obs_equiv_trans :
   rw [HObsEq₀, HObsEq₁]; apply HC; apply HC
 
 theorem sem_equiv_typing_cong :
-  ∀ Δ Γ τδ τγ C e₀ e₁,
-    typing Δ .stat e₀ τδ ∅ →
-    typing Δ .stat e₁ τδ ∅ →
-    sem_equiv_typing Δ e₀ e₁ τδ →
-    ObsCtx𝔹 Δ τδ C Γ τγ →
-    sem_equiv_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
+  ∀ Δ Γ τδ τγ B e₀ e₁,
+    wf_at e₀ Δ.length →
+    wf_at e₁ Δ.length →
+    sem_equiv_typing (erase_env Δ) (erase e₀) (erase e₁) (erase_ty τδ) →
+    ObsCtx𝔹 Δ τδ B Γ τγ →
+    sem_equiv_typing (erase_env Γ) (erase B⟦e₀⟧) (erase B⟦e₁⟧) (erase_ty τγ) :=
   by
-  intros Δ Γ τδ τγ C e₀ e₁ Hτ₀ Hτ₁ Hsem HB
+  intros Δ Γ τδ τγ B e₀ e₁ Hτ₀ Hτ₁ Hsem HB
   cases HB
   case lam HwellBinds =>
     apply compatibility_lam
-    . simp [close₀, ← close_closed]
-      apply typing_closed _ _ _ _ _ Hτ₀
-    . simp [close₀, ← close_closed]
-      apply typing_closed _ _ _ _ _ Hτ₁
-    . rw [open_close_id₀, open_close_id₀]
-      apply Hsem
-      apply typing_regular; apply Hτ₁
-      apply typing_regular; apply Hτ₀
+    . admit
+    . admit
+    . admit
   case appl₁ Harg =>
     apply compatibility_app
     apply Hsem
-    admit
+    apply fundamental; apply Harg
   case appr₁ Hf =>
     admit
   case letsl Hclosed HwellBinds He =>
@@ -187,7 +182,7 @@ theorem sem_soundness :
   ∀ Γ τ e₀ e₁,
     (Hτ₀ : typing Γ .stat e₀ τ ∅) →
     (Hτ₁ : typing Γ .stat e₁ τ ∅) →
-    sem_equiv_typing Γ e₀ e₁ τ →
+    sem_equiv_typing (erase_env Γ) (erase e₀) (erase e₁) (erase_ty τ) →
     obs_equiv ⟨e₀, Hτ₀⟩ ⟨e₁, Hτ₁⟩ :=
   by
   intros Γ τ e₀ e₁ Hτ₀ Hτ₁ Hsem C
@@ -201,6 +196,4 @@ theorem sem_soundness :
     apply typing_fill_ObsCtx𝔹; apply Hτ₀; apply HB
     apply typing_fill_ObsCtx𝔹; apply Hτ₁; apply HB
     apply sem_equiv_typing_cong
-    apply Hτ₀; apply Hτ₁
-    apply Hsem; apply HB
-    apply HEqΔ; apply HEqτδ
+    all_goals admit
