@@ -1,5 +1,5 @@
 
-import CollapsingTowers.TwoLevelBasic.SemTyping
+import CollapsingTowers.TwoLevelBasic.SemEquiv.SemTyping
 theorem sem_equiv_expr_stepn :
   ∀ e₀ e₁ r₀ r₁ τ,
     sem_equiv_expr r₀ r₁ τ →
