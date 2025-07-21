@@ -717,3 +717,18 @@ theorem sem_preservation :
   by
   intros e₀ e₁ τ φ
   apply sem_preservation_strengthened []
+
+theorem sem_reification_preservation :
+  ∀ e₀ e₁ τ φ,
+    step e₀ e₁ →
+    typing_reification [] e₀ τ φ →
+    sem_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+  by
+  intros e₀ e₁ τ φ Hstep Hτ
+  cases Hτ
+  case pure Hτ =>
+    apply sem_preservation_strengthened []
+    apply Hstep; apply Hτ
+  case reify τ Hτ =>
+    apply sem_preservation_strengthened [] _ _ (.fragment τ)
+    apply Hstep; apply Hτ

@@ -317,3 +317,21 @@ theorem erase_reification_safety : ∀ Γ e τ φ, typing_reification Γ e τ φ
   next Hτ =>
     apply typing_reification.pure
     apply erase_safety _ _ _ _ _ Hτ
+
+theorem erase_typing_reification_iff_typing :
+  ∀ Γ e τ,
+    typing ‖Γ‖𝛾 .stat ‖e‖ ‖τ‖𝜏 ∅ ↔ typing_reification ‖Γ‖𝛾 ‖e‖ ‖τ‖𝜏 ∅ :=
+  by
+  intros Γ e τ
+  constructor
+  . apply typing_reification.pure
+  . generalize HEq : ‖τ‖𝜏 = τ𝕖
+    intros Hτ; cases Hτ
+    case pure Hτ => apply Hτ
+    case reify =>
+      exfalso
+      induction τ <;> simp at HEq
+      case fragment IH =>
+        apply IH; apply HEq
+      case rep IH =>
+        apply IH; apply HEq

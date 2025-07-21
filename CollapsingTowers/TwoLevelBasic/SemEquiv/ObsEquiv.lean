@@ -110,18 +110,17 @@ structure TypedExpr (Γ : TEnv) (τ : Ty) where
 -- e₀ ≈ e₁ ≜ ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : ℕ). ∀ v. C⟦e₀⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
 @[simp]
 def obs_equiv {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ) : Prop :=
-  ∀ C,
-    ObsCtxℂ Γ τ C [] .nat →
-    ∀ v,
-      stepn C⟦e₀.expr⟧ v ↔ stepn C⟦e₁.expr⟧ v
+  ∀ C, ObsCtxℂ Γ τ C [] .nat →
+  ∀ v, value v →
+    (stepn C⟦e₀.expr⟧ v ↔ stepn C⟦e₁.expr⟧ v)
 
 theorem obs_equiv_symm :
   ∀ {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ),
     obs_equiv e₀ e₁ →
     obs_equiv e₁ e₀ :=
   by
-  intros Γ τ e₀ e₁ HObsEq C HC v
-  rw [← HObsEq]; apply HC
+  intros Γ τ e₀ e₁ HObsEq C HC v Hvalue
+  rw [← HObsEq]; apply HC; apply Hvalue
 
 theorem obs_equiv_trans :
   ∀ {Γ : TEnv} {τ : Ty} (e₀ e₁ e₂ : TypedExpr Γ τ),
@@ -129,8 +128,10 @@ theorem obs_equiv_trans :
     obs_equiv e₁ e₂ →
     obs_equiv e₀ e₂ :=
   by
-  intros Γ τ e₀ e₁ e₂ HObsEq₀ HObsEq₁ C HC v
-  rw [HObsEq₀, HObsEq₁]; apply HC; apply HC
+  intros Γ τ e₀ e₁ e₂ HObsEq₀ HObsEq₁ C HC v Hvalue
+  rw [HObsEq₀, HObsEq₁]
+  apply HC; apply Hvalue
+  apply HC; apply Hvalue
 
 theorem sem_equiv_typing_cong :
   ∀ Δ Γ τδ τγ B e₀ e₁,
@@ -205,7 +206,7 @@ theorem sem_soundness :
   intros τ e₀ e₁ Hτ₀ Hτ₁ Hsem C
   generalize HEqΔ : [] = Δ
   generalize HEqτδ : Ty.nat = τδ
-  intros HC v
+  intros HC v Hvalue
   induction HC generalizing e₀ e₁
   case hole =>
     rw [← HEqΓ, ← HEqτδ] at Hsem
