@@ -1,5 +1,5 @@
 
-import Mathlib.Tactic
+import Mathlib.Tactic.ApplyAt
 import CollapsingTowers.TwoLevelBasic.Typing
 theorem decomposeℝ :
   ∀ intro Γ R e₀ e₁ τ φ,

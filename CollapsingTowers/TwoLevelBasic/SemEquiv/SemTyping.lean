@@ -1,7 +1,7 @@
 
 import CollapsingTowers.TwoLevelBasic.Erasure
 mutual
--- 𝓥⟦nat⟧ ≜ {(n, n) | n ∈ ℕ}
+-- 𝓥⟦ℕ⟧ ≜ {(n, n) | n ∈ ℕ}
 -- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. wf (λ.e₀) ∧ wf (λ.e₁) ∧ (e₀⟦0 ↦ v₀⟧, e₁⟦0 ↦ v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
 @[simp]
 def sem_equiv_value : Expr → Expr → Ty → Prop

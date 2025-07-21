@@ -122,7 +122,7 @@ structure TypedExpr (Γ : TEnv) (τ : Ty) where
   expr : Expr
   Hτ : typing Γ .stat expr τ ∅
 
--- e₀ ≈ e₁ ≜ ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : nat). ∀ v. C⟦e₀⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
+-- e₀ ≈ e₁ ≜ ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : ℕ). ∀ v. C⟦e₀⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
 @[simp]
 def obs_equiv {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ) : Prop :=
   ∀ C,

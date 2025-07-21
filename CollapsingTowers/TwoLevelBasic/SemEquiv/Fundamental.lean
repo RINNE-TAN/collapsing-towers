@@ -236,19 +236,19 @@ theorem compatibility_lets :
 
 -- Γ ⊢ e : τ
 -- —————————————————————
--- |Γ| ⊧ |e| ≈ |e| : |τ|
+-- ‖Γ‖ ⊧ ‖e‖ ≈ ‖e‖ : ‖τ‖
 theorem fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
-    sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ) :=
+    sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-          sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ))
+          sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
-          sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ))
+          sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply compatibility_fvar
@@ -258,7 +258,7 @@ theorem fundamental :
     apply compatibility_lam
     simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     simp [← length_erase_env, ← erase_closed_at]; apply Hclose
-    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    rw [← length_erase_env, ← erase_open₀_comm]
     apply IH
   case lift_lam =>
     intros _ _ _ _ _ _ _ IH
@@ -279,7 +279,7 @@ theorem fundamental :
     apply IH
   case code_fragment =>
     intros _ x _ Hbinds _
-    apply compatibility_fvar; rw [erase_ty]
+    apply compatibility_fvar; simp
     apply binds_erase_env; apply Hbinds
   case code_rep =>
     intros _ _ _ _ IH
@@ -292,7 +292,7 @@ theorem fundamental :
     apply compatibility_lam
     simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     simp [← length_erase_env, ← erase_closed_at]; apply Hclose
-    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    rw [← length_erase_env, ← erase_open₀_comm]
     apply IH
   case lets =>
     intros _ _ _ _ _ _ _ _ Hb He _ Hclose IHb IHe
@@ -304,7 +304,7 @@ theorem fundamental :
     . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
     . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     apply IHb
-    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    rw [← length_erase_env, ← erase_open₀_comm]
     apply IHe
   case let𝕔 =>
     intros _ _ _ _ _ _ Hb He _ Hclose IHb IHe
@@ -316,7 +316,7 @@ theorem fundamental :
     . simp [← length_erase_env, ← erase_closed_at]; apply typing_closed; apply Hb
     . simp [← length_erase_env, ← erase_closed_at]; apply Hclose
     apply IHb
-    rw [← erase_env, ← length_erase_env, ← erase_open₀_comm]
+    rw [← length_erase_env, ← erase_open₀_comm]
     apply IHe
   case run =>
     intros _ _ _ _ _ _ IH
@@ -332,7 +332,7 @@ theorem fundamental :
 theorem fundamental_reification :
   ∀ Γ e τ φ,
     typing_reification Γ e τ φ →
-    sem_equiv_typing (erase_env Γ) (erase e) (erase e) (erase_ty τ) :=
+    sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ e τ φ Hτ
   cases Hτ

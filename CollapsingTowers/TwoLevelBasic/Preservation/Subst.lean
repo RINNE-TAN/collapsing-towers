@@ -1,5 +1,5 @@
 
-import Mathlib.Tactic
+import Mathlib.Tactic.ApplyAt
 import CollapsingTowers.TwoLevelBasic.Typing
 import CollapsingTowers.TwoLevelBasic.Shift
 theorem preservation_subst_strengthened :

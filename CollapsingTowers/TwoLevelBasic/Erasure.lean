@@ -1,7 +1,7 @@
 
 import CollapsingTowers.TwoLevelBasic.Typing
 @[simp]
-def erase : Expr → Expr
+def expr.erase : Expr → Expr
   | .bvar i => .bvar i
   | .fvar y => .fvar y
   | .lam e => .lam (erase e)
@@ -16,19 +16,25 @@ def erase : Expr → Expr
   | .lets b e => .lets (erase b) (erase e)
   | .let𝕔 b e => .lets (erase b) (erase e)
 
+notation:max "‖" e "‖" => expr.erase e
+
 @[simp]
-def erase_ty : Ty → Ty
+def ty.erase : Ty → Ty
   | .nat => .nat
-  | .arrow τa τb _ => .arrow (erase_ty τa) (erase_ty τb) ∅
-  | .fragment τ => erase_ty τ
-  | .rep τ => erase_ty τ
+  | .arrow τa τb _ => .arrow (erase τa) (erase τb) ∅
+  | .fragment τ => erase τ
+  | .rep τ => erase τ
+
+notation:max "‖" τ "‖𝜏" => ty.erase τ
 
 @[simp]
-def erase_env : TEnv → TEnv
+def env.erase : TEnv → TEnv
   | [] => []
-  | (τ, _) :: Γ => (erase_ty τ, .stat) :: erase_env Γ
+  | (τ, _) :: Γ => (‖τ‖𝜏, .stat) :: erase Γ
 
-theorem erase_lc_at : ∀ e i, lc_at e i ↔ lc_at (erase e) i :=
+notation:max "‖" Γ "‖𝛤" => env.erase Γ
+
+theorem erase_lc_at : ∀ e i, lc_at e i ↔ lc_at ‖e‖ i :=
   by
   intros e i
   induction e generalizing i with
@@ -47,7 +53,7 @@ theorem erase_lc_at : ∀ e i, lc_at e i ↔ lc_at (erase e) i :=
   | lam𝕔 _ IH =>
     apply IH
 
-theorem erase_closed_at : ∀ e x, closed_at e x ↔ closed_at (erase e) x :=
+theorem erase_closed_at : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
   by
   intros e x
   induction e with
@@ -66,7 +72,7 @@ theorem erase_closed_at : ∀ e x, closed_at e x ↔ closed_at (erase e) x :=
   | lam𝕔 _ IH =>
     apply IH
 
-theorem erase_opening_comm : ∀ i v e, erase (opening i v e) = opening i (erase v) (erase e) :=
+theorem erase_opening_comm : ∀ i v e, ‖(opening i v e)‖ = opening i ‖v‖ ‖e‖ :=
   by
   intros i v e
   induction e generalizing i with
@@ -88,15 +94,15 @@ theorem erase_opening_comm : ∀ i v e, erase (opening i v e) = opening i (erase
   | lam _ IH
   | lam𝕔 _ IH => simp; apply IH
 
-theorem erase_open₀_comm : ∀ x e, erase (open₀ x e) = open₀ x (erase e) :=
+theorem erase_open₀_comm : ∀ x e, ‖open₀ x e‖ = open₀ x ‖e‖ :=
   by
   intros x e; apply erase_opening_comm
 
-theorem erase_open_subst_comm : ∀ v e, erase (open_subst v e) = open_subst (erase v) (erase e) :=
+theorem erase_open_subst_comm : ∀ v e, ‖open_subst v e‖ = open_subst ‖v‖ ‖e‖ :=
   by
   intros v e; apply erase_opening_comm
 
-theorem erase_maping𝕔 : ∀ i e, erase (maping𝕔 e i) = erase e :=
+theorem erase_maping𝕔 : ∀ i e, ‖maping𝕔 e i‖ = ‖e‖ :=
   by
   intros i e
   induction e generalizing i with
@@ -117,7 +123,7 @@ theorem erase_maping𝕔 : ∀ i e, erase (maping𝕔 e i) = erase e :=
     apply IH₀; apply IH₁
   | lit => simp
 
-theorem erase_ty_well_binding_time : ∀ 𝕊 τ, well_binding_time 𝕊 (erase_ty τ) :=
+theorem erase_ty_well_binding_time : ∀ 𝕊 τ, well_binding_time 𝕊 ‖τ‖𝜏 :=
   by
   intros 𝕊 τ
   induction τ
@@ -132,14 +138,14 @@ theorem erase_ty_well_binding_time : ∀ 𝕊 τ, well_binding_time 𝕊 (erase_
   case fragment IH => apply IH
   case rep IH => apply IH
 
-theorem length_erase_env : ∀ Γ, Γ.length = (erase_env Γ).length :=
+theorem length_erase_env : ∀ Γ, Γ.length = ‖Γ‖𝛤.length :=
   by
   intros Γ
   induction Γ
   case nil => rfl
   case cons IH => simp; apply IH
 
-theorem binds_erase_env : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x ((erase_ty τ), .stat) (erase_env Γ) :=
+theorem binds_erase_env : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖τ‖𝜏, .stat) ‖Γ‖𝛤 :=
   by
   intros x τ 𝕊 Γ Hbinds
   induction Γ
@@ -152,7 +158,7 @@ theorem binds_erase_env : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x ((
       simp [← length_erase_env, if_neg HEq]
       apply IH; apply Hbinds
 
-theorem erase_erase : ∀ e, erase (erase e) = erase e :=
+theorem erase_erase : ∀ e, ‖‖e‖‖ = ‖e‖ :=
   by
   intros e
   induction e with
@@ -176,7 +182,7 @@ theorem erase_erase : ∀ e, erase (erase e) = erase e :=
 theorem erase_ctx𝔹_map :
   ∀ B e,
     ctx𝔹 B →
-    erase B⟦e⟧ = erase B⟦erase e⟧ :=
+    ‖B⟦e⟧‖ = ‖B⟦‖e‖⟧‖ :=
   by
   intros B e HB
   cases HB <;> simp [erase_erase]
@@ -184,7 +190,7 @@ theorem erase_ctx𝔹_map :
 theorem erase_ctx𝔼_map :
   ∀ E e,
     ctx𝔼 E →
-    erase E⟦e⟧ = erase E⟦erase e⟧ :=
+    ‖E⟦e⟧‖ = ‖E⟦‖e‖⟧‖ :=
   by
   intros E e HE
   induction HE generalizing e
@@ -192,16 +198,16 @@ theorem erase_ctx𝔼_map :
   case cons𝔹 B E HB HE IH =>
     simp; rw [erase_ctx𝔹_map _ _ HB, IH, ← erase_ctx𝔹_map _ _ HB]
 
--- Γ ⊢ e₀ : τ
+-- Γ ⊢ e : τ
 -- ————————————————
--- |Γ| ⊢ |e₀| : |τ|
-theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) .stat (erase e) (erase_ty τ) ∅ :=
+-- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
+theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing ‖Γ‖𝛤 .stat ‖e‖ ‖τ‖𝜏 ∅ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) .stat (erase e) (erase_ty τ) ∅)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) .stat (erase e) (erase_ty τ) ∅)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing ‖Γ‖𝛤 .stat ‖e‖ ‖τ‖𝜏 ∅)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing ‖Γ‖𝛤 .stat ‖e‖ ‖τ‖𝜏 ∅)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply typing.fvar
@@ -284,7 +290,7 @@ theorem erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (e
     apply IH
   apply Hτ
 
-theorem erase_reification_safety : ∀ Γ e τ φ, typing_reification Γ e τ φ → typing_reification (erase_env Γ) (erase e) (erase_ty τ) ∅ :=
+theorem erase_reification_safety : ∀ Γ e τ φ, typing_reification Γ e τ φ → typing_reification ‖Γ‖𝛤 ‖e‖ ‖τ‖𝜏 ∅ :=
   by
   intros Γ e τ φ Hτ
   cases Hτ <;>
