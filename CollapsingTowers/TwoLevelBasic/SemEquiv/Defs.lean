@@ -1,2 +1,3 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Preservation
+import CollapsingTowers.TwoLevelBasic.SemEquiv.ObsEquiv

@@ -237,18 +237,18 @@ theorem compatibility_lets :
 -- Γ ⊢ e : τ
 -- —————————————————————
 -- ‖Γ‖ ⊧ ‖e‖ ≈ ‖e‖ : ‖τ‖
-theorem fundamental :
+theorem erase_fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-          sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏)
+          sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
-          sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏)
+          sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply compatibility_fvar
@@ -329,13 +329,22 @@ theorem fundamental :
     apply IH
   apply Hτ
 
-theorem fundamental_reification :
+theorem erase_fundamental_reification :
   ∀ Γ e τ φ,
     typing_reification Γ e τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ e τ φ Hτ
   cases Hτ
   all_goals
   next Hτ =>
-    apply fundamental _ _ _ _ _ Hτ
+    apply erase_fundamental _ _ _ _ _ Hτ
+
+theorem fundamental :
+  ∀ Γ 𝕊 e τ φ,
+    typing ‖Γ‖𝛾 𝕊 ‖e‖ ‖τ‖𝜏 φ →
+    sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  rw [← double_erase_env, ← double_erase, ← double_erase_ty]
+  apply erase_fundamental; apply Hτ

@@ -4,7 +4,7 @@ import CollapsingTowers.TwoLevelBasic.Preservation.Defs
 theorem multi_subst_erase_value :
   ∀ Γ v τ φ γ₀ γ₁,
     typing Γ .stat v τ φ →
-    sem_equiv_env γ₀ γ₁ ‖Γ‖𝛤 →
+    sem_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
     value v →
     well_binding_time .stat τ →
     value (multi_subst γ₀ ‖v‖) ∧ value (multi_subst γ₁ ‖v‖) :=
@@ -38,10 +38,10 @@ theorem sem_preservation_head :
     head𝕄 e₀ e₁ →
     typing Γ .stat e₀ τ φ →
     typing Γ .stat e₁ τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros Γ e₀ e₁ τ φ Hhead Hτ₀ Hτ₁
-  cases Hhead <;> try apply fundamental; apply Hτ₀
+  cases Hhead <;> try apply erase_fundamental; apply Hτ₀
   case lets Hvalue =>
     constructor; constructor
     . rw [lc, ← erase_lc_at]; apply typing_regular; apply Hτ₀
@@ -54,7 +54,7 @@ theorem sem_preservation_head :
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
-    apply (fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
+    apply (erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
@@ -109,7 +109,7 @@ theorem sem_preservation_head :
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
-    apply (fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
+    apply (erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi; apply pure_stepn.refl
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
@@ -125,7 +125,7 @@ theorem sem_preservation_head :
   case lift_lam e =>
     have HEq : ‖.lam𝕔 (map𝕔₀ e)‖ = ‖.lift (.lam e)‖ :=
       by simp [erase_maping𝕔]
-    rw [HEq]; apply fundamental; apply Hτ₀
+    rw [HEq]; apply erase_fundamental; apply Hτ₀
 
 -- Γ ⊢ e₀ : τ →
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈ ‖e₁‖ : ‖τ‖
@@ -137,10 +137,10 @@ theorem sem_decompose𝔹 :
     ctx𝔹 B →
     (∀ τ φ,
       typing Γ .stat e₀ τ φ →
-      sem_equiv_typing ‖Γ‖𝛤 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
+      sem_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
     ) →
     typing Γ .stat B⟦e₀⟧ τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖B⟦e₀⟧‖ ‖B⟦e₁⟧‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖B⟦e₀⟧‖ ‖B⟦e₁⟧‖ ‖τ‖𝜏 :=
   by
   intros Γ B e₀ e₁ τ φ HB IH Hτ
   cases HB
@@ -149,24 +149,24 @@ theorem sem_decompose𝔹 :
     case app₁ τ𝕒 _ _ _ Harg HX =>
       apply compatibility_app
       apply IH (.arrow τ𝕒 τ _); apply HX
-      apply fundamental; apply Harg
+      apply erase_fundamental; apply Harg
   case appr₁ =>
     cases Hτ
     case app₁ τ𝕒 _ _ _ HX Hf =>
       apply compatibility_app
-      apply fundamental _ _ _ (.arrow τ𝕒 τ _); apply Hf
+      apply erase_fundamental _ _ _ (.arrow τ𝕒 τ _); apply Hf
       apply IH; apply HX
   case appl₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 _ _ HX Harg =>
       apply compatibility_app
       apply IH (.fragment (.arrow τ𝕒 τ𝕓 _)); apply HX
-      apply fundamental _ _ _ (.fragment τ𝕒); apply Harg
+      apply erase_fundamental _ _ _ (.fragment τ𝕒); apply Harg
   case appr₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 _ _ Hf HX =>
       apply compatibility_app
-      apply fundamental _ _ _ (.fragment (.arrow τ𝕒 τ𝕓 _)); apply Hf
+      apply erase_fundamental _ _ _ (.fragment (.arrow τ𝕒 τ𝕓 _)); apply Hf
       apply IH (.fragment τ𝕒); apply HX
   case lift =>
     cases Hτ
@@ -187,7 +187,7 @@ theorem sem_decompose𝔹 :
       . apply Hwf₁.right
       . rw [← length_erase_env, ← erase_closed_at]; apply Hclose
       apply Hsem
-      rw [← env.erase, ← erase_open₀_comm]; apply fundamental
+      rw [← env.erase, ← erase_open₀_comm]; apply erase_fundamental
       rw [← length_erase_env]; apply He
 
 -- Γ ⊢ e₀ : τ →
@@ -202,10 +202,10 @@ theorem sem_decomposeℝ :
     (∀ Δ τ φ,
       Δ.length = intro →
       typing (Δ ++ Γ) .stat e₀ τ φ →
-      sem_equiv_typing ‖Δ ++ Γ‖𝛤 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
+      sem_equiv_typing ‖Δ ++ Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
     ) →
     typing Γ .stat R⟦e₀⟧ τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖R⟦e₀⟧‖ ‖R⟦e₁⟧‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖R⟦e₀⟧‖ ‖R⟦e₁⟧‖ ‖τ‖𝜏 :=
   by
   intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
   cases HR
@@ -246,7 +246,7 @@ theorem sem_decomposeℝ :
         . simp [← length_erase_env, ← erase_closed_at, ← close_closed]
           rw [← length_erase_env] at Hwf₁
           rw [erase_closed_at]; apply Hwf₁.right
-        apply fundamental; apply Hτb
+        apply erase_fundamental; apply Hτb
         rw [← erase_open₀_comm, ← erase_open₀_comm]
         rw [← length_erase_env, open_close_id₀, open_close_id₀]
         apply Hsem
@@ -273,14 +273,14 @@ theorem sem_decompose𝔼 :
     ctx𝔼 E →
     typing Γ .stat E⟦e⟧ τ φ →
     ∃ τ𝕖,
-      sem_equiv_typing ‖Γ‖𝛤 ‖e‖ ‖e‖ ‖τ𝕖‖𝜏 ∧
-      sem_equiv_typing ‖(τ𝕖, .stat) :: Γ‖𝛤 ‖E⟦.fvar Γ.length⟧‖ ‖E⟦.fvar Γ.length⟧‖ ‖τ‖𝜏 :=
+      sem_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ𝕖‖𝜏 ∧
+      sem_equiv_typing ‖(τ𝕖, .stat) :: Γ‖𝛾 ‖E⟦.fvar Γ.length⟧‖ ‖E⟦.fvar Γ.length⟧‖ ‖τ‖𝜏 :=
   by
   intros Γ E e τ φ HE Hτ
   induction HE generalizing τ φ
   case hole =>
     exists τ
-    constructor; apply fundamental; apply Hτ
+    constructor; apply erase_fundamental; apply Hτ
     apply compatibility_fvar
     apply binds_erase_env; simp; rfl
   case cons𝔹 B E HB HE IH =>
@@ -293,7 +293,7 @@ theorem sem_decompose𝔼 :
         constructor; apply Hsem𝕖
         apply compatibility_app
         apply HsemX
-        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
+        apply erase_fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
     case appr₁ =>
       cases Hτ
       case app₁ HX Hf =>
@@ -301,7 +301,7 @@ theorem sem_decompose𝔼 :
         exists τ𝕖
         constructor; apply Hsem𝕖
         apply compatibility_app
-        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
+        apply erase_fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
         apply HsemX
     case appl₂ =>
       cases Hτ
@@ -311,7 +311,7 @@ theorem sem_decompose𝔼 :
         constructor; apply Hsem𝕖
         apply compatibility_app
         apply HsemX
-        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
+        apply erase_fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Harg)
     case appr₂ =>
       cases Hτ
       case app₂ Hf HX =>
@@ -319,7 +319,7 @@ theorem sem_decompose𝔼 :
         exists τ𝕖
         constructor; apply Hsem𝕖
         apply compatibility_app
-        apply fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
+        apply erase_fundamental _ _ _ _ _ (weakening1 _ _ _ _ _ _ Hf)
         apply HsemX
     case lift =>
       cases Hτ
@@ -348,7 +348,7 @@ theorem sem_decompose𝔼 :
             apply closed_inc; apply Hclose; simp
         . apply HsemX
         . rw [← env.erase, ← erase_open₀_comm]
-          apply fundamental
+          apply erase_fundamental
           rw [← List.singleton_append, List.append_cons, ← length_erase_env]
           have HEq : open₀ ((τ𝕖, Stage.stat) :: Γ).length e = shiftl_at Γ.length [(τ𝕖, Stage.stat)].length (open₀ Γ.length e) :=
             by
@@ -360,7 +360,7 @@ theorem erase_intro_ctx𝔼 :
   ∀ E₀ Γ e τ φ γ₀ γ₁,
     ctx𝔼 E₀ →
     typing Γ .stat E₀⟦e⟧ τ φ →
-    sem_equiv_env γ₀ γ₁ ‖Γ‖𝛤 →
+    sem_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
     (∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₀ ‖E₀⟦e⟧‖ = E₁⟦multi_subst γ₀ ‖e‖⟧)) ∧
     (∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₁ ‖E₀⟦e⟧‖ = E₁⟦multi_subst γ₁ ‖e‖⟧)) :=
   by
@@ -585,7 +585,7 @@ theorem sem_reflect :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
     typing Γ .stat E⟦.reflect b⟧ τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖E⟦.reflect b⟧‖ (.lets ‖b‖ ‖E⟦.code (.bvar 0)⟧‖) ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖E⟦.reflect b⟧‖ (.lets ‖b‖ ‖E⟦.code (.bvar 0)⟧‖) ‖τ‖𝜏 :=
   by
   intros Γ E b τ φ HE Hτ
   have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := decompose𝔼 _ _ _ _ _ HE Hτ
@@ -658,7 +658,7 @@ theorem sem_preservation_strengthened :
   ∀ Γ e₀ e₁ τ φ,
     step_lvl Γ.length e₀ e₁ →
     typing Γ .stat e₀ τ φ →
-    sem_equiv_typing ‖Γ‖𝛤 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    sem_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros Γ e₀ e₁ τ φ
   generalize HEqlvl : Γ.length = lvl
