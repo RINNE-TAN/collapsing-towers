@@ -43,7 +43,7 @@ inductive ObsCtx𝔹 :
         ‖Γ‖𝛾 ‖τ𝕓‖𝜏
 
 inductive ObsCtxℂ : TEnv → Ty → Ctx → TEnv → Ty → Prop where
-  | hole : ∀ Γ τ, ObsCtxℂ Γ τ id Γ τ
+  | hole : ∀ Γ τ, ObsCtxℂ ‖Γ‖𝛾 ‖τ‖𝜏 id ‖Γ‖𝛾 ‖τ‖𝜏
   | cons𝔹 :
     ∀ Ψ Δ Γ τψ τδ τγ C B,
       ObsCtxℂ ‖Δ‖𝛾 ‖τδ‖𝜏 C ‖Γ‖𝛾 ‖τγ‖𝜏 →
@@ -101,37 +101,18 @@ theorem typing_fill_ObsCtx𝔹 :
     rw [close₀, ← close_closed]
     apply typing_closed _ _ _ _ _ Hτ
 
-@[pp_using_anonymous_constructor]
-structure TypedExpr (Γ : TEnv) (τ : Ty) where
-  mk ::
-  expr : Expr
-  Hτ : typing Γ .stat expr τ ∅
-
--- e₀ ≈ e₁ ≜ ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : ℕ). ∀ v. C⟦e₀⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
+-- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜
+--   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : ℕ).
+--   Γ ⊢ e₀ : τ →
+--   Γ ⊢ e₁ : τ →
+--   ∀ v. C⟦e₀⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
 @[simp]
-def obs_equiv {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ) : Prop :=
-  ∀ C, ObsCtxℂ Γ τ C [] .nat →
-  ∀ v, value v →
-    (stepn C⟦e₀.expr⟧ v ↔ stepn C⟦e₁.expr⟧ v)
-
-theorem obs_equiv_symm :
-  ∀ {Γ : TEnv} {τ : Ty} (e₀ e₁ : TypedExpr Γ τ),
-    obs_equiv e₀ e₁ →
-    obs_equiv e₁ e₀ :=
-  by
-  intros Γ τ e₀ e₁ HObsEq C HC v Hvalue
-  rw [← HObsEq]; apply HC; apply Hvalue
-
-theorem obs_equiv_trans :
-  ∀ {Γ : TEnv} {τ : Ty} (e₀ e₁ e₂ : TypedExpr Γ τ),
-    obs_equiv e₀ e₁ →
-    obs_equiv e₁ e₂ →
-    obs_equiv e₀ e₂ :=
-  by
-  intros Γ τ e₀ e₁ e₂ HObsEq₀ HObsEq₁ C HC v Hvalue
-  rw [HObsEq₀, HObsEq₁]
-  apply HC; apply Hvalue
-  apply HC; apply Hvalue
+def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
+  typing Γ .stat e₀ τ ∅ →
+  typing Γ .stat e₁ τ ∅ →
+    ∀ C, ObsCtxℂ Γ τ C [] .nat →
+    ∀ v, value v →
+      (stepn C⟦e₀⟧ v ↔ stepn C⟦e₁⟧ v)
 
 theorem sem_equiv_typing_cong :
   ∀ Δ Γ τδ τγ B e₀ e₁,
@@ -190,20 +171,16 @@ theorem sem_equiv_typing_cong :
       apply typing_regular; apply Hτ₁
       apply typing_regular; apply Hτ₀
 
--- ∅ ⊢ e₀ : τ
--- ∅ ⊢ e₁ : τ
 -- ∅ ⊧ e₀ ≈ e₁ : τ
 -- ————————————————
--- e₀ ≈ e₁
+-- ∅ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ
 theorem sem_soundness :
   ∀ τ e₀ e₁,
-    (Hτ₀ : typing [] .stat e₀ τ ∅) →
-    (Hτ₁ : typing [] .stat e₁ τ ∅) →
     sem_equiv_typing [] e₀ e₁ τ →
-    obs_equiv ⟨e₀, Hτ₀⟩ ⟨e₁, Hτ₁⟩ :=
+    ctx_equiv [] e₀ e₁ τ :=
   by
   generalize HEqΓ : [] = Γ
-  intros τ e₀ e₁ Hτ₀ Hτ₁ Hsem C
+  intros τ e₀ e₁ Hsem  Hτ₀ Hτ₁ C
   generalize HEqΔ : [] = Δ
   generalize HEqτδ : Ty.nat = τδ
   intros HC v Hvalue
@@ -223,9 +200,9 @@ theorem sem_soundness :
     rw [← HEqΓ] at HB
     have H := ObsCtxℂ_length _ _ _ _ _ HB
     simp at H; rw [H]
-    apply typing_fill_ObsCtx𝔹; apply Hτ₀; apply HB
-    apply typing_fill_ObsCtx𝔹; apply Hτ₁; apply HB
     apply sem_equiv_typing_cong
     apply Hτ₀; apply Hτ₁
     apply Hsem; apply HB
+    apply typing_fill_ObsCtx𝔹; apply Hτ₀; apply HB
+    apply typing_fill_ObsCtx𝔹; apply Hτ₁; apply HB
     apply HEqΔ; apply HEqτδ

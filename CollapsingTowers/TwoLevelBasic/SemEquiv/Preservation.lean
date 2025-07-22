@@ -1,5 +1,6 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Fundamental
+import CollapsingTowers.TwoLevelBasic.SemEquiv.Transitive
 import CollapsingTowers.TwoLevelBasic.Preservation.Defs
 theorem multi_subst_erase_value :
   ∀ Γ v τ φ γ₀ γ₁,
@@ -732,3 +733,22 @@ theorem sem_reification_preservation :
   case reify τ Hτ =>
     apply sem_preservation_strengthened [] _ _ (.fragment τ)
     apply Hstep; apply Hτ
+
+-- e₀ ↦* e₁
+-- ∅ ⊢ e₀ : τ
+-- —————————————————————
+-- ∅ ⊨ ‖e₀‖ ≈ ‖e₁‖ : ‖τ‖
+theorem sem_reification_preservation_stepn :
+  ∀ e₀ e₁ τ φ,
+    stepn e₀ e₁ →
+    typing_reification [] e₀ τ φ →
+    sem_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+  by
+  intros e₀ e₁ τ φ Hstepn Hτ₀
+  induction Hstepn
+  case refl => apply erase_fundamental_reification _ _ _ _ Hτ₀
+  case multi Hstepn Hstep IH =>
+    have ⟨_, Hτ₁, _⟩ := preservation_stepn _ _ _ _ Hstepn Hτ₀
+    apply sem_equiv_typing_trans
+    . apply IH
+    . apply sem_reification_preservation _ _ _ _ Hstep Hτ₁
