@@ -644,3 +644,20 @@ theorem typing_escape :
     apply IH
     apply typing_shrink; apply Hτ
     apply closed_inc; apply Hclose; omega
+
+theorem typing_rep_value :
+  ∀ v τ φ,
+    value v →
+    typing_reification [] v (.rep τ) φ →
+    ∃ e, v = .code e ∧ typing [] .dyn e τ ∅ :=
+  by
+  intros v τ φ Hvalue Hτ
+  cases Hvalue
+  case code e _ =>
+    exists e; simp
+    cases Hτ
+    case pure Hτ => cases Hτ; assumption
+    case reify Hτ => nomatch Hτ
+  all_goals
+  next =>
+    cases Hτ <;> next Hτ => nomatch Hτ

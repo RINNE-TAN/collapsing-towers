@@ -335,3 +335,33 @@ theorem erase_typing_reification_iff_typing :
         apply IH; apply HEq
       case rep IH =>
         apply IH; apply HEq
+
+theorem typing_dyn_erase_id : ∀ Γ e τ φ, typing Γ .dyn e τ φ → ‖e‖ = e :=
+  by
+  generalize HEq𝕊 : (.dyn : Stage) = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => .dyn = 𝕊 → ‖e‖ = e)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> (try intros; assumption)
+  <;> (try intros; contradiction)
+  <;> (try intros; simp)
+  case lam Hclosed IHe HEq𝕊 =>
+    apply opening_id
+    . rw [← erase_closed_at]; apply Hclosed
+    . apply Hclosed
+    . rw [← open₀, ← erase_open₀_comm]
+      apply IHe; apply HEq𝕊
+  case app₁ IHf IHarg HEq𝕊 =>
+    constructor
+    apply IHf; apply HEq𝕊
+    apply IHarg; apply HEq𝕊
+  case lets Hclosed IHb IHe HEq𝕊 =>
+    constructor
+    apply IHb; apply HEq𝕊
+    apply opening_id
+    . rw [← erase_closed_at]; apply Hclosed
+    . apply Hclosed
+    . rw [← open₀, ← erase_open₀_comm]
+      apply IHe; apply HEq𝕊

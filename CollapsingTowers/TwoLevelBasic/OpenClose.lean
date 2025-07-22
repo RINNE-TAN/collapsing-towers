@@ -562,6 +562,16 @@ lemma close_open_id : ∀ i e x, closed_at e x → closing i x (opening i (.fvar
 
 lemma close_open_id₀ : ∀ e x, closed_at e x → close₀ x (open₀ x e) = e := by apply close_open_id
 
+lemma opening_id :
+  ∀ i e₀ e₁ x,
+    closed_at e₀ x →
+    closed_at e₁ x →
+    opening i (.fvar x) e₀ = opening i (.fvar x) e₁ →
+    e₀ = e₁ :=
+  by
+  intros i e₀ e₁ x Hclosed₀ Hclosed₁ HEq
+  rw [← close_open_id _ _ _ Hclosed₀, ← close_open_id _ _ _ Hclosed₁, HEq]
+
 lemma subst_opening_comm :
     ∀ x v₀ v₁ e i, lc_at v₀ i → subst x v₀ (opening i v₁ e) = opening i (subst x v₀ v₁) (subst x v₀ e) :=
   by

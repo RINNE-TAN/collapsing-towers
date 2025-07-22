@@ -38,8 +38,28 @@ theorem obs_preservation :
       (stepn C⟦‖e₀‖⟧ v ↔ stepn C⟦‖e₁‖⟧ v) :=
   by
   intros e₀ e₁ τ φ Hstepn Hτr₀
-  have Hτ₀ := erase_reification_safety _ _ _ _ Hτr₀
   have ⟨_, Hτr₁, _⟩ := preservation_stepn _ _ _ _ Hstepn Hτr₀
+  have Hτ₀ := erase_reification_safety _ _ _ _ Hτr₀
   have Hτ₁ := erase_reification_safety _ _ _ _ Hτr₁
   rw [← erase_typing_reification_iff_typing] at Hτ₀ Hτ₁
   apply obs_stepn _ _ _ _ Hstepn Hτr₀ Hτ₀ Hτ₁
+
+theorem obs_preservation_rep :
+  ∀ e₀ v τ φ,
+    stepn e₀ v →
+    value v →
+    typing_reification [] e₀ (.rep τ) φ →
+    ∃ e₁,
+      v = .code e₁ ∧
+      ∀ C, ObsCtxℂ [] ‖τ‖𝜏 C [] .nat →
+      ∀ v, value v →
+        (stepn C⟦‖e₀‖⟧ v ↔ stepn C⟦e₁⟧ v) :=
+  by
+  intros e₀ v τ φ Hstepn Hvalue Hτr₀
+  have ⟨_, Hτr₁, _⟩ := preservation_stepn _ _ _ _ Hstepn Hτr₀
+  have ⟨e₁, HEq, Hτe₁⟩ := typing_rep_value _ _ _ Hvalue Hτr₁
+  rw [HEq] at Hstepn
+  exists e₁
+  constructor; apply HEq
+  rw [← typing_dyn_erase_id _ _ _ _ Hτe₁]
+  apply obs_preservation _ _ _ _ Hstepn Hτr₀
