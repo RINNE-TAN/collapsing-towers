@@ -142,7 +142,7 @@ theorem compatibility_app :
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.appr₁ _ _) Hstepv₀
     apply value.lam; apply Hwf₀.left
     -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply Hwf₀.left; apply value_lc; apply Hvalue₀
     apply head𝕄.app₁; apply Hvalue₀
@@ -158,7 +158,7 @@ theorem compatibility_app :
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.appr₁ _ _) Hstepv₁
     apply value.lam; apply Hwf₁.left
     -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply Hwf₁.left; apply value_lc; apply Hvalue₁
     apply head𝕄.app₁; apply Hvalue₁
@@ -207,7 +207,7 @@ theorem compatibility_lets :
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₀
     apply multi_subst_lc_at; apply Hmulti_wf₀; apply Hlc₀.right
     -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
     rw [← multi_subst_comm, multi_subst_open₀_comm, HEq₀, subst_intro, ← open_subst]
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply value_lc; apply Hvalue₀
@@ -223,7 +223,7 @@ theorem compatibility_lets :
     apply pure_stepn_at𝔹 _ _ _ (ctx𝔹.lets _ _) Hstepv₁
     apply multi_subst_lc_at; apply Hmulti_wf₁; apply Hlc₁.right
     -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
     rw [← multi_subst_comm, multi_subst_open₀_comm, HEq₁, subst_intro, ← open_subst]
     apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
     constructor; apply value_lc; apply Hvalue₁

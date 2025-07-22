@@ -1,7 +1,7 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Preservation
 import CollapsingTowers.TwoLevelBasic.SemEquiv.CtxEquiv
--- e₀ ↦ e₁
+-- e₀ ↦* e₁
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
 -- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖

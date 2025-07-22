@@ -419,14 +419,14 @@ def step : Expr → Expr → Prop :=
 
 inductive stepn : Expr → Expr → Prop
   | refl : ∀ e, stepn e e
-  | multi : ∀ e₀ e₁ e₂, stepn e₀ e₁ → step e₁ e₂ → stepn e₀ e₂
+  | multi : ∀ e₀ e₁ e₂, step e₀ e₁ → stepn e₁ e₂ → stepn e₀ e₂
 
 inductive pure_step : Expr → Expr → Prop where
   | pure_step𝕄 : ∀ M e₀ e₁, ctx𝕄 0 M → lc e₀ → head𝕄 e₀ e₁ → pure_step M⟦e₀⟧ M⟦e₁⟧
 
 inductive pure_stepn : Expr → Expr → Prop
   | refl : ∀ e, pure_stepn e e
-  | multi : ∀ e₀ e₁ e₂, pure_stepn e₀ e₁ → pure_step e₁ e₂ → pure_stepn e₀ e₂
+  | multi : ∀ e₀ e₁ e₂, pure_step e₀ e₁ → pure_stepn e₁ e₂ → pure_stepn e₀ e₂
 
 theorem pure_step_impl_step : ∀ e₀ e₁, pure_step e₀ e₁ → step e₀ e₁ :=
   by
@@ -441,17 +441,19 @@ theorem pure_stepn_impl_stepn : ∀ e₀ e₁, pure_stepn e₀ e₁ → stepn e�
   intros e₀ e₁ Hstepn
   induction Hstepn
   case refl => apply stepn.refl
-  case multi H IH =>
+  case multi H _ IH =>
     apply stepn.multi
-    apply IH; apply pure_step_impl_step; apply H
+    apply pure_step_impl_step; apply H
+    apply IH
 
 theorem pure_stepn_trans : ∀ e₀ e₁ e₂, pure_stepn e₀ e₁ → pure_stepn e₁ e₂ → pure_stepn e₀ e₂ :=
   by
   intros e₀ e₁ e₂ Hstep₀ Hstep₁
-  induction Hstep₁
-  case refl => apply Hstep₀
-  case multi H IH =>
-    apply pure_stepn.multi; apply IH; apply H
+  induction Hstep₀
+  case refl => apply Hstep₁
+  case multi H _ IH =>
+    apply pure_stepn.multi
+    apply H; apply IH; apply Hstep₁
 
 theorem pure_step_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_step e₀ e₁ → pure_step B⟦e₀⟧ B⟦e₁⟧ :=
   by
@@ -476,18 +478,18 @@ theorem pure_stepn_at𝔹 : ∀ B e₀ e₁, ctx𝔹 B → pure_stepn e₀ e₁ 
   intros B e₀ e₁ HB Hstepn
   induction Hstepn
   case refl => apply pure_stepn.refl
-  case multi H IH =>
+  case multi H _ IH =>
     apply pure_stepn.multi
-    apply IH; apply pure_step_at𝔹; apply HB; apply H
+    apply pure_step_at𝔹; apply HB; apply H; apply IH
 
 theorem pure_stepn_at𝔼 : ∀ E e₀ e₁, ctx𝔼 E → pure_stepn e₀ e₁ → pure_stepn E⟦e₀⟧ E⟦e₁⟧ :=
   by
   intros E e₀ e₁ HE Hstepn
   induction Hstepn
   case refl => apply pure_stepn.refl
-  case multi H IH =>
+  case multi H _ IH =>
     apply pure_stepn.multi
-    apply IH; apply pure_step_at𝔼; apply HE; apply H
+    apply pure_step_at𝔼; apply HE; apply H; apply IH
 
 theorem pure_step_lc : ∀ e₀ e₁, pure_step e₀ e₁ → lc e₀ :=
   by
@@ -501,10 +503,9 @@ theorem pure_stepn_lc : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e
   intros e₀ e₁ Hstepn Hlc
   induction Hstepn
   case refl => apply Hlc
-  case multi H IH =>
-    apply IH; apply pure_step_lc; apply H
--- properties of step
+  case multi H _ IH => apply pure_step_lc; apply H
 
+-- properties of step
 theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
   by
   intros lvl B e₀ e₁ HB Hstep

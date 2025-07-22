@@ -56,7 +56,7 @@ theorem sem_preservation_head :
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
     apply (erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
-    . apply pure_stepn.multi; apply pure_stepn.refl
+    . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
       apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply typing_regular; apply Hτ₀
@@ -111,7 +111,7 @@ theorem sem_preservation_head :
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := sem_equiv_env_impl_multi_wf _ _ _ HsemΓ
     apply sem_equiv_expr_stepn
     apply (erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
-    . apply pure_stepn.multi; apply pure_stepn.refl
+    . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [erase_open_subst_comm, multi_subst_open_subst_comm _ _ _ Hmulti_wf₀]
       apply pure_step.pure_step𝕄 id; apply ctx𝕄.hole
       apply multi_subst_lc_at; apply Hmulti_wf₀; rw [← erase_lc_at]; apply typing_regular; apply Hτ₀
@@ -627,7 +627,7 @@ theorem sem_reflect :
     apply multi_subst_lc_at; apply Hmulti_wf₁
     rw [← erase_lc_at]; apply lc_ctx𝔼; apply HE; simp
     -- head step
-    apply pure_stepn.multi; apply pure_stepn.refl
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
     have HEq :
       open_subst v₁ (multi_subst γ₁ ‖E⟦.code (.bvar 0)⟧‖) =
       multi_subst γ₁ (subst γ₁.length v₁ ‖E⟦.fvar Γ.length⟧‖) :=
@@ -745,10 +745,10 @@ theorem sem_reification_preservation_stepn :
     sem_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros e₀ e₁ τ φ Hstepn Hτ₀
-  induction Hstepn
+  induction Hstepn generalizing φ
   case refl => apply erase_fundamental_reification _ _ _ _ Hτ₀
-  case multi Hstepn Hstep IH =>
-    have ⟨_, Hτ₁, _⟩ := preservation_stepn _ _ _ _ Hstepn Hτ₀
+  case multi Hstep Hstepn IH =>
+    have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
     apply sem_equiv_typing_trans
-    . apply IH
-    . apply sem_reification_preservation _ _ _ _ Hstep Hτ₁
+    . apply sem_reification_preservation _ _ _ _ Hstep Hτ₀
+    . apply IH; apply Hτ₁

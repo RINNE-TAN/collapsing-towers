@@ -58,11 +58,11 @@ theorem preservation_stepn :
       φ₁ ≤ φ₀ :=
   by
   intro e₀ e₁ τ φ₀ Hstepn Hτ
-  induction Hstepn with
+  induction Hstepn generalizing φ₀ with
   | refl => exists φ₀
-  | multi _ _ _ Hstep IH =>
-    have ⟨φ₁, IHτ₁, HφLe₁⟩ := IH
-    have ⟨φ₂, IHτ₂, HφLe₂⟩ := preservation _ _ _ _ Hstep IHτ₁
+  | multi _ _ _ Hstep _ IH =>
+    have ⟨φ₁, IHτ₁, HφLe₁⟩ := preservation _ _ _ _ Hstep Hτ
+    have ⟨φ₂, IHτ₂, HφLe₂⟩ := IH _ IHτ₁
     exists φ₂
     constructor
     . apply IHτ₂
