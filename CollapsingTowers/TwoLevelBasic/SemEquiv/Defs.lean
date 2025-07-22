@@ -24,7 +24,7 @@ theorem obs_stepn :
     apply sem_reification_preservation
     apply Hstep; apply Hτr₀
 
--- e₀ ↦ e₁
+-- e₀ ↦* e₁
 -- ∅ ⊢ e₀ : τ
 -- ∅ ⊢ C⟦∅ ⊢ ‖τ‖⟧ : ℕ
 -- ————————————————————————————————
@@ -44,6 +44,11 @@ theorem obs_preservation :
   rw [← erase_typing_reification_iff_typing] at Hτ₀ Hτ₁
   apply obs_stepn _ _ _ _ Hstepn Hτr₀ Hτ₀ Hτ₁
 
+-- e₀ ↦* code e₁
+-- ∅ ⊢ e₀ : <τ>
+-- ∅ ⊢ C⟦∅ ⊢ τ⟧ : ℕ
+-- ——————————————————————————————
+-- ∀ v. C⟦‖e₀‖⟧ ↦* v ↔ C⟦e₁⟧ ↦* v
 theorem obs_preservation_rep :
   ∀ e₀ v τ φ,
     stepn e₀ v →
@@ -51,7 +56,7 @@ theorem obs_preservation_rep :
     typing_reification [] e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧
-      ∀ C, ObsCtxℂ [] ‖τ‖𝜏 C [] .nat →
+      ∀ C, ObsCtxℂ [] τ C [] .nat →
       ∀ v, value v →
         (stepn C⟦‖e₀‖⟧ v ↔ stepn C⟦e₁⟧ v) :=
   by
@@ -61,5 +66,5 @@ theorem obs_preservation_rep :
   rw [HEq] at Hstepn
   exists e₁
   constructor; apply HEq
-  rw [← typing_dyn_erase_id _ _ _ _ Hτe₁]
+  rw [← typing_dyn_erase_id _ _ _ _ Hτe₁, ← typing_dyn_erase_ty_id _ _ _ _ Hτe₁]
   apply obs_preservation _ _ _ _ Hstepn Hτr₀

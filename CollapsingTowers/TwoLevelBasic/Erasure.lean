@@ -365,3 +365,44 @@ theorem typing_dyn_erase_id : ∀ Γ e τ φ, typing Γ .dyn e τ φ → ‖e‖
     . apply Hclosed
     . rw [← open₀, ← erase_open₀_comm]
       apply IHe; apply HEq𝕊
+
+theorem well_binding_time_dyn_erase_ty_id : ∀ τ, well_binding_time .dyn τ → ‖τ‖𝜏 = τ :=
+  by
+  intros τ HwellBinds
+  induction τ
+  case nat => rfl
+  case arrow IH𝕒 IH𝕓 =>
+    simp
+    constructor; apply IH𝕒; apply HwellBinds.right.left
+    constructor; apply IH𝕓; apply HwellBinds.right.right
+    simp [HwellBinds.left]
+  case fragment => nomatch HwellBinds
+  case rep => nomatch HwellBinds
+
+theorem typing_dyn_erase_ty_id : ∀ Γ e τ φ, typing Γ .dyn e τ φ → ‖τ‖𝜏 = τ :=
+  by
+  generalize HEq𝕊 : (.dyn : Stage) = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => .dyn = 𝕊 → ‖τ‖𝜏 = τ)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> (try intros; assumption)
+  <;> (try intros; contradiction)
+  <;> (try intros; simp)
+  <;> intros
+  case fvar HwellBinds HEq𝕊 =>
+    rw [← HEq𝕊] at HwellBinds
+    apply well_binding_time_dyn_erase_ty_id
+    apply HwellBinds
+  case lam Hτe HwellBinds _ IHe HEq𝕊 =>
+    rw [← HEq𝕊] at HwellBinds Hτe
+    constructor; apply well_binding_time_dyn_erase_ty_id; apply HwellBinds
+    constructor; apply IHe; apply HEq𝕊
+    have ⟨_, HEqφ⟩ := typing_dyn_pure _ _ _ _ Hτe
+    simp [HEqφ]
+  case app₁ IHf IHarg HEq𝕊 =>
+    simp at IHf
+    apply (IHf HEq𝕊).right.left
+  case lets IHe HEq𝕊 =>
+    apply IHe; apply HEq𝕊
