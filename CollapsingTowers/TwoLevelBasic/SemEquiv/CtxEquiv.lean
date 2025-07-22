@@ -1,5 +1,6 @@
 
 import CollapsingTowers.TwoLevelBasic.SemEquiv.Fundamental
+import CollapsingTowers.TwoLevelBasic.Deterministic
 -- Γ ⊢ B⟦Δ ⊢ τδ⟧ : τγ ≜ ∀ (‖Δ‖ ⊢ X : ‖τδ‖). ‖Γ‖ ⊢ B⟦X⟧ : ‖τγ‖
 inductive ObsCtx𝔹 :
   TEnv → Ty →  -- Δ ⊢ τδ
@@ -194,7 +195,17 @@ theorem sem_soundness :
     cases v₀ <;> cases v₁ <;> simp at Hsem_value
     have Hstepv₀ := pure_stepn_impl_stepn _ _ Hstepv₀
     have Hstepv₁ := pure_stepn_impl_stepn _ _ Hstepv₁
-    admit
+    constructor
+    . intro Hstepv
+      rw [← church_rosser _ _ _ Hstepv₀ Hstepv, Hsem_value]
+      apply Hstepv₁
+      . apply value.lit
+      . apply Hvalue
+    . intro Hstepv
+      rw [← church_rosser _ _ _ Hstepv₁ Hstepv, ← Hsem_value]
+      apply Hstepv₀
+      . apply value.lit
+      . apply Hvalue
   case cons𝔹 C B HC HB IH =>
     apply IH
     rw [← HEqΓ] at HB

@@ -7,7 +7,7 @@ theorem deterministic :
     e₁ = e₂ :=
   by admit
 
-theorem church_rosser :
+theorem church_rosser_strengthened :
   ∀ e₀ l r,
     stepn e₀ l →
     stepn e₀ r →
@@ -31,3 +31,26 @@ theorem church_rosser :
       apply IH
       rw [deterministic _ _ _ IHstepl IHstepr]
       apply IHsteprn
+
+theorem value_termination : ∀ v e, value v → ¬step v e := by admit
+
+theorem church_rosser :
+  ∀ e v₀ v₁,
+    stepn e v₀ →
+    stepn e v₁ →
+    value v₀ →
+    value v₁ →
+    v₀ = v₁ :=
+  by
+  intros e v₀ v₁ Hstep₀ Hstep₁ Hvalue₀ Hvalue₁
+  have ⟨v, Hstep₀, Hstep₁⟩ := church_rosser_strengthened _ _ _ Hstep₀ Hstep₁
+  cases Hstep₀
+  case refl =>
+    cases Hstep₁
+    case refl => rfl
+    case multi Hstep _ =>
+      exfalso; apply value_termination
+      apply Hvalue₁; apply Hstep
+  case multi Hstep _ =>
+    exfalso; apply value_termination
+    apply Hvalue₀; apply Hstep
