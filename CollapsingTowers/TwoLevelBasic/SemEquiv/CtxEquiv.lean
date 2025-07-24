@@ -51,7 +51,7 @@ inductive ObsCtxℂ : TEnv → Ty → Ctx → TEnv → Ty → Prop where
       ObsCtx𝔹 ‖Ψ‖𝛾 ‖τψ‖𝜏 B ‖Δ‖𝛾 ‖τδ‖𝜏 →
       ObsCtxℂ ‖Ψ‖𝛾 ‖τψ‖𝜏 (C ∘ B) ‖Γ‖𝛾 ‖τγ‖𝜏
 
-theorem ObsCtxℂ_length :
+theorem ObsCtx𝔹_length :
   ∀ Δ Γ τδ τγ B,
     ObsCtx𝔹 Δ τδ B Γ τγ →
     Δ.length ≥ Γ.length :=
@@ -181,7 +181,7 @@ theorem sem_soundness :
     ctx_equiv [] e₀ e₁ τ :=
   by
   generalize HEqΓ : [] = Γ
-  intros τ e₀ e₁ Hsem  Hτ₀ Hτ₁ C
+  intros τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
   generalize HEqΔ : [] = Δ
   generalize HEqτδ : Ty.nat = τδ
   intros HC v Hvalue
@@ -209,7 +209,7 @@ theorem sem_soundness :
   case cons𝔹 C B HC HB IH =>
     apply IH
     rw [← HEqΓ] at HB
-    have H := ObsCtxℂ_length _ _ _ _ _ HB
+    have H := ObsCtx𝔹_length _ _ _ _ _ HB
     simp at H; rw [H]
     apply sem_equiv_typing_cong
     apply Hτ₀; apply Hτ₁

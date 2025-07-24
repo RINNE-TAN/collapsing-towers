@@ -299,6 +299,139 @@ theorem decomposeℚ_decompose𝔼_deterministic :
       have ⟨HEqM, HEqB⟩ := decompose𝔹_deterministic _ _ _ _ HBl HBr HEq HNvMl HNvMr
       apply HEqM
 
+theorem decomposeℚ_deterministic :
+  ∀ el er lvl Ql Qr El Er,
+    ctxℚ lvl Ql →
+    ctxℚ lvl Qr →
+    ctx𝔼 El →
+    ctx𝔼 Er →
+    Ql⟦El⟦el⟧⟧ = Qr⟦Er⟦er⟧⟧ →
+    HeadStepable el →
+    HeadStepable er →
+    El⟦el⟧ = Er⟦er⟧ ∧ Ql = Qr :=
+  by
+  intros el er lvl Ql Qr El Er HQl HQr HEl HEr HEq Hel Her
+  induction HQl generalizing Qr
+  case holeℝ Rl HRl =>
+    cases HQr
+    case holeℝ HRr =>
+      have HNvl := ctx𝕄_not_value _ _ _ Hel.HNv (rewrite_ctx𝔼_to_ctx𝕄 _ HEl)
+      have HNvr := ctx𝕄_not_value _ _ _ Her.HNv (rewrite_ctx𝔼_to_ctx𝕄 _ HEr)
+      have Hlcl := lc_ctx𝔼 _ _ _ HEl Hel.Hlc
+      have Hlcr := lc_ctx𝔼 _ _ _ HEr Her.Hlc
+      have ⟨HEqM, HEqi, HEqR⟩ := decomposeℝ_deterministic _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      constructor
+      apply HEqM; apply HEqR
+    case cons𝔹 Br Qr HBr HQr =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HBr; apply HRl
+      symm; apply HEq
+      apply ctx𝕄_not_value _ (Qr ∘ Er) _ Her.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQr; apply HEr
+      apply ctx𝕄_not_value _ El _ Hel.HNv
+      apply rewrite_ctx𝔼_to_ctx𝕄; apply HEl
+    case consℝ lvl intro Rr Qr HRr HQr =>
+      exfalso
+      have HMl : ctx𝕄 0 El :=
+        by
+        apply rewrite_ctx𝔼_to_ctx𝕄; apply HEl
+      have HMr : ctx𝕄 (lvl + intro) (Qr ∘ Er) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQr; apply HEr
+      have HNvl := ctx𝕄_not_value _ _ _ Hel.HNv HMl
+      have HNvr := ctx𝕄_not_value _ _ _ Her.HNv HMr
+      have Hlcl := lc_ctx𝔼 _ _ _ HEl Hel.Hlc
+      have Hlcr := lc_ctxℚ _ _ _ _ HQr (lc_ctx𝔼 _ _ _ HEr Her.Hlc)
+      have ⟨HEqM, HEqi, HEqR⟩ := decomposeℝ_deterministic _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply decomposeℚ_decompose𝔼_deterministic
+      apply HQr; apply HEl; apply HEr
+      apply HEqM; apply Hel; apply Her
+  case cons𝔹 Bl Ql HBl HQl IH =>
+    cases HQr
+    case holeℝ HRr =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HBl; apply HRr
+      apply HEq
+      apply ctx𝕄_not_value _ (Ql ∘ El) _ Hel.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQl; apply HEl
+      apply ctx𝕄_not_value _ _ _ Her.HNv
+      apply rewrite_ctx𝔼_to_ctx𝕄; apply HEr
+    case cons𝔹 lvl Br Qr HBr HQr =>
+      have HMl : ctx𝕄 lvl (Ql ∘ El) := by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQl; apply HEl
+      have HMr : ctx𝕄 lvl (Qr ∘ Er) := by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQr; apply HEr
+      have HNvl := ctx𝕄_not_value _ _ _ Hel.HNv HMl
+      have HNvr := ctx𝕄_not_value _ _ _ Her.HNv HMr
+      have ⟨HEqM, HEqB⟩ := decompose𝔹_deterministic _ _ _ _ HBl HBr HEq HNvl HNvr
+      have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
+      simp [HEqe, HEqB, HEqQ]
+    case consℝ Rr Qr HRr HQr =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HBl; apply HRr
+      apply HEq
+      apply ctx𝕄_not_value _ (Ql ∘ El) _ Hel.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQl; apply HEl
+      apply ctx𝕄_not_value _ (Qr ∘ Er) _ Her.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQr; apply HEr
+  case consℝ introl lvl Rl Ql HRl HQl IH =>
+    cases HQr
+    case holeℝ HRr =>
+      exfalso
+      have HMl : ctx𝕄 (lvl + introl) (Ql ∘ El) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQl; apply HEl
+      have HMr : ctx𝕄 0 Er :=
+        by
+        apply rewrite_ctx𝔼_to_ctx𝕄; apply HEr
+      have HNvl := ctx𝕄_not_value _ _ _ Hel.HNv HMl
+      have HNvr := ctx𝕄_not_value _ _ _ Her.HNv HMr
+      have Hlcl := lc_ctxℚ _ _ _ _ HQl (lc_ctx𝔼 _ _ _ HEl Hel.Hlc)
+      have Hlcr := lc_ctx𝔼 _ _ _ HEr Her.Hlc
+      have ⟨HEqM, HEqi, HEqR⟩ := decomposeℝ_deterministic _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply decomposeℚ_decompose𝔼_deterministic
+      apply HQl; apply HEr; apply HEl
+      symm; apply HEqM; apply Her; apply Hel
+    case cons𝔹 lvl Br Qr HBr HQr =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HBr; apply HRl
+      symm; apply HEq
+      apply ctx𝕄_not_value _ (Qr ∘ Er) _ Her.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQr; apply HEr
+      apply ctx𝕄_not_value _ (Ql ∘ El) _ Hel.HNv
+      apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+      apply HQl; apply HEl
+    case consℝ intror Rr Qr HRr HQr =>
+      have HMl : ctx𝕄 (lvl + introl) (Ql ∘ El) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQl; apply HEl
+      have HMr : ctx𝕄 (lvl + intror) (Qr ∘ Er) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼; apply rewrite_ctxℚ_to_ctx𝕄
+        apply HQr; apply HEr
+      have HNvl := ctx𝕄_not_value _ _ _ Hel.HNv HMl
+      have HNvr := ctx𝕄_not_value _ _ _ Her.HNv HMr
+      have Hlcl := lc_ctxℚ _ _ _ _ HQl (lc_ctx𝔼 _ _ _ HEl Hel.Hlc)
+      have Hlcr := lc_ctxℚ _ _ _ _ HQr (lc_ctx𝔼 _ _ _ HEr Her.Hlc)
+      have ⟨HEqM, HEqi, HEqR⟩ := decomposeℝ_deterministic _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      rw [← HEqi] at HQr
+      have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
+      simp [HEqe, HEqR, HEqQ]
+
 theorem decomposeℙ_deterministic :
   ∀ el er lvl Pl Pr El Er,
     ctxℙ lvl Pl →
@@ -332,7 +465,13 @@ theorem decomposeℙ_deterministic :
       apply HQl; apply HEr; apply HEl
       symm; apply HEq; apply Her; apply Hel
     case consℚ HQr =>
-      admit
+      have HMl : ctx𝕄 0 El := by apply rewrite_ctx𝔼_to_ctx𝕄; apply HEl
+      have HMr : ctx𝕄 0 Er := by apply rewrite_ctx𝔼_to_ctx𝕄; apply HEr
+      have ⟨HEqE, HEqQ⟩ := decomposeℚ_deterministic _ _ _ _ _ _ _ HQl HQr HEl HEr HEq Hel Her
+      have ⟨HEqe, HEqM⟩ := decompose𝕄_deterministic _ _ _ _ _ HMl HMr HEqE Hel Her
+      constructor; apply HEqe
+      constructor; apply HEqQ
+      apply HEqM
 
 theorem deterministic :
   ∀ e l r,
@@ -382,7 +521,11 @@ theorem deterministic :
       rw [← HEqe] at Hheadr
       nomatch Hheadr
     case reflect Pr Er br HPr HEr Hlcr =>
-      admit
+      have Hstepablel := reflect_impl_HeadStepable _ Hlcl
+      have Hstepabler := reflect_impl_HeadStepable _ Hlcr
+      have ⟨HEqr, HEqP, HEqE⟩ := decomposeℙ_deterministic _ _ _ _ _ _ _ HPl HPr HEl HEr HEq Hstepablel Hstepabler
+      simp at HEqr
+      simp [HEqr, HEqP, HEqE]
 
 theorem church_rosser_strengthened :
   ∀ e₀ l r,
