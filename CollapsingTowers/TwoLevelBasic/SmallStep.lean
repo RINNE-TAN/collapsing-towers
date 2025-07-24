@@ -404,6 +404,18 @@ theorem subst𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x �
     | appr₁| appr₂ => apply He₀.right
     | lift => apply He₀
 
+theorem rewrite_ctx𝔼_to_ctx𝕄 :
+  ∀ E,
+    ctx𝔼 E →
+    ctx𝕄 0 E :=
+  by
+  intros E HE
+  induction HE
+  case hole => apply ctx𝕄.hole
+  case cons𝔹 HB _ IH =>
+    apply ctx𝕄.cons𝔹; apply HB
+    apply IH
+
 -- properties of ℚ contexts
 
 theorem lc_ctxℚ : ∀ Q e n lvl, ctxℚ lvl Q → lc_at e n → lc_at Q⟦e⟧ n :=
@@ -570,6 +582,7 @@ theorem pure_stepn_lc : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e
   case multi H _ IH => apply pure_step_lc; apply H
 
 -- properties of step
+
 theorem step𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
   by
   intros lvl B e₀ e₁ HB Hstep
