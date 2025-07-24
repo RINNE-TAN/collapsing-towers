@@ -5,8 +5,71 @@ structure HeadStepable (e : Expr) where
   mk ::
   Hlc : lc e
   HNv : ¬value e
-  HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → e ≠ B⟦r⟧
-  HAtomicℝ : ∀ R r, ctxℝ intro lvl R → ¬value r → e ≠ R⟦r⟧
+  HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → lc r → e ≠ B⟦r⟧
+  HAtomicℝ : ∀ R r, ctxℝ intro lvl R → ¬value r → lc r → e ≠ R⟦r⟧
+
+theorem head𝕄_impl_HeadStepable :
+  ∀ e₀ e₁, lc e₀ → head𝕄 e₀ e₁ → HeadStepable e₀ :=
+  by
+  intros e₀ e₁ Hlc Hhead
+  apply HeadStepable.mk
+  case Hlc =>
+    apply Hlc
+  case HNv =>
+    intros Hvalue
+    cases Hhead <;> nomatch Hvalue
+  case HAtomic𝔹 =>
+    intros B r HB HNv _ HEq
+    apply HNv
+    cases Hhead <;> cases HB <;> simp at HEq <;> simp [← HEq]
+    case lets.lets => assumption
+    case app₁.appl₁ =>
+      apply value.lam
+      apply Hlc.left
+    case app₁.appr₁ => assumption
+    case app₂.appl₂ =>
+      apply value.code
+      apply Hlc.left
+    case app₂.appr₂ =>
+      apply value.code
+      apply Hlc.right
+    case lift_lit.lift =>
+      apply value.lit
+    case lift_lam.lift =>
+      apply value.lam
+      apply Hlc
+  case HAtomicℝ =>
+    intros _ lvl R r HR HNv Hlcr HEq
+    apply HNv
+    cases Hhead <;> cases HR <;> simp at HEq
+    case lam𝕔.lam𝕔 =>
+      rw [← open_close_id 0 r lvl, ← HEq]
+      apply value.code
+      rw [lc, open_lc]; apply Hlc
+      apply Hlcr
+    case let𝕔.let𝕔 =>
+      rw [← open_close_id 0 r lvl, ← HEq.right]
+      apply value.code
+      rw [lc, open_lc]; apply Hlc.right
+      apply Hlcr
+    case run.run =>
+      rw [← HEq]
+      apply value.code
+      apply Hlc
+
+theorem reflect_impl_HeadStepable :
+  ∀ b, lc b → HeadStepable (.reflect b) :=
+  by
+  intros b Hlc
+  apply HeadStepable.mk
+  case Hlc => apply Hlc
+  case HNv => intro HValue; nomatch HValue
+  case HAtomic𝔹 =>
+    intros _ _ HB _ _ HEq
+    cases HB <;> simp at HEq
+  case HAtomicℝ =>
+    intros _ _ R _ HR _ _ HEq
+    cases HR <;> simp at HEq
 
 theorem decompose𝔹_deterministic :
   ∀ e₀ e₁ B₀ B₁,
@@ -103,11 +166,13 @@ theorem decompose𝕄_deterministic :
       exfalso
       apply He₀.HAtomic𝔹
       apply HB₁; apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      apply lc_ctx𝕄; apply HM₁; apply He₁.Hlc
       apply HEq
     case consℝ R₁ M₁ HR₁ HM₁ =>
       exfalso
       apply He₀.HAtomicℝ
       apply HR₁; apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      apply lc_ctx𝕄; apply HM₁; apply He₁.Hlc
       apply HEq
   case cons𝔹 B₀ M₀ HB₀ HM₀ IH =>
     cases HM₁
@@ -115,6 +180,7 @@ theorem decompose𝕄_deterministic :
       exfalso
       apply He₁.HAtomic𝔹
       apply HB₀; apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      apply lc_ctx𝕄; apply HM₀; apply He₀.Hlc
       symm; apply HEq
     case cons𝔹 B₁ M₁ HB₁ HM₁ =>
       have HNvM₀ := ctx𝕄_not_value _ _ _ He₀.HNv HM₀
@@ -134,6 +200,7 @@ theorem decompose𝕄_deterministic :
       exfalso
       apply He₁.HAtomicℝ
       apply HR₀; apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      apply lc_ctx𝕄; apply HM₀; apply He₀.Hlc
       symm; apply HEq
     case cons𝔹 B₁ M₁ HB₁ HM₁ =>
       exfalso
@@ -151,12 +218,64 @@ theorem decompose𝕄_deterministic :
       have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
       simp [HEqe, HEqR, HEqM]
 
+theorem head𝕄_deterministic :
+  ∀ e l r,
+    head𝕄 e l →
+    head𝕄 e r →
+    l = r :=
+  by
+  intros e l r Hstepl Hstepr
+  cases Hstepl <;> cases Hstepr <;> rfl
+
 theorem deterministic :
   ∀ e l r,
     step e l →
     step e r →
     l = r :=
-  by admit
+  by
+  intros e l r Hstepl Hstepr
+  cases Hstepl
+  case step𝕄 Ml el₀ el₁ HMl Hlcl Hheadl =>
+    generalize HEq : Ml⟦el₀⟧ = e
+    rw [HEq] at Hstepr
+    cases Hstepr
+    case step𝕄 Mr er₀ er₁ HMr Hlcr Hheadr =>
+      have Hstepablel := head𝕄_impl_HeadStepable _ _ Hlcl Hheadl
+      have Hstepabler := head𝕄_impl_HeadStepable _ _ Hlcr Hheadr
+      have ⟨HEqe, HEqM⟩ := decompose𝕄_deterministic _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [HEqe] at Hheadl
+      have HEqr := head𝕄_deterministic _ _ _ Hheadl Hheadr
+      rw [HEqM, HEqr]
+    case reflect Pr Er br HPr HEr Hlcr =>
+      exfalso
+      have HMr : ctx𝕄 0 (Pr ∘ Er) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼
+        apply rewrite_ctxℙ_to_ctx𝕄
+        apply HPr; apply HEr
+      have Hstepablel := head𝕄_impl_HeadStepable _ _ Hlcl Hheadl
+      have Hstepabler := reflect_impl_HeadStepable _ Hlcr
+      have ⟨HEqe, HEqM⟩ := decompose𝕄_deterministic _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [HEqe] at Hheadl
+      nomatch Hheadl
+  case reflect Pl El bl HPl HEl Hlcl =>
+    generalize HEq : Pl⟦El⟦.reflect bl⟧⟧ = e
+    rw [HEq] at Hstepr
+    cases Hstepr
+    case step𝕄 Mr er₀ er₁ HMr Hlcr Hheadr =>
+      exfalso
+      have HMl : ctx𝕄 0 (Pl ∘ El) :=
+        by
+        apply compose_ctx𝕄_ctx𝔼
+        apply rewrite_ctxℙ_to_ctx𝕄
+        apply HPl; apply HEl
+      have Hstepablel := reflect_impl_HeadStepable _ Hlcl
+      have Hstepabler := head𝕄_impl_HeadStepable _ _ Hlcr Hheadr
+      have ⟨HEqe, HEqM⟩ := decompose𝕄_deterministic _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [← HEqe] at Hheadr
+      nomatch Hheadr
+    case reflect Pr Er br HPr HEr Hlcr =>
+      admit
 
 theorem church_rosser_strengthened :
   ∀ e₀ l r,
