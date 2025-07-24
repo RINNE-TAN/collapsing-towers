@@ -1,5 +1,13 @@
 
 import CollapsingTowers.TwoLevelBasic.SmallStep
+@[pp_using_anonymous_constructor]
+structure HeadStepable (e : Expr) where
+  mk ::
+  Hlc : lc e
+  HNv : ¬value e
+  HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → e ≠ B⟦r⟧
+  HAtomicℝ : ∀ R r, ctxℝ intro lvl R → ¬value r → e ≠ R⟦r⟧
+
 theorem decompose𝔹_deterministic :
   ∀ e₀ e₁ B₀ B₁,
     ctx𝔹 B₀ →
@@ -39,6 +47,110 @@ theorem decomposeℝ_deterministic :
     rw [← open_close_id _ _ _ Hlc₀, ← open_close_id _ _ _ Hlc₁]
     rw [← HEq.right]
 
+theorem decompose𝔹_decomposeℝ_deterministic :
+  ∀ e₀ e₁ lvl intro B R,
+    ctx𝔹 B →
+    ctxℝ intro lvl R →
+    B⟦e₀⟧ = R⟦e₁⟧ →
+    ¬value e₀ →
+    ¬value e₁ →
+    False :=
+  by
+  intros e₀ e₁ lvl intro B R HB HR HEq HNv₀ HNv₁
+  cases HB <;> cases HR <;> nomatch HEq
+
+theorem ctx𝔹_not_value : ∀ B e, ctx𝔹 B → ¬value B⟦e⟧ :=
+  by
+  intros B e HB Hvalue
+  cases HB <;> nomatch Hvalue
+
+theorem ctxℝ_not_value : ∀ intro lvl R e, ctxℝ intro lvl R → ¬value R⟦e⟧ :=
+  by
+  intros intro lvl R e HR Hvalue
+  cases HR <;> nomatch Hvalue
+
+theorem ctx𝕄_not_value : ∀ lvl M e, ¬value e → ctx𝕄 lvl M → ¬value M⟦e⟧ :=
+  by
+  intros lvl M e HNv HM Hvalue
+  cases HM
+  case hole => apply HNv; apply Hvalue
+  case cons𝔹 HB _ => apply ctx𝔹_not_value; apply HB; apply Hvalue
+  case consℝ HR _ => apply ctxℝ_not_value; apply HR; apply Hvalue
+
+theorem ctx𝕄_value_id : ∀ lvl M e, ctx𝕄 lvl M → value M⟦e⟧ → M = id :=
+  by
+  intros lvl M e HM Hvalue
+  cases HM
+  case hole => rfl
+  case cons𝔹 HB _ => exfalso; apply ctx𝔹_not_value; apply HB; apply Hvalue
+  case consℝ HR _ => exfalso; apply ctxℝ_not_value; apply HR; apply Hvalue
+
+theorem decompose𝕄_deterministic :
+  ∀ e₀ e₁ lvl M₀ M₁,
+    ctx𝕄 lvl M₀ →
+    ctx𝕄 lvl M₁ →
+    M₀⟦e₀⟧ = M₁⟦e₁⟧ →
+    HeadStepable e₀ →
+    HeadStepable e₁ →
+    e₀ = e₁ ∧ M₀ = M₁ :=
+  by
+  intros e₀ e₁ lvl M₀ M₁ HM₀ HM₁ HEq He₀ He₁
+  induction HM₀ generalizing M₁
+  case hole =>
+    cases HM₁
+    case hole => simp; apply HEq
+    case cons𝔹 B₁ M₁ HB₁ HM₁ =>
+      exfalso
+      apply He₀.HAtomic𝔹
+      apply HB₁; apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      apply HEq
+    case consℝ R₁ M₁ HR₁ HM₁ =>
+      exfalso
+      apply He₀.HAtomicℝ
+      apply HR₁; apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      apply HEq
+  case cons𝔹 B₀ M₀ HB₀ HM₀ IH =>
+    cases HM₁
+    case hole =>
+      exfalso
+      apply He₁.HAtomic𝔹
+      apply HB₀; apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      symm; apply HEq
+    case cons𝔹 B₁ M₁ HB₁ HM₁ =>
+      have HNvM₀ := ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      have HNvM₁ := ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      have ⟨HEqM, HEqB⟩ := decompose𝔹_deterministic _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
+      have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
+      simp [HEqe, HEqB, HEqM]
+    case consℝ R₁ M₁ HR₁ HM₁ =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HB₀; apply HR₁; apply HEq
+      apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+  case consℝ R₀ M₀ HR₀ HM₀ IH =>
+    cases HM₁
+    case hole =>
+      exfalso
+      apply He₁.HAtomicℝ
+      apply HR₀; apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      symm; apply HEq
+    case cons𝔹 B₁ M₁ HB₁ HM₁ =>
+      exfalso
+      apply decompose𝔹_decomposeℝ_deterministic
+      apply HB₁; apply HR₀; symm; apply HEq
+      apply ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      apply ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+    case consℝ R₁ M₁ HR₁ HM₁ =>
+      have HNvM₀ := ctx𝕄_not_value _ _ _ He₀.HNv HM₀
+      have HNvM₁ := ctx𝕄_not_value _ _ _ He₁.HNv HM₁
+      have Hlc₀ := lc_ctx𝕄 _ _ _ _ HM₀ He₀.Hlc
+      have Hlc₁ := lc_ctx𝕄 _ _ _ _ HM₁ He₁.Hlc
+      have ⟨HEqM, HEqi, HEqR⟩ := decomposeℝ_deterministic _ _ _ _ _ _ _ HR₀ HR₁ HEq Hlc₀ Hlc₁ HNvM₀ HNvM₁
+      rw [HEqi] at IH
+      have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
+      simp [HEqe, HEqR, HEqM]
+
 theorem deterministic :
   ∀ e l r,
     step e l →
@@ -71,7 +183,15 @@ theorem church_rosser_strengthened :
       rw [deterministic _ _ _ IHstepl IHstepr]
       apply IHsteprn
 
-theorem value_termination : ∀ v e, value v → ¬step v e := by admit
+theorem value_termination : ∀ v e, value v → ¬step v e :=
+  by
+  intros v e Hvalue Hstep
+  cases Hstep
+  case step𝕄 HM _ Hhead =>
+    rw [ctx𝕄_value_id _ _ _ HM Hvalue] at Hvalue
+    cases Hhead <;> nomatch Hvalue
+  case reflect HP HE _ =>
+    admit
 
 theorem church_rosser :
   ∀ e v₀ v₁,
