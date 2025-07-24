@@ -190,8 +190,14 @@ theorem value_termination : ∀ v e, value v → ¬step v e :=
   case step𝕄 HM _ Hhead =>
     rw [ctx𝕄_value_id _ _ _ HM Hvalue] at Hvalue
     cases Hhead <;> nomatch Hvalue
-  case reflect HP HE _ =>
-    admit
+  case reflect P E _ HP HE _ =>
+    have HM : ctx𝕄 0 (P ∘ E) :=
+      by
+      apply compose_ctx𝕄_ctx𝔼
+      apply rewrite_ctxℙ_to_ctx𝕄
+      apply HP; apply HE
+    rw [ctx_comp P E, ctx𝕄_value_id _ _ _ HM Hvalue] at Hvalue
+    nomatch Hvalue
 
 theorem church_rosser :
   ∀ e v₀ v₁,

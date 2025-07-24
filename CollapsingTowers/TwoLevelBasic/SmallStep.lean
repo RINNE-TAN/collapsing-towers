@@ -300,6 +300,39 @@ theorem fv_at𝕄 :
     simp; apply fv_atℝ
     apply HR; apply IH
 
+theorem compose_ctx𝕄_ctx𝔹 :
+  ∀ lvl M B,
+    ctx𝕄 lvl M →
+    ctx𝔹 B →
+    ctx𝕄 lvl (M ∘ B) :=
+  by
+  intros lvl M B HM HB
+  induction HM
+  case hole =>
+    apply ctx𝕄.cons𝔹 _ _ HB
+    apply ctx𝕄.hole
+  case cons𝔹 HB _ IH =>
+    apply ctx𝕄.cons𝔹 _ _ HB
+    apply IH
+  case consℝ HR _ IH =>
+    apply ctx𝕄.consℝ _ _ HR
+    apply IH
+
+theorem compose_ctx𝕄_ctx𝔼 :
+  ∀ lvl M E,
+    ctx𝕄 lvl M →
+    ctx𝔼 E →
+    ctx𝕄 lvl (M ∘ E) :=
+  by
+  intros lvl M E HM HE
+  induction HE generalizing M
+  case hole =>
+    apply HM
+  case cons𝔹 B E HB _ IH =>
+    apply IH (M ∘ B)
+    apply compose_ctx𝕄_ctx𝔹
+    apply HM; apply HB
+
 -- properties of 𝔼 contexts
 
 theorem lc_ctx𝔼 : ∀ E e n, ctx𝔼 E → lc_at e n → lc_at E⟦e⟧ n :=
@@ -398,6 +431,37 @@ theorem fv_atℚ :
   | consℝ _ _ HR _ IH =>
     simp; apply fv_atℝ
     apply HR; apply IH
+
+theorem rewrite_ctxℚ_to_ctx𝕄 :
+  ∀ lvl Q,
+    ctxℚ lvl Q →
+    ctx𝕄 lvl Q :=
+  by
+  intros lvl Q HQ
+  induction HQ
+  case holeℝ HR =>
+    apply ctx𝕄.consℝ; apply HR
+    apply ctx𝕄.hole
+  case consℝ HR _ IH =>
+    apply ctx𝕄.consℝ; apply HR
+    apply IH
+  case cons𝔹 HB _ IH =>
+    apply ctx𝕄.cons𝔹; apply HB
+    apply IH
+
+-- properties of ℙ contexts
+
+theorem rewrite_ctxℙ_to_ctx𝕄 :
+  ∀ lvl P,
+    ctxℙ lvl P →
+    ctx𝕄 lvl P :=
+  by
+  intros lvl P HP
+  cases HP
+  case hole => apply ctx𝕄.hole
+  case consℚ HQ =>
+    apply rewrite_ctxℚ_to_ctx𝕄
+    apply HQ
 
 inductive head𝕄 : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head𝕄 (.lets v e) (open_subst v e)
