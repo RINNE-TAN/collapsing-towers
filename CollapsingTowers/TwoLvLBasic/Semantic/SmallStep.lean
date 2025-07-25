@@ -1,8 +1,8 @@
 import CollapsingTowers.TwoLvLBasic.Semantic.EvalCtx
 
 inductive head : Expr → Expr → Prop where
-  | lets : ∀ e v, value v → head (.lets v e) ({0 ↦ v} e)
-  | app₁ : ∀ e v, value v → head (.app₁ (.lam e) v) ({0 ↦ v} e)
+  | lets : ∀ e v, value v → head (.lets v e) ({0 ⤇ v} e)
+  | app₁ : ∀ e v, value v → head (.app₁ (.lam e) v) ({0 ⤇ v} e)
   | app₂ : ∀ f arg, head (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
   | lift_lit : ∀ n, head (.lift (.lit n)) (.reflect (.lit n))
   | lift_lam : ∀ e, head (.lift (.lam e)) (.lam𝕔 ({0 ↦ $0} e))

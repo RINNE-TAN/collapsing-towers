@@ -4,9 +4,24 @@ inductive Effect : Type where
   | pure
   | reify
 
+notation:max "∅" => Effect.pure
+
+@[simp]
+def Effect.union : Effect → Effect → Effect
+  | .pure, .pure => .pure
+  | .reify, _ => .reify
+  | _, .reify => .reify
+
+@[simp]
+instance : Union Effect where union := Effect.union
+
 inductive Stage : Type where
   | stat
   | dyn
+
+notation:max "𝟙" => Stage.stat
+
+notation:max "𝟚" => Stage.dyn
 
 inductive Ty : Type where
   | nat
