@@ -51,14 +51,6 @@ inductive ObsCtxℂ : TEnv → Ty → Ctx → TEnv → Ty → Prop where
       ObsCtx𝔹 ‖Ψ‖𝛾 ‖τψ‖𝜏 B ‖Δ‖𝛾 ‖τδ‖𝜏 →
       ObsCtxℂ ‖Ψ‖𝛾 ‖τψ‖𝜏 (C ∘ B) ‖Γ‖𝛾 ‖τγ‖𝜏
 
-theorem ObsCtx𝔹_length :
-  ∀ Δ Γ τδ τγ B,
-    ObsCtx𝔹 Δ τδ B Γ τγ →
-    Δ.length ≥ Γ.length :=
-  by
-  intros Δ Γ τδ τγ B HB
-  cases HB <;> simp
-
 -- Δ ⊢ X : τδ
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
 -- ——————————————————
@@ -172,22 +164,21 @@ theorem sem_equiv_typing_cong :
       apply typing_regular; apply Hτ₁
       apply typing_regular; apply Hτ₀
 
--- ∅ ⊧ e₀ ≈ e₁ : τ
+-- Γ ⊧ e₀ ≈ e₁ : τ
 -- ————————————————
--- ∅ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ
 theorem sem_soundness :
-  ∀ τ e₀ e₁,
-    sem_equiv_typing [] e₀ e₁ τ →
-    ctx_equiv [] e₀ e₁ τ :=
+  ∀ Γ τ e₀ e₁,
+    sem_equiv_typing Γ e₀ e₁ τ →
+    ctx_equiv Γ e₀ e₁ τ :=
   by
-  generalize HEqΓ : [] = Γ
-  intros τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
+  intros Γ τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
   generalize HEqΔ : [] = Δ
   generalize HEqτδ : Ty.nat = τδ
   intros HC v Hvalue
   induction HC generalizing e₀ e₁
   case hole =>
-    rw [← HEqΓ, ← HEqτδ] at Hsem
+    rw [← HEqΔ, ← HEqτδ] at Hsem
     have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
     have Hsem_expr := Hsem _ _ sem_equiv_env.nil
     rw [sem_equiv_expr] at Hsem_expr
@@ -208,9 +199,6 @@ theorem sem_soundness :
       . apply Hvalue
   case cons𝔹 C B HC HB IH =>
     apply IH
-    rw [← HEqΓ] at HB
-    have H := ObsCtx𝔹_length _ _ _ _ _ HB
-    simp at H; rw [H]
     apply sem_equiv_typing_cong
     apply Hτ₀; apply Hτ₁
     apply Hsem; apply HB
