@@ -1,0 +1,3 @@
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Weakening
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvHead

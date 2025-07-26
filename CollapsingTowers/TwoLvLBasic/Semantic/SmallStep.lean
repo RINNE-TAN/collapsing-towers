@@ -5,7 +5,7 @@ inductive head : Expr → Expr → Prop where
   | app₁ : ∀ e v, value v → head (.app₁ (.lam e) v) ({0 ⤇ v} e)
   | app₂ : ∀ f arg, head (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
   | lift_lit : ∀ n, head (.lift (.lit n)) (.reflect (.lit n))
-  | lift_lam : ∀ e, head (.lift (.lam e)) (.lam𝕔 ({0 ↦ $0} e))
+  | lift_lam : ∀ e, head (.lift (.lam e)) (.lam𝕔 (maping𝕔 0 e))
   | lam𝕔 : ∀ e, head (.lam𝕔 (.code e)) (.reflect (.lam e))
   | let𝕔 : ∀ b e, head (.lets𝕔 b (.code e)) (.code (.lets b e))
   | run : ∀ e, head (.run (.code e)) e

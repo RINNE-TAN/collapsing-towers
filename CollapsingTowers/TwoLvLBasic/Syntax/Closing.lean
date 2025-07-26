@@ -16,4 +16,4 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .lets b e => .lets (closing i x b) (closing (i + 1) x e)
   | .lets𝕔 b e => .lets𝕔 (closing i x b) (closing (i + 1) x e)
 
-notation:max "{" i "↤" x "}" e => closing i x e
+notation:max "{" i " ↤ " x "}" e => closing i x e

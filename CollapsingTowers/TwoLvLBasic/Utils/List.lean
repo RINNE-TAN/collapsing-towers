@@ -39,7 +39,7 @@ lemma binds.extend : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds x 
       omega
     . rw [if_neg Hx]; apply IHtails
 
-lemma binds_extendr : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds (x + Δ.length) a (Γ ++ Δ) :=
+lemma binds.extendr : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds (x + Δ.length) a (Γ ++ Δ) :=
   by
   intros _ Γ Δ x a
   induction Γ with
@@ -51,7 +51,7 @@ lemma binds_extendr : ∀ {α : Type} Γ Δ x (a : α), binds x a Γ → binds (
     . repeat rw [if_neg HEq]
       apply IHtails
 
-lemma binds_shrink : ∀ {α : Type} Γ Δ x (a : α), x < Γ.length → binds x a (Δ ++ Γ) → binds x a Γ :=
+lemma binds.shrink : ∀ {α : Type} Γ Δ x (a : α), x < Γ.length → binds x a (Δ ++ Γ) → binds x a Γ :=
   by
   intros _ Γ Δ x a HLt
   induction Δ with
@@ -63,7 +63,7 @@ lemma binds_shrink : ∀ {α : Type} Γ Δ x (a : α), x < Γ.length → binds x
     rw [if_neg HNe] at Hbinds
     apply Hbinds
 
-lemma binds_shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) a (Γ ++ Δ) → binds x a Γ :=
+lemma binds.shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) a (Γ ++ Δ) → binds x a Γ :=
   by
   intros _ Γ Δ x a
   induction Γ with
