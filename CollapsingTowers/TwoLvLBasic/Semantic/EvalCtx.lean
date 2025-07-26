@@ -50,3 +50,59 @@ mutual
     | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℚ' lvl (B ∘ Q)
     | consℝ : ∀ R P, ctxℝ intro lvl R → ctxℙ' (lvl + intro) P → ctxℚ' lvl (R ∘ P)
 end
+
+lemma lc.under_ctx𝔹 : ∀ B e i, ctx𝔹 B → lc_at e i → lc_at B⟦e⟧ i :=
+  by
+  intros _ _ _ HB Hlc
+  induction HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | lets _ IH =>
+    constructor; apply Hlc
+    apply lc.inc; apply IH; omega
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue =>
+    constructor
+    apply lc.inc; apply value_impl_lc
+    apply Hvalue; omega
+    apply Hlc
+  | lift => apply Hlc
+
+lemma lc.under_ctxℝ : ∀ R e i intro lvl, ctxℝ intro lvl R → lc_at e i → lc_at R⟦e⟧ i :=
+  by
+  intros _ _ _ _ _ HR Hlc
+  cases HR with
+  | lam𝕔 =>
+    apply lc.under_closing; omega
+    apply lc.inc; apply Hlc; omega
+  | let𝕔 _ Hlcb =>
+    constructor
+    apply lc.inc; apply Hlcb; omega
+    apply lc.under_closing; omega
+    apply lc.inc; apply Hlc; omega
+  | run =>
+    apply Hlc
+
+lemma lc.under_ctx𝕄 : ∀ M e i lvl, ctx𝕄 lvl M → lc_at e i → lc_at M⟦e⟧ i :=
+  by
+  intros _ _ _ _ HM Hlc
+  induction HM with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc =>
+    simp; apply lc.under_ctx𝔹
+    apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc =>
+    simp; apply lc.under_ctxℝ
+    apply HR; apply IHlc
+
+lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦e⟧ i :=
+  by
+  intros _ _ _ _ HQ Hlc
+  induction HQ with
+  | holeℝ _ HR => apply lc.under_ctxℝ; apply HR; apply Hlc
+  | cons𝔹 _ _ HB _ IHlc =>
+    simp; apply lc.under_ctx𝔹
+    apply HB; apply IHlc
+  | consℝ _ _ HR _ IHlc =>
+    simp; apply lc.under_ctxℝ
+    apply HR; apply IHlc

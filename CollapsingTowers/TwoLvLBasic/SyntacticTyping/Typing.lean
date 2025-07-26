@@ -74,6 +74,36 @@ mutual
     | reify : ∀ Γ e τ φ, typing Γ 𝟙 e (.fragment τ) φ → typing_reification Γ e (.rep τ) φ
 end
 
+lemma typing.regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => lc e)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e)
+  <;> try simp
+  <;> intros
+  case lam IH =>
+    rw [← lc.under_opening]; apply IH
+  case lam𝕔 IH =>
+    rw [← lc.under_opening]; apply IH
+  case app₁ IHf IHarg =>
+    constructor; apply IHf; apply IHarg
+  case app₂ IHf IHarg =>
+    constructor; apply IHf; apply IHarg
+  case lets IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  case let𝕔 IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  apply Hτ
+
+lemma typing_reification.regular : ∀ Γ e τ φ, typing_reification Γ e τ φ → lc e :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;> (apply typing.regular; assumption)
+
 lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_at e Γ.length :=
   by
   intros Γ 𝕊 e τ φ Hτ
