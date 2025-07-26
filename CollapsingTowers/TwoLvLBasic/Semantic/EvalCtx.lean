@@ -95,6 +95,15 @@ lemma lc.under_ctx𝕄 : ∀ M e i lvl, ctx𝕄 lvl M → lc_at e i → lc_at M�
     simp; apply lc.under_ctxℝ
     apply HR; apply IHlc
 
+lemma lc.under_ctx𝔼 : ∀ E e i, ctx𝔼 E → lc_at e i → lc_at E⟦e⟧ i :=
+  by
+  intros _ _ _ HE Hlc
+  induction HE with
+  | hole => apply Hlc
+  | cons𝔹 _ _ HB _ IHlc =>
+    simp; apply lc.under_ctx𝔹
+    apply HB; apply IHlc
+
 lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦e⟧ i :=
   by
   intros _ _ _ _ HQ Hlc
@@ -106,3 +115,65 @@ lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦
   | consℝ _ _ HR _ IHlc =>
     simp; apply lc.under_ctxℝ
     apply HR; apply IHlc
+
+theorem compose.ctx𝕄_ctx𝔹 :
+  ∀ lvl M B,
+    ctx𝕄 lvl M →
+    ctx𝔹 B →
+    ctx𝕄 lvl (M ∘ B) :=
+  by
+  intros lvl M B HM HB
+  induction HM
+  case hole =>
+    apply ctx𝕄.cons𝔹 _ _ HB
+    apply ctx𝕄.hole
+  case cons𝔹 HB _ IH =>
+    apply ctx𝕄.cons𝔹 _ _ HB
+    apply IH
+  case consℝ HR _ IH =>
+    apply ctx𝕄.consℝ _ _ HR
+    apply IH
+
+theorem compose.ctx𝕄_ctx𝔼 :
+  ∀ lvl M E,
+    ctx𝕄 lvl M →
+    ctx𝔼 E →
+    ctx𝕄 lvl (M ∘ E) :=
+  by
+  intros lvl M E HM HE
+  induction HE generalizing M
+  case hole =>
+    apply HM
+  case cons𝔹 B E HB _ IH =>
+    apply IH (M ∘ B)
+    apply compose.ctx𝕄_ctx𝔹
+    apply HM; apply HB
+
+theorem rewrite.ctxℚ_ctx𝕄 :
+  ∀ lvl Q,
+    ctxℚ lvl Q →
+    ctx𝕄 lvl Q :=
+  by
+  intros lvl Q HQ
+  induction HQ
+  case holeℝ HR =>
+    apply ctx𝕄.consℝ; apply HR
+    apply ctx𝕄.hole
+  case consℝ HR _ IH =>
+    apply ctx𝕄.consℝ; apply HR
+    apply IH
+  case cons𝔹 HB _ IH =>
+    apply ctx𝕄.cons𝔹; apply HB
+    apply IH
+
+theorem rewrite.ctxℙ_ctx𝕄 :
+  ∀ lvl P,
+    ctxℙ lvl P →
+    ctx𝕄 lvl P :=
+  by
+  intros lvl P HP
+  cases HP
+  case hole => apply ctx𝕄.hole
+  case consℚ HQ =>
+    apply rewrite.ctxℚ_ctx𝕄
+    apply HQ

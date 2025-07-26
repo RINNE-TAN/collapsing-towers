@@ -101,7 +101,7 @@ lemma not_value.under_ctxℚ : ∀ lvl Q e, ctxℚ lvl Q → ¬value Q⟦e⟧ :=
   case cons𝔹 HB _ => apply not_value.under_ctx𝔹; apply HB; apply Hvalue
   case consℝ HR _ => apply not_value.under_ctxℝ; apply HR; apply Hvalue
 
-theorem deterministic.head :
+lemma deterministic.head :
   ∀ e l r,
     head e l →
     head e r →
@@ -163,7 +163,42 @@ lemma deterministic.under_ctx𝔹_ctxℝ :
   intros e₀ e₁ lvl intro B R HB HR HEq HNv₀ HNv₁
   cases HB <;> cases HR <;> nomatch HEq
 
-theorem deterministic.under_ctx𝕄 :
+lemma deterministic.under_ctx𝔼 :
+  ∀ e₀ e₁ E₀ E₁,
+    ctx𝔼 E₀ →
+    ctx𝔼 E₁ →
+    E₀⟦e₀⟧ = E₁⟦e₁⟧ →
+    HeadStepable e₀ →
+    HeadStepable e₁ →
+    e₀ = e₁ ∧ E₀ = E₁ :=
+  by
+  intros e₀ e₁ E₀ E₁ HE₀ HE₁ HEq He₀ He₁
+  induction HE₀ generalizing E₁
+  case hole =>
+    cases HE₁
+    case hole => simp; apply HEq
+    case cons𝔹 B₁ E₁ HB₁ HE₁ =>
+      exfalso
+      apply He₀.HAtomic𝔹; apply HB₁
+      apply not_value.under_ctx𝔼 _ _ He₁.HNv HE₁
+      apply lc.under_ctx𝔼; apply HE₁; apply He₁.Hlc
+      apply HEq
+  case cons𝔹 B₀ E₀ HB₀ HE₀ IH =>
+    cases HE₁
+    case hole =>
+      exfalso
+      apply He₁.HAtomic𝔹; apply HB₀
+      apply not_value.under_ctx𝔼 _ _ He₀.HNv HE₀
+      apply lc.under_ctx𝔼; apply HE₀; apply He₀.Hlc
+      symm; apply HEq
+    case cons𝔹 B₁ E₁ HB₁ HE₁ =>
+      have HNvM₀ := not_value.under_ctx𝔼 _ _ He₀.HNv HE₀
+      have HNvM₁ := not_value.under_ctx𝔼 _ _ He₁.HNv HE₁
+      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
+      have ⟨HEqe, HEqM⟩ := IH _ HE₁ HEqM
+      simp [HEqe, HEqB, HEqM]
+
+lemma deterministic.under_ctx𝕄 :
   ∀ e₀ e₁ lvl M₀ M₁,
     ctx𝕄 lvl M₀ →
     ctx𝕄 lvl M₁ →
@@ -232,3 +267,282 @@ theorem deterministic.under_ctx𝕄 :
       rw [HEqi] at IH
       have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
       simp [HEqe, HEqR, HEqM]
+
+lemma deterministic.under_ctxℚ_ctx𝔼 :
+  ∀ el er lvl Qr El Er,
+    ctxℚ lvl Qr →
+    ctx𝔼 El →
+    ctx𝔼 Er →
+    El⟦el⟧ = Qr⟦Er⟦er⟧⟧ →
+    HeadStepable el →
+    HeadStepable er →
+    False :=
+  by
+  intros el er lvl Qr El Er HQr HEl HEr HEq Hel Her
+  induction HQr generalizing El
+  case holeℝ Rr HRr =>
+    cases HEl
+    case hole =>
+      apply Hel.HAtomicℝ; apply HRr
+      apply not_value.under_ctx𝔼
+      apply Her.HNv; apply HEr
+      apply lc.under_ctx𝔼 _ _ _ HEr
+      apply Her.Hlc; apply HEq
+    case cons𝔹 Bl El HBl HEl =>
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBl; apply HRr; apply HEq
+      . apply not_value.under_ctx𝔼
+        apply Hel.HNv; apply HEl
+      . apply not_value.under_ctx𝔼
+        apply Her.HNv; apply HEr
+  case consℝ Rr Qr HRr HQr IH =>
+    cases HEl
+    case hole =>
+      apply Hel.HAtomicℝ; apply HRr
+      apply not_value.under_ctxℚ _ _ Er⟦er⟧
+      apply HQr
+      apply lc.under_ctxℚ _ _ _ _ HQr
+      apply lc.under_ctx𝔼 _ _ _ HEr
+      apply Her.Hlc; apply HEq
+    case cons𝔹 Bl El HBl HEl =>
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBl; apply HRr; apply HEq
+      . apply not_value.under_ctx𝔼
+        apply Hel.HNv; apply HEl
+      . apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+  case cons𝔹 lvl Br Qr HBr HQr IH =>
+    cases HEl
+    case hole =>
+      apply Hel.HAtomic𝔹; apply HBr
+      apply not_value.under_ctxℚ _ _ Er⟦er⟧
+      apply HQr
+      apply lc.under_ctxℚ _ _ _ _ HQr
+      apply lc.under_ctx𝔼 _ _ _ HEr
+      apply Her.Hlc; apply HEq
+    case cons𝔹 Bl El HBl HEl =>
+      apply IH; apply HEl
+      have HNvl : ¬value El⟦el⟧ :=
+      by
+       apply not_value.under_ctx𝔼
+       apply Hel.HNv; apply HEl
+      have HNvr : ¬value Qr⟦Er⟦er⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
+      apply HEqM
+
+lemma deterministic.under_ctxℚ :
+  ∀ el er lvl Ql Qr El Er,
+    ctxℚ lvl Ql →
+    ctxℚ lvl Qr →
+    ctx𝔼 El →
+    ctx𝔼 Er →
+    Ql⟦El⟦el⟧⟧ = Qr⟦Er⟦er⟧⟧ →
+    HeadStepable el →
+    HeadStepable er →
+    El⟦el⟧ = Er⟦er⟧ ∧ Ql = Qr :=
+  by
+  intros el er lvl Ql Qr El Er HQl HQr HEl HEr HEq Hel Her
+  induction HQl generalizing Qr
+  case holeℝ Rl HRl =>
+    cases HQr
+    case holeℝ HRr =>
+      have HNvl := not_value.under_ctx𝔼 _ _ Hel.HNv HEl
+      have HNvr := not_value.under_ctx𝔼 _ _ Her.HNv HEr
+      have Hlcl := lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc
+      have Hlcr := lc.under_ctx𝔼 _ _ _ HEr Her.Hlc
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      constructor
+      apply HEqM; apply HEqR
+    case cons𝔹 Br Qr HBr HQr =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBr; apply HRl
+      symm; apply HEq
+      . apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      . apply not_value.under_ctx𝔼
+        apply Hel.HNv; apply HEl
+    case consℝ lvl intro Rr Qr HRr HQr =>
+      exfalso
+      have HNvl : ¬value El⟦el⟧ :=
+      by
+       apply not_value.under_ctx𝔼
+       apply Hel.HNv; apply HEl
+      have HNvr : ¬value Qr⟦Er⟦er⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      have Hlcl := lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc
+      have Hlcr := lc.under_ctxℚ _ _ _ _ HQr (lc.under_ctx𝔼 _ _ _ HEr Her.Hlc)
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply deterministic.under_ctxℚ_ctx𝔼
+      apply HQr; apply HEl; apply HEr
+      apply HEqM; apply Hel; apply Her
+  case cons𝔹 Bl Ql HBl HQl IH =>
+    cases HQr
+    case holeℝ HRr =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBl; apply HRr
+      apply HEq
+      . apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+      . apply not_value.under_ctx𝔼
+        apply Her.HNv; apply HEr
+    case cons𝔹 lvl Br Qr HBr HQr =>
+      have HNvl : ¬value Ql⟦El⟦el⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+      have HNvr : ¬value Qr⟦Er⟦er⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
+      have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
+      simp [HEqe, HEqB, HEqQ]
+    case consℝ Rr Qr HRr HQr =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBl; apply HRr
+      apply HEq
+      . apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+      . apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+  case consℝ introl lvl Rl Ql HRl HQl IH =>
+    cases HQr
+    case holeℝ HRr =>
+      exfalso
+      have HNvl : ¬value Ql⟦El⟦el⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+      have HNvr : ¬value Er⟦er⟧ :=
+      by
+        apply not_value.under_ctx𝔼
+        apply Her.HNv; apply HEr
+      have Hlcl := lc.under_ctxℚ _ _ _ _ HQl (lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc)
+      have Hlcr := lc.under_ctx𝔼 _ _ _ HEr Her.Hlc
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply deterministic.under_ctxℚ_ctx𝔼
+      apply HQl; apply HEr; apply HEl
+      symm; apply HEqM; apply Her; apply Hel
+    case cons𝔹 lvl Br Qr HBr HQr =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HBr; apply HRl
+      symm; apply HEq
+      . apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      . apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+    case consℝ intror Rr Qr HRr HQr =>
+      have HNvl : ¬value Ql⟦El⟦el⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ El⟦el⟧
+        apply HQl
+      have HNvr : ¬value Qr⟦Er⟦er⟧⟧ :=
+      by
+        apply not_value.under_ctxℚ _ _ Er⟦er⟧
+        apply HQr
+      have Hlcl := lc.under_ctxℚ _ _ _ _ HQl (lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc)
+      have Hlcr := lc.under_ctxℚ _ _ _ _ HQr (lc.under_ctx𝔼 _ _ _ HEr Her.Hlc)
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      rw [← HEqi] at HQr
+      have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
+      simp [HEqe, HEqR, HEqQ]
+
+lemma deterministic.under_ctxℙ :
+  ∀ el er lvl Pl Pr El Er,
+    ctxℙ lvl Pl →
+    ctxℙ lvl Pr →
+    ctx𝔼 El →
+    ctx𝔼 Er →
+    Pl⟦El⟦el⟧⟧ = Pr⟦Er⟦er⟧⟧ →
+    HeadStepable el →
+    HeadStepable er →
+    el = er ∧ Pl = Pr ∧ El = Er :=
+  by
+  intros el er lvl Pl Pr El Er HPl HPr HEl HEr HEq Hel Her
+  cases HPl
+  case hole =>
+    cases HPr
+    case hole =>
+      simp; apply deterministic.under_ctx𝔼
+      apply HEl; apply HEr; apply HEq; apply Hel; apply Her
+    case consℚ HQr =>
+      exfalso
+      apply deterministic.under_ctxℚ_ctx𝔼
+      apply HQr; apply HEl; apply HEr
+      apply HEq; apply Hel; apply Her
+  case consℚ HQl =>
+    cases HPr
+    case hole =>
+      exfalso
+      apply deterministic.under_ctxℚ_ctx𝔼
+      apply HQl; apply HEr; apply HEl
+      symm; apply HEq; apply Her; apply Hel
+    case consℚ HQr =>
+      have ⟨HEqE, HEqQ⟩ := deterministic.under_ctxℚ _ _ _ _ _ _ _ HQl HQr HEl HEr HEq Hel Her
+      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝔼 _ _ _ _ HEl HEr HEqE Hel Her
+      constructor; apply HEqe
+      constructor; apply HEqQ
+      apply HEqM
+
+theorem deterministic :
+  ∀ e l r,
+    (e ⇝ l) →
+    (e ⇝ r) →
+    l = r :=
+  by
+  intros e l r Hstepl Hstepr
+  cases Hstepl
+  case pure Ml el₀ el₁ HMl Hlcl Hheadl =>
+    generalize HEq : Ml⟦el₀⟧ = e
+    rw [HEq] at Hstepr
+    cases Hstepr
+    case pure Mr er₀ er₁ HMr Hlcr Hheadr =>
+      have Hstepablel := head_impl_head_stepable _ _ Hlcl Hheadl
+      have Hstepabler := head_impl_head_stepable _ _ Hlcr Hheadr
+      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [HEqe] at Hheadl
+      have HEqr := deterministic.head _ _ _ Hheadl Hheadr
+      rw [HEqM, HEqr]
+    case reflect Pr Er br HPr HEr Hlcr =>
+      exfalso
+      have HMr : ctx𝕄 0 (Pr ∘ Er) :=
+        by
+        apply compose.ctx𝕄_ctx𝔼
+        apply rewrite.ctxℙ_ctx𝕄
+        apply HPr; apply HEr
+      have Hstepablel := head_impl_head_stepable _ _ Hlcl Hheadl
+      have Hstepabler := reflect_impl_head_stepable _ Hlcr
+      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [HEqe] at Hheadl
+      nomatch Hheadl
+  case reflect Pl El bl HPl HEl Hlcl =>
+    generalize HEq : Pl⟦El⟦.reflect bl⟧⟧ = e
+    rw [HEq] at Hstepr
+    cases Hstepr
+    case pure Mr er₀ er₁ HMr Hlcr Hheadr =>
+      exfalso
+      have HMl : ctx𝕄 0 (Pl ∘ El) :=
+        by
+        apply compose.ctx𝕄_ctx𝔼
+        apply rewrite.ctxℙ_ctx𝕄
+        apply HPl; apply HEl
+      have Hstepablel := reflect_impl_head_stepable _ Hlcl
+      have Hstepabler := head_impl_head_stepable _ _ Hlcr Hheadr
+      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      rw [← HEqe] at Hheadr
+      nomatch Hheadr
+    case reflect Pr Er br HPr HEr Hlcr =>
+      have Hstepablel := reflect_impl_head_stepable _ Hlcl
+      have Hstepabler := reflect_impl_head_stepable _ Hlcr
+      have ⟨HEqr, HEqP, HEqE⟩ := deterministic.under_ctxℙ _ _ _ _ _ _ _ HPl HPr HEl HEr HEq Hstepablel Hstepabler
+      simp at HEqr
+      simp [HEqr, HEqP, HEqE]
