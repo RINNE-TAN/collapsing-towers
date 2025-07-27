@@ -19,7 +19,7 @@ lemma typing.weakening_strengthened :
           Γ = Ψ ++ Φ →
           typing_reification (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ φ)
   <;> intros
-  case fvar x _ Hbinds HwellBinds Ψ HEqΓ =>
+  case fvar x _ Hbinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
     . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.fvar
@@ -28,31 +28,31 @@ lemma typing.weakening_strengthened :
       rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
       rw [Nat.add_comm] at Hbinds
       repeat apply binds.extendr
-      apply binds.shrinkr; apply Hbinds; apply HwellBinds
+      apply binds.shrinkr; apply Hbinds; apply Hwbt
     . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.fvar
       apply binds.extend; apply binds.shrink
-      omega; apply Hbinds; apply HwellBinds
-  case lam HwellBinds Hclose IH Ψ HEqΓ =>
+      omega; apply Hbinds; apply Hwbt
+  case lam Hwbt Hclose IH Ψ HEqΓ =>
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
     rw [comm.shiftl_opening] at IH
     rw [List.length_append, Nat.add_right_comm] at IH
     apply typing.lam
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
-    apply IH; rfl; apply HwellBinds
+    apply IH; rfl; apply Hwbt
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply closed.under_shiftl; rw [← List.length_append]; apply Hclose; simp
   case lift_lam IH Ψ HEqΓ =>
     apply typing.lift_lam
     apply IH; apply HEqΓ
-  case lam𝕔 HwellBinds Hclose IH Ψ HEqΓ =>
+  case lam𝕔 Hwbt Hclose IH Ψ HEqΓ =>
     rw [HEqΓ] at IH
     rw [HEqΓ] at Hclose
     rw [comm.shiftl_opening] at IH
     rw [List.length_append, Nat.add_right_comm] at IH
     apply typing.lam𝕔
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
-    apply IH; rfl; apply HwellBinds
+    apply IH; rfl; apply Hwbt
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply closed.under_shiftl; rw [← List.length_append]; apply Hclose; simp
   case app₁ IHf IHarg Ψ HEqΓ =>
@@ -67,7 +67,7 @@ lemma typing.weakening_strengthened :
   case lift_lit IH Ψ HEqΓ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ
-  case code_fragment x _ Hbinds HwellBinds Ψ HEqΓ =>
+  case code_fragment x _ Hbinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at Hbinds
     by_cases HLe : Φ.length <= x
     . simp only [shiftl_at]; rw [if_pos HLe]; apply typing.code_fragment
@@ -76,17 +76,17 @@ lemma typing.weakening_strengthened :
       rw [Nat.add_assoc, Nat.add_left_comm, ← Nat.add_assoc, Nat.add_right_comm]
       rw [Nat.add_comm] at Hbinds
       repeat apply binds.extendr
-      apply binds.shrinkr; apply Hbinds; apply HwellBinds
+      apply binds.shrinkr; apply Hbinds; apply Hwbt
     . simp only [shiftl_at]; rw [if_neg HLe]; apply typing.code_fragment
       apply binds.extend; apply binds.shrink
-      omega; apply Hbinds; apply HwellBinds
+      omega; apply Hbinds; apply Hwbt
   case code_rep IH Ψ HEqΓ =>
     apply typing.code_rep
     apply IH; apply HEqΓ
   case reflect IH Ψ HEqΓ =>
     apply typing.reflect
     apply IH; apply HEqΓ
-  case lets HwellBinds Hclose IHb IHe Ψ HEqΓ =>
+  case lets Hwbt Hclose IHb IHe Ψ HEqΓ =>
     rw [HEqΓ] at IHe
     rw [HEqΓ] at Hclose
     rw [comm.shiftl_opening] at IHe
@@ -94,10 +94,10 @@ lemma typing.weakening_strengthened :
     apply typing.lets
     apply IHb; apply HEqΓ
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
-    apply IHe; rfl; apply HwellBinds
+    apply IHe; rfl; apply Hwbt
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply closed.under_shiftl; rw [← List.length_append]; apply Hclose; simp
-  case lets𝕔 HwellBinds Hclose IHb IHe Ψ HEqΓ =>
+  case lets𝕔 Hwbt Hclose IHb IHe Ψ HEqΓ =>
     rw [HEqΓ] at IHe
     rw [HEqΓ] at Hclose
     rw [comm.shiftl_opening] at IHe
@@ -105,7 +105,7 @@ lemma typing.weakening_strengthened :
     apply typing.lets𝕔
     apply IHb; apply HEqΓ
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
-    apply IHe; rfl; apply HwellBinds
+    apply IHe; rfl; apply Hwbt
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply closed.under_shiftl; rw [← List.length_append]; apply Hclose; simp
   case run Hclose IH Ψ HEqΓ =>

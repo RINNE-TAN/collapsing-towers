@@ -25,7 +25,7 @@ lemma preservation.maping_strengthened :
           typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ∅ →
           typing_reification (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) (subst Φ.length v e) τ𝕓 φ)
   <;> intros
-  case fvar 𝕊 x _ Hbinds HwellBinds Δ HEqΓ Hτv =>
+  case fvar 𝕊 x _ Hbinds Hwbt Δ HEqΓ Hτv =>
     rw [← HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
@@ -37,7 +37,7 @@ lemma preservation.maping_strengthened :
       apply binds.extendr
       apply binds.shrinkr _ ((τ𝕔, 𝟙) :: Φ)
       rw [List.length_cons, List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega; apply HwellBinds
+      apply Hbinds; omega; apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [← Hx] at Hbinds
@@ -51,14 +51,14 @@ lemma preservation.maping_strengthened :
       rw [List.append_cons] at Hbinds
       apply typing.fvar
       apply binds.extend; apply binds.shrink
-      omega; apply Hbinds; apply HwellBinds
-  case lam HwellBinds Hclose IH Δ HEqΓ Hτv =>
+      omega; apply Hbinds; apply Hwbt
+  case lam Hwbt Hclose IH Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IH
     apply typing.lam
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
-    apply typing.weakening_singleton; apply Hτv; apply HwellBinds
+    apply typing.weakening_singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -67,13 +67,13 @@ lemma preservation.maping_strengthened :
   case lift_lam IH Δ HEqΓ Hτv =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hτv
-  case lam𝕔 HwellBinds Hclose IH Δ HEqΓ Hτv =>
+  case lam𝕔 Hwbt Hclose IH Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IH
     apply typing.lam𝕔
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
-    apply typing.weakening_singleton; apply Hτv; apply HwellBinds
+    apply typing.weakening_singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -90,7 +90,7 @@ lemma preservation.maping_strengthened :
   case lift_lit IH Δ HEqΓ Hτv =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply Hτv
-  case code_fragment x _ Hbinds HwellBinds Δ HEqΓ Hτv =>
+  case code_fragment x _ Hbinds Hwbt Δ HEqΓ Hτv =>
     rw [← HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
@@ -102,7 +102,7 @@ lemma preservation.maping_strengthened :
       apply binds.extendr
       apply binds.shrinkr _ ((τ𝕔, 𝟙) :: Φ)
       rw [List.length_cons, List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega; apply HwellBinds
+      apply Hbinds; omega; apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [← Hx] at Hbinds
@@ -115,14 +115,14 @@ lemma preservation.maping_strengthened :
       rw [List.append_cons] at Hbinds
       apply typing.code_fragment
       apply binds.extend; apply binds.shrink
-      omega; apply Hbinds; apply HwellBinds
+      omega; apply Hbinds; apply Hwbt
   case code_rep IH Δ HEqΓ Hτv =>
     apply typing.code_rep
     apply IH; apply HEqΓ; apply Hτv
   case reflect IH Δ HEqΓ Hτv =>
     apply typing.reflect
     apply IH; apply HEqΓ; apply Hτv
-  case lets HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
+  case lets Hwbt Hclose IHb IHe Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IHe
@@ -130,13 +130,13 @@ lemma preservation.maping_strengthened :
     apply IHb; rfl; apply Hτv
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IHe; rfl
-    apply typing.weakening_singleton; apply Hτv; apply HwellBinds
+    apply typing.weakening_singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing.regular; apply Hτv
-  case lets𝕔 HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
+  case lets𝕔 Hwbt Hclose IHb IHe Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IHe
@@ -144,7 +144,7 @@ lemma preservation.maping_strengthened :
     apply IHb; rfl; apply Hτv
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IHe; rfl
-    apply typing.weakening_singleton; apply Hτv; apply HwellBinds
+    apply typing.weakening_singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose

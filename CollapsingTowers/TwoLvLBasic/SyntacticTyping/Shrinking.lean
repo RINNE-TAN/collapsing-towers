@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
 
-theorem typing.shrinking_strengthened :
+lemma typing.shrinking_strengthened :
   ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
     Γ = Ψ ++ Φ :: Δ →
@@ -21,8 +21,8 @@ theorem typing.shrinking_strengthened :
           Γ = Ψ ++ Φ :: Δ →
           Δ.length ∉ fv e →
           typing_reification (Ψ ++ Δ) (shiftr_at Δ.length e) τ φ)
-  case fvar =>
-    intros _ _ x _ Hbinds HwellBinds Ψ HEqΓ HclosedΔ
+  <;> intros
+  case fvar x _ Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at Hbinds; simp
     cases Hx : compare Δ.length x with
     | lt =>
@@ -35,7 +35,7 @@ theorem typing.shrinking_strengthened :
       rw [← Nat.sub_add_eq, Nat.add_comm]
       apply binds.shrinkr _ (Φ :: Δ)
       rw [List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega; apply HwellBinds
+      apply Hbinds; omega; apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [Hx] at HclosedΔ; nomatch HclosedΔ
@@ -44,52 +44,45 @@ theorem typing.shrinking_strengthened :
       rw [if_neg (Nat.not_lt_of_gt Hx)]
       apply typing.fvar
       apply binds.extend; apply binds.shrink
-      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
-  case lam =>
-    intros _ _ _ _ _ _ _ HwellBinds Hclosed IH Ψ HEqΓ HclosedΔ
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply Hwbt
+  case lam Hwbt Hclosed IH Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ, comm.shiftr_opening] at IH
     rw [HEqΓ] at Hclosed
     apply typing.lam
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply fv.not_in_under_opening; apply HclosedΔ; omega
-    apply HwellBinds
+    apply Hwbt
     simp; apply closed.under_shiftr_dec
     simp at Hclosed; apply Hclosed; apply HclosedΔ
     simp; omega
-  case lift_lam =>
-    intros _ _ _ _ _ _ _ IH Ψ HEqΓ HclosedΔ
+  case lift_lam IH Ψ HEqΓ HclosedΔ =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply HclosedΔ
-  case lam𝕔 =>
-    intros _ _ _ _ _ _ HwellBinds Hclosed IH Ψ HEqΓ HclosedΔ
+  case lam𝕔 Hwbt Hclosed IH Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at IH; rw [HEqΓ] at Hclosed
     rw [comm.shiftr_opening] at IH
     apply typing.lam𝕔
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply fv.not_in_under_opening; apply HclosedΔ; omega
-    apply HwellBinds
+    apply Hwbt
     simp; apply closed.under_shiftr_dec
     simp at Hclosed; apply Hclosed; apply HclosedΔ
     simp; omega
-  case app₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg Ψ HEqΓ HclosedΔ
+  case app₁ IHf IHarg Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.app₁
     apply IHf; apply HEqΓ; apply HclosedΔ.left
     apply IHarg; apply HEqΓ; apply HclosedΔ.right
-  case app₂ =>
-    intros _ _ _ _ _ _ _ _ _ IHf IHarg Ψ HEqΓ HclosedΔ
+  case app₂ IHf IHarg Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.app₂
     apply IHf; apply HEqΓ; apply HclosedΔ.left
     apply IHarg; apply HEqΓ; apply HclosedΔ.right
-  case lit => intros; apply typing.lit
-  case lift_lit =>
-    intros _ _ _ _ IH Ψ HEqΓ HclosedΔ
+  case lit => apply typing.lit
+  case lift_lit IH Ψ HEqΓ HclosedΔ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply HclosedΔ
-  case code_fragment =>
-    intros _ x _ Hbinds HwellBinds Ψ HEqΓ HclosedΔ
+  case code_fragment x _ Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at Hbinds; simp
     cases Hx : compare Δ.length x with
     | lt =>
@@ -102,7 +95,7 @@ theorem typing.shrinking_strengthened :
       rw [← Nat.sub_add_eq, Nat.add_comm]
       apply binds.shrinkr _ (Φ :: Δ)
       rw [List.length_cons, Nat.sub_add_cancel]
-      apply Hbinds; omega; apply HwellBinds
+      apply Hbinds; omega; apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
       rw [Hx] at HclosedΔ; nomatch HclosedΔ
@@ -111,17 +104,14 @@ theorem typing.shrinking_strengthened :
       rw [if_neg (Nat.not_lt_of_gt Hx)]
       apply typing.code_fragment
       apply binds.extend; apply binds.shrink
-      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
-  case code_rep =>
-    intros _ _ _ _ IH Ψ HEqΓ HclosedΔ
+      omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply Hwbt
+  case code_rep IH Ψ HEqΓ HclosedΔ =>
     apply typing.code_rep
     apply IH; apply HEqΓ; apply HclosedΔ
-  case reflect =>
-    intros _ _ _ _ IH Ψ HEqΓ HclosedΔ
+  case reflect IH Ψ HEqΓ HclosedΔ =>
     apply typing.reflect
     apply IH; apply HEqΓ; apply HclosedΔ
-  case lets =>
-    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclosed IHb IHe Ψ HEqΓ HclosedΔ
+  case lets Hwbt Hclosed IHb IHe Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclosed
     rw [comm.shiftr_opening] at IHe
     simp at IHb; simp at IHe; simp at HclosedΔ
@@ -129,12 +119,11 @@ theorem typing.shrinking_strengthened :
     apply IHb; apply HclosedΔ.left
     simp; rw [← List.cons_append]; apply IHe; rfl
     apply fv.not_in_under_opening; apply HclosedΔ.right; omega
-    apply HwellBinds
+    apply Hwbt
     simp; apply closed.under_shiftr_dec
     simp at Hclosed; apply Hclosed; apply HclosedΔ.right
     simp; omega
-  case lets𝕔 =>
-    intros _ _ _ _ _ _ _ _ HwellBinds Hclosed IHb IHe Ψ HEqΓ HclosedΔ
+  case lets𝕔 Hwbt Hclosed IHb IHe Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclosed
     rw [comm.shiftr_opening] at IHe
     simp at IHb; simp at IHe; simp at HclosedΔ
@@ -142,22 +131,19 @@ theorem typing.shrinking_strengthened :
     apply IHb; apply HclosedΔ.left
     simp; rw [← List.cons_append]; apply IHe; rfl
     apply fv.not_in_under_opening; apply HclosedΔ.right; omega
-    apply HwellBinds
+    apply Hwbt
     simp; apply closed.under_shiftr_dec
     simp at Hclosed; apply Hclosed; apply HclosedΔ.right
     simp; omega
-  case run =>
-    intros _ _ _ _ _ Hclosed IH Ψ HEqΓ HclosedΔ
+  case run Hclosed IH Ψ HEqΓ HclosedΔ =>
     apply typing.run
     apply IH; apply HEqΓ; apply HclosedΔ
     rw [identity.shiftr]; apply Hclosed
     apply closed.inc; apply Hclosed; omega
-  case pure =>
-    intros _ _ _ _ IH Ψ HEqΓ HclosedΔ
+  case pure IH Ψ HEqΓ HclosedΔ =>
     apply typing_reification.pure
     apply IH; apply HEqΓ; apply HclosedΔ
-  case reify =>
-    intros _ _ _ _ _ IH Ψ HEqΓ HclosedΔ
+  case reify IH Ψ HEqΓ HclosedΔ =>
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply HclosedΔ
   apply Hτ
