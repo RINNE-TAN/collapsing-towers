@@ -169,6 +169,114 @@ lemma fv.under_ctx𝕄 :
     simp; apply fv.under_ctxℝ
     apply HR; apply IH
 
+lemma fv.under_ctx𝔼 :
+  ∀ E e₀ e₁,
+    ctx𝔼 E →
+    fv e₁ ⊆ fv e₀ →
+    fv E⟦e₁⟧ ⊆ fv E⟦e₀⟧ :=
+  by
+  intros E e₀ e₁ HE Hsubst
+  induction HE with
+  | hole => apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv.under_ctx𝔹
+    apply HB; apply IH
+
+lemma fv.under_ctxℚ :
+  ∀ lvl Q e₀ e₁,
+    ctxℚ lvl Q →
+    fv e₁ ⊆ fv e₀ →
+    fv Q⟦e₁⟧ ⊆ fv Q⟦e₀⟧ :=
+  by
+  intros lvl Q e₀ e₁ HQ Hsubst
+  induction HQ with
+  | holeℝ _ HR =>
+    apply fv.under_ctxℝ
+    apply HR; apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv.under_ctx𝔹
+    apply HB; apply IH
+  | consℝ _ _ HR _ IH =>
+    simp; apply fv.under_ctxℝ
+    apply HR; apply IH
+
+lemma fv.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → fv e ⊆ fv B⟦e⟧ :=
+  by
+  intros _ _ HB
+  cases HB <;> simp
+
+lemma fv.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → fv e ⊆ fv E⟦e⟧ :=
+  by
+  intros _ _ HE
+  induction HE with
+  | hole => rfl
+  | cons𝔹 _ _ HB _ IH =>
+    apply Set.Subset.trans; apply IH
+    apply fv.decompose_ctx𝔹; apply HB
+
+lemma opening.under_ctx𝔹 : ∀ B e i x, ctx𝔹 B → opening i x B⟦e⟧ = B⟦opening i x e⟧ :=
+  by
+  intros B e i x HB
+  cases HB with
+  | appl₁ _ IH
+  | appl₂ _ IH
+  | lets _ IH =>
+    simp; apply identity.opening
+    apply lc.inc; apply IH; omega
+  | appr₁ _ Hvalue
+  | appr₂ _ Hvalue =>
+    simp; apply identity.opening
+    apply lc.inc; apply value_impl_lc
+    apply Hvalue; omega
+  | lift => simp
+
+lemma opening.under_ctx𝔼 : ∀ E e i x, ctx𝔼 E → opening i x E⟦e⟧ = E⟦opening i x e⟧ :=
+  by
+  intros _ _ _ _ HE
+  induction HE with
+  | hole => rfl
+  | cons𝔹 _ _ HB _ IH =>
+    simp at *; rw [← IH]
+    apply opening.under_ctx𝔹; apply HB
+
+lemma closed.decompose_ctx𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₀ x :=
+  by
+  intros _ _ _ HB Hclose
+  cases HB with
+  | appl₁| appl₂| lets =>
+    apply Hclose.left
+  | appr₁| appr₂ =>
+    apply Hclose.right
+  | lift => apply Hclose
+
+lemma closed.decompose_ctx𝔼 : ∀ E e₀ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₀ x :=
+  by
+  intros _ _ _ HE Hclose
+  induction HE with
+  | hole => apply Hclose
+  | cons𝔹 _ _ HB _ IH =>
+    apply IH; apply closed.decompose_ctx𝔹
+    apply HB; apply Hclose
+
+lemma closed.under_ctx𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₁ x → closed_at B⟦e₁⟧ x :=
+  by
+  intros _ _ _ _ HB He₀ He₁
+  cases HB with
+  | appl₁| appl₂| lets =>
+    constructor; apply He₁; apply He₀.right
+  | appr₁| appr₂ =>
+    constructor; apply He₀.left; apply He₁
+  | lift => apply He₁
+
+lemma closed.under_ctx𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₁ x → closed_at E⟦e₁⟧ x :=
+  by
+  intros E e₀ e₁ x HE He₀ He₁
+  induction HE with
+  | hole => apply He₁
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply closed.under_ctx𝔹; apply HB; apply He₀
+    apply IH; apply closed.decompose_ctx𝔹; apply HB; apply He₀
+
 lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,
     ctx𝕄 lvl M →

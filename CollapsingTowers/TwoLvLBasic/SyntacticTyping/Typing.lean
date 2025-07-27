@@ -153,3 +153,51 @@ lemma typing_reification.closed_at_env : ∀ Γ e τ φ, typing_reification Γ e
     next Hτ =>
       apply typing.closed_at_env
       apply Hτ
+
+lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ∅ :=
+  by
+  generalize HEq𝕊 : 𝟚 = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → wbt 𝕊 τ ∧ φ = ∅)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> (try intros; assumption)
+  <;> (try intros; contradiction)
+  case fvar =>
+    intros _ _ x _ Hbinds HwellBinds HEq𝕊
+    constructor; apply HwellBinds; rfl
+  case lam =>
+    intros _ _ _ _ _ _ _ HwellBinds₀ Hclose IH HEq𝕊
+    have ⟨HwellBinds₁, Hφ₀⟩ := IH HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at HwellBinds₀ HwellBinds₁
+    constructor
+    . constructor
+      apply Hφ₀; constructor
+      apply HwellBinds₀; apply HwellBinds₁
+    . rfl
+  case app₁ =>
+    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHf HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHarg HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at HwellBinds₁ HwellBinds₂
+    constructor
+    . apply HwellBinds₁.right.right
+    . rw [Hφ₁, Hφ₂, HwellBinds₁.left]; rfl
+  case lit =>
+    intros _ _ _ HEq𝕊
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rfl
+  case lets =>
+    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe HEq𝕊
+    have ⟨HwellBinds₁, Hφ₁⟩ := IHb HEq𝕊
+    have ⟨HwellBinds₂, Hφ₂⟩ := IHe HEq𝕊
+    constructor
+    . apply HwellBinds₂
+    . rw [Hφ₁, Hφ₂]; rfl
+  case pure => simp
+  case reify => simp

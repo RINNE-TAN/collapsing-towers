@@ -1,5 +1,4 @@
 import Mathlib.Tactic.ApplyAt
-import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Weakening
 
 lemma preservation.subst_strengthened :
