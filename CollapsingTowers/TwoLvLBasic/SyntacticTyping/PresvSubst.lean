@@ -65,7 +65,7 @@ lemma preservation.subst_strengthened :
     simp at Hclosed
     apply closed.under_subst; apply closed.inc
     apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
-    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply fv.not_in_under_subst; apply closed_impl_fv_not_in
     apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
@@ -84,7 +84,7 @@ lemma preservation.subst_strengthened :
     simp at Hclosed
     apply closed.under_subst; apply closed.inc
     apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
-    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply fv.not_in_under_subst; apply closed_impl_fv_not_in
     apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
@@ -145,7 +145,7 @@ lemma preservation.subst_strengthened :
     simp at Hclosed
     apply closed.under_subst; apply closed.inc
     apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
-    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply fv.not_in_under_subst; apply closed_impl_fv_not_in
     apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
@@ -162,7 +162,7 @@ lemma preservation.subst_strengthened :
     simp at Hclosed
     apply closed.under_subst; apply closed.inc
     apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
-    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply fv.not_in_under_subst; apply closed_impl_fv_not_in
     apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega

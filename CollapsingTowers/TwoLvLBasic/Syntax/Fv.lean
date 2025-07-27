@@ -91,3 +91,30 @@ lemma fv.not_in_under_subst :
       apply IH₀; apply HIn
     case inr HIn =>
       apply IH₁; apply HIn
+
+lemma fv.under_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
+  by
+  intros i x e
+  induction e generalizing i with
+  | bvar => simp
+  | fvar y =>
+    simp; by_cases HEq : x = y
+    . rw [if_pos HEq]
+      rw [HEq]; simp
+    . rw [if_neg HEq]
+      rw [Set.diff_singleton_eq_self]
+      rfl; apply HEq
+  | lit => simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]
+    rw [Set.union_diff_distrib]

@@ -116,6 +116,59 @@ lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦
     simp; apply lc.under_ctxℝ
     apply HR; apply IHlc
 
+lemma fv.under_ctx𝔹 :
+  ∀ B e₀ e₁,
+    ctx𝔹 B →
+    fv e₁ ⊆ fv e₀ →
+    fv B⟦e₁⟧ ⊆ fv B⟦e₀⟧ :=
+  by
+  intros B e₀ e₁ HB Hsubst
+  cases HB with
+  | appl₁| appl₂| lets =>
+    apply Set.union_subset_union
+    apply Hsubst; rfl
+  | appr₁| appr₂ =>
+    apply Set.union_subset_union
+    rfl; apply Hsubst
+  | lift => apply Hsubst
+
+lemma fv.under_ctxℝ :
+  ∀ intro lvl R e₀ e₁,
+    ctxℝ intro lvl R →
+    fv e₁ ⊆ fv e₀ →
+    fv R⟦e₁⟧ ⊆ fv R⟦e₀⟧ :=
+  by
+  intros intro lvl R e₀ e₁ HR Hsubst
+  cases HR with
+  | lam𝕔 =>
+    simp
+    rw [fv.under_closing, fv.under_closing]
+    apply Set.diff_subset_diff_left
+    apply Hsubst
+  | lets𝕔 =>
+    simp
+    rw [fv.under_closing, fv.under_closing]
+    apply Set.subset_union_of_subset_right
+    apply Set.diff_subset_diff_left
+    apply Hsubst
+  | run => apply Hsubst
+
+lemma fv.under_ctx𝕄 :
+  ∀ lvl M e₀ e₁,
+    ctx𝕄 lvl M →
+    fv e₁ ⊆ fv e₀ →
+    fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ :=
+  by
+  intros lvl M e₀ e₁ HM Hsubst
+  induction HM with
+  | hole => apply Hsubst
+  | cons𝔹 _ _ HB _ IH =>
+    simp; apply fv.under_ctx𝔹
+    apply HB; apply IH
+  | consℝ _ _ HR _ IH =>
+    simp; apply fv.under_ctxℝ
+    apply HR; apply IH
+
 lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,
     ctx𝕄 lvl M →

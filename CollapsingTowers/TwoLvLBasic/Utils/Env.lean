@@ -7,8 +7,8 @@ abbrev TEnv :=
 @[simp]
 def escape : TEnv → TEnv
   | [] => []
-  | (τ, .stat) :: tails => (τ, .stat) :: escape tails
-  | (τ, .dyn) :: tails => (τ, .stat) :: escape tails
+  | (τ, 𝟙) :: tails => (τ, 𝟙) :: escape tails
+  | (τ, 𝟚) :: tails => (τ, 𝟙) :: escape tails
 
 lemma escape.nil : [] = escape [] := by simp
 
@@ -21,7 +21,7 @@ lemma escape.length : ∀ Γ, Γ.length = (escape Γ).length :=
     have ⟨τ, 𝕊⟩ := head
     cases 𝕊 <;> (simp; apply IH)
 
-lemma binds.escape : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, .stat) (escape Γ) :=
+lemma binds.escape : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, 𝟙) (escape Γ) :=
   by
   intros Γ x τ 𝕊
   induction Γ with

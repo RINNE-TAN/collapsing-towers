@@ -261,7 +261,7 @@ lemma closed.under_shiftr_dec :
     | run _ IH =>
       apply IH; apply HFv; apply Hclosed
 
-lemma closed.impl_fv :
+lemma closed_impl_fv_not_in :
   ∀ x y e,
     closed_at e x →
     y ≥ x →
@@ -290,3 +290,31 @@ lemma closed.impl_fv :
       apply IH₀; apply Hclosed.left; apply H₀
     case inr H₁ =>
       apply IH₁; apply Hclosed.right; apply H₁
+
+lemma closed_iff_fv_empty : ∀ e, closed e ↔ fv e = (∅ : Set ℕ) :=
+  by
+  intro e
+  induction e with
+  | bvar => simp
+  | fvar => simp
+  | lit => simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    . intro HFv; simp at HFv
+      simp; constructor
+      apply IH₀.mp; apply HFv.left
+      apply IH₁.mp; apply HFv.right
+    . intro Hclosed; simp at Hclosed
+      simp; constructor
+      apply IH₀.mpr; apply Hclosed.left
+      apply IH₁.mpr; apply Hclosed.right

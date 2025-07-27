@@ -5,16 +5,16 @@ import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Shrinking
 
 lemma typing.escape_strengthened :
   ∀ Γ e τ,
-    typing Γ .dyn e τ ∅ →
-    typing (escape Γ) .stat e τ ∅ :=
+    typing Γ 𝟚 e τ ∅ →
+    typing (escape Γ) 𝟙 e τ ∅ :=
   by
-  generalize HEq𝕊 : (.dyn : Stage) = 𝕊
+  generalize HEq𝕊 : (𝟚 : Stage) = 𝕊
   intros Γ e τ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-          .dyn = 𝕊 →
-          typing (escape Γ) .stat e τ φ)
+          𝟚 = 𝕊 →
+          typing (escape Γ) 𝟙 e τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> (intros; try contradiction)
   case fvar x _ Hbinds Hwbt HEq𝕊 =>
@@ -46,8 +46,8 @@ lemma typing.escape_strengthened :
 lemma typing.escape :
   ∀ Γ e τ,
     closed e →
-    typing Γ .dyn e τ ∅ →
-    typing Γ .stat e τ ∅ :=
+    typing Γ 𝟚 e τ ∅ →
+    typing Γ 𝟙 e τ ∅ :=
   by
   intros Γ e τ Hclose Hτ
   rw [← List.append_nil Γ]; apply typing.weakening
@@ -63,8 +63,8 @@ theorem preservation.head :
   ∀ Γ e₀ e₁ τ φ,
     head e₀ e₁ →
     lc e₀ →
-    typing Γ .stat e₀ τ φ →
-    typing Γ .stat e₁ τ φ :=
+    typing Γ 𝟙 e₀ τ φ →
+    typing Γ 𝟙 e₁ τ φ :=
   by
   intros Γ e₀ e₁ τ φ Hhead Hlc Hτ
   cases Hhead

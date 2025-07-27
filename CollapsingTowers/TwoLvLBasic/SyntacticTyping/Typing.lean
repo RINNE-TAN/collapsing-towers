@@ -10,7 +10,7 @@ def wbt : Stage → Ty → Prop
   | 𝟚, (.arrow τ𝕒 τ𝕓 φ) => φ = ∅ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, _ => false
 
-lemma wbt.escape : ∀ 𝕊 τ, wbt 𝕊 τ → wbt .stat τ :=
+lemma wbt.escape : ∀ 𝕊 τ, wbt 𝕊 τ → wbt 𝟙 τ :=
   by
   intros 𝕊 τ Hwbt
   cases 𝕊

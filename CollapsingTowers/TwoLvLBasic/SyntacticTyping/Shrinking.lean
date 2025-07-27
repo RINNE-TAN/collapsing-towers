@@ -158,5 +158,5 @@ theorem typing.shrinking :
   have H := typing.shrinking_strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
   rw [identity.shiftr] at H
   apply H; apply Hτ; rfl
-  apply closed.impl_fv; apply Hclose; omega
+  apply closed_impl_fv_not_in; apply Hclose; omega
   apply closed.inc; apply Hclose; omega
