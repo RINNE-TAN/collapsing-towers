@@ -56,7 +56,7 @@ lemma preservation.reflect :
       apply closed.under_ctx𝔼; apply HE
       apply typing.closed_at_env; apply Hτ; simp
 
-theorem preservation.under_ctxℚ :
+lemma preservation.under_ctxℚ :
   ∀ Γ Q E e τ φ,
     ctxℚ Γ.length Q →
     ctx𝔼 E →

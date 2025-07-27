@@ -59,3 +59,15 @@ lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇾* e₁) → (e₁ ⇾* e�
   case multi H _ IH =>
     apply pure_stepn.multi
     apply H; apply IH; apply Hstep₁
+
+lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+  by
+  intros e₀ e₁ Hhead
+  cases Hhead <;> simp
+  case lets =>
+    apply fv.under_opening
+  case app₁ =>
+    rw [Set.union_comm]
+    apply fv.under_opening
+  case lift_lam =>
+    rw [← fv.under_maping𝕔]

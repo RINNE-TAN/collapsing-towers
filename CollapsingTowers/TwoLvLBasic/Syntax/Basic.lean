@@ -1,39 +1,4 @@
-import Mathlib.Data.Nat.Basic
-
-inductive Effect : Type where
-  | pure
-  | reify
-
-notation:max "∅" => Effect.pure
-
-@[simp]
-def Effect.union : Effect → Effect → Effect
-  | .pure, .pure => .pure
-  | .reify, _ => .reify
-  | _, .reify => .reify
-
-@[simp]
-instance : Union Effect where union := Effect.union
-
-@[simp]
-lemma union_pure_right : forall φ : Effect, φ ∪ ∅ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma union_pure_left : forall φ : Effect, ∅ ∪ φ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma union_reify_right : forall φ : Effect, φ ∪ .reify = .reify := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma union_reify_left : forall φ : Effect, .reify ∪ φ = .reify := by
-  intro φ
-  cases φ <;> rfl
+import CollapsingTowers.TwoLvLBasic.Syntax.Effect
 
 inductive Stage : Type where
   | stat

@@ -118,3 +118,25 @@ lemma fv.under_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
     rw [Set.union_diff_distrib]
+
+lemma fv.under_maping𝕔 : ∀ e i, fv e = fv (maping𝕔 i e) :=
+  by
+  intros e i
+  induction e generalizing i with
+  | bvar j =>
+    simp; by_cases HEq : j = i
+    . rw [if_pos HEq]; rfl
+    . rw [if_neg HEq]; rfl
+  | fvar => rfl
+  | lit => rfl
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH => apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]

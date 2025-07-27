@@ -1,3 +1,4 @@
+import CollapsingTowers.TwoLvLBasic.Syntax.Effect
 import CollapsingTowers.TwoLvLBasic.Syntax.Basic
 import CollapsingTowers.TwoLvLBasic.Syntax.SyntacticTrans
 import CollapsingTowers.TwoLvLBasic.Syntax.Lc
