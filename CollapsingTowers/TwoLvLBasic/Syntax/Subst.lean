@@ -15,5 +15,3 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (subst x v e)
   | .lets b e => .lets (subst x v b) (subst x v e)
   | .lets𝕔 b e => .lets𝕔 (subst x v b) (subst x v e)
-
-notation:max "{" x " := " v "}" e => subst x v e

@@ -116,7 +116,7 @@ lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦
     simp; apply lc.under_ctxℝ
     apply HR; apply IHlc
 
-theorem compose.ctx𝕄_ctx𝔹 :
+lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,
     ctx𝕄 lvl M →
     ctx𝔹 B →
@@ -134,7 +134,7 @@ theorem compose.ctx𝕄_ctx𝔹 :
     apply ctx𝕄.consℝ _ _ HR
     apply IH
 
-theorem compose.ctx𝕄_ctx𝔼 :
+lemma compose.ctx𝕄_ctx𝔼 :
   ∀ lvl M E,
     ctx𝕄 lvl M →
     ctx𝔼 E →
@@ -149,7 +149,7 @@ theorem compose.ctx𝕄_ctx𝔼 :
     apply compose.ctx𝕄_ctx𝔹
     apply HM; apply HB
 
-theorem rewrite.ctxℚ_ctx𝕄 :
+lemma rewrite.ctxℚ_ctx𝕄 :
   ∀ lvl Q,
     ctxℚ lvl Q →
     ctx𝕄 lvl Q :=
@@ -166,7 +166,7 @@ theorem rewrite.ctxℚ_ctx𝕄 :
     apply ctx𝕄.cons𝔹; apply HB
     apply IH
 
-theorem rewrite.ctxℙ_ctx𝕄 :
+lemma rewrite.ctxℙ_ctx𝕄 :
   ∀ lvl P,
     ctxℙ lvl P →
     ctx𝕄 lvl P :=

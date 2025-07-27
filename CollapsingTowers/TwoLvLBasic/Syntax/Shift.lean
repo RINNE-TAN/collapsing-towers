@@ -16,8 +16,6 @@ def shiftl_at (x : ℕ) (n : ℕ) : Expr → Expr
   | .lets b e => .lets (shiftl_at x n b) (shiftl_at x n e)
   | .lets𝕔 b e => .lets𝕔 (shiftl_at x n b) (shiftl_at x n e)
 
-notation:max "{" x " << " n "}" e => shiftl_at x n e
-
 @[simp]
 def shiftr_at (x : ℕ) : Expr → Expr
   | .bvar i => .bvar i

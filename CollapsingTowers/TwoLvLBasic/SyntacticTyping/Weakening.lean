@@ -4,7 +4,7 @@ lemma typing.weakening_strengthened :
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
       typing Γ 𝕊 e τ φ →
       Γ = Ψ ++ Φ →
-      typing (Ψ ++ Δ ++ Φ) 𝕊 ({Φ.length << Δ.length} e) τ φ :=
+      typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ :=
   by
   intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ HEqΓ
   revert Ψ
@@ -13,11 +13,11 @@ lemma typing.weakening_strengthened :
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing (Ψ ++ Δ ++ Φ) 𝕊 ({Φ.length << Δ.length} e) τ φ)
+          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl_at Φ.length Δ.length e) τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing_reification (Ψ ++ Δ ++ Φ) ({Φ.length << Δ.length} e) τ φ)
+          typing_reification (Ψ ++ Δ ++ Φ) (shiftl_at Φ.length Δ.length e) τ φ)
   <;> intros
   case fvar x _ Hbinds HwellBinds Ψ HEqΓ =>
     rw [HEqΓ] at Hbinds

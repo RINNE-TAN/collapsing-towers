@@ -16,6 +16,4 @@ def opening (i : ℕ) (v : Expr) : Expr → Expr
   | .lets b e => .lets (opening i v b) (opening (i + 1) v e)
   | .lets𝕔 b e => .lets𝕔 (opening i v b) (opening (i + 1) v e)
 
-notation:max "{" i " ⤇ " v "}" e => opening i v e
-
 notation:max "{" i " ↦ " x "}" e => opening i (Expr.fvar x) e
