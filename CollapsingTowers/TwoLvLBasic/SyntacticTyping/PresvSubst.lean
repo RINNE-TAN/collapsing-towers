@@ -54,32 +54,38 @@ lemma preservation.subst_strengthened :
       constructor
       apply binds.extend; apply binds.shrink
       omega; rw [List.append_cons] at Hbinds; apply Hbinds; apply HwellBinds
-  case lam HwellBinds Hclose IH Δ HEqΓ Hτv =>
-    rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
+  case lam HwellBinds Hclosed IH Δ HEqΓ Hτv =>
+    rw [HEqΓ] at IH; rw [HEqΓ] at Hclosed
     rw [comm.subst_opening, comm.shiftr_opening] at IH
     apply typing.lam
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply Hτv; apply HwellBinds
-    simp; apply closed.under_shiftr_subst
-    simp at Hclose; apply Hclose
-    apply typing.closed_at_env; apply Hτv
+    simp; apply closed.under_shiftr_dec
+    simp at Hclosed
+    apply closed.under_subst; apply closed.inc
+    apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
+    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
     apply typing.regular; apply Hτv
   case lift_lam IH Δ HEqΓ Hτv =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hτv
-  case lam𝕔 HwellBinds Hclose IH Δ HEqΓ Hτv =>
-    rw [HEqΓ] at IH; rw [HEqΓ] at Hclose
+  case lam𝕔 HwellBinds Hclosed IH Δ HEqΓ Hτv =>
+    rw [HEqΓ] at IH; rw [HEqΓ] at Hclosed
     rw [comm.subst_opening, comm.shiftr_opening] at IH
     apply typing.lam𝕔
     simp; rw [← List.cons_append]
     simp at IH; apply IH; rfl
     apply Hτv; apply HwellBinds
-    simp; apply closed.under_shiftr_subst
-    simp at Hclose; apply Hclose
-    apply typing.closed_at_env; apply Hτv
+    simp; apply closed.under_shiftr_dec
+    simp at Hclosed
+    apply closed.under_subst; apply closed.inc
+    apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
+    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
     apply typing.regular; apply Hτv
@@ -91,7 +97,7 @@ lemma preservation.subst_strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
-  case lit => intros; apply typing.lit
+  case lit => apply typing.lit
   case lift_lit IH Δ HEqΓ Hτv =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply Hτv
@@ -127,42 +133,48 @@ lemma preservation.subst_strengthened :
   case reflect IH Δ HEqΓ Hτv =>
     apply typing.reflect
     apply IH; apply HEqΓ; apply Hτv
-  case lets HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
-    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
+  case lets HwellBinds Hclosed IHb IHe Δ HEqΓ Hτv =>
+    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclosed
     rw [comm.subst_opening, comm.shiftr_opening] at IHe
     simp at IHb; simp at IHe
     apply typing.lets
     apply IHb; apply Hτv
     simp; rw [← List.cons_append]; apply IHe; rfl
     apply Hτv; apply HwellBinds
-    simp; apply closed.under_shiftr_subst
-    simp at Hclose; apply Hclose
-    apply typing.closed_at_env; apply Hτv
+    simp; apply closed.under_shiftr_dec
+    simp at Hclosed
+    apply closed.under_subst; apply closed.inc
+    apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
+    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
     apply typing.regular; apply Hτv
-  case lets𝕔 HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
-    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclose
+  case lets𝕔 HwellBinds Hclosed IHb IHe Δ HEqΓ Hτv =>
+    rw [HEqΓ] at IHb; rw [HEqΓ] at IHe; rw [HEqΓ] at Hclosed
     rw [comm.subst_opening, comm.shiftr_opening] at IHe
     simp at IHb; simp at IHe
     apply typing.lets𝕔
     apply IHb; apply Hτv
     simp; rw [← List.cons_append]; apply IHe; rfl
     apply Hτv; apply HwellBinds
-    simp; apply closed.under_shiftr_subst
-    simp at Hclose; apply Hclose
-    apply typing.closed_at_env; apply Hτv
+    simp; apply closed.under_shiftr_dec
+    simp at Hclosed
+    apply closed.under_subst; apply closed.inc
+    apply typing.closed_at_env; apply Hτv; omega; apply Hclosed
+    apply fv.not_in_under_subst; apply closed.impl_fv
+    apply typing.closed_at_env; apply Hτv; omega
     simp; omega
     simp; omega
     apply typing.regular; apply Hτv
-  case run Hclose IH Δ HEqΓ Hτv =>
+  case run Hclosed IH Δ HEqΓ Hτv =>
     apply typing.run
     apply IH; apply HEqΓ; apply Hτv
-    rw [identity.shiftr, identity.subst]; apply Hclose
-    apply closed.inc; apply Hclose; omega
+    rw [identity.shiftr, identity.subst]; apply Hclosed
+    apply closed.inc; apply Hclosed; omega
     rw [identity.subst]
-    apply closed.inc; apply Hclose; omega
-    apply closed.inc; apply Hclose; omega
+    apply closed.inc; apply Hclosed; omega
+    apply closed.inc; apply Hclosed; omega
   case pure IH Δ HEqΓ Hτv =>
     apply typing_reification.pure
     apply IH; apply HEqΓ; apply Hτv

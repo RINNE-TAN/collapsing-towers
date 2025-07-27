@@ -1,6 +1,7 @@
 import CollapsingTowers.TwoLvLBasic.Semantic.Defs
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvSubst
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvMaping
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Shrinking
 
 lemma typing.escape_strengthened :
   ∀ Γ e τ,
@@ -55,7 +56,8 @@ lemma typing.escape :
   | nil => apply Hτ
   | cons _ _ IH =>
     apply IH
-    admit
+    apply typing.shrinking; apply Hτ
+    apply closed.inc; apply Hclose; omega
 
 theorem preservation.head :
   ∀ Γ e₀ e₁ τ φ,

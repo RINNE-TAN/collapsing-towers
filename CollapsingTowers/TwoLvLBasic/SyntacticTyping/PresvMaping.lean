@@ -86,7 +86,7 @@ lemma preservation.maping_strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
-  case lit => intros; apply typing.lit
+  case lit => apply typing.lit
   case lift_lit IH Δ HEqΓ Hτv =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply Hτv
