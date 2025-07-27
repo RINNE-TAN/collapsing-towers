@@ -97,12 +97,12 @@ lemma typing.weakening_strengthened :
     apply IHe; rfl; apply HwellBinds
     rw [List.length_append, List.length_append, Nat.add_right_comm]
     apply closed.under_shiftl; rw [← List.length_append]; apply Hclose; simp
-  case let𝕔 HwellBinds Hclose IHb IHe Ψ HEqΓ =>
+  case lets𝕔 HwellBinds Hclose IHb IHe Ψ HEqΓ =>
     rw [HEqΓ] at IHe
     rw [HEqΓ] at Hclose
     rw [comm.shiftl_opening] at IHe
     rw [List.length_append, Nat.add_right_comm] at IHe
-    apply typing.let𝕔
+    apply typing.lets𝕔
     apply IHb; apply HEqΓ
     rw [← List.cons_append, ← List.cons_append, List.length_append, List.length_append]
     apply IHe; rfl; apply HwellBinds

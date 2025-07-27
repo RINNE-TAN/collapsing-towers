@@ -45,7 +45,7 @@ lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head e₀ e₁ → He
       apply value.code
       simp [lc.under_opening]; apply Hlc
       apply Hlcr
-    case let𝕔.let𝕔 =>
+    case lets𝕔.lets𝕔 =>
       rw [← identity.opening_closing 0 r lvl, ← HEq.right]
       apply value.code
       simp [lc.under_opening]; apply Hlc.right
@@ -146,7 +146,7 @@ lemma deterministic.under_ctxℝ :
     rw [← identity.opening_closing _ _ _ Hlc₀]
     rw [← identity.opening_closing _ _ _ Hlc₁]
     rw [HEq]
-  case let𝕔.let𝕔 =>
+  case lets𝕔.lets𝕔 =>
     rw [← identity.opening_closing _ _ _ Hlc₀]
     rw [← identity.opening_closing _ _ _ Hlc₁]
     rw [← HEq.right]

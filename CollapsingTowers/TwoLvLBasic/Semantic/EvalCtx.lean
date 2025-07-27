@@ -20,7 +20,7 @@ inductive ctx𝔹 : Ctx → Prop where
 
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
   | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 ({0 ↤ lvl} X))
-  | let𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .lets𝕔 b ({0 ↤ lvl} X))
+  | lets𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .lets𝕔 b ({0 ↤ lvl} X))
   | run : ctxℝ 0 lvl (fun X => .run X)
 
 inductive ctx𝕄 : ℕ → Ctx → Prop where
@@ -75,7 +75,7 @@ lemma lc.under_ctxℝ : ∀ R e i intro lvl, ctxℝ intro lvl R → lc_at e i �
   | lam𝕔 =>
     apply lc.under_closing; omega
     apply lc.inc; apply Hlc; omega
-  | let𝕔 _ Hlcb =>
+  | lets𝕔 _ Hlcb =>
     constructor
     apply lc.inc; apply Hlcb; omega
     apply lc.under_closing; omega

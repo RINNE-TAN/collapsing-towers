@@ -58,7 +58,7 @@ mutual
       wbt 𝕊 τ𝕒 →
       closed_at e Γ.length →
       typing Γ 𝕊 (.lets b e) τ𝕓 (φ₀ ∪ φ₁)
-    | let𝕔 : ∀ Γ b e τ𝕒 τ𝕓 φ,
+    | lets𝕔 : ∀ Γ b e τ𝕒 τ𝕓 φ,
       typing Γ 𝟚 b τ𝕒 ∅ →
       typing_reification ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ →
       wbt 𝟚 τ𝕒 →
@@ -94,7 +94,7 @@ lemma typing.regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
   case lets IHb IHe =>
     constructor; apply IHb
     rw [← lc.under_opening]; apply IHe
-  case let𝕔 IHb IHe =>
+  case lets𝕔 IHb IHe =>
     constructor; apply IHb
     rw [← lc.under_opening]; apply IHe
   apply Hτ
@@ -127,7 +127,7 @@ lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → clo
     apply Hbinds
   case lets Hclose IHb _ =>
     constructor; apply IHb; apply Hclose
-  case let𝕔 Hclose IHb _ =>
+  case lets𝕔 Hclose IHb _ =>
     constructor; apply IHb; apply Hclose
 
 lemma typing_reification.closed_at_env : ∀ Γ e τ φ, typing_reification Γ e τ φ → closed_at e Γ.length :=
