@@ -1,7 +1,4 @@
-import CollapsingTowers.TwoLvLBasic.Syntax.Basic
-import CollapsingTowers.TwoLvLBasic.Syntax.Opening
-import CollapsingTowers.TwoLvLBasic.Syntax.Closing
-import CollapsingTowers.TwoLvLBasic.Syntax.Subst
+import CollapsingTowers.TwoLvLBasic.Syntax.SyntacticTrans
 
 -- closedness condition for bound variables
 @[simp]

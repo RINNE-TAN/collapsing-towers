@@ -1,7 +1,3 @@
-import CollapsingTowers.TwoLvLBasic.Syntax.Opening
-import CollapsingTowers.TwoLvLBasic.Syntax.Closing
-import CollapsingTowers.TwoLvLBasic.Syntax.Subst
-import CollapsingTowers.TwoLvLBasic.Syntax.MapingCode
 import CollapsingTowers.TwoLvLBasic.Syntax.Closed
 
 lemma intros.maping𝕔 :
