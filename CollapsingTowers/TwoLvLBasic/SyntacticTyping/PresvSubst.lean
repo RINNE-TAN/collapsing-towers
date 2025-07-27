@@ -2,7 +2,7 @@ import Mathlib.Tactic.ApplyAt
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Weakening
 
-lemma preservation_subst_strengthened :
+lemma preservation.subst_strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
     typing Γ 𝟙 e τ𝕓 φ →
     Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
@@ -185,14 +185,14 @@ lemma preservation_subst_strengthened :
     apply IH; apply HEqΓ; apply Hτv
   apply Hτe
 
-theorem preservation_subst :
+theorem preservation.subst :
   ∀ Γ v e τ𝕒 τ𝕓 φ,
     typing Γ 𝟙 v τ𝕒 ∅ →
     typing ((τ𝕒, 𝟙) :: Γ) 𝟙 e τ𝕓 φ →
     typing Γ 𝟙 (subst Γ.length v e) τ𝕓 φ :=
   by
   intros Γ v e τ𝕒 τ𝕓 φ Hτv Hτe
-  have H := preservation_subst_strengthened ((τ𝕒, 𝟙) :: Γ) [] Γ v e τ𝕒 τ𝕓 φ
+  have H := preservation.subst_strengthened ((τ𝕒, 𝟙) :: Γ) [] Γ v e τ𝕒 τ𝕓 φ
   simp at H
   have H := H Hτe Hτv
   rw [identity.shiftr] at H
