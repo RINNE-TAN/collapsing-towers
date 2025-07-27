@@ -1,4 +1,6 @@
 import CollapsingTowers.TwoLvLBasic.Syntax.Basic
+import CollapsingTowers.TwoLvLBasic.Syntax.Opening
+import CollapsingTowers.TwoLvLBasic.Syntax.Closing
 import CollapsingTowers.TwoLvLBasic.Syntax.Shift
 import CollapsingTowers.TwoLvLBasic.Syntax.Subst
 
@@ -188,3 +190,57 @@ lemma closed.under_shiftr_subst :
     apply closed.under_subst
     apply closed.inc; apply Hv; omega
     apply closed.inc; apply He; omega
+
+lemma closed.under_closing : ∀ e x i, closed_at e (x + 1) ↔ closed_at ({i ↤ x} e) x :=
+  by
+  intros e x i
+  induction e generalizing i with
+  | fvar y =>
+    by_cases HEq : x = y
+    . rw [HEq]; simp
+    . simp; rw [if_neg HEq]; simp; omega
+  | bvar => simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    constructor
+    . intro Hclose; constructor
+      apply (IH₀ _).mp; apply Hclose.left
+      apply (IH₁ _).mp; apply Hclose.right
+    . intro Hclose; constructor
+      apply (IH₀ _).mpr; apply Hclose.left
+      apply (IH₁ _).mpr; apply Hclose.right
+  | lit => simp
+
+lemma closed.under_opening : ∀ e x i, closed_at e x → closed_at ({i ↦ x} e) (x + 1) :=
+  by
+  intros e x i
+  induction e generalizing i with
+  | fvar y => simp; omega
+  | bvar j =>
+    by_cases HEq : j = i
+    . rw [HEq]; simp
+    . simp; rw [if_neg HEq]; simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    intro Hclose; constructor
+    apply IH₀; apply Hclose.left
+    apply IH₁; apply Hclose.right
+  | lit => simp

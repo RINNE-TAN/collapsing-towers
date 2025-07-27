@@ -1,6 +1,7 @@
 import CollapsingTowers.TwoLvLBasic.Syntax.Basic
 import CollapsingTowers.TwoLvLBasic.Syntax.Opening
 import CollapsingTowers.TwoLvLBasic.Syntax.Closing
+import CollapsingTowers.TwoLvLBasic.Syntax.Subst
 
 -- closedness condition for bound variables
 @[simp]
@@ -102,4 +103,35 @@ lemma lc.under_closing : ∀ e x i j, j < i → lc_at e i → lc_at ({j ↤ x} e
     intro Hlc; constructor
     apply IH₀; omega; apply Hlc.left
     apply IH₁; omega; apply Hlc.right
+  | lit => simp
+
+lemma lc.under_subst : ∀ x e v i, lc_at v i → lc_at e i → lc_at (subst x v e) i :=
+  by
+  intros x e v i Hv He
+  induction e generalizing i with
+  | bvar => apply He
+  | fvar y =>
+    by_cases HEq : x = y
+    . rw [HEq]; simp; apply Hv
+    . simp; rw [if_neg HEq]; simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH =>
+    apply IH; apply lc.inc
+    apply Hv; omega; apply He
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hv; apply He.left
+    apply IH₁; apply Hv; apply He.right
+  | lets _ _ IHb IH
+  | lets𝕔 _ _ IHb IH =>
+    constructor
+    apply IHb; apply Hv; apply He.left
+    apply IH; apply lc.inc
+    apply Hv; omega; apply He.right
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    simp; apply IH; apply Hv; apply He
   | lit => simp

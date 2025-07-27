@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Weakening
-import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvHead
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvSubst
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvMaping
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvHead

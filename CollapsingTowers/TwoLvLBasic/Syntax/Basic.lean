@@ -15,6 +15,26 @@ def Effect.union : Effect → Effect → Effect
 @[simp]
 instance : Union Effect where union := Effect.union
 
+@[simp]
+lemma union_pure_right : forall φ : Effect, φ ∪ ∅ = φ := by
+  intro φ
+  cases φ <;> rfl
+
+@[simp]
+lemma union_pure_left : forall φ : Effect, ∅ ∪ φ = φ := by
+  intro φ
+  cases φ <;> rfl
+
+@[simp]
+lemma union_reify_right : forall φ : Effect, φ ∪ .reify = .reify := by
+  intro φ
+  cases φ <;> rfl
+
+@[simp]
+lemma union_reify_left : forall φ : Effect, .reify ∪ φ = .reify := by
+  intro φ
+  cases φ <;> rfl
+
 inductive Stage : Type where
   | stat
   | dyn

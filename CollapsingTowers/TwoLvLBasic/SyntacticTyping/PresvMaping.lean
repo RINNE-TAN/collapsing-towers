@@ -24,8 +24,8 @@ lemma preservation.maping_strengthened :
           Δ ++ (τ𝕔, 𝟙) :: Φ = Γ →
           typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ∅ →
           typing_reification (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) (subst Φ.length v e) τ𝕓 φ)
-  case fvar =>
-    intros _ 𝕊 x _ Hbinds HwellBinds Δ HEqΓ Hτv
+  <;> intros
+  case fvar 𝕊 x _ Hbinds HwellBinds Δ HEqΓ Hτv =>
     rw [← HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
@@ -52,8 +52,7 @@ lemma preservation.maping_strengthened :
       apply typing.fvar
       apply binds.extend; apply binds.shrink
       omega; apply Hbinds; apply HwellBinds
-  case lam =>
-    intros _ _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ Hτv
+  case lam HwellBinds Hclose IH Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IH
     apply typing.lam
@@ -65,12 +64,10 @@ lemma preservation.maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing.regular; apply Hτv
-  case lift_lam =>
-    intros _ _ _ _ _ _ _ IH Δ HEqΓ Hτv
+  case lift_lam IH Δ HEqΓ Hτv =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hτv
-  case lam𝕔 =>
-    intros _ _ _ _ _ _ HwellBinds Hclose IH Δ HEqΓ Hτv
+  case lam𝕔 HwellBinds Hclose IH Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IH
     apply typing.lam𝕔
@@ -81,23 +78,19 @@ lemma preservation.maping_strengthened :
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega; apply typing.regular; apply Hτv
-  case app₁ =>
-    intros _ _ _ _ _ _ _ _ _ _ _ IHf IHarg Δ HEqΓ Hτv
+  case app₁ IHf IHarg Δ HEqΓ Hτv =>
     apply typing.app₁
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
-  case app₂ =>
-    intros _ _ _ _ _ _ _ _ _ IHf IHarg Δ HEqΓ Hτv
+  case app₂ IHf IHarg Δ HEqΓ Hτv =>
     apply typing.app₂
     apply IHf; apply HEqΓ; apply Hτv
     apply IHarg; apply HEqΓ; apply Hτv
   case lit => intros; apply typing.lit
-  case lift_lit =>
-    intros _ _ _ _ IH Δ HEqΓ Hτv
+  case lift_lit IH Δ HEqΓ Hτv =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply Hτv
-  case code_fragment =>
-    intros _ x _ Hbinds HwellBinds Δ HEqΓ Hτv
+  case code_fragment x _ Hbinds HwellBinds Δ HEqΓ Hτv =>
     rw [← HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
@@ -123,16 +116,13 @@ lemma preservation.maping_strengthened :
       apply typing.code_fragment
       apply binds.extend; apply binds.shrink
       omega; apply Hbinds; apply HwellBinds
-  case code_rep =>
-    intros _ _ _ _ IH Δ HEqΓ Hτv
+  case code_rep IH Δ HEqΓ Hτv =>
     apply typing.code_rep
     apply IH; apply HEqΓ; apply Hτv
-  case reflect =>
-    intros _ _ _ _ IH Δ HEqΓ Hτv
+  case reflect IH Δ HEqΓ Hτv =>
     apply typing.reflect
     apply IH; apply HEqΓ; apply Hτv
-  case lets =>
-    intros _ _ _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe Δ HEqΓ Hτv
+  case lets HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IHe
@@ -146,8 +136,7 @@ lemma preservation.maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing.regular; apply Hτv
-  case lets𝕔 =>
-    intros _ _ _ _ _ _ _ _ HwellBinds Hclose IHb IHe Δ HEqΓ Hτv
+  case lets𝕔 HwellBinds Hclose IHb IHe Δ HEqΓ Hτv =>
     rw [← HEqΓ, List.length_append, List.length_cons] at Hclose
     rw [← HEqΓ] at IHb
     rw [← HEqΓ, comm.subst_opening, List.length_append, List.length_cons] at IHe
@@ -161,18 +150,15 @@ lemma preservation.maping_strengthened :
     rw [List.length_append, List.length_cons]; apply Hclose
     simp; omega
     apply typing.regular; apply Hτv
-  case run =>
-    intros _ _ _ _ _ Hclose IH Δ HEqΓ Hτv
+  case run Hclose IH Δ HEqΓ Hτv =>
     apply typing.run
     apply IH; apply HEqΓ; apply Hτv
     rw [identity.subst]; apply Hclose
     apply closed.inc; apply Hclose; omega
-  case pure =>
-    intros _ _ _ _ IH Δ HEqΓ Hτv
+  case pure IH Δ HEqΓ Hτv =>
     apply typing_reification.pure
     apply IH; apply HEqΓ; apply Hτv
-  case reify =>
-    intros _ _ _ _ _ IH Δ HEqΓ Hτv
+  case reify IH Δ HEqΓ Hτv =>
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply Hτv
   apply Hτe

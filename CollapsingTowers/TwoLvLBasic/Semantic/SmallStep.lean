@@ -25,15 +25,15 @@ notation:max e₀ " ⇝* " e₁  => stepn e₀ e₁
 inductive pure_step : Expr → Expr → Prop where
   | pure : ∀ M e₀ e₁, ctx𝕄 0 M → lc e₀ → head e₀ e₁ → pure_step M⟦e₀⟧ M⟦e₁⟧
 
-notation:max e₀ " ↦ " e₁  => pure_step e₀ e₁
+notation:max e₀ " ⇾ " e₁  => pure_step e₀ e₁
 
 inductive pure_stepn : Expr → Expr → Prop
   | refl : ∀ e, pure_stepn e e
-  | multi : ∀ e₀ e₁ e₂, (e₀ ↦ e₁) → pure_stepn e₁ e₂ → pure_stepn e₀ e₂
+  | multi : ∀ e₀ e₁ e₂, (e₀ ⇾ e₁) → pure_stepn e₁ e₂ → pure_stepn e₀ e₂
 
-notation:max e₀ " ↦* " e₁  => pure_stepn e₀ e₁
+notation:max e₀ " ⇾* " e₁  => pure_stepn e₀ e₁
 
-lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ↦ e₁) → (e₀ ⇝ e₁) :=
+lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → (e₀ ⇝ e₁) :=
   by
   intros e₀ e₁ Hstep
   cases Hstep
@@ -41,7 +41,7 @@ lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ↦ e₁) → (e₀ ⇝ e₁) :
     apply step_lvl.pure
     apply HM; apply Hlc; apply Hhead
 
-lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ↦* e₁) → (e₀ ⇝* e₁) :=
+lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → (e₀ ⇝* e₁) :=
   by
   intros e₀ e₁ Hstepn
   induction Hstepn
@@ -51,7 +51,7 @@ lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ↦* e₁) → (e₀ ⇝* e�
     apply pure_step_impl_step; apply H
     apply IH
 
-lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ↦* e₁) → (e₁ ↦* e₂) → (e₀ ↦* e₂) :=
+lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇾* e₁) → (e₁ ⇾* e₂) → (e₀ ⇾* e₂) :=
   by
   intros e₀ e₁ e₂ Hstep₀ Hstep₁
   induction Hstep₀
