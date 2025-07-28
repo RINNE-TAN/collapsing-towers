@@ -1,7 +1,7 @@
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvHead
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvReflect
 
-theorem preservation :
+theorem preservation.strengthened :
   ∀ Γ e₀ e₁ τ φ₀,
     step_lvl Γ.length e₀ e₁ →
     typing_reification Γ e₀ τ φ₀ →
@@ -37,7 +37,7 @@ theorem preservation :
         apply preservation.under_ctxℚ
         apply HQ; apply HE; apply Hlc; apply Hτ
 
-theorem preservation.step :
+theorem preservation :
   ∀ e₀ e₁ τ φ₀,
     (e₀ ⇝ e₁) →
     typing_reification [] e₀ τ φ₀ →
@@ -46,7 +46,7 @@ theorem preservation.step :
       φ₁ ≤ φ₀ :=
   by
   intros e₀ e₁ τ φ₀ Hstep
-  apply preservation
+  apply preservation.strengthened
   apply Hstep
 
 theorem preservation.stepn :
@@ -61,7 +61,7 @@ theorem preservation.stepn :
   induction Hstepn generalizing φ₀ with
   | refl => exists φ₀
   | multi _ _ _ Hstep _ IH =>
-    have ⟨φ₁, IHτ₁, HφLe₁⟩ := preservation.step _ _ _ _ Hstep Hτ
+    have ⟨φ₁, IHτ₁, HφLe₁⟩ := preservation _ _ _ _ Hstep Hτ
     have ⟨φ₂, IHτ₂, HφLe₂⟩ := IH _ IHτ₁
     exists φ₂
     constructor

@@ -23,7 +23,7 @@ lemma identity.opening : ∀ e v i, lc_at e i → (opening i v e) = e :=
     apply IH₁; apply Hlc.right
   | lit => simp
 
-lemma identity.opening_closing : ∀ i e x, lc_at e i → ({i ↦ x}{i ↤ x}e) = e :=
+lemma identity.opening_closing : ∀ i e x, lc_at e i → ({i ↦ x}{i ↤ x} e) = e :=
   by
   intros i e x Hlc
   induction e generalizing i with
@@ -53,6 +53,31 @@ lemma identity.opening_closing : ∀ i e x, lc_at e i → ({i ↦ x}{i ↤ x}e) 
     apply IH₁; apply Hlc.right
   | lit => rfl
 
+lemma identity.closing_opening : ∀ i e x, closed_at e x → ({i ↤ x}{i ↦ x} e) = e :=
+  by
+  intros i e x Hclosed
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp; rw [if_pos HEq]; simp; omega
+    . simp; rw [if_neg HEq]; simp
+  | fvar y => simp at *; omega
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    simp; apply IH; apply Hclosed
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclosed.left
+    apply IH₁; apply Hclosed.right
+  | lit => rfl
+
 lemma identity.shiftl :
     ∀ x e n, closed_at e x → shiftl_at x n e = e :=
   by
@@ -64,9 +89,9 @@ lemma identity.shiftl :
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
-    intro Hclose; simp; constructor
-    apply IH₀; apply Hclose.left
-    apply IH₁; apply Hclose.right
+    intro Hclosed; simp; constructor
+    apply IH₀; apply Hclosed.left
+    apply IH₁; apply Hclosed.right
   | lit => simp
   | lam _ IH
   | lift _ IH

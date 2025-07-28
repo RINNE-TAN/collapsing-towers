@@ -8,7 +8,7 @@ lemma typing.escape_strengthened :
     typing Γ 𝟚 e τ ∅ →
     typing (escape Γ) 𝟙 e τ ∅ :=
   by
-  generalize HEq𝕊 : (𝟚 : Stage) = 𝕊
+  generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ e τ Hτ
   apply
     @typing.rec
@@ -130,15 +130,13 @@ theorem preservation.head :
       apply typing.lam
       cases Hτ with
       | pure _ _ _ Hτ =>
-        simp at *
-        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
-        rw [Eqe] at Hτ
+        generalize Eqe : ({0 ↦ Γ.length} e) = E
+        simp [Eqe] at Hτ
         cases Hτ with
         | code_rep _ _ _ Hτ => apply Hτ
       | reify _ _ _ _ Hτ =>
-        simp at *
-        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
-        rw [Eqe] at Hτ
+        generalize Eqe : ({0 ↦ Γ.length} e) = E
+        simp [Eqe] at Hτ
         cases Hτ with
         | code_fragment _ _ _ Hbinds Hwbt =>
           apply typing.fvar
@@ -154,15 +152,13 @@ theorem preservation.head :
       apply Hτb
       cases Hτe with
       | pure _ _ _ Hτ =>
-        simp at *
-        generalize Eqe : ({0 ↦ (List.length Γ)} e) = E
-        rw [Eqe] at Hτ
+        generalize Eqe : ({0 ↦ Γ.length} e) = E
+        simp [Eqe] at Hτ
         cases Hτ with
         | code_rep _ _ _ Hτ => apply Hτ
       | reify _ _ _ _ Hτ =>
-        simp at *
-        generalize Eqe : opening 0 (.fvar (List.length Γ)) e = E
-        rw [Eqe] at Hτ
+        generalize Eqe : ({0 ↦ Γ.length} e) = E
+        simp [Eqe] at Hτ
         cases Hτ with
         | code_fragment _ _ _ Hbinds Hwbt =>
           apply typing.fvar
