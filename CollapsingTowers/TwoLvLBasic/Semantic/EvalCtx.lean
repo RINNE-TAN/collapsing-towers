@@ -63,7 +63,7 @@ lemma lc.under_ctx𝔹 : ∀ B e i, ctx𝔹 B → lc_at e i → lc_at B⟦e⟧ i
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue =>
     constructor
-    apply lc.inc; apply value_impl_lc
+    apply lc.inc; apply lc.value
     apply Hvalue; omega
     apply Hlc
   | lift => apply Hlc
@@ -226,7 +226,7 @@ lemma opening.under_ctx𝔹 : ∀ B e i x, ctx𝔹 B → opening i x B⟦e⟧ = 
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue =>
     simp; apply identity.opening
-    apply lc.inc; apply value_impl_lc
+    apply lc.inc; apply lc.value
     apply Hvalue; omega
   | lift => simp
 

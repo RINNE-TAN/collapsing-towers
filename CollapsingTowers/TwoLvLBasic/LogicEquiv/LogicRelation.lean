@@ -131,3 +131,27 @@ lemma logic_equiv_env.binds_logic_equiv_value :
     . simp [if_neg HEqx]
       simp [if_neg HEqx] at Hbinds
       apply IH; apply Hbinds
+
+lemma logic_equiv_value.arrow_ty_iff_lam :
+  ∀ f₀ f₁ τ𝕒 τ𝕓,
+    logic_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
+    ∃ e₀ e₁,
+      f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
+  by
+  intros f₀ f₁ τ𝕒 τ𝕓 Hsem_value
+  cases f₀ <;> cases f₁ <;> simp at Hsem_value
+  simp
+
+lemma logic_equiv_expr.stepn :
+  ∀ e₀ e₁ r₀ r₁ τ,
+    logic_equiv_expr r₀ r₁ τ →
+    pure_stepn e₀ r₀ → pure_stepn e₁ r₁ →
+    logic_equiv_expr e₀ e₁ τ :=
+  by
+  intros e₀ e₁ r₀ r₁ τ Hsem_expr Hstepr₀ Hstepr₁
+  simp only [logic_equiv_expr] at *
+  have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
+  exists v₀, v₁; constructor
+  apply pure_stepn.trans; apply Hstepr₀; apply Hstepv₀; constructor
+  apply pure_stepn.trans; apply Hstepr₁; apply Hstepv₁
+  apply Hsem_value

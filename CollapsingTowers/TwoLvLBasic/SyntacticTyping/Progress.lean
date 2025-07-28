@@ -62,7 +62,7 @@ theorem progress.strengthened :
         | lam e₀ Hlc₀ =>
           exists opening 0 e₁ e₀
           apply step_lvl.pure _ _ _ ctx𝕄.hole
-          constructor; apply Hlc₀; apply value_impl_lc; apply Hvalue₁
+          constructor; apply Hlc₀; apply lc.value; apply Hvalue₁
           apply head.app₁; apply Hvalue₁
         | _ => nomatch H₀
       | inr Hstep₁ =>
@@ -145,7 +145,7 @@ theorem progress.strengthened :
       exists opening 0 e₀ e₁
       apply step_lvl.pure _ _ _ ctx𝕄.hole
       constructor
-      apply value_impl_lc; apply Hvalue₀
+      apply lc.value; apply Hvalue₀
       apply (lc.under_opening _ _ _).mp; apply typing.regular; apply H₁
       apply head.lets; apply Hvalue₀
     | inr Hstep₀ =>
