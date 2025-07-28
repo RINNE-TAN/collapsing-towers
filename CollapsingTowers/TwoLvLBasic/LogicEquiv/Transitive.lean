@@ -17,9 +17,9 @@ lemma value_trans_impl_expr_trans :
   intros τ Hsem_value_trans e₀ e₁ e₂ Hsem_expr₀ Hsem_expr₁
   simp only [logic_equiv_expr] at Hsem_expr₀ Hsem_expr₁
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value₀⟩ := Hsem_expr₀
-  have ⟨Hvalue₀, Hvalue₁⟩ := logic_equiv_value_impl_syntactic_value _ _ _ Hsem_value₀
+  have ⟨Hvalue₀, Hvalue₁⟩ := logic_equiv_value.syntactic_value _ _ _ Hsem_value₀
   have ⟨v₂, v₃, Hstepv₂, Hstepv₃, Hsem_value₁⟩ := Hsem_expr₁
-  have ⟨Hvalue₂, Hvalue₃⟩ := logic_equiv_value_impl_syntactic_value _ _ _ Hsem_value₁
+  have ⟨Hvalue₂, Hvalue₃⟩ := logic_equiv_value.syntactic_value _ _ _ Hsem_value₁
   have Hstepv₁ := pure_stepn_impl_stepn _ _ Hstepv₁
   have Hstepv₂ := pure_stepn_impl_stepn _ _ Hstepv₂
   rw [← unique_normal_forms _ _ _ Hstepv₁ Hstepv₂ Hvalue₁ Hvalue₂] at Hsem_value₁

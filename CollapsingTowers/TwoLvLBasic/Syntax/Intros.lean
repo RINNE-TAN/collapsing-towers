@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLvLBasic.Syntax.Closed
+import CollapsingTowers.TwoLvLBasic.Syntax.Closedness
 
 lemma intros.maping𝕔 :
     ∀ x e i,

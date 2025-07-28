@@ -126,3 +126,48 @@ abbrev Subst :=
 def multi_subst : Subst → Expr → Expr
   | [], e => e
   | v :: γ, e => multi_subst γ (subst γ.length v e)
+
+@[simp]
+lemma multi_subst.fvar: ∀ γ x, x ≥ γ.length → multi_subst γ (.fvar x) = .fvar x :=
+  by
+  intros γ x HGe
+  induction γ
+  case nil => rfl
+  case cons tail IH =>
+    simp at HGe
+    by_cases HEq : tail.length = x
+    . omega
+    . simp [if_neg HEq]
+      apply IH; omega
+
+@[simp]
+lemma multi_subst.app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
+  by
+  intros γ f arg
+  induction γ generalizing f arg
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.lam : ∀ γ e, multi_subst γ (.lam e) = .lam (multi_subst γ e) :=
+  by
+  intros γ e
+  induction γ generalizing e
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
+  by
+  intros γ n
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.lets : ∀ γ b e, multi_subst γ (.lets b e) = .lets (multi_subst γ b) (multi_subst γ e) :=
+  by
+  intros γ b e
+  induction γ generalizing b e
+  case nil => rfl
+  case cons IH => simp [IH]

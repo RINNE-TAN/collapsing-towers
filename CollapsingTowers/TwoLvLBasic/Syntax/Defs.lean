@@ -1,9 +1,7 @@
 import CollapsingTowers.TwoLvLBasic.Syntax.Effect
 import CollapsingTowers.TwoLvLBasic.Syntax.Basic
 import CollapsingTowers.TwoLvLBasic.Syntax.SyntacticTrans
-import CollapsingTowers.TwoLvLBasic.Syntax.Lc
-import CollapsingTowers.TwoLvLBasic.Syntax.Closed
-import CollapsingTowers.TwoLvLBasic.Syntax.Wf
+import CollapsingTowers.TwoLvLBasic.Syntax.Closedness
 import CollapsingTowers.TwoLvLBasic.Syntax.Fv
 import CollapsingTowers.TwoLvLBasic.Syntax.Identity
 import CollapsingTowers.TwoLvLBasic.Syntax.Commutative

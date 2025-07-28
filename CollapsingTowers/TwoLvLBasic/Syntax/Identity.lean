@@ -1,5 +1,4 @@
-import CollapsingTowers.TwoLvLBasic.Syntax.Lc
-import CollapsingTowers.TwoLvLBasic.Syntax.Closed
+import CollapsingTowers.TwoLvLBasic.Syntax.Closedness
 
 lemma identity.opening : ∀ e v i, lc_at e i → (opening i v e) = e :=
   by
@@ -148,3 +147,14 @@ lemma identity.subst : ∀ x e v, closed_at e x → subst x v e = e :=
     apply IHb; apply He.left
     apply IH; apply He.right
   | lit => simp
+
+lemma identity.multi_subst : ∀ γ e, closed e → multi_subst γ e = e :=
+  by
+  intro γ e Hclose
+  induction γ generalizing e
+  case nil => rfl
+  case cons IH =>
+    simp; rw [IH, identity.subst]
+    apply closed.inc; apply Hclose; omega
+    rw [identity.subst]; apply Hclose
+    apply closed.inc; apply Hclose; omega

@@ -40,7 +40,7 @@ def logic_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop 
     logic_equiv_env γ₀ γ₁ Γ →
     logic_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
 
-lemma logic_equiv_value_impl_syntactic_value :
+lemma logic_equiv_value.syntactic_value :
   ∀ v₀ v₁ τ,
     logic_equiv_value v₀ v₁ τ →
     value v₀ ∧ value v₁ :=
@@ -59,3 +59,75 @@ lemma logic_equiv_value_impl_syntactic_value :
     apply value.lam; apply Hwf₀.left
     apply value.lam; apply Hwf₁.left
   all_goals simp at Hsem_value
+
+lemma logic_equiv_value.wf :
+  ∀ v₀ v₁ τ,
+    logic_equiv_value v₀ v₁ τ →
+    wf v₀ ∧
+    wf v₁ :=
+  by
+  intros v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    repeat constructor
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
+    constructor
+    apply Hwf₀; apply Hwf₁
+  all_goals simp at Hsem_value
+
+lemma logic_equiv_env.multi_wf :
+  ∀ γ₀ γ₁ Γ,
+    logic_equiv_env γ₀ γ₁ Γ →
+    multi_wf γ₀ ∧
+    multi_wf γ₁ :=
+  by
+  intros γ₀ γ₁ Γ H
+  induction H
+  case nil => repeat constructor
+  case cons Hsem_value _ IH =>
+    constructor
+    . constructor; apply And.left
+      apply logic_equiv_value.wf
+      apply Hsem_value; apply IH.left
+    . constructor; apply And.right
+      apply logic_equiv_value.wf
+      apply Hsem_value; apply IH.right
+
+lemma logic_equiv_env.length :
+  ∀ γ₀ γ₁ Γ,
+    logic_equiv_env γ₀ γ₁ Γ →
+    γ₀.length = Γ.length ∧
+    γ₁.length = Γ.length :=
+  by
+  intros γ₀ γ₁ Γ H
+  induction H
+  case nil => simp
+  case cons IH =>
+    constructor
+    . simp; apply IH.left
+    . simp; apply IH.right
+
+lemma logic_equiv_env.binds_logic_equiv_value :
+  ∀ γ₀ γ₁ Γ x τ,
+    logic_equiv_env γ₀ γ₁ Γ →
+    binds x (τ, .stat) Γ →
+    logic_equiv_value (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
+  by
+  intros γ₀ γ₁ Γ x τ HsemΓ Hbinds
+  induction HsemΓ
+  case nil => nomatch Hbinds
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
+    have ⟨Hwf₀, Hwf₁⟩ := logic_equiv_value.wf _ _ _ Hsem_value
+    have ⟨HEq₀, HEq₁⟩ := logic_equiv_env.length _ _ _ HsemΓ
+    simp [HEq₀, HEq₁]
+    by_cases HEqx : Γ.length = x
+    . simp [if_pos HEqx]
+      simp [if_pos HEqx] at Hbinds
+      rw [← Hbinds, identity.multi_subst, identity.multi_subst]
+      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
+    . simp [if_neg HEqx]
+      simp [if_neg HEqx] at Hbinds
+      apply IH; apply Hbinds
