@@ -145,7 +145,7 @@ lemma logic_equiv_value.arrow_ty_iff_lam :
 lemma logic_equiv_expr.stepn :
   ∀ e₀ e₁ r₀ r₁ τ,
     logic_equiv_expr r₀ r₁ τ →
-    pure_stepn e₀ r₀ → pure_stepn e₁ r₁ →
+    (e₀ ⇾* r₀) → (e₁ ⇾* r₁) →
     logic_equiv_expr e₀ e₁ τ :=
   by
   intros e₀ e₁ r₀ r₁ τ Hsem_expr Hstepr₀ Hstepr₁
