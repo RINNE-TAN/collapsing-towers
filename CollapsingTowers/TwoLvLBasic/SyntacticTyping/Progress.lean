@@ -5,7 +5,7 @@ import CollapsingTowers.TwoLvLBasic.Semantic.Defs
 def dyn_env (Γ : TEnv) : Prop :=
   ∀ x τ 𝕊, binds x (τ, 𝕊) Γ → ¬𝕊 = .stat
 
-theorem dyn_env_extend :
+lemma dyn_env.extend :
   ∀ Γ τ,
     dyn_env Γ →
     dyn_env ((τ, .dyn) :: Γ) :=
@@ -33,15 +33,13 @@ theorem progress.strengthened :
     (fun Γ e₀ τ φ (H : typing_reification Γ e₀ τ φ) =>
       dyn_env Γ →
       value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁)
-  case fvar =>
-    intros _ _ x _ Hbinds HwellBinds HDyn HEq𝕊
+  <;> intros
+  case fvar x _ Hbinds HwellBinds HDyn HEq𝕊 =>
     exfalso; apply HDyn; apply Hbinds; apply HEq𝕊
-  case lam =>
-    intros _ _ _ _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
-    left; constructor
+  case lam H HwellBinds Hclose IH HDyn HEq𝕊 =>
+    left; apply value.lam
     apply (lc.under_opening _ _ _).mp; apply typing.regular; apply H
-  case lift_lam =>
-    intros _ _ _ _ _ _ H IH HDyn HEq𝕊
+  case lift_lam H IH HDyn HEq𝕊 =>
     right
     cases IH HDyn rfl with
     | inl Hvalue =>
@@ -54,8 +52,7 @@ theorem progress.strengthened :
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       apply step.congruence_under_ctx𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
-  case app₁ =>
-    intros _ _ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+  case app₁ e₀ e₁ _ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊 =>
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -76,8 +73,7 @@ theorem progress.strengthened :
       have ⟨_, Hstep₀⟩ := Hstep₀
       apply step.congruence_under_ctx𝔹 _ _ _ _ (ctx𝔹.appl₁ _ _); apply Hstep₀
       apply typing.regular; apply H₁
-  case app₂ =>
-    intros _ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊
+  case app₂ e₀ e₁ _ _ _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊 =>
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -101,9 +97,8 @@ theorem progress.strengthened :
       have ⟨_, Hstep₀⟩ := Hstep₀
       apply step.congruence_under_ctx𝔹 _ _ _ _ (ctx𝔹.appl₂ _ _); apply Hstep₀
       apply typing.regular; apply H₁
-  case lit => intros; left; constructor
-  case lift_lit =>
-    intros _ _ _ H IH HDyn HEq𝕊
+  case lit => left; apply value.lit
+  case lift_lit H IH HDyn HEq𝕊 =>
     right
     cases IH HDyn HEq𝕊 with
     | inl Hvalue =>
@@ -116,21 +111,18 @@ theorem progress.strengthened :
     | inr Hstep =>
       have ⟨_, Hstep⟩ := Hstep
       apply step.congruence_under_ctx𝔹 _ _ _ _ ctx𝔹.lift; apply Hstep
-  case code_fragment => intros; left; constructor; simp
-  case code_rep =>
-    intros _ _ _ H IH HDyn HEq𝕊
-    left; constructor
+  case code_fragment => left; apply value.code; simp
+  case code_rep H IH HDyn HEq𝕊 =>
+    left; apply value.code
     apply typing.regular; apply H
-  case reflect =>
-    intros _ e _ H _ _ _
+  case reflect e _ H _ _ _ =>
     right; exists .lets𝕔 e (.code (.bvar 0))
     apply step_lvl.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
     apply typing.regular; apply H
-  case lam𝕔 =>
-    intros Γ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊
+  case lam𝕔 Γ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊 =>
     right
     rw [← identity.closing_opening _ e _ Hclose]
-    cases IH (dyn_env_extend _ _ HDyn) with
+    cases IH (dyn_env.extend _ _ HDyn) with
     | inl Hvalue =>
       generalize HEqe : ({0 ↦ Γ.length} e) = e𝕠
       rw [HEqe] at Hvalue H
@@ -146,8 +138,7 @@ theorem progress.strengthened :
       have ⟨_, Hstep⟩ := Hstep
       constructor
       apply step.congruence_under_ctxℝ _ _ _ _ _ ctxℝ.lam𝕔; apply Hstep
-  case lets =>
-    intros _ _ e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊
+  case lets e₀ e₁ _ _ _ _ H₀ H₁ _ _ IH₀ IH₁ HDyn HEq𝕊 =>
     right
     cases IH₀ HDyn HEq𝕊 with
     | inl Hvalue₀ =>
@@ -161,11 +152,10 @@ theorem progress.strengthened :
       have ⟨_, Hstep₀⟩ := Hstep₀
       apply step.congruence_under_ctx𝔹 _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
       apply (lc.under_opening _ _ _).mp; apply typing.regular; apply H₁
-  case lets𝕔 =>
-    intros Γ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊
+  case lets𝕔 Γ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊 =>
     right
     rw [← identity.closing_opening _ e _ Hclose]
-    cases IH₁ (dyn_env_extend _ _ HDyn) with
+    cases IH₁ (dyn_env.extend _ _ HDyn) with
     | inl Hvalue =>
       generalize HEqe : ({0 ↦ Γ.length} e) = e𝕠
       rw [HEqe] at Hvalue H₁
@@ -184,8 +174,7 @@ theorem progress.strengthened :
       constructor
       apply step.congruence_under_ctxℝ _ _ _ _ _ (ctxℝ.lets𝕔 _ _); apply Hstep
       apply typing.regular; apply H₀
-  case run =>
-    intros _ _ _ _ _ Hclose IH HDyn HEq𝕊
+  case run Hclose IH HDyn HEq𝕊 =>
     right
     cases IH HDyn with
     | inl Hvalue =>
@@ -200,11 +189,9 @@ theorem progress.strengthened :
       have ⟨_, Hstep⟩ := Hstep
       constructor
       apply step.congruence_under_ctxℝ _ _ _ _ _ ctxℝ.run; apply Hstep
-  case pure =>
-    intros _ _ _ _ IH HDyn
+  case pure IH HDyn =>
     apply IH; apply HDyn; rfl
-  case reify =>
-    intros _ _ _ _ _ IH HDyn
+  case reify IH HDyn =>
     apply IH; apply HDyn; rfl
   apply Hτ
 

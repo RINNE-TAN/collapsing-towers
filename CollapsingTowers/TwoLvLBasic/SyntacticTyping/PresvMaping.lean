@@ -58,7 +58,7 @@ lemma preservation.maping_strengthened :
     apply typing.lam
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
-    apply typing.weakening_singleton; apply Hτv; apply Hwbt
+    apply typing.weakening.singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -73,7 +73,7 @@ lemma preservation.maping_strengthened :
     apply typing.lam𝕔
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IH; rfl
-    apply typing.weakening_singleton; apply Hτv; apply Hwbt
+    apply typing.weakening.singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -130,7 +130,7 @@ lemma preservation.maping_strengthened :
     apply IHb; rfl; apply Hτv
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IHe; rfl
-    apply typing.weakening_singleton; apply Hτv; apply Hwbt
+    apply typing.weakening.singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose
@@ -144,7 +144,7 @@ lemma preservation.maping_strengthened :
     apply IHb; rfl; apply Hτv
     rw [← List.cons_append, List.length_append, List.length_cons]
     apply IHe; rfl
-    apply typing.weakening_singleton; apply Hτv; apply Hwbt
+    apply typing.weakening.singleton; apply Hτv; apply Hwbt
     apply closed.under_subst
     apply typing.closed_at_env; apply Hτv
     rw [List.length_append, List.length_cons]; apply Hclose

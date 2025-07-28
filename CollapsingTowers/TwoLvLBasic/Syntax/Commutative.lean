@@ -87,3 +87,25 @@ lemma comm.shiftr_opening :
   | reflect _ IH
   | run _ IH =>
     simp; apply IH
+
+lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
+  by
+  intros i x e
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | fvar| lit => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH => simp; apply IH

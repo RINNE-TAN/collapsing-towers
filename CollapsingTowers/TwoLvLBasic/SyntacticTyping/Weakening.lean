@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Typing
 
-lemma typing.weakening_strengthened :
+theorem typing.weakening.strengthened :
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
       typing Γ 𝕊 e τ φ →
       Γ = Ψ ++ Φ →
@@ -126,11 +126,11 @@ theorem typing.weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → ty
   intros Γ Δ 𝕊 e τ φ Hτ
   rw [← List.nil_append Δ]
   rw [← identity.shiftl _ e]
-  apply typing.weakening_strengthened
+  apply typing.weakening.strengthened
   apply Hτ; rfl
   apply typing.closed_at_env; apply Hτ
 
-theorem typing.weakening_singleton : ∀ Γ 𝕊𝕒 𝕊𝕓 e τ𝕒 τ𝕓 φ, typing Γ 𝕊𝕓 e τ𝕓 φ -> typing ((τ𝕒, 𝕊𝕒) :: Γ) 𝕊𝕓 e τ𝕓 φ :=
+theorem typing.weakening.singleton : ∀ Γ 𝕊𝕒 𝕊𝕓 e τ𝕒 τ𝕓 φ, typing Γ 𝕊𝕓 e τ𝕓 φ -> typing ((τ𝕒, 𝕊𝕒) :: Γ) 𝕊𝕓 e τ𝕓 φ :=
   by
   intros Γ 𝕊𝕒 𝕊𝕓 e τ𝕒 τ𝕓 φ
   rw [← List.singleton_append]

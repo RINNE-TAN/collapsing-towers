@@ -303,6 +303,6 @@ lemma preservation.under_ctx𝔼 :
           rw [← identity.shiftl Γ.length body Δ.length]
           rw [← List.singleton_append, ← List.append_assoc]
           rw [List.length_append, Nat.add_comm, ← comm.shiftl_opening]
-          apply typing.weakening_strengthened; apply Hbody; rfl; rfl
+          apply typing.weakening.strengthened; apply Hbody; rfl; rfl
           apply Hclose; apply HwellBinds
           apply closed.inc; apply Hclose; simp

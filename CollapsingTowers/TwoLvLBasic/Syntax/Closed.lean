@@ -261,6 +261,25 @@ lemma closed.under_shiftr_dec :
     | run _ IH =>
       apply IH; apply HFv; apply Hclosed
 
+lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
+  by
+  intros e x
+  induction e with
+  | fvar| lit| bvar => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    apply and_congr
+    apply IH₀; apply IH₁
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH =>
+    apply IH
+
 lemma closed_impl_fv_not_in :
   ∀ x y e,
     closed_at e x →

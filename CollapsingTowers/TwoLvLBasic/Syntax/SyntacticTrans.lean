@@ -100,3 +100,21 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .lam𝕔 e => .lam𝕔 (shiftr_at x e)
   | .lets b e => .lets (shiftr_at x b) (shiftr_at x e)
   | .lets𝕔 b e => .lets𝕔 (shiftr_at x b) (shiftr_at x e)
+
+@[simp]
+def expr.erase : Expr → Expr
+  | .bvar i => .bvar i
+  | .fvar y => .fvar y
+  | .lam e => .lam (erase e)
+  | .lift e => erase e
+  | .app₁ f arg => .app₁ (erase f) (erase arg)
+  | .app₂ f arg => .app₁ (erase f) (erase arg)
+  | .lit n => .lit n
+  | .run e => erase e
+  | .code e => erase e
+  | .reflect e => erase e
+  | .lam𝕔 e => .lam (erase e)
+  | .lets b e => .lets (erase b) (erase e)
+  | .lets𝕔 b e => .lets (erase b) (erase e)
+
+notation:max "‖" e "‖" => expr.erase e
