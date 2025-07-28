@@ -50,3 +50,23 @@ lemma env.erase.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖
     . simp [if_neg HEq] at Hbinds
       simp [← env.erase.length, if_neg HEq]
       apply IH; apply Hbinds
+
+lemma identity.ty.erase_erase : ∀ τ, ‖‖τ‖𝜏‖𝜏 = ‖τ‖𝜏 :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  case fragment IH => apply IH
+  case rep IH => apply IH
+
+lemma identity.env.erase_erase : ∀ Γ, ‖‖Γ‖𝛾‖𝛾 = ‖Γ‖𝛾 :=
+  by
+  intros Γ
+  induction Γ
+  case nil => simp
+  case cons IH =>
+    simp; constructor
+    apply identity.ty.erase_erase; apply IH

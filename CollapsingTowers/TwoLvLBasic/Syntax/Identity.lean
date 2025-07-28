@@ -158,3 +158,24 @@ lemma identity.multi_subst : ∀ γ e, closed e → multi_subst γ e = e :=
     apply closed.inc; apply Hclose; omega
     rw [identity.subst]; apply Hclose
     apply closed.inc; apply Hclose; omega
+
+lemma identity.erase_erase : ∀ e, ‖‖e‖‖ = ‖e‖ :=
+  by
+  intros e
+  induction e with
+  | bvar j => rfl
+  | fvar y => rfl
+  | lam _ IH
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | lam𝕔 _ IH
+  | run _ IH =>
+    simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | lit => rfl

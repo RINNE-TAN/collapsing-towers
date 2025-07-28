@@ -106,3 +106,12 @@ theorem typing_reification.erase_fundamental :
   all_goals
   next Hτ =>
     apply typing.erase_fundamental _ _ _ _ _ Hτ
+
+theorem typing.fundamental :
+  ∀ Γ 𝕊 e τ φ,
+    typing ‖Γ‖𝛾 𝕊 ‖e‖ ‖τ‖𝜏 φ →
+    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  rw [← identity.env.erase_erase, ← identity.erase_erase, ← identity.ty.erase_erase]
+  apply erase_fundamental; apply Hτ
