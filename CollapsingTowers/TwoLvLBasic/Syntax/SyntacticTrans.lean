@@ -118,3 +118,11 @@ def expr.erase : Expr → Expr
   | .lets𝕔 b e => .lets (erase b) (erase e)
 
 notation:max "‖" e "‖" => expr.erase e
+
+abbrev Subst :=
+  List Expr
+
+@[simp]
+def multi_subst : Subst → Expr → Expr
+  | [], e => e
+  | v :: γ, e => multi_subst γ (subst γ.length v e)

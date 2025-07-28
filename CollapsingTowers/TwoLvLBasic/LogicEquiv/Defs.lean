@@ -1,0 +1,3 @@
+import CollapsingTowers.TwoLvLBasic.LogicEquiv.LogicRelation
+import CollapsingTowers.TwoLvLBasic.LogicEquiv.Symmetry
+import CollapsingTowers.TwoLvLBasic.LogicEquiv.Transitive
