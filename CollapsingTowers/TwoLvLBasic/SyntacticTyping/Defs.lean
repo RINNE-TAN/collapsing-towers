@@ -8,3 +8,4 @@ import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvCtx
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.PresvReflect
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Preservation
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Progress
+import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Soundness
