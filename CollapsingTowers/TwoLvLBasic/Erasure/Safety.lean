@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLvLBasic.Erasure.Env
+import CollapsingTowers.TwoLvLBasic.Erasure.Erase
 
 -- Γ ⊢ e : τ
 -- ————————————————
