@@ -5,3 +5,4 @@ import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Defs
 import CollapsingTowers.TwoLvLBasic.Erasure.Defs
 import CollapsingTowers.TwoLvLBasic.CtxEquiv.Defs
 import CollapsingTowers.TwoLvLBasic.LogicEquiv.Defs
+import CollapsingTowers.TwoLvLBasic.StagingConsistency.Defs

@@ -3,8 +3,8 @@ import CollapsingTowers.TwoLvLBasic.CtxEquiv.Defs
 
 lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
   ∀ Δ Γ τδ τγ B e₀ e₁,
-    typing Δ .stat e₀ τδ ∅ →
-    typing Δ .stat e₁ τδ ∅ →
+    typing Δ 𝟙 e₀ τδ ∅ →
+    typing Δ 𝟙 e₁ τδ ∅ →
     logic_equiv_typing Δ e₀ e₁ τδ →
     ObsCtx𝔹 Δ τδ B Γ τγ →
     logic_equiv_typing Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
@@ -66,8 +66,8 @@ lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
 -- Γ ⊢ C⟦e₀⟧ ≈ C⟦e₁⟧ : τγ
 lemma logic_equiv_typing.congruence_under_ObsCtxℂ :
   ∀ Δ Γ τδ τγ C e₀ e₁,
-    typing Δ .stat e₀ τδ ∅ →
-    typing Δ .stat e₁ τδ ∅ →
+    typing Δ 𝟙 e₀ τδ ∅ →
+    typing Δ 𝟙 e₁ τδ ∅ →
     logic_equiv_typing Δ e₀ e₁ τδ →
     ObsCtxℂ Δ τδ C Γ τγ →
     logic_equiv_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=

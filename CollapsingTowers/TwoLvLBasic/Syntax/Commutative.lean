@@ -33,6 +33,39 @@ lemma comm.subst_opening : ∀ x y v e i, x ≠ y → lc v → subst x v ({i ↦
   | lam𝕔 _ IH =>
     simp; apply IH
 
+lemma comm.subst_opening_value :
+    ∀ x v₀ v₁ e i, lc_at v₀ i → subst x v₀ (opening i v₁ e) = opening i (subst x v₀ v₁) (subst x v₀ e) :=
+  by
+  intro x v₀ v₁ e i Hlc
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp; rw [if_pos HEq]; simp; omega
+    . simp; rw [if_neg HEq, if_neg HEq]; simp
+  | fvar z =>
+    by_cases HEq : x = z
+    . simp; rw [if_pos HEq]; rw [identity.opening]; apply Hlc
+    . simp; rw [if_neg HEq]; simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hlc
+    apply IH₁; apply Hlc
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hlc
+    apply IH₁; apply lc.inc; apply Hlc; omega
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    simp; apply IH; apply Hlc
+  | lit => simp
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH =>
+    simp; apply IH; apply lc.inc; apply Hlc; omega
+
 lemma comm.shiftl_opening : ∀ x y e n i, x ≤ y → (shiftl_at x n {i ↦ y} e) = ({i ↦ y + n} shiftl_at x n e) :=
   by
   intros x y e n i HLe
@@ -107,6 +140,28 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
   | lam _ IH
   | lam𝕔 _ IH => simp; apply IH
 
+lemma comm.erase_opening_subst : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
+  by
+  intros i v e
+  induction e generalizing i with
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | fvar| lit => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH => simp; apply IH
+
 lemma comm.multi_subst_opening : ∀ γ x e i, x ≥ γ.length → multi_wf γ → multi_subst γ ({i ↦ x} e) = {i ↦ x} (multi_subst γ e) :=
   by
   intros γ x e i HGe Hγ
@@ -117,6 +172,17 @@ lemma comm.multi_subst_opening : ∀ γ x e i, x ≥ γ.length → multi_wf γ �
     rw [comm.subst_opening, IH]
     omega; apply Hγ.right; omega
     apply lc.inc; apply Hγ.left.left; omega
+
+lemma comm.multi_subst_opening_value :
+    ∀ γ v e i, multi_wf γ → multi_subst γ (opening i v e) = opening i (multi_subst γ v) (multi_subst γ e) :=
+    by
+    intros γ v e i Hγ
+    induction γ generalizing e v
+    case nil => rfl
+    case cons IH =>
+      rw [multi_subst, comm.subst_opening_value, IH]
+      rfl; apply Hγ.right
+      apply lc.inc; apply Hγ.left.left; omega
 
 lemma comm.subst_subst : ∀ x y v₀ v₁ e, x ≠ y → closed v₀ → closed v₁ → subst x v₀ (subst y v₁ e) = subst y v₁ (subst x v₀ e) :=
   by

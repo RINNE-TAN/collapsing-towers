@@ -179,3 +179,24 @@ lemma identity.erase_erase : ∀ e, ‖‖e‖‖ = ‖e‖ :=
     simp; constructor
     apply IH₀; apply IH₁
   | lit => rfl
+
+lemma identity.erase_maping𝕔 : ∀ i e, ‖maping𝕔 i e‖ = ‖e‖ :=
+  by
+  intros i e
+  induction e generalizing i with
+  | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
+  | fvar y => simp
+  | lam _ IH
+  | lift _ IH
+  | code _ IH
+  | reflect _ IH
+  | lam𝕔 _ IH
+  | run _ IH =>
+    simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | lit => simp

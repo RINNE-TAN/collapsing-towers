@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLvLBasic.SyntacticTyping.Defs
+import CollapsingTowers.TwoLvLBasic.Erasure.Defs
 
 mutual
 -- 𝓥⟦ℕ⟧ ≜ {(n, n) | n ∈ ℕ}
@@ -113,7 +114,7 @@ lemma logic_equiv_env.length :
 lemma logic_equiv_env.binds_logic_equiv_value :
   ∀ γ₀ γ₁ Γ x τ,
     logic_equiv_env γ₀ γ₁ Γ →
-    binds x (τ, .stat) Γ →
+    binds x (τ, 𝟙) Γ →
     logic_equiv_value (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
   by
   intros γ₀ γ₁ Γ x τ HsemΓ Hbinds
@@ -131,6 +132,46 @@ lemma logic_equiv_env.binds_logic_equiv_value :
     . simp [if_neg HEqx]
       simp [if_neg HEqx] at Hbinds
       apply IH; apply Hbinds
+
+-- value v
+-- —————————————
+-- value γ₀(‖v‖)
+--
+--
+-- value n  value λ.e        value (code x)  value (code e)
+-- ———————  ———————————————  ——————————————  ——————————————————
+-- value n  value λ.γ₀(‖e‖)  value γ₀(x)     Binding Time Error
+lemma logic_equiv_env.erase_value :
+  ∀ Γ v τ φ γ₀ γ₁,
+    typing Γ 𝟙 v τ φ →
+    logic_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
+    value v →
+    wbt 𝟙 τ →
+    value (multi_subst γ₀ ‖v‖) ∧ value (multi_subst γ₁ ‖v‖) :=
+  by
+  intros Γ v τ φ γ₀ γ₁ Hτ HsemΓ Hvalue HwellBinds
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
+  cases Hvalue
+  case lam Hlc =>
+    simp
+    constructor
+    . apply value.lam
+      apply lc.under_multi_subst; apply Hmulti_wf₀
+      rw [← lc.under_erase]; apply Hlc
+    . apply value.lam
+      apply lc.under_multi_subst; apply Hmulti_wf₁
+      rw [← lc.under_erase]; apply Hlc
+  case lit =>
+    simp; apply value.lit
+  case code e _ =>
+    cases e <;> cases Hτ <;> try simp at HwellBinds
+    constructor
+    . apply And.left; apply logic_equiv_value.syntactic_value
+      apply logic_equiv_env.binds_logic_equiv_value
+      apply HsemΓ; apply env.erase.binds; assumption
+    . apply And.right; apply logic_equiv_value.syntactic_value
+      apply logic_equiv_env.binds_logic_equiv_value
+      apply HsemΓ; apply env.erase.binds; assumption
 
 lemma logic_equiv_value.arrow_ty_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,

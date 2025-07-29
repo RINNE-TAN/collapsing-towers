@@ -46,7 +46,7 @@ theorem compatibility_lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     closed_at (.lam e₀) Γ.length →
     closed_at (.lam e₁) Γ.length →
-    logic_equiv_typing ((τ𝕒, .stat) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    logic_equiv_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
     logic_equiv_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
   intros Γ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hsem
@@ -158,7 +158,7 @@ lemma compatibility.lets :
     closed_at (.lets b₀ e₀) Γ.length →
     closed_at (.lets b₁ e₁) Γ.length →
     logic_equiv_typing Γ b₀ b₁ τ𝕒 →
-    logic_equiv_typing ((τ𝕒, .stat) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    logic_equiv_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
     logic_equiv_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
   by
   intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hb He

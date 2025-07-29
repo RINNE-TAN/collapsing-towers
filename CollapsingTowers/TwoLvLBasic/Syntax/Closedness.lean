@@ -501,3 +501,22 @@ lemma lc.under_multi_subst : ∀ i γ e, multi_wf γ → lc_at e i → lc_at (mu
     apply IH; apply Hγ.right
     apply lc.under_subst; apply lc.inc
     apply Hγ.left.left; omega; apply He
+
+lemma lc.under_erase : ∀ e i, lc_at e i ↔ lc_at ‖e‖ i :=
+  by
+  intros e i
+  induction e generalizing i with
+  | fvar| lit| bvar => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    apply and_congr
+    apply IH₀; apply IH₁
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH =>
+    apply IH

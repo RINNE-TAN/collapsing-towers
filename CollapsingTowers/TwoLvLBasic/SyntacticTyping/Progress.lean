@@ -3,12 +3,12 @@ import CollapsingTowers.TwoLvLBasic.Semantic.Defs
 
 @[simp]
 def dyn_env (Γ : TEnv) : Prop :=
-  ∀ x τ 𝕊, binds x (τ, 𝕊) Γ → ¬𝕊 = .stat
+  ∀ x τ 𝕊, binds x (τ, 𝕊) Γ → ¬𝕊 = 𝟙
 
 lemma dyn_env.extend :
   ∀ Γ τ,
     dyn_env Γ →
-    dyn_env ((τ, .dyn) :: Γ) :=
+    dyn_env ((τ, 𝟚) :: Γ) :=
   by
   intros Γ τ₀ HDyn x τ₁ 𝕊 Hbinds HEq𝕊
   simp at Hbinds; rw [HEq𝕊] at Hbinds
@@ -28,7 +28,7 @@ theorem progress.strengthened :
   apply @typing_reification.rec
     (fun Γ 𝕊 e₀ τ φ (H : typing Γ 𝕊 e₀ τ φ) =>
       dyn_env Γ →
-      𝕊 = .stat →
+      𝕊 = 𝟙 →
       value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁)
     (fun Γ e₀ τ φ (H : typing_reification Γ e₀ τ φ) =>
       dyn_env Γ →
