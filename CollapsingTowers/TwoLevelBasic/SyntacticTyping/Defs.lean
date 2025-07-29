@@ -1,0 +1,11 @@
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Typing
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Weakening
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Shrinking
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.PresvSubst
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.PresvMaping
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.PresvHead
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.PresvCtx
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.PresvReflect
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Preservation
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Progress
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Soundness

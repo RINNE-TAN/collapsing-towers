@@ -1,6 +1,0 @@
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.LogicRelation
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.Symmetry
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.Transitive
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.Compatibility
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.Fundamental
-import CollapsingTowers.TwoLvLBasic.LogicEquiv.Soundness

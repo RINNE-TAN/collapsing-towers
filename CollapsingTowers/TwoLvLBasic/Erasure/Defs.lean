@@ -1,2 +1,0 @@
-import CollapsingTowers.TwoLvLBasic.Erasure.Erase
-import CollapsingTowers.TwoLvLBasic.Erasure.Safety

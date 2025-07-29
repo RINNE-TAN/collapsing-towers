@@ -14,4 +14,4 @@ jobs:
       - uses: leanprover/lean-action@v1
       - name: build
         run: |
-          lake build CollapsingTowers.TwoLvLBasic.Defs
+          lake build CollapsingTowers.TwoLevelBasic.Defs

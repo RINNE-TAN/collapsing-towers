@@ -1,0 +1,8 @@
+import CollapsingTowers.TwoLevelBasic.Syntax.Defs
+import CollapsingTowers.TwoLevelBasic.Utils.Defs
+import CollapsingTowers.TwoLevelBasic.Semantic.Defs
+import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Defs
+import CollapsingTowers.TwoLevelBasic.Erasure.Defs
+import CollapsingTowers.TwoLevelBasic.CtxEquiv.Defs
+import CollapsingTowers.TwoLevelBasic.LogicEquiv.Defs
+import CollapsingTowers.TwoLevelBasic.StagingConsistency.Defs

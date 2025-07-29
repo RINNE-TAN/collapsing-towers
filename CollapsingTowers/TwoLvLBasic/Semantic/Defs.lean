@@ -1,6 +1,0 @@
-import CollapsingTowers.TwoLvLBasic.Semantic.Value
-import CollapsingTowers.TwoLvLBasic.Semantic.EvalCtx
-import CollapsingTowers.TwoLvLBasic.Semantic.SmallStep
-import CollapsingTowers.TwoLvLBasic.Semantic.Congruence
-import CollapsingTowers.TwoLvLBasic.Semantic.Deterministic
-import CollapsingTowers.TwoLvLBasic.Semantic.Confluence
