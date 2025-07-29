@@ -173,6 +173,130 @@ lemma logic_equiv_env.erase_value :
       apply logic_equiv_env.binds_logic_equiv_value
       apply HsemΓ; apply env.erase.binds; assumption
 
+lemma logic_equiv_env.erase_ctx𝔼 :
+  ∀ E₀ Γ e τ φ γ₀ γ₁,
+    ctx𝔼 E₀ →
+    typing Γ 𝟙 E₀⟦e⟧ τ φ →
+    logic_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
+    ∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₀ ‖E₀⟦e⟧‖ = E₁⟦multi_subst γ₀ ‖e‖⟧) :=
+  by
+  intros E₀ Γ e τ φ γ₀ γ₁ HE₀ Hτ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := logic_equiv_env.length _ _ _ HsemΓ
+  induction HE₀ generalizing τ φ
+  case hole =>
+    exists id
+    constructor; apply ctx𝔼.hole
+    constructor; apply typing.closed_at_env; apply Hτ
+    intro e; rfl
+  case cons𝔹 HB HE IH =>
+    cases HB
+    case appl₁ arg Hlc =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists (fun X => .app₁ X (multi_subst γ₀ ‖arg‖)) ∘ E
+        constructor
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+        apply lc.under_multi_subst; apply Hmulti_wf₀; rw [← lc.under_erase]; apply Hlc
+        constructor
+        constructor
+        . apply HcloseE
+        . apply closed.inc
+          apply closed.under_multi_subst; apply Hmulti_wf₀
+          rw [← closed.under_erase]
+          rw [HEq₀, ← env.erase.length]
+          apply typing.closed_at_env; apply Harg; omega
+        simp; apply IHγ
+    case appr₁ f Hvalue =>
+      cases Hτ
+      case app₁ HX Hf =>
+        cases Hvalue with
+        | lam e Hlc =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists (fun X => .app₁ (multi_subst γ₀ (‖.lam e‖)) X) ∘ E
+        constructor
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+        simp; apply value.lam
+        apply lc.under_multi_subst; apply Hmulti_wf₀
+        rw [← lc.under_erase]; apply Hlc
+        constructor
+        constructor
+        . apply closed.inc
+          apply closed.under_multi_subst; apply Hmulti_wf₀
+          rw [← closed.under_erase]
+          rw [HEq₀, ← env.erase.length]
+          apply typing.closed_at_env; apply Hf; omega
+        . apply HcloseE
+        simp; apply IHγ
+        | _ => cases Hf
+    case appl₂ arg Hlc =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists (fun X => .app₁ X (multi_subst γ₀ ‖arg‖)) ∘ E
+        constructor
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE
+        apply lc.under_multi_subst; apply Hmulti_wf₀; rw [← lc.under_erase]; apply Hlc
+        constructor
+        constructor
+        . apply HcloseE
+        . apply closed.inc
+          apply closed.under_multi_subst; apply Hmulti_wf₀
+          rw [← closed.under_erase]
+          rw [HEq₀, ← env.erase.length]
+          apply typing.closed_at_env; apply Harg; omega
+        simp; apply IHγ
+    case appr₂ f Hvalue =>
+      cases Hτ
+      case app₂ Hf HX =>
+        cases Hvalue with
+        | code e Hlc =>
+          cases Hf with
+          | code_fragment _ x _ Hbinds =>
+            have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+            exists (fun X => .app₁ (multi_subst γ₀ (‖.code (.fvar x)‖)) X) ∘ E
+            constructor
+            apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
+            apply And.left; apply logic_equiv_value.syntactic_value
+            apply logic_equiv_env.binds_logic_equiv_value
+            apply HsemΓ; apply env.erase.binds; assumption
+            constructor
+            constructor
+            . apply closed.inc
+              apply closed.under_multi_subst; apply Hmulti_wf₀
+              rw [← closed.under_erase]
+              simp [HEq₀, ← env.erase.length]
+              rw [getr_exists_iff_index_lt_length]; constructor; apply Hbinds
+              omega
+            . apply HcloseE
+            simp; apply IHγ
+        | _ => cases Hf
+    case lift =>
+      cases Hτ
+      case lift_lam HX =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists E
+      case lift_lit HX =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists E
+    case lets e Hlc =>
+      cases Hτ
+      case lets HX Hclose He =>
+        have ⟨E, HE, HcloseE, IHγ⟩ := IH _ _ HX
+        exists (fun X => .lets X (multi_subst γ₀ ‖e‖)) ∘ E
+        constructor
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE
+        apply lc.under_multi_subst; apply Hmulti_wf₀; rw [← lc.under_erase]; apply Hlc
+        constructor
+        constructor
+        . apply HcloseE
+        . apply closed.inc
+          apply closed.under_multi_subst; apply Hmulti_wf₀
+          rw [← closed.under_erase]
+          rw [HEq₀, ← env.erase.length]; apply Hclose; omega
+        simp; apply IHγ
+
 lemma logic_equiv_value.arrow_ty_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,
     logic_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →

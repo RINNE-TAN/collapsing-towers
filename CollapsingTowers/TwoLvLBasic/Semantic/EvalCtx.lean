@@ -239,6 +239,48 @@ lemma opening.under_ctx𝔼 : ∀ E e i x, ctx𝔼 E → opening i x E⟦e⟧ = 
     simp at *; rw [← IH]
     apply opening.under_ctx𝔹; apply HB
 
+lemma erase.under_ctx𝔹 :
+  ∀ B e,
+    ctx𝔹 B →
+    ‖B⟦e⟧‖ = ‖B⟦‖e‖⟧‖ :=
+  by
+  intros B e HB
+  cases HB <;> simp [identity.erase_erase]
+
+lemma erase.under_ctx𝔼 :
+  ∀ E e,
+    ctx𝔼 E →
+    ‖E⟦e⟧‖ = ‖E⟦‖e‖⟧‖ :=
+  by
+  intros E e HE
+  induction HE generalizing e
+  case hole => simp [identity.erase_erase]
+  case cons𝔹 B E HB HE IH =>
+    simp; rw [erase.under_ctx𝔹 _ _ HB, IH, ← erase.under_ctx𝔹 _ _ HB]
+
+lemma subst.under_ctx𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e₀⟧ x → subst x v B⟦e₁⟧ = B⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HB He₀
+  cases HB with
+  | appl₁| appl₂| lets =>
+    simp; apply identity.subst; apply He₀.right
+  | appr₁| appr₂ =>
+    simp; apply identity.subst; apply He₀.left
+  | lift => simp
+
+lemma subst.under_ctx𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x → subst x v E⟦e₁⟧ = E⟦subst x v e₁⟧ :=
+  by
+  intros _ _ _ _ _ HE He₀
+  induction HE with
+  | hole => simp
+  | cons𝔹 _ E HB _ IH =>
+    simp at *; rw [← IH]; apply subst.under_ctx𝔹
+    apply HB; apply He₀
+    cases HB with
+    | appl₁| appl₂| lets => apply He₀.left
+    | appr₁| appr₂ => apply He₀.right
+    | lift => apply He₀
+
 lemma closed.decompose_ctx𝔹 : ∀ B e₀ x, ctx𝔹 B → closed_at B⟦e₀⟧ x → closed_at e₀ x :=
   by
   intros _ _ _ HB Hclose
