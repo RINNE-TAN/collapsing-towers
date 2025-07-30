@@ -41,16 +41,6 @@ inductive ctxℙ : ℕ → Ctx → Prop where
   | hole : ctxℙ lvl id
   | consℚ : ∀ Q, ctxℚ lvl Q → ctxℙ lvl Q
 
-mutual
-  inductive ctxℙ' : ℕ → Ctx → Prop where
-    | hole : ctxℙ' lvl id
-    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℙ' lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ intro lvl R → ctxℙ' (lvl + intro) P → ctxℙ' lvl (R ∘ P)
-  inductive ctxℚ' : ℕ → Ctx → Prop where
-    | cons𝔹 : ∀ B Q, ctx𝔹 B → ctxℚ' lvl Q → ctxℚ' lvl (B ∘ Q)
-    | consℝ : ∀ R P, ctxℝ intro lvl R → ctxℙ' (lvl + intro) P → ctxℚ' lvl (R ∘ P)
-end
-
 lemma lc.under_ctx𝔹 : ∀ B e i, ctx𝔹 B → lc_at e i → lc_at B⟦e⟧ i :=
   by
   intros _ _ _ HB Hlc
