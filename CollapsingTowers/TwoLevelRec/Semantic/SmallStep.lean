@@ -3,11 +3,11 @@ import CollapsingTowers.TwoLevelRec.Semantic.EvalCtx
 inductive head : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head (.lets v e) (opening 0 v e)
   -- fix f x.e @ v ⇝ ⟦f ↦ fix f x.e⟧⟦x ↦ v⟧ e
-  | app₁ : ∀ e v, value v → head (.app₁ (.fix e) v) (opening 0 (.fix e) (opening 1 v e))
+  | app₁ : ∀ e v, value v → head (.app₁ (.fix e) v) (opening 1 v (opening 0 (.fix e) e))
   | app₂ : ∀ f arg, head (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
   | lift_lit : ∀ n, head (.lift (.lit n)) (.reflect (.lit n))
   -- lift (fix f x.e) ⇝ fix𝕔 (⟦f ↦ code f⟧⟦x ↦ code x⟧ e)
-  | lift_fix : ∀ e, head (.lift (.fix e)) (.fix𝕔 (maping𝕔 0 (maping𝕔 1 e)))
+  | lift_fix : ∀ e, head (.lift (.fix e)) (.fix𝕔 (maping𝕔 1 (maping𝕔 0 e)))
   | fix𝕔 : ∀ e, head (.fix𝕔 (.code e)) (.reflect (.fix e))
   | lets𝕔 : ∀ b e, head (.lets𝕔 b (.code e)) (.code (.lets b e))
   | run : ∀ e, head (.run (.code e)) e
