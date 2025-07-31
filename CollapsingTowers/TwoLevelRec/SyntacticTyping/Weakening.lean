@@ -41,7 +41,7 @@ theorem typing.weakening.strengthened :
     rw [← List.cons_append, ← List.cons_append, ← List.cons_append, ← List.cons_append]
     rw [HEq₁, HEq₀]; apply IH; rfl; apply Hwbt
     rw [HEq₀]; apply closed.under_shiftl; apply Hclose
-    simp; omega; simp
+    simp; simp; omega
   case lift_fix IH Ψ HEqΓ =>
     apply typing.lift_fix
     apply IH; apply HEqΓ
@@ -54,7 +54,7 @@ theorem typing.weakening.strengthened :
     rw [← List.cons_append, ← List.cons_append, ← List.cons_append, ← List.cons_append]
     rw [HEq₁, HEq₀]; apply IH; rfl; apply Hwbt
     rw [HEq₀]; apply closed.under_shiftl; apply Hclose
-    simp; omega; simp
+    simp; simp; omega
   case app₁ IHf IHarg Ψ HEqΓ =>
     apply typing.app₁
     apply IHf; apply HEqΓ
@@ -118,3 +118,18 @@ theorem typing.weakening.strengthened :
     apply typing_reification.reify
     apply IH; apply HEqΓ
   apply Hτ
+
+theorem typing.weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (Δ ++ Γ) 𝕊 e τ φ :=
+  by
+  intros Γ Δ 𝕊 e τ φ Hτ
+  rw [← List.nil_append Δ]
+  rw [← identity.shiftl _ e]
+  apply typing.weakening.strengthened
+  apply Hτ; rfl
+  apply typing.closed_at_env; apply Hτ
+
+theorem typing.weakening.singleton : ∀ Γ 𝕊𝕒 𝕊𝕓 e τ𝕒 τ𝕓 φ, typing Γ 𝕊𝕓 e τ𝕓 φ -> typing ((τ𝕒, 𝕊𝕒) :: Γ) 𝕊𝕓 e τ𝕓 φ :=
+  by
+  intros Γ 𝕊𝕒 𝕊𝕓 e τ𝕒 τ𝕓 φ
+  rw [← List.singleton_append]
+  apply typing.weakening

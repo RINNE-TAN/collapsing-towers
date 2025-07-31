@@ -21,7 +21,7 @@ mutual
       -- x ↦ τ𝕒, f ↦ τ𝕒 → τ𝕓, Γ ⊢ e : τ𝕓
       -- —————————————————————————————————
       -- Γ ⊢ fix e : τ𝕒 → τ𝕓
-      typing ((τ𝕒, 𝕊) :: (.arrow τ𝕒 τ𝕓 φ, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length}{1 ↦ Γ.length + 1} e) τ𝕓 φ →
+      typing ((.arrow τ𝕒 τ𝕓 φ, 𝕊) :: (τ𝕒, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length + 1}{1 ↦ Γ.length} e) τ𝕓 φ →
       wbt 𝕊 τ𝕒 →
       closed_at e Γ.length →
       typing Γ 𝕊 (.fix e) (.arrow τ𝕒 τ𝕓 φ) ∅
@@ -55,7 +55,7 @@ mutual
       -- x ↦ τ𝕒, f ↦ τ𝕒 → τ𝕓, Γ ⊢ e : <τ𝕓>
       -- —————————————————————————————————
       -- Γ ⊢ fix e : <τ𝕒 → τ𝕓>
-      typing_reification ((τ𝕒, 𝟚) :: (.arrow τ𝕒 τ𝕓 ∅, 𝟚) :: Γ) ({0 ↦ Γ.length}{1 ↦ Γ.length + 1} e) (.rep τ𝕓) φ →
+      typing_reification ((.arrow τ𝕒 τ𝕓 ∅, 𝟚) :: (τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length + 1}{1 ↦ Γ.length} e) (.rep τ𝕓) φ →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
       typing Γ 𝟙 (.fix𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reify

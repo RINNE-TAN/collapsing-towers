@@ -41,7 +41,7 @@ lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head e₀ e₁ → He
     apply HNv
     cases Hhead <;> cases HR <;> simp at HEq
     case fix𝕔.fix𝕔 =>
-      have HEqr : r = {0 ↦ lvl}{1 ↦ lvl + 1}{1 ↤ lvl + 1}{0 ↤ lvl} r :=
+      have HEqr : r = {0 ↦ lvl + 1}{1 ↦ lvl}{1 ↤ lvl}{0 ↤ lvl + 1} r :=
         by
         rw [identity.opening_closing, identity.opening_closing]
         apply lc.inc; apply Hlcr; omega
@@ -147,16 +147,18 @@ lemma deterministic.under_ctxℝ :
   cases HR₁ <;>
   (simp at HEq; try simp [HEq])
   case fix𝕔.fix𝕔 =>
-    have HEq₀ : e₀ = {0 ↦ lvl}{1 ↦ lvl + 1}{1 ↤ lvl + 1}{0 ↤ lvl} e₀ :=
+    have HEq₀ : e₀ = {0 ↦ lvl + 1}{1 ↦ lvl}{1 ↤ lvl}{0 ↤ lvl + 1} e₀ :=
       by
       rw [identity.opening_closing, identity.opening_closing]
       apply Hlc₀
-      apply lc.under_closing; omega; apply lc.inc; apply Hlc₀; omega
-    have HEq₁ : e₁ = {0 ↦ lvl}{1 ↦ lvl + 1}{1 ↤ lvl + 1}{0 ↤ lvl} e₁ :=
+      apply lc.under_closing; omega
+      apply lc.inc; apply Hlc₀; omega
+    have HEq₁ : e₁ = {0 ↦ lvl + 1}{1 ↦ lvl}{1 ↤ lvl}{0 ↤ lvl + 1} e₁ :=
       by
       rw [identity.opening_closing, identity.opening_closing]
       apply Hlc₁
-      apply lc.under_closing; omega; apply lc.inc; apply Hlc₁; omega
+      apply lc.under_closing; omega
+      apply lc.inc; apply Hlc₁; omega
     rw [HEq₀, HEq₁, HEq]
   case lets𝕔.lets𝕔 =>
     rw [← identity.opening_closing _ _ _ Hlc₀]
