@@ -41,7 +41,7 @@ theorem typing.weakening.strengthened :
     rw [← List.cons_append, ← List.cons_append, ← List.cons_append, ← List.cons_append]
     rw [HEq₁, HEq₀]; apply IH; rfl; apply Hwbt
     rw [HEq₀]; apply closed.under_shiftl; apply Hclose
-    simp; simp; omega
+    simp; omega; simp
   case lift_lam IH Ψ HEqΓ =>
     apply typing.lift_lam
     apply IH; apply HEqΓ
@@ -54,7 +54,7 @@ theorem typing.weakening.strengthened :
     rw [← List.cons_append, ← List.cons_append, ← List.cons_append, ← List.cons_append]
     rw [HEq₁, HEq₀]; apply IH; rfl; apply Hwbt
     rw [HEq₀]; apply closed.under_shiftl; apply Hclose
-    simp; simp; omega
+    simp; omega; simp
   case app₁ IHf IHarg Ψ HEqΓ =>
     apply typing.app₁
     apply IHf; apply HEqΓ

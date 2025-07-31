@@ -19,7 +19,7 @@ inductive ctx𝔹 : Ctx → Prop where
   | lets : ∀ e, lc_at e 1 → ctx𝔹 (fun X => .lets X e)
 
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
-  | fix𝕔 : ctxℝ 2 lvl (fun X => .fix𝕔 ({0 ↤ lvl} {1 ↤ lvl + 1} X))
+  | fix𝕔 : ctxℝ 2 lvl (fun X => .fix𝕔 ({1 ↤ lvl + 1}{0 ↤ lvl} X))
   | lets𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .lets𝕔 b ({0 ↤ lvl} X))
   | run : ctxℝ 0 lvl (fun X => .run X)
 
