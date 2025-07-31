@@ -42,8 +42,8 @@ theorem typing.weakening.strengthened :
     rw [HEq₁, HEq₀]; apply IH; rfl; apply Hwbt
     rw [HEq₀]; apply closed.under_shiftl; apply Hclose
     simp; omega; simp
-  case lift_lam IH Ψ HEqΓ =>
-    apply typing.lift_lam
+  case lift_fix IH Ψ HEqΓ =>
+    apply typing.lift_fix
     apply IH; apply HEqΓ
   case fix𝕔 Hwbt Hclose IH Ψ HEqΓ =>
     rw [HEqΓ] at IH Hclose
