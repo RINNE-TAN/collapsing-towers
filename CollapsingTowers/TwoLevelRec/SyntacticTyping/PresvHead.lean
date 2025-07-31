@@ -21,24 +21,24 @@ lemma typing.escape_strengthened :
     apply typing.fvar
     apply binds.escape; apply Hbinds
     apply wbt.escape; apply Hwbt
-  case fix Hwbt Hclose IH HEq𝕊 =>
+  case fix Hwbt Hclosed IH HEq𝕊 =>
     rw [← HEq𝕊, escape] at IH
     apply typing.fix; rw [← escape.length]
     apply IH; rfl
     apply wbt.escape; apply Hwbt
-    rw [← escape.length]; apply Hclose
+    rw [← escape.length]; apply Hclosed
   case app₁ IHf IHarg HEq𝕊 =>
     apply typing.app₁
     apply IHf; apply HEq𝕊
     apply IHarg; apply HEq𝕊
   case lit => apply typing.lit
-  case lets Hwbt Hclose IHb IHe HEq𝕊 =>
+  case lets Hwbt Hclosed IHb IHe HEq𝕊 =>
     rw [← HEq𝕊, escape] at IHe
     apply typing.lets
     apply IHb; apply HEq𝕊
     rw [← escape.length]; apply IHe; rfl
     apply wbt.escape; apply Hwbt
-    rw [← escape.length]; apply Hclose
+    rw [← escape.length]; apply Hclosed
   case pure => simp
   case reify => simp
   apply Hτ; apply HEq𝕊
@@ -49,7 +49,7 @@ lemma typing.escape :
     typing Γ 𝟚 e τ ∅ →
     typing Γ 𝟙 e τ ∅ :=
   by
-  intros Γ e τ Hclose Hτ
+  intros Γ e τ Hclosed Hτ
   rw [← List.append_nil Γ]; apply typing.weakening
   rw [escape.nil]; apply typing.escape_strengthened
   induction Γ with
@@ -57,7 +57,7 @@ lemma typing.escape :
   | cons _ _ IH =>
     apply IH
     apply typing.shrinking; apply Hτ
-    apply closed.inc; apply Hclose; omega
+    apply closed.inc; apply Hclosed; omega
 
 theorem preservation.head :
   ∀ Γ e₀ e₁ τ φ,
@@ -70,19 +70,30 @@ theorem preservation.head :
   cases Hhead
   case lets Hvalue =>
     cases Hτ
-    case lets e v τ φ _ _ Hτv Hclose Hτe =>
+    case lets e v τ φ _ _ Hτv Hclosed Hτe =>
       have Hpure : φ = (∅ : Effect) := by cases Hvalue <;> cases Hτv <;> rfl
       rw [Hpure] at Hτv; simp [Hpure]
-      rw [← intros.subst]; apply preservation.subst
-      apply Hτv; apply Hτe; apply Hclose
+      rw [← intros.open_subst]; apply preservation.subst
+      apply Hτv; apply Hτe; apply Hclosed
   case app₁ Hvalue =>
     cases Hτ
     case app₁ φ Hτv Hτf =>
       cases Hτf
-      case fix Hclose _ Hτe =>
+      case fix Hclosed HwellBinds Hτe =>
         have Hpure : φ = (∅ : Effect) := by cases Hvalue <;> cases Hτv <;> rfl
         rw [Hpure] at Hτv; simp [Hpure]
-        admit
+        rw [← intros.open_subst2]
+        apply preservation.subst; apply Hτv
+        apply preservation.subst; apply typing.weakening.singleton
+        apply typing.fix; apply Hτe
+        apply HwellBinds; apply Hclosed; apply Hτe
+        . constructor
+          . apply Hlc.left
+          . apply Hclosed
+        . constructor
+          . apply Hlc.right
+          . apply typing.closed_at_env; apply Hτv
+        . apply Hclosed
   case app₂ =>
     cases Hτ
     case app₂ Hτ₀ Hτ₁ =>
@@ -105,13 +116,18 @@ theorem preservation.head :
     cases Hτ
     case lift_fix Hτ =>
       cases Hτ
-      case fix Hclose Hwbt Hτe =>
-        rw [← intros.maping𝕔 Γ.length]
+      case fix τ𝕒 τ𝕓 _ Hclosed Hwbt Hτe =>
+        rw [← intros.open_maping𝕔2]
+        apply typing.fix𝕔; apply typing_reification.reify
+        rw [identity.opening_closing, identity.opening_closing]
+        apply preservation.maping_strengthened [(τ𝕒.arrow τ𝕓 ∅, 𝟚)]
+        apply preservation.maping
+        apply Hτe
         all_goals admit
     case lift_lit => contradiction
   case fix𝕔 e =>
     cases Hτ
-    case fix𝕔 Hwbt Hτ Hclose =>
+    case fix𝕔 Hwbt Hτ Hclosed =>
       apply typing.reflect
       apply typing.fix
       cases Hτ with
@@ -128,10 +144,10 @@ theorem preservation.head :
           apply typing.fvar
           apply Hbinds; apply Hwbt
       apply Hwbt
-      apply Hclose
+      apply Hclosed
   case lets𝕔 e =>
     cases Hτ
-    case lets𝕔 Hwbt Hτb Hτe Hclose =>
+    case lets𝕔 Hwbt Hτb Hτe Hclosed =>
       apply typing.code_rep
       rw [← union_pure_right ∅]
       apply typing.lets
@@ -150,15 +166,15 @@ theorem preservation.head :
           apply typing.fvar
           apply Hbinds; apply Hwbt
       apply Hwbt
-      apply Hclose
+      apply Hclosed
   case run =>
     cases Hτ
-    case run Hclose Hτ =>
+    case run Hclosed Hτ =>
       cases Hτ with
       | pure _ _ _ Hτ =>
         cases Hτ
         case code_rep Hτ =>
           apply typing.escape
-          apply Hclose; apply Hτ
+          apply Hclosed; apply Hτ
       | reify _ _ _ _ Hτ =>
         cases Hτ; contradiction
