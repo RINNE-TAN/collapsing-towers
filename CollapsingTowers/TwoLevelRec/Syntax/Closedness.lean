@@ -41,3 +41,51 @@ def lc_at (e : Expr) (i : ℕ) : Prop :=
 
 @[simp]
 def lc e := lc_at e 0
+
+lemma closed.inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
+  by
+  intros x y e Hclosed Hxy
+  induction e with
+  | bvar j => simp
+  | fvar z => simp at *; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclosed.left
+    apply IH₁; apply Hclosed.right
+  | lit => simp
+  | fix _ IH
+  | lift _ IH
+  | fix𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    simp; apply IH; apply Hclosed
+
+lemma closed.under_shiftl :
+    ∀ x y e n, closed_at e x → closed_at (shiftl_at y n e) (x + n) :=
+  by
+  intros x y e n Hclosed
+  induction e with
+  | bvar j => simp
+  | fvar z =>
+    by_cases HLe : y ≤ z
+    . simp; rw [if_pos HLe]; simp; apply Hclosed
+    . simp; rw [if_neg HLe]; simp at *; omega
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply Hclosed.left
+    apply IH₁; apply Hclosed.right
+  | lit => simp
+  | fix _ IH
+  | lift _ IH
+  | fix𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    simp; apply IH; apply Hclosed
