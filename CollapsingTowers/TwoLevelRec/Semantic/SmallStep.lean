@@ -23,3 +23,67 @@ inductive stepn : Expr → Expr → Prop
   | multi : ∀ e₀ e₁ e₂, (e₀ ⇝ e₁) → stepn e₁ e₂ → stepn e₀ e₂
 
 notation:max e₀ " ⇝* " e₁  => stepn e₀ e₁
+
+inductive pure_step : Expr → Expr → Prop where
+  | pure : ∀ M e₀ e₁, ctx𝕄 0 M → lc e₀ → head e₀ e₁ → pure_step M⟦e₀⟧ M⟦e₁⟧
+
+notation:max e₀ " ⇾ " e₁  => pure_step e₀ e₁
+
+inductive pure_stepn : Expr → Expr → Prop
+  | refl : ∀ e, pure_stepn e e
+  | multi : ∀ e₀ e₁ e₂, (e₀ ⇾ e₁) → pure_stepn e₁ e₂ → pure_stepn e₀ e₂
+
+notation:max e₀ " ⇾* " e₁  => pure_stepn e₀ e₁
+
+lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → (e₀ ⇝ e₁) :=
+  by
+  intros e₀ e₁ Hstep
+  cases Hstep
+  case pure HM Hlc Hhead =>
+    apply step_lvl.pure
+    apply HM; apply Hlc; apply Hhead
+
+lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → (e₀ ⇝* e₁) :=
+  by
+  intros e₀ e₁ Hstepn
+  induction Hstepn
+  case refl => apply stepn.refl
+  case multi H _ IH =>
+    apply stepn.multi
+    apply pure_step_impl_step; apply H
+    apply IH
+
+lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇾* e₁) → (e₁ ⇾* e₂) → (e₀ ⇾* e₂) :=
+  by
+  intros e₀ e₁ e₂ Hstep₀ Hstep₁
+  induction Hstep₀
+  case refl => apply Hstep₁
+  case multi H _ IH =>
+    apply pure_stepn.multi
+    apply H; apply IH; apply Hstep₁
+
+lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+  by
+  intros e₀ e₁ Hhead
+  cases Hhead <;> simp
+  case lets =>
+    apply fv.under_opening
+  case app₁ e v Hvalue =>
+    apply Set.Subset.trans; apply fv.under_opening; simp
+    apply Set.Subset.trans; apply fv.under_opening; simp
+  case lift_fix =>
+    rw [← fv.under_maping𝕔, ← fv.under_maping𝕔]
+
+lemma lc.under_pure_step : ∀ e₀ e₁, pure_step e₀ e₁ → lc e₀ :=
+  by
+  intros e₀ e₁ Hstep
+  cases Hstep
+  case pure HM Hlc Hhead =>
+    apply lc.under_ctx𝕄; apply HM; apply Hlc
+
+lemma lc.under_pure_stepn : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e₀ :=
+  by
+  intros e₀ e₁ Hstepn Hlc
+  induction Hstepn
+  case refl => apply Hlc
+  case multi H _ IH => apply lc.under_pure_step; apply H
