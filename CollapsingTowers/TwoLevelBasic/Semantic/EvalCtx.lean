@@ -235,7 +235,7 @@ lemma erase.under_ctx𝔹 :
     ‖B⟦e⟧‖ = ‖B⟦‖e‖⟧‖ :=
   by
   intros B e HB
-  cases HB <;> simp [identity.erase_erase]
+  cases HB <;> simp [identity.erase2]
 
 lemma erase.under_ctx𝔼 :
   ∀ E e,
@@ -244,7 +244,7 @@ lemma erase.under_ctx𝔼 :
   by
   intros E e HE
   induction HE generalizing e
-  case hole => simp [identity.erase_erase]
+  case hole => simp [identity.erase2]
   case cons𝔹 B E HB HE IH =>
     simp; rw [erase.under_ctx𝔹 _ _ HB, IH, ← erase.under_ctx𝔹 _ _ HB]
 

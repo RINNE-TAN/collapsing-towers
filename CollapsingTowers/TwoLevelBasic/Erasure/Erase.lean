@@ -51,7 +51,7 @@ lemma env.erase.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖
       simp [← env.erase.length, if_neg HEq]
       apply IH; apply Hbinds
 
-lemma identity.ty.erase_erase : ∀ τ, ‖‖τ‖𝜏‖𝜏 = ‖τ‖𝜏 :=
+lemma identity.ty.erase2 : ∀ τ, ‖‖τ‖𝜏‖𝜏 = ‖τ‖𝜏 :=
   by
   intros τ
   induction τ
@@ -62,14 +62,14 @@ lemma identity.ty.erase_erase : ∀ τ, ‖‖τ‖𝜏‖𝜏 = ‖τ‖𝜏 :=
   case fragment IH => apply IH
   case rep IH => apply IH
 
-lemma identity.env.erase_erase : ∀ Γ, ‖‖Γ‖𝛾‖𝛾 = ‖Γ‖𝛾 :=
+lemma identity.env.erase2 : ∀ Γ, ‖‖Γ‖𝛾‖𝛾 = ‖Γ‖𝛾 :=
   by
   intros Γ
   induction Γ
   case nil => simp
   case cons IH =>
     simp; constructor
-    apply identity.ty.erase_erase; apply IH
+    apply identity.ty.erase2; apply IH
 
 lemma identity.erase_typing_dyn : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → ‖e‖ = e :=
   by

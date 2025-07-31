@@ -113,5 +113,5 @@ theorem typing.fundamental :
     logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
-  rw [← identity.env.erase_erase, ← identity.erase_erase, ← identity.ty.erase_erase]
+  rw [← identity.env.erase2, ← identity.erase2, ← identity.ty.erase2]
   apply erase_fundamental; apply Hτ

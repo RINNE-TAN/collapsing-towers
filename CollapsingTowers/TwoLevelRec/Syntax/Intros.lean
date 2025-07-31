@@ -3,7 +3,7 @@ import CollapsingTowers.TwoLevelRec.Syntax.Closedness
 lemma intros.maping𝕔 :
     ∀ x e i,
       closed_at e x →
-      ({i ↤ x} subst x (.code (.fvar x)) ({i ↦ x} e)) = maping𝕔 i e :=
+      ({i ↤ x} subst x (.code (.fvar x)) {i ↦ x} e) = maping𝕔 i e :=
   by
   intros x e i Hclose
   induction e generalizing i with
@@ -25,7 +25,7 @@ lemma intros.maping𝕔 :
     apply IH₁; apply Hclose.right
   | lit => simp
 
-lemma intros.subst : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x) e) = opening i v e :=
+lemma intros.subst : ∀ x e v i, closed_at e x → subst x v ({i ↦ x} e) = opening i v e :=
   by
   intros _ e _ i Hclosed
   induction e generalizing i with

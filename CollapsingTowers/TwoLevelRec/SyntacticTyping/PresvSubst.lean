@@ -187,3 +187,19 @@ lemma preservation.subst_strengthened :
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply Hτv
   apply Hτe
+
+theorem preservation.subst :
+  ∀ Γ v e τ𝕒 τ𝕓 φ,
+    typing Γ 𝟙 v τ𝕒 ∅ →
+    typing ((τ𝕒, 𝟙) :: Γ) 𝟙 e τ𝕓 φ →
+    typing Γ 𝟙 (subst Γ.length v e) τ𝕓 φ :=
+  by
+  intros Γ v e τ𝕒 τ𝕓 φ Hτv Hτe
+  have H := preservation.subst_strengthened ((τ𝕒, 𝟙) :: Γ) [] Γ v e τ𝕒 τ𝕓 φ
+  simp at H
+  have H := H Hτe Hτv
+  rw [identity.shiftr] at H
+  apply H
+  apply closed.under_subst
+  apply closed.inc; apply typing.closed_at_env; apply Hτv; omega
+  rw [← List.length_cons]; apply typing.closed_at_env; apply Hτe

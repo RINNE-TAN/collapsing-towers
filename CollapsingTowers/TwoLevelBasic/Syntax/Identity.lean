@@ -159,7 +159,7 @@ lemma identity.multi_subst : ∀ γ e, closed e → multi_subst γ e = e :=
     rw [identity.subst]; apply Hclose
     apply closed.inc; apply Hclose; omega
 
-lemma identity.erase_erase : ∀ e, ‖‖e‖‖ = ‖e‖ :=
+lemma identity.erase2 : ∀ e, ‖‖e‖‖ = ‖e‖ :=
   by
   intros e
   induction e with

@@ -11,6 +11,21 @@ def wbt : Stage → Ty → Prop
   | 𝟚, (.arrow τ𝕒 τ𝕓 φ) => φ = ∅ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, _ => false
 
+lemma wbt.escape : ∀ 𝕊 τ, wbt 𝕊 τ → wbt 𝟙 τ :=
+  by
+  intros 𝕊 τ Hwbt
+  cases 𝕊
+  case stat => assumption
+  case dyn =>
+    induction τ with
+    | nat => simp
+    | arrow _ _ _ IH₀ IH₁ =>
+      constructor
+      apply IH₀; apply Hwbt.right.left
+      apply IH₁; apply Hwbt.right.right
+    | fragment => nomatch Hwbt
+    | rep => nomatch Hwbt
+
 mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effect → Prop where
     | fvar : ∀ Γ 𝕊 x τ,
