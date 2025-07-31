@@ -1,4 +1,3 @@
-import CollapsingTowers.TwoLevelBasic.Syntax.SyntacticTrans
 import CollapsingTowers.TwoLevelBasic.Syntax.Fv
 
 -- closedness condition for free variables

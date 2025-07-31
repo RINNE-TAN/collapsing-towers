@@ -100,3 +100,74 @@ def shiftr_at (x : ℕ) : Expr → Expr
   | .fix𝕔 e => .fix𝕔 (shiftr_at x e)
   | .lets b e => .lets (shiftr_at x b) (shiftr_at x e)
   | .lets𝕔 b e => .lets𝕔 (shiftr_at x b) (shiftr_at x e)
+
+@[simp]
+def expr.erase : Expr → Expr
+  | .bvar i => .bvar i
+  | .fvar y => .fvar y
+  | .fix e => .fix (erase e)
+  | .lift e => erase e
+  | .app₁ f arg => .app₁ (erase f) (erase arg)
+  | .app₂ f arg => .app₁ (erase f) (erase arg)
+  | .lit n => .lit n
+  | .run e => erase e
+  | .code e => erase e
+  | .reflect e => erase e
+  | .fix𝕔 e => .fix (erase e)
+  | .lets b e => .lets (erase b) (erase e)
+  | .lets𝕔 b e => .lets (erase b) (erase e)
+
+notation:max "‖" e "‖" => expr.erase e
+
+abbrev Subst :=
+  List Expr
+
+@[simp]
+def multi_subst : Subst → Expr → Expr
+  | [], e => e
+  | v :: γ, e => multi_subst γ (subst γ.length v e)
+
+@[simp]
+lemma multi_subst.fvar: ∀ γ x, x ≥ γ.length → multi_subst γ (.fvar x) = .fvar x :=
+  by
+  intros γ x HGe
+  induction γ
+  case nil => rfl
+  case cons tail IH =>
+    simp at HGe
+    by_cases HEq : tail.length = x
+    . omega
+    . simp [if_neg HEq]
+      apply IH; omega
+
+@[simp]
+lemma multi_subst.app₁ : ∀ γ f arg, multi_subst γ (.app₁ f arg) = .app₁ (multi_subst γ f) (multi_subst γ arg) :=
+  by
+  intros γ f arg
+  induction γ generalizing f arg
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.fix : ∀ γ e, multi_subst γ (.fix e) = .fix (multi_subst γ e) :=
+  by
+  intros γ e
+  induction γ generalizing e
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.lit : ∀ γ n, multi_subst γ (.lit n) = .lit n :=
+  by
+  intros γ n
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma multi_subst.lets : ∀ γ b e, multi_subst γ (.lets b e) = .lets (multi_subst γ b) (multi_subst γ e) :=
+  by
+  intros γ b e
+  induction γ generalizing b e
+  case nil => rfl
+  case cons IH => simp [IH]
