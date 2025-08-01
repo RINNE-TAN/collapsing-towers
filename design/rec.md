@@ -15,7 +15,7 @@ $$
 }
 $$
 
-**SmallStep Semantic**
+**Semantic**
 
 $$
 (\text{rec} \ f(x).e) v \mapsto [v / x][\text{rec} \ f(x).e / f] e
@@ -49,3 +49,43 @@ $$
 
 This is contrary to the typing rule of `rec`.
 ## Y Combinator
+
+**Typing Rules**:
+
+$$
+\frac{
+  \Gamma \vdash e : A \to A
+}{
+  \Gamma \vdash \text{fix}(e) : A
+}
+$$
+
+**Semantic**
+
+$$
+\text{fix}(\lambda f. e) \mapsto [\text{fix}(\lambda f. e) / f] e
+$$
+
+The problem with the Y combinator is that the object of the `subst` operation is not a value, which causes issues when using logical relations. Consider the fix case of the compatibility lemma:
+
+$$
+\frac{
+  \Gamma, \ f : A \vDash e : A
+}{
+  \Gamma \vDash \text{fix}(\lambda f. e) : A
+}
+$$
+
+Let $\gamma \in \mathcal{G}[\Gamma]$, we must prove that $\gamma(\text{fix}(\lambda f. e)) \in \mathcal{E}[A]$
+
+i.e. $\text{fix}(\lambda f. \gamma(e)) \in \mathcal{E}[A]$
+
+i.e. $[\text{fix}(\lambda f. \gamma(e)) / f] \gamma(e) \in \mathcal{E}[A]$
+
+i.e. $(\gamma \circ [f \mapsto \gamma(\text{fix}(\lambda f. e))])e \in \mathcal{E}[A]$
+
+i.e. $(\gamma \circ [f \mapsto \gamma(\text{fix}(\lambda f. e))]) \in \mathcal{G}[\Gamma, \ f : A]$
+
+i.e. $\gamma(\text{fix}(\lambda f. e)) \in \mathcal{V}[A]$
+
+Here, since our `fix` is indeed not a value, the proof will get stuck. Conversely, if it were, we would find that the proposition we are trying to prove is exactly the same as the original proposition we intended to prove, which can be handled using the `step-indexed` technique.
