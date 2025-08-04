@@ -39,8 +39,8 @@ lemma typing.escape_strengthened :
     rw [← escape.length]; apply IHe; rfl
     apply wbt.escape; apply Hwbt
     rw [← escape.length]; apply Hclose
-  case fix₁ HEqφ _ IHf HEq𝕊 =>
-    apply typing.fix₁; apply HEqφ
+  case fix₁ Hfixφ _ IHf HEq𝕊 =>
+    apply typing.fix₁; apply Hfixφ
     apply IHf; apply HEq𝕊
   case pure => simp
   case reify => simp

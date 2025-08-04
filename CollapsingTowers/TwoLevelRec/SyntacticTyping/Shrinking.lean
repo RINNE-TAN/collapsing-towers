@@ -140,8 +140,8 @@ lemma typing.shrinking_strengthened :
     apply IH; apply HEqΓ; apply HclosedΔ
     rw [identity.shiftr]; apply Hclosed
     apply closed.inc; apply Hclosed; omega
-  case fix₁ HEqφ _ IH Ψ HEqΓ HclosedΔ =>
-    apply typing.fix₁; apply HEqφ
+  case fix₁ Hfixφ _ IH Ψ HEqΓ HclosedΔ =>
+    apply typing.fix₁; apply Hfixφ
     apply IH; apply HEqΓ; apply HclosedΔ
   case fix₂ IH Ψ HEqΓ HclosedΔ =>
     apply typing.fix₂

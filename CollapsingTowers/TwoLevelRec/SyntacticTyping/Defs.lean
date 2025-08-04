@@ -4,3 +4,8 @@ import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvSubst
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvMaping
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvHead
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvCtx
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvReflect
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Preservation
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Progress
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Soundness
