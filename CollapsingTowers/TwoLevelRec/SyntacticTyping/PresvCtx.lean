@@ -44,10 +44,10 @@ lemma preservation.under_ctx𝔹 :
       apply IH; apply IHe
   case lets =>
     cases Hτ
-    case lets HwellBinds IHb Hclose IHe =>
+    case lets Hwbt IHb Hclose IHe =>
       apply typing.lets
       apply IH; apply IHb; apply IHe
-      apply HwellBinds; apply Hclose
+      apply Hwbt; apply Hclose
   case fix₁ =>
     cases Hτ
     case fix₁ Hfixφ Hτ =>
@@ -76,7 +76,7 @@ lemma preservation.under_ctxℝ :
   cases HR
   case lam𝕔 =>
     cases Hτ
-    case lam𝕔 HwellBinds IHe Hclose =>
+    case lam𝕔 Hwbt IHe Hclose =>
       rw [identity.opening_closing] at IHe
       . cases IHe with
         | pure _ _ _ IHe₀ =>
@@ -86,7 +86,7 @@ lemma preservation.under_ctxℝ :
           apply typing_reification.pure
           rw [identity.opening_closing]
           apply IHe₀; apply typing.regular; apply IHe₀
-          apply HwellBinds
+          apply Hwbt
           rw [← closed.under_closing, ← List.length_cons]
           apply typing.closed_at_env; apply IHe₀; rfl
         | reify _ _ _ _ IHe₀ =>
@@ -96,13 +96,13 @@ lemma preservation.under_ctxℝ :
           apply typing_reification.reify
           rw [identity.opening_closing]
           apply IHe₀; apply typing.regular; apply IHe₀
-          apply HwellBinds
+          apply Hwbt
           rw [← closed.under_closing, ← List.length_cons]
           apply typing.closed_at_env; apply IHe₀; rfl
       apply Hlc
   case lets𝕔 =>
     cases Hτ
-    case lets𝕔 HwellBinds IHb IHe Hclose =>
+    case lets𝕔 Hwbt IHb IHe Hclose =>
       rw [identity.opening_closing] at IHe
       . cases IHe with
         | pure _ _ _ IHe₀ =>
@@ -112,7 +112,7 @@ lemma preservation.under_ctxℝ :
           apply typing_reification.pure
           rw [identity.opening_closing]
           apply IHe₀; apply typing.regular; apply IHe₀
-          apply HwellBinds
+          apply Hwbt
           rw [← closed.under_closing, ← List.length_cons]
           apply typing.closed_at_env; apply IHe₀; rfl
         | reify _ _ _ _ IHe₀ =>
@@ -122,7 +122,7 @@ lemma preservation.under_ctxℝ :
           apply typing_reification.reify
           rw [identity.opening_closing]
           apply IHe₀; apply typing.regular; apply IHe₀
-          apply HwellBinds
+          apply Hwbt
           rw [← closed.under_closing, ← List.length_cons]
           apply typing.closed_at_env; apply IHe₀; rfl
       apply Hlc
@@ -297,7 +297,7 @@ lemma preservation.under_ctx𝔼 :
           apply IH; apply He
     case lets =>
       cases Hτ
-      case lets body _ _ φ₀ φ₁ HwellBinds HX Hclose Hbody =>
+      case lets body _ _ φ₀ φ₁ Hwbt HX Hclose Hbody =>
         have ⟨τ𝕖, φ𝕖, φ𝔼, HEqφ, He, IH⟩ := IH _ _ HX
         exists τ𝕖, φ𝕖, (φ₁ ∪ φ𝔼)
         constructor
@@ -314,7 +314,7 @@ lemma preservation.under_ctx𝔼 :
           rw [← List.singleton_append, ← List.append_assoc]
           rw [List.length_append, Nat.add_comm, ← comm.shiftl_opening]
           apply typing.weakening.strengthened; apply Hbody; rfl; rfl
-          apply Hclose; apply HwellBinds
+          apply Hclose; apply Hwbt
           apply closed.inc; apply Hclose; simp
     case fix₁ =>
       cases Hτ

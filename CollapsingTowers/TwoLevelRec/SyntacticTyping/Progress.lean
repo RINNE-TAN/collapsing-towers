@@ -34,9 +34,9 @@ theorem progress.strengthened :
       dyn_env Γ →
       value e₀ ∨ ∃ e₁, step_lvl Γ.length e₀ e₁)
   <;> intros
-  case fvar x _ Hbinds HwellBinds HDyn HEq𝕊 =>
+  case fvar x _ Hbinds Hwbt HDyn HEq𝕊 =>
     exfalso; apply HDyn; apply Hbinds; apply HEq𝕊
-  case lam H HwellBinds Hclose IH HDyn HEq𝕊 =>
+  case lam H Hwbt Hclose IH HDyn HEq𝕊 =>
     left; apply value.lam
     apply (lc.under_opening _ _ _).mp; apply typing.regular; apply H
   case lift_lam H IH HDyn HEq𝕊 =>
@@ -119,7 +119,7 @@ theorem progress.strengthened :
     right; exists .lets𝕔 e (.code (.bvar 0))
     apply step_lvl.reflect _ _ _ ctxℙ.hole ctx𝔼.hole
     apply typing.regular; apply H
-  case lam𝕔 Γ e _ _ _ H HwellBinds Hclose IH HDyn HEq𝕊 =>
+  case lam𝕔 Γ e _ _ _ H Hwbt Hclose IH HDyn HEq𝕊 =>
     right
     rw [← identity.closing_opening _ e _ Hclose]
     cases IH (dyn_env.extend _ _ HDyn) with
@@ -152,7 +152,7 @@ theorem progress.strengthened :
       have ⟨_, Hstep₀⟩ := Hstep₀
       apply step.congruence_under_ctx𝔹 _ _ _ _ (ctx𝔹.lets _ _); apply Hstep₀
       apply (lc.under_opening _ _ _).mp; apply typing.regular; apply H₁
-  case lets𝕔 Γ b e _ _ _ H₀ H₁ HwellBinds Hclose _ IH₁ HDyn HEq𝕊 =>
+  case lets𝕔 Γ b e _ _ _ H₀ H₁ Hwbt Hclose _ IH₁ HDyn HEq𝕊 =>
     right
     rw [← identity.closing_opening _ e _ Hclose]
     cases IH₁ (dyn_env.extend _ _ HDyn) with

@@ -173,42 +173,42 @@ lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚
   <;> (try intros; assumption)
   <;> (try intros; contradiction)
   <;> intros
-  case fvar x _ Hbinds HwellBinds HEq𝕊 =>
-    constructor; apply HwellBinds; rfl
-  case lam HwellBinds₀ Hclose IH HEq𝕊 =>
-    have ⟨HwellBinds₁, Hφ₀⟩ := IH HEq𝕊
+  case fvar x _ Hbinds Hwbt HEq𝕊 =>
+    constructor; apply Hwbt; rfl
+  case lam Hwbt₀ Hclose IH HEq𝕊 =>
+    have ⟨Hwbt₁, Hφ₀⟩ := IH HEq𝕊
     rw [← HEq𝕊]
-    rw [← HEq𝕊] at HwellBinds₀ HwellBinds₁
+    rw [← HEq𝕊] at Hwbt₀ Hwbt₁
     constructor
     . constructor
       apply Hφ₀; constructor
-      apply HwellBinds₀; apply HwellBinds₁
+      apply Hwbt₀; apply Hwbt₁
     . rfl
   case app₁ IHf IHarg HEq𝕊 =>
-    have ⟨HwellBinds₁, Hφ₁⟩ := IHf HEq𝕊
-    have ⟨HwellBinds₂, Hφ₂⟩ := IHarg HEq𝕊
+    have ⟨Hwbt₁, Hφ₁⟩ := IHf HEq𝕊
+    have ⟨Hwbt₂, Hφ₂⟩ := IHarg HEq𝕊
     rw [← HEq𝕊]
-    rw [← HEq𝕊] at HwellBinds₁ HwellBinds₂
+    rw [← HEq𝕊] at Hwbt₁ Hwbt₂
     constructor
-    . apply HwellBinds₁.right.right
-    . rw [Hφ₁, Hφ₂, HwellBinds₁.left]; rfl
+    . apply Hwbt₁.right.right
+    . rw [Hφ₁, Hφ₂, Hwbt₁.left]; rfl
   case lit HEq𝕊 =>
     rw [← HEq𝕊]
     constructor
     . simp
     . rfl
-  case lets HwellBinds Hclose IHb IHe HEq𝕊 =>
-    have ⟨HwellBinds₁, Hφ₁⟩ := IHb HEq𝕊
-    have ⟨HwellBinds₂, Hφ₂⟩ := IHe HEq𝕊
+  case lets Hwbt Hclose IHb IHe HEq𝕊 =>
+    have ⟨Hwbt₁, Hφ₁⟩ := IHb HEq𝕊
+    have ⟨Hwbt₂, Hφ₂⟩ := IHe HEq𝕊
     constructor
-    . apply HwellBinds₂
+    . apply Hwbt₂
     . rw [Hφ₁, Hφ₂]; rfl
   case fix₁ IHf HEq𝕊 =>
-    have ⟨HwellBinds, Hφ⟩ := IHf HEq𝕊
+    have ⟨Hwbt, Hφ⟩ := IHf HEq𝕊
     rw [← HEq𝕊]
-    rw [← HEq𝕊] at HwellBinds
+    rw [← HEq𝕊] at Hwbt
     constructor
-    . apply HwellBinds.right.left
+    . apply Hwbt.right.left
     . apply Hφ
   case pure => simp
   case reify => simp

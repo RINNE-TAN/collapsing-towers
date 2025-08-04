@@ -2,3 +2,4 @@ import CollapsingTowers.TwoLevelRec.Syntax.Defs
 import CollapsingTowers.TwoLevelRec.Utils.Defs
 import CollapsingTowers.TwoLevelRec.Semantic.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
+import CollapsingTowers.TwoLevelRec.Erasure.Defs
