@@ -1,8 +1,8 @@
 import CollapsingTowers.TwoLevelBasic.Syntax.Effect
 import CollapsingTowers.TwoLevelBasic.Syntax.Basic
 import CollapsingTowers.TwoLevelBasic.Syntax.SyntacticTrans
-import CollapsingTowers.TwoLevelBasic.Syntax.Closedness
 import CollapsingTowers.TwoLevelBasic.Syntax.Fv
+import CollapsingTowers.TwoLevelBasic.Syntax.Closedness
 import CollapsingTowers.TwoLevelBasic.Syntax.Identity
 import CollapsingTowers.TwoLevelBasic.Syntax.Commutative
 import CollapsingTowers.TwoLevelBasic.Syntax.Intros

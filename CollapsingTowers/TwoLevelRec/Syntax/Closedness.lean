@@ -1,5 +1,5 @@
-import CollapsingTowers.TwoLevelBasic.Syntax.SyntacticTrans
-import CollapsingTowers.TwoLevelBasic.Syntax.Fv
+import CollapsingTowers.TwoLevelRec.Syntax.SyntacticTrans
+import CollapsingTowers.TwoLevelRec.Syntax.Fv
 
 -- closedness condition for free variables
 @[simp]
@@ -18,6 +18,8 @@ def closed_at (e : Expr) (x : ℕ) : Prop :=
   | .lam𝕔 e => closed_at e x
   | .lets b e => closed_at b x ∧ closed_at e x
   | .lets𝕔 b e => closed_at b x ∧ closed_at e x
+  | .fix₁ e => closed_at e x
+  | .fix₂ e => closed_at e x
 
 @[simp]
 def closed e := closed_at e 0
@@ -39,6 +41,8 @@ def lc_at (e : Expr) (i : ℕ) : Prop :=
   | .lam𝕔 e => lc_at e (i + 1)
   | .lets b e => lc_at b i ∧ lc_at e (i + 1)
   | .lets𝕔 b e => lc_at b i ∧ lc_at e (i + 1)
+  | .fix₁ e => lc_at e i
+  | .fix₂ e => lc_at e i
 
 @[simp]
 def lc e := lc_at e 0
@@ -70,7 +74,9 @@ lemma closed.fv_not_in_dec :
   | reflect _ IH
   | run _ IH
   | lam _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply Hclosed; apply HFv
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -99,7 +105,9 @@ lemma closed.inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     simp; apply IH; apply Hclosed
 
 lemma closed.under_closing : ∀ e x i, closed_at e (x + 1) ↔ closed_at ({i ↤ x} e) x :=
@@ -116,7 +124,9 @@ lemma closed.under_closing : ∀ e x i, closed_at e (x + 1) ↔ closed_at ({i �
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -145,7 +155,9 @@ lemma closed.under_opening : ∀ e x i, closed_at e x → closed_at ({i ↦ x} e
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -179,7 +191,9 @@ lemma closed.under_shiftl :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     simp; apply IH; apply Hclosed
 
 lemma closed.under_subst : ∀ x e v y, closed_at v y → closed_at e y → closed_at (subst x v e) y :=
@@ -193,7 +207,9 @@ lemma closed.under_subst : ∀ x e v y, closed_at v y → closed_at e y → clos
     . simp; rw [if_neg HEq]; apply He
   | lam _ IH
   | lift _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply Hv; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -219,7 +235,9 @@ lemma closed.under_subst_dec : ∀ x e v, closed_at v x → closed_at e (x + 1) 
     . simp; rw [if_neg HEq]; simp at *; omega
   | lam _ IH
   | lift _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -256,7 +274,9 @@ lemma closed.under_shiftr : ∀ x e, closed_at e x → closed_at (shiftr_at x e)
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     simp; apply IH; apply Hclosed
 
 lemma closed.under_shiftr_dec :
@@ -290,7 +310,9 @@ lemma closed.under_shiftr_dec :
     | lam𝕔 _ IH
     | code _ IH
     | reflect _ IH
-    | run _ IH =>
+    | run _ IH
+    | fix₁ _ IH
+    | fix₂ _ IH =>
       apply IH; apply HFv; apply Hclosed
 
 lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
@@ -309,7 +331,9 @@ lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
   | lift _ IH
   | run _ IH
   | lam _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
 
 lemma closed.under_multi_subst : ∀ γ e, multi_wf γ → closed_at e γ.length → closed (multi_subst γ e) :=
@@ -340,7 +364,9 @@ lemma closed_impl_fv_not_in :
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply Hclosed; apply HIn
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -364,7 +390,9 @@ lemma closed_iff_fv_empty : ∀ e, closed e ↔ fv e = (∅ : Set ℕ) :=
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -394,7 +422,9 @@ lemma lc.inc:
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply Hclosed; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -420,7 +450,9 @@ lemma lc.under_opening : ∀ i x e, lc_at ({i ↦ x} e) i ↔ lc_at e (i + 1) :=
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -450,7 +482,9 @@ lemma lc.under_closing : ∀ e x i j, j < i → lc_at e i → lc_at ({j ↤ x} e
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
@@ -472,7 +506,9 @@ lemma lc.under_subst : ∀ x e v i, lc_at v i → lc_at e i → lc_at (subst x v
     . simp; rw [if_neg HEq]; simp
   | lam _ IH
   | lift _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH; apply lc.inc
     apply Hv; omega; apply He
   | app₁ _ _ IH₀ IH₁
@@ -518,5 +554,7 @@ lemma lc.under_erase : ∀ e i, lc_at e i ↔ lc_at ‖e‖ i :=
   | lift _ IH
   | run _ IH
   | lam _ IH
-  | lam𝕔 _ IH =>
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
     apply IH
