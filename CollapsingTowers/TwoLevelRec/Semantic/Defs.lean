@@ -1,3 +1,6 @@
 import CollapsingTowers.TwoLevelRec.Semantic.Value
 import CollapsingTowers.TwoLevelRec.Semantic.EvalCtx
 import CollapsingTowers.TwoLevelRec.Semantic.SmallStep
+import CollapsingTowers.TwoLevelRec.Semantic.Congruence
+import CollapsingTowers.TwoLevelRec.Semantic.Deterministic
+import CollapsingTowers.TwoLevelRec.Semantic.Confluence
