@@ -174,8 +174,8 @@ lemma preservation.subst_strengthened :
     rw [identity.subst]
     apply closed.inc; apply Hclosed; omega
     apply closed.inc; apply Hclosed; omega
-  case fix₁ IH Δ HEqΓ Hτv =>
-    apply typing.fix₁
+  case fix₁ HEqφ _ IH Δ HEqΓ Hτv =>
+    apply typing.fix₁; apply HEqφ
     apply IH; apply HEqΓ; apply Hτv
   case fix₂ IH Δ HEqΓ Hτv =>
     apply typing.fix₂

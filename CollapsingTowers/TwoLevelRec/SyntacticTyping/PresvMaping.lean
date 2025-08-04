@@ -155,8 +155,8 @@ lemma preservation.maping_strengthened :
     apply IH; apply HEqΓ; apply Hτv
     rw [identity.subst]; apply Hclose
     apply closed.inc; apply Hclose; omega
-  case fix₁ IH Δ HEqΓ Hτv =>
-    apply typing.fix₁
+  case fix₁ HEqφ _ IH Δ HEqΓ Hτv =>
+    apply typing.fix₁; apply HEqφ
     apply IH; apply HEqΓ; apply Hτv
   case fix₂ IH Δ HEqΓ Hτv =>
     apply typing.fix₂

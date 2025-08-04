@@ -84,9 +84,10 @@ mutual
       typing_reification Γ e (.rep τ) φ →
       closed e →
       typing Γ 𝟙 (.run e) τ ∅
-    | fix₁ : ∀ Γ 𝕊 f τ𝕒 τ𝕓 φ₀ φ₁,
-      typing Γ 𝕊 f (.arrow (.arrow τ𝕒 τ𝕓 φ₀) (.arrow τ𝕒 τ𝕓 φ₀) ∅) φ₁ →
-      typing Γ 𝕊 (.fix₁ f) (.arrow τ𝕒 τ𝕓 φ₀) φ₁
+    | fix₁ : ∀ Γ 𝕊 f τ𝕒 τ𝕓 φ₀ φ₁ φ₂,
+      φ₀ = φ₀ ∪ φ₁ →
+      typing Γ 𝕊 f (.arrow (.arrow τ𝕒 τ𝕓 φ₀) (.arrow τ𝕒 τ𝕓 φ₀) φ₁) φ₂ →
+      typing Γ 𝕊 (.fix₁ f) (.arrow τ𝕒 τ𝕓 φ₀) φ₂
     | fix₂ : ∀ Γ f τ𝕒 τ𝕓 φ,
       typing Γ 𝟙 f (.fragment (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅)) φ →
       typing Γ 𝟙 (.fix₂ f) (.fragment (.arrow τ𝕒 τ𝕓 ∅)) .reify

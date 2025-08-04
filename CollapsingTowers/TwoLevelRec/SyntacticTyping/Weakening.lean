@@ -113,8 +113,8 @@ theorem typing.weakening.strengthened :
     apply IH; apply HEqΓ
     rw [identity.shiftl]; apply Hclose
     apply closed.inc; apply Hclose; omega
-  case fix₁ IH Ψ HEqΓ =>
-    apply typing.fix₁
+  case fix₁ HEqφ _ IH Ψ HEqΓ =>
+    apply typing.fix₁; apply HEqφ
     apply IH; apply HEqΓ
   case fix₂ IH Ψ HEqΓ =>
     apply typing.fix₂
