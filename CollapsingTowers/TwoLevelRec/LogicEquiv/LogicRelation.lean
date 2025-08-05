@@ -2,21 +2,21 @@ import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 mutual
 -- 𝓥⟦ℕ⟧ₖ ≜ {(n, n) | n ∈ ℕ}
--- 𝓥⟦τ𝕒 → τ𝕓⟧ₖ ≜ {(λ.e₀, λ.e₁) | ∀ j < k, (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧ⱼ. (λ.e₀ @ v₀, λ.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧ⱼ}
+-- 𝓥⟦τ𝕒 → τ𝕓⟧ₖ ≜ {(λ.e₀, λ.e₁) | ∀ j ≤ k, (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧ⱼ. (λ.e₀ @ v₀, λ.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧ⱼ}
 @[simp]
 def logic_rel_value : ℕ → Expr → Expr → Ty → Prop
   | _, .lit n₀, .lit n₁, .nat => n₀ = n₁
   | k, .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
     wf (.lam e₀) ∧
     wf (.lam e₁) ∧
-    ∀ j, j < k →
+    ∀ j, j ≤ k →
       ∀ v₀ v₁,
         logic_rel_value j v₀ v₁ τ𝕒 →
         logic_rel_expr j (.app₁ (.lam e₀) v₀) (.app₁ (.lam e₁) v₁) τ𝕓
   | _, _, _, _ => false
 
-termination_by k _ _ _ => k * 2
-decreasing_by all_goals omega
+termination_by k _ _ τ => (τ, k)
+decreasing_by all_goals apply Prod.Lex.left; simp; omega
 
 -- 𝓔⟦τ⟧ₖ ≜ {(e₀, e₁) | ∀ j < k, v₀. e₀ ⇾ⱼ v₀ → ∃ v₁, e₁ ⇾* v₁ ∧ (v₀, v₁) ∈ 𝓥⟦τ⟧ₖ₋ⱼ}
 @[simp]
@@ -25,8 +25,8 @@ def logic_rel_expr (k : ℕ) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
       ∀ v₀, value v₀ → (e₀ ⇾ ⟦j⟧ v₀) →
       ∃ v₁, (e₁ ⇾* v₁) ∧ logic_rel_value (k - j) v₀ v₁ τ
 
-termination_by k * 2 + 1
-decreasing_by all_goals omega
+termination_by (τ, k + 1)
+decreasing_by apply Prod.Lex.right; omega
 end
 
 inductive logic_rel_env : ℕ → Subst → Subst → TEnv → Prop where

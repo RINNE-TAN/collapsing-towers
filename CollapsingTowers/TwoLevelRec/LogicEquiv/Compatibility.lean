@@ -67,6 +67,7 @@ lemma compatibility.app :
   . constructor; apply Hwf_f₁.left; apply Hwf_arg₁.left
   . constructor; apply Hwf_f₁.right; apply Hwf_arg₁.right
   intros k γ₀ γ₁ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
   rw [logic_rel_expr]
   intros j Hindex v₀ Hvalue₀ Hstep₀
   simp at Hstep₀
@@ -74,4 +75,27 @@ lemma compatibility.app :
   simp only [logic_rel_expr] at Hf Harg
   have ⟨fv₁, HstepF₁, Hsem_value_f⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueF₀ HstepF₀
   have ⟨argv₁, HstepArg₁, Hsem_value_arg⟩ := Harg _ _ _ HsemΓ i₁ (by omega) _ HvalueArg₀ HstepArg₀
-  admit
+  have Hsem_value_f : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.weakening _ _ _ _ _ Hsem_value_f (by omega)
+  have Hsem_value_arg : logic_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := logic_rel_value.weakening _ _ _ _ _ Hsem_value_arg (by omega)
+  have ⟨e₀, e₁, HEq₀, HEq₁⟩ := logic_rel_value.arrow_ty_iff_lam _ fv₀ fv₁ _ _ Hsem_value_f
+  rw [HEq₀] at HstepF₀ HstepHead₀ Hsem_value_f
+  rw [HEq₁] at HstepF₁ Hsem_value_f
+  simp only [logic_rel_value] at Hsem_value_f
+  have ⟨Hwf₀, Hwf₁, Hsem_value_f⟩ := Hsem_value_f
+  have Hsem_expr := Hsem_value_f (k - i₀ - i₁) (by omega) _ _ Hsem_value_arg
+  simp only [logic_rel_expr] at Hsem_expr
+  have ⟨v₁, HstepHead₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ Hvalue₀ HstepHead₀
+  exists v₁; constructor
+  . simp
+    apply pure_stepn.trans
+    -- left step
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _) HstepF₁
+    apply lc.under_multi_subst; apply Hmulti_wf₁; apply Hwf_arg₁.left
+    -- right step
+    apply pure_stepn.trans
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ _) HstepArg₁
+    apply value.lam; apply Hwf₁.left
+    -- head step
+    apply HstepHead₁
+  . have HEq : k - j = k - i₀ - i₁ - i₂ := by omega
+    rw [HEq]; apply Hsem_value
