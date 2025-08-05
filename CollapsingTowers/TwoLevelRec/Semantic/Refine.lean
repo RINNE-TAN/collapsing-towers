@@ -74,3 +74,24 @@ lemma pure_stepn_indexed.refine :
       constructor; apply Hvalue
       constructor; apply pure_stepn_indexed.multi
       apply Hstep₀; apply Hstep₁; apply Hstep₂
+
+lemma pure_stepn_indexed.refine.app₁ :
+  ∀ f arg v j,
+    value v →
+    ((.app₁ f arg) ⇾ ⟦j⟧ v) →
+    ∃ i₀ i₁ i₂ fᵥ argᵥ,
+      i₀ + i₁ + i₂ = j ∧
+      value fᵥ ∧ value argᵥ ∧
+      (f ⇾ ⟦i₀⟧ fᵥ) ∧ (arg ⇾ ⟦i₁⟧ argᵥ) ∧ ((.app₁ fᵥ argᵥ) ⇾ ⟦i₂⟧ v) :=
+  by
+  intros f arg v j Hvalue Hstep
+  have Hlc := lc.under_pure_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  have ⟨fᵥ, i₀, k, HEqj, HvalueF, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue Hstep
+  have ⟨argᵥ, i₁, i₂, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueF) Hvalue Hstep
+  exists i₀, i₁, i₂, fᵥ, argᵥ
+  constructor; omega
+  constructor; apply HvalueF
+  constructor; apply HvalueArg
+  constructor; apply Hstep₀
+  constructor; apply Hstep₁
+  apply Hstep₂

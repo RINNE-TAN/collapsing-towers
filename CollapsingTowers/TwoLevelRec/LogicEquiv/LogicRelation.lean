@@ -22,9 +22,8 @@ decreasing_by all_goals omega
 @[simp]
 def logic_rel_expr (k : ℕ) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     ∀ j, j < k →
-      ∀ v₀, (e₀ ⇾ ⟦j⟧ v₀) → value v₀ →
-      ∃ v₁, (e₁ ⇾* v₁) ∧
-        logic_rel_value (k - j) v₀ v₁ τ
+      ∀ v₀, value v₀ → (e₀ ⇾ ⟦j⟧ v₀) →
+      ∃ v₁, (e₁ ⇾* v₁) ∧ logic_rel_value (k - j) v₀ v₁ τ
 
 termination_by k * 2 + 1
 decreasing_by all_goals omega
@@ -51,6 +50,50 @@ def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
 @[simp]
 def logic_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   logic_rel_typing Γ e₀ e₁ τ ∧ logic_rel_typing Γ e₁ e₀ τ
+
+lemma logic_rel_value.weakening :
+  ∀ k₀ k₁ v₀ v₁ τ,
+    logic_rel_value k₀ v₀ v₁ τ →
+    k₁ ≤ k₀ →
+    logic_rel_value k₁ v₀ v₁ τ :=
+  by
+  intros k₀ k₁ v₀ v₁ τ Hsem_value HLe
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at *
+    omega
+  case arrow τ𝕒 τ𝕓 φ =>
+    cases v₀ <;> try simp at Hsem_value
+    case lam e₀ =>
+    cases v₁ <;> try simp at Hsem_value
+    case lam e₁ =>
+    cases φ
+    case reify => simp at Hsem_value
+    case pure =>
+      simp only [logic_rel_value] at Hsem_value
+      have ⟨Hwf₀, Hwf₁, Hsem_value_lam⟩ := Hsem_value
+      simp only [logic_rel_value]
+      constructor; apply Hwf₀
+      constructor; apply Hwf₁
+      intros j HLe; apply Hsem_value_lam; omega
+  case fragment => simp at Hsem_value
+  case rep => simp at Hsem_value
+
+lemma logic_rel_expr.weakening :
+  ∀ k₀ k₁ e₀ e₁ τ,
+    logic_rel_expr k₀ e₀ e₁ τ →
+    k₁ ≤ k₀ →
+    logic_rel_expr k₁ e₀ e₁ τ :=
+  by
+  intros k₀ k₁ e₀ e₁ τ Hsem_expr HLe
+  simp only [logic_rel_expr]
+  simp only [logic_rel_expr] at Hsem_expr
+  intros j Hindex v₀ Hvalue₀ Hstep₀
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr j (by omega) v₀ Hvalue₀ Hstep₀
+  exists v₁
+  constructor; apply Hstep₁
+  apply logic_rel_value.weakening
+  apply Hsem_value; omega
 
 lemma logic_rel_value.syntactic_value :
   ∀ k v₀ v₁ τ,
@@ -141,3 +184,13 @@ lemma logic_rel_env.multi_wf :
     . constructor; apply And.right
       apply logic_rel_value.wf
       apply Hsem_value; apply IH.right
+
+lemma logic_rel_value.arrow_ty_iff_lam :
+  ∀ k f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
+    ∃ e₀ e₁,
+      f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
+  by
+  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value
+  cases f₀ <;> cases f₁ <;> simp at Hsem_value
+  simp

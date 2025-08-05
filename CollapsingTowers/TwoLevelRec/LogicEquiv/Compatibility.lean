@@ -17,7 +17,7 @@ lemma compatibility.fvar :
     exists τ, 𝟙
   intros k γ₀ γ₁ HsemΓ
   simp only [logic_rel_expr]
-  intros j Hindex v₀ Hstep₀ Hvalue₀
+  intros j Hindex v₀ Hvalue₀ Hstep₀
   exists multi_subst γ₁ (.fvar x)
   constructor
   . apply pure_stepn.refl
@@ -39,7 +39,7 @@ lemma compatibility.lit :
   . constructor
   intros k γ₀ γ₁ semΓ
   simp only [logic_rel_expr]
-  intros j Hindex v₀ Hstep₀ Hvalue₀
+  intros j Hindex v₀ Hvalue₀ Hstep₀
   exists .lit n
   constructor
   . simp; apply pure_stepn.refl
@@ -66,7 +66,12 @@ lemma compatibility.app :
   constructor; constructor
   . constructor; apply Hwf_f₁.left; apply Hwf_arg₁.left
   . constructor; apply Hwf_f₁.right; apply Hwf_arg₁.right
-  intros k γ₀ γ₁ semΓ
+  intros k γ₀ γ₁ HsemΓ
   rw [logic_rel_expr]
-  intros j Hindex v₀ Hstep₀ Hvalue₀
+  intros j Hindex v₀ Hvalue₀ Hstep₀
+  simp at Hstep₀
+  have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueF₀, HvalueArg₀, HstepF₀, HstepArg₀, HstepHead₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ Hstep₀
+  simp only [logic_rel_expr] at Hf Harg
+  have ⟨fv₁, HstepF₁, Hsem_value_f⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueF₀ HstepF₀
+  have ⟨argv₁, HstepArg₁, Hsem_value_arg⟩ := Harg _ _ _ HsemΓ i₁ (by omega) _ HvalueArg₀ HstepArg₀
   admit

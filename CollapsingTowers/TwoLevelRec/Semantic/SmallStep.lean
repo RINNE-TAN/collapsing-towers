@@ -81,16 +81,23 @@ lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   case lift_lam =>
     rw [← fv.under_maping𝕔]
 
-lemma lc.under_pure_step : ∀ e₀ e₁, pure_step e₀ e₁ → lc e₀ :=
+lemma lc.under_pure_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → lc e₀ :=
   by
   intros e₀ e₁ Hstep
   cases Hstep
   case pure HM Hlc Hhead =>
     apply lc.under_ctx𝕄; apply HM; apply Hlc
 
-lemma lc.under_pure_stepn : ∀ e₀ e₁, pure_stepn e₀ e₁ → lc e₁ → lc e₀ :=
+lemma lc.under_pure_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → lc e₁ → lc e₀ :=
   by
   intros e₀ e₁ Hstepn Hlc
+  induction Hstepn
+  case refl => apply Hlc
+  case multi H _ IH => apply lc.under_pure_step; apply H
+
+lemma lc.under_pure_stepn_indexed : ∀ e₀ e₁ k, (e₀ ⇾ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
+  by
+  intros e₀ e₁ k Hstepn Hlc
   induction Hstepn
   case refl => apply Hlc
   case multi H _ IH => apply lc.under_pure_step; apply H
