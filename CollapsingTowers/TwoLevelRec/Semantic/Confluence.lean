@@ -42,46 +42,6 @@ lemma pure_stepn_indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ �
     exfalso; apply step.value_impl_termination
     apply Hvalue; apply pure_step_impl_step; apply Hstep
 
--- B⟦e⟧ ⇾ r
--- —————————————————————————————————
--- B⟦e₀⟧ ⇾ B⟦e₁⟧ ∧ e₀ ⇾ e₁
-lemma pure_stepn_indexed.refine.under_ctx𝔹 :
-  ∀ B e₀ r,
-    ctx𝔹 B →
-    (B⟦e₀⟧ ⇾ r) →
-    ∃ e₁,
-      (B⟦e₀⟧ ⇾ B⟦e₁⟧) ∧
-      (e₀ ⇾ e₁) :=
-  by
-  intros B e₀ r HB
-  generalize HEqe : B⟦e₀⟧ = E₀
-  intros Hstep
-  admit
-
--- B⟦e⟧ ⇾ₖ v
--- —————————————————————————————————
--- k = i + j ∧ e ⇾ᵢ v𝕖 ∧ B⟦v𝕖⟧ ⇾ⱼ v
-lemma pure_stepn_indexed.refine :
-  ∀ B e v k,
-    ctx𝔹 B →
-    value v →
-    (B⟦e⟧ ⇾ ⟦k⟧ v) →
-    ∃ v𝕖 i j,
-      i + j = k ∧
-      value v𝕖 ∧
-      (e ⇾ ⟦i⟧ v𝕖) ∧
-      (B⟦v𝕖⟧ ⇾ ⟦j⟧ v) :=
-  by
-  intros B e v k HB
-  generalize HEqe : B⟦e⟧ = E
-  intros Hvalue Hstep
-  induction Hstep generalizing e
-  case refl =>
-    exfalso; apply not_value.under_ctx𝔹
-    apply HB; rw [HEqe]; apply Hvalue
-  case multi k e₀ e₁ e₂ Hstep _ IH =>
-    admit
-
 theorem church_rosser :
   ∀ e l r,
     (e ⇝* l) →

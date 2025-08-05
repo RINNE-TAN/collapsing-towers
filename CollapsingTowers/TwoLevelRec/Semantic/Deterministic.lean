@@ -4,7 +4,7 @@ structure HeadStepable (e : Expr) where
   mk ::
   Hlc : lc e
   HNv : ¬value e
-  HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → lc r → e ≠ B⟦r⟧
+  HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → e ≠ B⟦r⟧
   HAtomicℝ : ∀ R r, ctxℝ intro lvl R → ¬value r → lc r → e ≠ R⟦r⟧
 
 lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head e₀ e₁ → HeadStepable e₀ :=
@@ -17,7 +17,7 @@ lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head e₀ e₁ → He
     intros Hvalue
     cases Hhead <;> nomatch Hvalue
   case HAtomic𝔹 =>
-    intros B r HB HNv _ HEq
+    intros B r HB HNv HEq
     apply HNv
     cases Hhead <;> cases HB <;> simp at HEq <;> simp [← HEq]
     case lets.lets => assumption
@@ -66,7 +66,7 @@ lemma reflect_impl_head_stepable : ∀ b, lc b → HeadStepable (.reflect b) :=
   case Hlc => apply Hlc
   case HNv => intro HValue; nomatch HValue
   case HAtomic𝔹 =>
-    intros _ _ HB _ _ HEq
+    intros _ _ HB _ HEq
     cases HB <;> simp at HEq
   case HAtomicℝ =>
     intros _ _ R _ HR _ _ HEq
@@ -185,7 +185,6 @@ lemma deterministic.under_ctx𝔼 :
       exfalso
       apply He₀.HAtomic𝔹; apply HB₁
       apply not_value.under_ctx𝔼 _ _ He₁.HNv HE₁
-      apply lc.under_ctx𝔼; apply HE₁; apply He₁.Hlc
       apply HEq
   case cons𝔹 B₀ E₀ HB₀ HE₀ IH =>
     cases HE₁
@@ -193,7 +192,6 @@ lemma deterministic.under_ctx𝔼 :
       exfalso
       apply He₁.HAtomic𝔹; apply HB₀
       apply not_value.under_ctx𝔼 _ _ He₀.HNv HE₀
-      apply lc.under_ctx𝔼; apply HE₀; apply He₀.Hlc
       symm; apply HEq
     case cons𝔹 B₁ E₁ HB₁ HE₁ =>
       have HNvM₀ := not_value.under_ctx𝔼 _ _ He₀.HNv HE₀
@@ -220,7 +218,6 @@ lemma deterministic.under_ctx𝕄 :
       exfalso
       apply He₀.HAtomic𝔹; apply HB₁
       apply not_value.under_ctx𝕄 _ _ _ He₁.HNv HM₁
-      apply lc.under_ctx𝕄; apply HM₁; apply He₁.Hlc
       apply HEq
     case consℝ R₁ M₁ HR₁ HM₁ =>
       exfalso
@@ -234,7 +231,6 @@ lemma deterministic.under_ctx𝕄 :
       exfalso
       apply He₁.HAtomic𝔹; apply HB₀
       apply not_value.under_ctx𝕄 _ _ _ He₀.HNv HM₀
-      apply lc.under_ctx𝕄; apply HM₀; apply He₀.Hlc
       symm; apply HEq
     case cons𝔹 B₁ M₁ HB₁ HM₁ =>
       have HNvM₀ := not_value.under_ctx𝕄 _ _ _ He₀.HNv HM₀
@@ -320,10 +316,7 @@ lemma deterministic.under_ctxℚ_ctx𝔼 :
     case hole =>
       apply Hel.HAtomic𝔹; apply HBr
       apply not_value.under_ctxℚ _ _ Er⟦er⟧
-      apply HQr
-      apply lc.under_ctxℚ _ _ _ _ HQr
-      apply lc.under_ctx𝔼 _ _ _ HEr
-      apply Her.Hlc; apply HEq
+      apply HQr; apply HEq
     case cons𝔹 Bl El HBl HEl =>
       apply IH; apply HEl
       have HNvl : ¬value El⟦el⟧ :=
