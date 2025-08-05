@@ -8,7 +8,7 @@ lemma value_ctx𝕄_impl_ctx_is_hole : ∀ lvl M e, ctx𝕄 lvl M → value M⟦
   case cons𝔹 HB _ => exfalso; apply not_value.under_ctx𝔹; apply HB; apply Hvalue
   case consℝ HR _ => exfalso; apply not_value.under_ctxℝ; apply HR; apply Hvalue
 
-lemma value_impl_termination : ∀ v e, value v → ¬(v ⇝ e) :=
+lemma step.value_impl_termination : ∀ v e, value v → ¬(v ⇝ e) :=
   by
   intros v e Hvalue Hstep
   cases Hstep
@@ -23,6 +23,24 @@ lemma value_impl_termination : ∀ v e, value v → ¬(v ⇝ e) :=
       apply HP; apply HE
     rw [ctx_comp P E, value_ctx𝕄_impl_ctx_is_hole _ _ _ HM Hvalue] at Hvalue
     nomatch Hvalue
+
+lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇝* v₁) → v₀ = v₁ :=
+  by
+  intros v₀ v₁ Hvalue Hstepn
+  cases Hstepn
+  case refl => rfl
+  case multi Hstep _ =>
+    exfalso; apply step.value_impl_termination
+    apply Hvalue; apply Hstep
+
+lemma pure_stepn_indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ → (v₀ ⇾ ⟦k⟧ v₁) → v₀ = v₁ ∧ k = 0 :=
+  by
+  intros k v₀ v₁ Hvalue Hstepn
+  cases Hstepn
+  case refl => simp
+  case multi Hstep _ =>
+    exfalso; apply step.value_impl_termination
+    apply Hvalue; apply pure_step_impl_step; apply Hstep
 
 theorem church_rosser :
   ∀ e l r,
@@ -59,13 +77,6 @@ theorem unique_normal_forms :
   by
   intros e v₀ v₁ Hstep₀ Hstep₁ Hvalue₀ Hvalue₁
   have ⟨v, Hstep₀, Hstep₁⟩ := church_rosser _ _ _ Hstep₀ Hstep₁
-  cases Hstep₀
-  case refl =>
-    cases Hstep₁
-    case refl => rfl
-    case multi Hstep _ =>
-      exfalso; apply value_impl_termination
-      apply Hvalue₁; apply Hstep
-  case multi Hstep _ =>
-    exfalso; apply value_impl_termination
-    apply Hvalue₀; apply Hstep
+  have HEq₀ := stepn.value_impl_termination _ _ Hvalue₀ Hstep₀
+  have HEq₁ := stepn.value_impl_termination _ _ Hvalue₁ Hstep₁
+  rw [HEq₀, HEq₁]

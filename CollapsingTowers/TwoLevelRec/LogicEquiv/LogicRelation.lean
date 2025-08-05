@@ -7,13 +7,14 @@ mutual
 def logic_rel_value : ℕ → Expr → Expr → Ty → Prop
   | _, .lit n₀, .lit n₁, .nat => n₀ = n₁
   | k, .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
+    wf (.lam e₀) ∧
+    wf (.lam e₁) ∧
     ∀ j, j < k →
-      wf (.lam e₀) ∧
-      wf (.lam e₁) ∧
       ∀ v₀ v₁,
         logic_rel_value j v₀ v₁ τ𝕒 →
         logic_rel_expr j (.app₁ (.lam e₀) v₀) (.app₁ (.lam e₁) v₁) τ𝕓
   | _, _, _, _ => false
+
 termination_by k _ _ _ => k * 2
 decreasing_by all_goals omega
 
@@ -24,6 +25,7 @@ def logic_rel_expr (k : ℕ) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
       ∀ v₀, (e₀ ⇾ ⟦j⟧ v₀) → value v₀ →
       ∃ v₁, (e₁ ⇾* v₁) ∧
         logic_rel_value (k - j) v₀ v₁ τ
+
 termination_by k * 2 + 1
 decreasing_by all_goals omega
 end
@@ -49,3 +51,93 @@ def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
 @[simp]
 def logic_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   logic_rel_typing Γ e₀ e₁ τ ∧ logic_rel_typing Γ e₁ e₀ τ
+
+lemma logic_rel_value.syntactic_value :
+  ∀ k v₀ v₁ τ,
+    logic_rel_value k v₀ v₁ τ →
+    value v₀ ∧ value v₁ :=
+  by
+  intros k v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    constructor
+    apply value.lit
+    apply value.lit
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
+    constructor
+    apply value.lam; apply Hwf₀.left
+    apply value.lam; apply Hwf₁.left
+  all_goals simp at Hsem_value
+
+lemma logic_rel_value.wf :
+  ∀ k v₀ v₁ τ,
+    logic_rel_value k v₀ v₁ τ →
+    wf v₀ ∧ wf v₁ :=
+  by
+  intros k v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    repeat constructor
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
+    constructor
+    apply Hwf₀; apply Hwf₁
+  all_goals simp at Hsem_value
+
+lemma logic_rel_env.length :
+  ∀ k γ₀ γ₁ Γ,
+    logic_rel_env k γ₀ γ₁ Γ →
+    γ₀.length = Γ.length ∧
+    γ₁.length = Γ.length :=
+  by
+  intros k γ₀ γ₁ Γ H
+  induction H
+  case nil => simp
+  case cons IH =>
+    constructor
+    . simp; apply IH.left
+    . simp; apply IH.right
+
+lemma logic_rel_env.binds_logic_rel_value :
+  ∀ k γ₀ γ₁ Γ x τ,
+    logic_rel_env k γ₀ γ₁ Γ →
+    binds x (τ, 𝟙) Γ →
+    logic_rel_value k (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
+  by
+  intros k γ₀ γ₁ Γ x τ HsemΓ Hbinds
+  induction HsemΓ
+  case nil => nomatch Hbinds
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
+    have ⟨Hwf₀, Hwf₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value
+    have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
+    simp [HEq₀, HEq₁]
+    by_cases HEqx : Γ.length = x
+    . simp [if_pos HEqx]
+      simp [if_pos HEqx] at Hbinds
+      rw [← Hbinds, identity.multi_subst, identity.multi_subst]
+      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
+    . simp [if_neg HEqx]
+      simp [if_neg HEqx] at Hbinds
+      apply IH; apply Hbinds
+
+lemma logic_rel_env.multi_wf :
+  ∀ k γ₀ γ₁ Γ,
+    logic_rel_env k γ₀ γ₁ Γ →
+    multi_wf γ₀ ∧ multi_wf γ₁ :=
+  by
+  intros k γ₀ γ₁ Γ H
+  induction H
+  case nil => repeat constructor
+  case cons Hsem_value _ IH =>
+    constructor
+    . constructor; apply And.left
+      apply logic_rel_value.wf
+      apply Hsem_value; apply IH.left
+    . constructor; apply And.right
+      apply logic_rel_value.wf
+      apply Hsem_value; apply IH.right
