@@ -36,7 +36,7 @@ inductive logic_rel_env : ℕ → Subst → Subst → TEnv → Prop where
       logic_rel_env k γ₀ γ₁ Γ →
       logic_rel_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟙) :: Γ)
 
--- Γ ⊧ e₀ ≥𝑙𝑜𝑔 e₁ : τ ≜ ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜ ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
 @[simp]
 def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   wf_at e₀ Γ.length ∧
@@ -45,7 +45,7 @@ def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     logic_rel_env k γ₀ γ₁ Γ →
     logic_rel_expr k (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ ≜ Γ ⊧ e₀ ≥𝑙𝑜𝑔 e₁ : τ ∧ Γ ⊧ e₁ ≥𝑙𝑜𝑔 e₀ : τ
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑙𝑜𝑔 e₀ : τ
 @[simp]
 def logic_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   logic_rel_typing Γ e₀ e₁ τ ∧ logic_rel_typing Γ e₁ e₀ τ
