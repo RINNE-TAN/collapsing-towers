@@ -47,6 +47,57 @@ lemma compatibility.lit :
     have ⟨HEqv, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ (value.lit n) Hstep₀
     simp [← HEqv, Hj]
 
+-- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≤𝑙𝑜𝑔 e₁⟦0 ↦ x⟧ : τ𝕓
+-- ———————————————————————————————————————
+-- Γ ⊧ λ.e₀ ≤𝑙𝑜𝑔 λ.e₁ : τ𝕒 → τ𝕓
+lemma compatibility_lam :
+  ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
+    closed_at (.lam e₀) Γ.length →
+    closed_at (.lam e₁) Γ.length →
+    logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    logic_rel_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hsem
+  have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
+  have Hlc₀ : lc (.lam e₀) := by apply (lc.under_opening _ _ _).mp; apply Hwf₀.left
+  have Hlc₁ : lc (.lam e₁) := by apply (lc.under_opening _ _ _).mp; apply Hwf₁.left
+  constructor; constructor
+  . apply Hlc₀
+  . apply Hclosed₀
+  constructor; constructor
+  . apply Hlc₁
+  . apply Hclosed₁
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
+  rw [logic_rel_expr]
+  intros j Hindexj lam₀ Hvalue_lam₀ Hstep₀
+  exists multi_subst γ₁ (.lam e₁)
+  constructor; apply pure_stepn.refl
+  have Hvalue_lam₀ : value (multi_subst γ₀ (.lam e₀)) :=
+    by
+    simp; apply value.lam; rw [← multi_subst.lam]
+    apply lc.under_multi_subst
+    apply Hmulti_wf₀; apply Hlc₀
+  have ⟨HEq_lam₀, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue_lam₀ Hstep₀
+  simp only [← HEq_lam₀, Hj, multi_subst.lam, logic_rel_value]
+  constructor; constructor
+  . rw [← multi_subst.lam]
+    apply lc.under_multi_subst
+    apply Hmulti_wf₀; apply Hlc₀
+  . rw [← multi_subst.lam]
+    apply closed.under_multi_subst
+    apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀
+  constructor; constructor
+  . rw [← multi_subst.lam]
+    apply lc.under_multi_subst
+    apply Hmulti_wf₁; apply Hlc₁
+  . rw [← multi_subst.lam]
+    apply closed.under_multi_subst
+    apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
+  intros i Hindexi argv₀ argv₁ Hsem_value_arg
+  admit
+
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
 -- —————————————————————————————————

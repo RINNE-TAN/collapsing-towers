@@ -42,7 +42,7 @@ lemma pure_stepn_indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ �
     exfalso; apply step.value_impl_termination
     apply Hvalue; apply pure_step_impl_step; apply Hstep
 
-theorem church_rosser :
+theorem stepn.church_rosser :
   ∀ e l r,
     (e ⇝* l) →
     (e ⇝* r) →
@@ -64,10 +64,44 @@ theorem church_rosser :
       . apply stepn.multi; apply IHstepl; apply IHstepln
     case multi re₀ IHstepr IHsteprn =>
       apply IH
-      rw [deterministic _ _ _ IHstepl IHstepr]
+      rw [step.deterministic _ _ _ IHstepl IHstepr]
       apply IHsteprn
 
-theorem unique_normal_forms :
+theorem pure_stepn_indexed.church_rosser :
+  ∀ il ir e l r,
+    (e ⇾ ⟦il⟧ l) →
+    (e ⇾ ⟦ir⟧ r) →
+    ∃ jl jr v,
+      il + jl = ir + jr ∧
+      (l ⇾ ⟦jl⟧ v) ∧
+      (r ⇾ ⟦jr⟧ v) :=
+  by
+  intros il ir e l r Hstepl Hstepr
+  induction Hstepl generalizing ir r
+  case refl =>
+    exists ir, 0, r
+    constructor; omega
+    constructor; apply Hstepr
+    apply pure_stepn_indexed.refl
+  case multi il le₀ le₁ le₂ IHstepl IHstepln IH =>
+    cases Hstepr
+    case refl =>
+      exists 0, il + 1, le₂
+      constructor; omega
+      constructor; apply pure_stepn_indexed.refl
+      apply pure_stepn_indexed.multi
+      apply IHstepl; apply IHstepln
+    case multi ir re₀ IHstepr IHsteprn =>
+      have IHstepln : (le₁ ⇾ ⟦ir⟧r) :=
+        by
+        rw [pure_step.deterministic _ _ _ IHstepl IHstepr]
+        apply IHsteprn
+      have ⟨jl, jr, v, IHEq, IHstep⟩ := IH _ _ IHstepln
+      exists jl, jr, v
+      constructor; omega
+      apply IHstep
+
+theorem stepn.unique_normal_forms :
   ∀ e v₀ v₁,
     (e ⇝* v₀) →
     (e ⇝* v₁) →
@@ -76,7 +110,7 @@ theorem unique_normal_forms :
     v₀ = v₁ :=
   by
   intros e v₀ v₁ Hstep₀ Hstep₁ Hvalue₀ Hvalue₁
-  have ⟨v, Hstep₀, Hstep₁⟩ := church_rosser _ _ _ Hstep₀ Hstep₁
+  have ⟨v, Hstep₀, Hstep₁⟩ := stepn.church_rosser _ _ _ Hstep₀ Hstep₁
   have HEq₀ := stepn.value_impl_termination _ _ Hvalue₀ Hstep₀
   have HEq₁ := stepn.value_impl_termination _ _ Hvalue₁ Hstep₁
   rw [HEq₀, HEq₁]
