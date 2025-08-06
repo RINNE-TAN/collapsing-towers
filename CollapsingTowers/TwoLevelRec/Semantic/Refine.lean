@@ -44,7 +44,7 @@ lemma pure_stepn_indexed.refine :
     ctx𝔹 B →
     value v →
     (B⟦e₀⟧ ⇾ ⟦k⟧ v) →
-    ∃ v𝕖 i j,
+    ∃ i j v𝕖,
       i + j = k ∧
       value v𝕖 ∧
       (e₀ ⇾ ⟦i⟧ v𝕖) ∧
@@ -61,15 +61,15 @@ lemma pure_stepn_indexed.refine :
     rw [← HEqe₀] at Hstep
     match value.decidable e₀ with
     | isTrue Hvalue =>
-      exists e₀, 0, k + 1
+      exists 0, k + 1, e₀
       constructor; omega
       constructor; apply Hvalue
       constructor; apply pure_stepn_indexed.refl
       apply pure_stepn_indexed.multi; apply Hstep; apply Hstepn
     | isFalse HNv =>
       have ⟨e₁, HEqe₁, Hstep₀⟩ := pure_step.refine _ _ _ HB HNv Hstep
-      have ⟨v𝕖, i, j, HEqk, Hvalue, Hstep₁, Hstep₂⟩ := IH _ HEqe₁ Hvalue
-      exists v𝕖, i + 1, j
+      have ⟨i, j, v𝕖, HEqk, Hvalue, Hstep₁, Hstep₂⟩ := IH _ HEqe₁ Hvalue
+      exists i + 1, j, v𝕖
       constructor; omega
       constructor; apply Hvalue
       constructor; apply pure_stepn_indexed.multi
@@ -86,8 +86,8 @@ lemma pure_stepn_indexed.refine.app₁ :
   by
   intros f arg v j Hvalue Hstep
   have Hlc := lc.under_pure_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
-  have ⟨fᵥ, i₀, k, HEqj, HvalueF, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue Hstep
-  have ⟨argᵥ, i₁, i₂, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueF) Hvalue Hstep
+  have ⟨i₀, k, fᵥ, HEqj, HvalueF, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue Hstep
+  have ⟨i₁, i₂, argᵥ, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueF) Hvalue Hstep
   exists i₀, i₁, i₂, fᵥ, argᵥ
   constructor; omega
   constructor; apply HvalueF
@@ -95,3 +95,18 @@ lemma pure_stepn_indexed.refine.app₁ :
   constructor; apply Hstep₀
   constructor; apply Hstep₁
   apply Hstep₂
+
+lemma pure_stepn_indexed.refine.lets :
+  ∀ b e v j,
+    value v →
+    ((.lets b e) ⇾ ⟦j⟧ v) →
+    ∃ i₀ i₁ bᵥ,
+      i₀ + i₁ = j ∧
+      value bᵥ ∧
+      (b ⇾ ⟦i₀⟧ bᵥ) ∧ ((.lets bᵥ e) ⇾ ⟦i₁⟧ v) :=
+  by
+  intros b e v j Hvalue Hstep
+  have Hlc := lc.under_pure_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  apply pure_stepn_indexed.refine
+  apply ctx𝔹.lets; apply Hlc.right
+  apply Hvalue; apply Hstep

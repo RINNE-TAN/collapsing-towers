@@ -182,3 +182,42 @@ lemma compatibility.app :
     apply HstepHead₁
   . have HEq : k - j = k - i₀ - i₁ - i₂ := by omega
     rw [HEq]; apply Hsem_value
+
+-- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≤𝑙𝑜𝑔 e₁⟦0 ↦ x⟧ : τ𝕓
+-- ———————————————————————————————————————
+-- Γ ⊧ lets b₀ e₀ ≤𝑙𝑜𝑔 lets b₁ e₁ : τ𝕓
+lemma compatibility.lets :
+  ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
+    closed_at (.lets b₀ e₀) Γ.length →
+    closed_at (.lets b₁ e₁) Γ.length →
+    logic_rel_typing Γ b₀ b₁ τ𝕒 →
+    logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    logic_rel_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
+  by
+  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hb He
+  have ⟨Hwf_b₀, Hwf_b₁, Hb⟩ := Hb
+  have ⟨Hwf_e₀, Hwf_e₁, He⟩ := He
+  have Hlc₀ : lc (.lets b₀ e₀) :=
+    by
+    constructor; apply Hwf_b₀.left
+    apply (lc.under_opening _ _ _).mp; apply Hwf_e₀.left
+  have Hlc₁ : lc (.lets b₁ e₁) :=
+    by
+    constructor; apply Hwf_b₁.left
+    apply (lc.under_opening _ _ _).mp; apply Hwf_e₁.left
+  constructor; constructor
+  . apply Hlc₀
+  . apply Hclosed₀
+  constructor; constructor
+  . apply Hlc₁
+  . apply Hclosed₁
+  intros k γ₀ γ₁ HsemΓ
+  rw [logic_rel_expr]
+  intros j Hindex v₀ Hvalue₀ Hstep₀
+  simp at Hstep₀
+  have ⟨i₀, i₁, bv₀, HEqj, HvalueB₀, HstepB₀, HstepHead₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ Hvalue₀ Hstep₀
+  have Hb := Hb _ _ _ HsemΓ
+  rw [logic_rel_expr] at Hb
+  have ⟨bv₁, HstepB₁, Hsem_valueB⟩ := Hb i₀ (by omega) _ HvalueB₀ HstepB₀
+  admit
