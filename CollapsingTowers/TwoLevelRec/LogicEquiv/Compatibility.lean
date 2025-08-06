@@ -50,7 +50,7 @@ lemma compatibility.lit :
 -- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≤𝑙𝑜𝑔 e₁⟦0 ↦ x⟧ : τ𝕓
 -- ———————————————————————————————————————
 -- Γ ⊧ λ.e₀ ≤𝑙𝑜𝑔 λ.e₁ : τ𝕒 → τ𝕓
-lemma compatibility_lam :
+lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     closed_at (.lam e₀) Γ.length →
     closed_at (.lam e₁) Γ.length →
@@ -71,7 +71,7 @@ lemma compatibility_lam :
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
   rw [logic_rel_expr]
-  intros j Hindexj lam₀ Hvalue_lam₀ Hstep₀
+  intros j Hindexj lam₀ HvalueLam₀ Hstep₀
   exists multi_subst γ₁ (.lam e₁)
   constructor; apply pure_stepn.refl
   have Hvalue_lam₀ : value (multi_subst γ₀ (.lam e₀)) :=
@@ -95,8 +95,40 @@ lemma compatibility_lam :
   . rw [← multi_subst.lam]
     apply closed.under_multi_subst
     apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
-  intros i Hindexi argv₀ argv₁ Hsem_value_arg
-  admit
+  intros j Hindexj argv₀ argv₁ Hsem_value_arg
+  have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value_arg
+  have ⟨HwfArg₀, HwfArg₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value_arg
+  apply logic_rel_expr.stepn j 1; apply Hsem _ (argv₀ :: γ₀) (argv₁ :: γ₁)
+  apply logic_rel_env.cons; apply logic_rel_value.weakening; apply Hsem_value_arg; omega
+  apply logic_rel_env.weakening; apply HsemΓ; omega
+  . apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
+    rw [multi_subst, ← comm.multi_subst_subst, comm.multi_subst_opening]
+    rw [HEq₀, intros.subst]
+    apply pure_step.pure id; apply ctx𝕄.hole
+    constructor
+    . rw [← multi_subst.lam]
+      apply lc.under_multi_subst
+      apply Hmulti_wf₀; apply Hlc₀
+    . apply lc.value; apply HvalueArg₀
+    apply head.app₁; apply HvalueArg₀
+    apply closed.inc; apply closed.under_multi_subst; apply Hmulti_wf₀
+    rw [HEq₀]; apply Hclosed₀; omega
+    omega; apply Hmulti_wf₀; omega
+    apply HwfArg₀.right; apply Hmulti_wf₀
+  . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
+    rw [multi_subst, ← comm.multi_subst_subst, comm.multi_subst_opening]
+    rw [HEq₁, intros.subst]
+    apply pure_step.pure id; apply ctx𝕄.hole
+    constructor
+    . rw [← multi_subst.lam]
+      apply lc.under_multi_subst
+      apply Hmulti_wf₁; apply Hlc₁
+    . apply lc.value; apply HvalueArg₁
+    apply head.app₁; apply HvalueArg₁
+    apply closed.inc; apply closed.under_multi_subst; apply Hmulti_wf₁
+    rw [HEq₁]; apply Hclosed₁; omega
+    omega; apply Hmulti_wf₁; omega
+    apply HwfArg₁.right; apply Hmulti_wf₁
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
