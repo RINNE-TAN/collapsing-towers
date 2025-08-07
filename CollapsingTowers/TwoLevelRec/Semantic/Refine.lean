@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLevelRec.Semantic.Confluence
+import CollapsingTowers.TwoLevelRec.Semantic.Congruence
 
 -- B⟦e₀⟧ ⇾ r
 -- ———————————————————————
@@ -77,20 +78,18 @@ lemma pure_stepn_indexed.refine :
 
 lemma pure_stepn_indexed.refine.lam :
   ∀ e arg v j,
-    lc (.lam e) →
-    value arg →
-    value v →
+    value (.lam e) → value arg → value v →
     ((.app₁ (.lam e) arg) ⇾ ⟦j⟧ v) →
     ∃ i,
       i + 1 = j ∧
       ((opening 0 arg e) ⇾ ⟦i⟧ v) :=
   by
-  intros e arg v j Hlc HvalueArg Hvalue Hstep
+  intros e arg v j HvalueFun HvalueArg Hvalue Hstep
   have HstepHead : (.app₁ (.lam e) arg) ⇾ ⟦1⟧ (opening 0 arg e) :=
     by
     apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
     apply pure_step.pure id; apply ctx𝕄.hole
-    constructor; apply Hlc; apply lc.value; apply HvalueArg
+    constructor; apply lc.value; apply HvalueFun; apply lc.value; apply HvalueArg
     apply head.app₁; apply HvalueArg
   have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
   have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
@@ -174,3 +173,41 @@ lemma pure_stepn_indexed.refine.fix₁ :
   constructor; apply HvalueFun
   constructor; apply Hstep₀
   rw [HEqv₀, HEqv₁]
+
+lemma pure_stepn_indexed.refine.fix₁.induction :
+  ∀ f arg v j,
+    value f → value arg → value v →
+    ((.app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg) ⇾ ⟦j⟧ v) →
+    ∃ i,
+      i + 2 = j ∧
+      (.app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg) ⇾ ⟦i⟧ v :=
+  by
+  intros f arg v j HvalueFun HvalueArg Hvalue Hstep
+  have HstepHead₀ : (.app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg) ⇾ (.app₁ (.app₁ f (.fix₁ f)) arg) :=
+    by
+    apply pure_step.pure id; apply ctx𝕄.hole
+    simp; constructor
+    apply lc.inc; apply lc.value; apply HvalueFun; omega
+    apply lc.value; apply HvalueArg
+    have HEqSubst₀ : .app₁ (.app₁ f (.fix₁ f)) arg = opening 0 arg (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)) :=
+      by
+      simp; rw [identity.opening]
+      apply lc.inc; apply lc.value; apply HvalueFun; omega
+    rw [HEqSubst₀]; apply head.app₁; apply HvalueArg
+  have HstepHead₁ : (.app₁ (.app₁ f (.fix₁ f)) arg) ⇾ (.app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg) :=
+    by
+    apply pure_step.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg))
+    apply pure_step.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFun
+    apply head.fix₁; apply HvalueFun
+  have HstepHead : (.app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg) ⇾ ⟦2⟧ (.app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg) :=
+    by
+    apply pure_stepn_indexed.multi; apply HstepHead₀
+    apply pure_stepn_indexed.multi; apply HstepHead₁
+    apply pure_stepn_indexed.refl
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqv]; apply Hstepr
