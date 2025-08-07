@@ -77,7 +77,7 @@ lemma compatibility.lam :
   have Hclosed₁ : closed (.lam (multi_subst γ₁ e₁)) :=
     by apply closed.under_multi_subst; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   rw [logic_rel_expr]
-  intros z Hindexz v₀ HvalueRes₀ Hstep₀
+  intros z Hindexz v₀ Hvalue₀ Hstep₀
   --
   --
   -- λx.γ₀(e₀) ⇾ ⟦z⟧ v₀
@@ -97,14 +97,14 @@ lemma compatibility.lam :
   have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value_arg
   have ⟨HwfArg₀, HwfArg₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value_arg
   rw [logic_rel_expr]
-  intros j Hindexj v₀ HvalueRes₀ Hstep₀
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
   -- λx.γ₀(e₀) @ argv₀ ⇾ ⟦j⟧ v₀
   -- ——————————————————————————————————
   -- j = i + 1
   -- ⟦x ↦ argv₀⟧γ₀(e₀) ⇾ ⟦i⟧ v₀
-  have ⟨i, HEqj, HstepRes₀⟩ := pure_stepn_indexed.refine.lam _ _ _ _ Hlc₀ HvalueArg₀ HvalueRes₀ Hstep₀
+  have ⟨i, HEqj, Hstep₀⟩ := pure_stepn_indexed.refine.lam _ _ _ _ Hlc₀ HvalueArg₀ Hvalue₀ Hstep₀
   --
   --
   -- ⟦x ↦ argv₀⟧γ₀(e₀) ⇾ ⟦i⟧ v₀
@@ -119,14 +119,14 @@ lemma compatibility.lam :
     rw [HEq₀, intros.subst]
     apply closed.inc; apply Hclosed₀; omega
     omega; omega; apply HwfArg₀.right
-  rw [HEqSubst₀] at HstepRes₀
+  rw [HEqSubst₀] at Hstep₀
   have HsemΓ : logic_rel_env k (argv₀ :: γ₀) (argv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
     apply logic_rel_env.cons; apply Hsem_value_arg
     apply logic_rel_env.weakening; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
   rw [logic_rel_expr] at Hsem_expr
-  have ⟨v₁, HstepRes₁, Hsem_value⟩ := Hsem_expr i (by omega) _ HvalueRes₀ HstepRes₀
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i (by omega) _ Hvalue₀ Hstep₀
   --
   --
   -- ⟦x ↦ argv₁⟧γ₁(e₁) ⇾* v₁
@@ -141,8 +141,8 @@ lemma compatibility.lam :
       rw [HEq₁, intros.subst]
       apply closed.inc; apply Hclosed₁; omega
       omega; omega; apply HwfArg₁.right
-    rw [← HEqSubst₁] at HstepRes₁
-    apply pure_stepn.multi _ _ _ _ HstepRes₁
+    rw [← HEqSubst₁] at Hstep₁
+    apply pure_stepn.multi _ _ _ _ Hstep₁
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply Hlc₁; apply lc.value; apply HvalueArg₁
     apply head.app₁; apply HvalueArg₁
@@ -171,7 +171,7 @@ lemma compatibility.app₁ :
   intros k γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
   rw [logic_rel_expr]
-  intros j Hindex v₀ HvalueRes₀ Hstep₀
+  intros j Hindex v₀ Hvalue₀ Hstep₀
   --
   --
   -- γ₀(f₀) @ γ₀(arg₀) ⇾ ⟦j⟧ v₀
@@ -181,7 +181,7 @@ lemma compatibility.app₁ :
   -- γ₀(f₀) ⇾ ⟦i₁⟧ argv₀
   -- fv₀ @ argv₀ ⇾ ⟦i₂⟧ v₀
   simp at Hstep₀
-  have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, HstepRes₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ HvalueRes₀ Hstep₀
+  have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, Hstep₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ Hstep₀
   --
   --
   -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
@@ -218,7 +218,7 @@ lemma compatibility.app₁ :
   -- fv₁ @ argv₁ ⇾* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧⟦k - i₀ - i₁ - i₂⟧
   simp only [logic_rel_expr] at Hsem_expr
-  have ⟨v₁, HstepRes₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ HvalueRes₀ HstepRes₀
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ Hvalue₀ Hstep₀
   --
   --
   -- γ₁(f₁) ⇾* fv₁
@@ -236,7 +236,7 @@ lemma compatibility.app₁ :
     apply pure_stepn.trans
     apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun₁) HstepArg₁
     -- head
-    apply HstepRes₁
+    apply Hstep₁
   . apply logic_rel_value.weakening
     apply Hsem_value; omega
 
@@ -287,7 +287,7 @@ lemma compatibility.lets :
     rw [← multi_subst.lets]; apply closed.under_multi_subst
     apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   rw [logic_rel_expr]
-  intros j Hindex v₀ HvalueRes₀ Hstep₀
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
   -- lets x = γ₀(b₀) in γ₀(e₀) ⇾ ⟦j⟧ v₀
@@ -296,7 +296,7 @@ lemma compatibility.lets :
   -- γ₀(b₀) ⇾ ⟦i₀⟧ bv₀
   -- ⟦x ↦ bv₀⟧γ₀(e₀) ⇾ ⟦i₁⟧ v₀
   simp at Hstep₀
-  have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepRes₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ HvalueRes₀ Hstep₀
+  have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, Hstep₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ Hvalue₀ Hstep₀
   --
   --
   -- γ₀(b₀) ⇾ ⟦i₀⟧ bv₀
@@ -322,14 +322,14 @@ lemma compatibility.lets :
     rw [HEq₀, intros.subst]
     apply closed.inc; apply Hclosed₀.right; omega
     omega; omega; apply HwfBind₀.right
-  rw [HEqSubst₀] at HstepRes₀
+  rw [HEqSubst₀] at Hstep₀
   have HsemΓ : logic_rel_env (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
     apply logic_rel_env.cons; apply Hsem_value_bind
     apply logic_rel_env.weakening; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
   rw [logic_rel_expr] at Hsem_expr
-  have ⟨v₁, HstepRes₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ HvalueRes₀ HstepRes₀
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ Hvalue₀ Hstep₀
   --
   --
   -- γ₁(b₁) ⇾* bv₁
@@ -350,8 +350,8 @@ lemma compatibility.lets :
       rw [HEq₁, intros.subst]
       apply closed.inc; apply Hclosed₁.right; omega
       omega; omega; apply HwfBind₁.right
-    rw [← HEqSubst₁] at HstepRes₁
-    apply pure_stepn.multi _ _ _ _ HstepRes₁
+    rw [← HEqSubst₁] at Hstep₁
+    apply pure_stepn.multi _ _ _ _ Hstep₁
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply HwfBind₁.left; apply Hlc₁.right
     apply head.lets; apply HvalueBind₁
@@ -369,8 +369,13 @@ lemma compatibility.fix₁.induction :
     rw [logic_rel_expr]
     intros j Hindexj; contradiction
   case succ k IH =>
+    rw [logic_rel_expr]
+    intros j Hindexj v₀ Hvalue₀ Hstep₀
     admit
 
+-- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
+-- ————————————————————————————————————
+-- Γ ⊧ fix f₀ ≤𝑙𝑜𝑔 fix f₁ : τ𝕒 → τ𝕓
 lemma compatibility.fix₁ :
   ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
     logic_rel_typing Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
