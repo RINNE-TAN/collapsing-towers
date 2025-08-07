@@ -51,7 +51,7 @@ def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
 def logic_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   logic_rel_typing Γ e₀ e₁ τ ∧ logic_rel_typing Γ e₁ e₀ τ
 
-lemma logic_rel_value.weakening :
+lemma logic_rel_value.antimono :
   ∀ k₀ k₁ v₀ v₁ τ,
     logic_rel_value k₀ v₀ v₁ τ →
     k₁ ≤ k₀ →
@@ -79,7 +79,7 @@ lemma logic_rel_value.weakening :
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
 
-lemma logic_rel_expr.weakening :
+lemma logic_rel_expr.antimono :
   ∀ k₀ k₁ e₀ e₁ τ,
     logic_rel_expr k₀ e₀ e₁ τ →
     k₁ ≤ k₀ →
@@ -92,10 +92,10 @@ lemma logic_rel_expr.weakening :
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr j (by omega) v₀ Hvalue₀ Hstep₀
   exists v₁
   constructor; apply Hstep₁
-  apply logic_rel_value.weakening
+  apply logic_rel_value.antimono
   apply Hsem_value; omega
 
-lemma logic_rel_env.weakening :
+lemma logic_rel_env.antimono :
   ∀ k₀ k₁ γ₀ γ₁ Γ,
     logic_rel_env k₀ γ₀ γ₁ Γ →
     k₁ ≤ k₀ →
@@ -106,7 +106,7 @@ lemma logic_rel_env.weakening :
   case nil => apply logic_rel_env.nil
   case cons Hsem_value _ IH =>
     apply logic_rel_env.cons
-    apply logic_rel_value.weakening; apply Hsem_value; apply HLe
+    apply logic_rel_value.antimono; apply Hsem_value; apply HLe
     apply IH
 
 lemma logic_rel_value.syntactic_value :

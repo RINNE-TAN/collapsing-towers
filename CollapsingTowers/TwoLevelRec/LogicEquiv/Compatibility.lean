@@ -123,7 +123,7 @@ lemma compatibility.lam :
   have HsemΓ : logic_rel_env k (argv₀ :: γ₀) (argv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
     apply logic_rel_env.cons; apply Hsem_value_arg
-    apply logic_rel_env.weakening; apply HsemΓ; omega
+    apply logic_rel_env.antimono; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
   rw [logic_rel_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i (by omega) _ Hvalue₀ Hstep₀
@@ -146,7 +146,7 @@ lemma compatibility.lam :
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply Hlc₁; apply lc.value; apply HvalueArg₁
     apply head.app₁; apply HvalueArg₁
-  . apply logic_rel_value.weakening
+  . apply logic_rel_value.antimono
     apply Hsem_value; omega
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
@@ -178,7 +178,7 @@ lemma compatibility.app₁ :
   -- ———————————————————————————
   -- i₀ + i₁ + i₂ = j
   -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
-  -- γ₀(f₀) ⇾ ⟦i₁⟧ argv₀
+  -- γ₀(arg₀) ⇾ ⟦i₁⟧ argv₀
   -- fv₀ @ argv₀ ⇾ ⟦i₂⟧ v₀
   simp at Hstep₀
   have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, Hstep₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ Hstep₀
@@ -207,8 +207,8 @@ lemma compatibility.app₁ :
   -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧⟦k - i₁⟧
   -- ———————————————————————————————————————————————
   -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧⟦k - i₀ - i₁⟧
-  have Hsem_value_fun : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.weakening _ _ _ _ _ Hsem_value_fun (by omega)
-  have Hsem_value_arg : logic_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := logic_rel_value.weakening _ _ _ _ _ Hsem_value_arg (by omega)
+  have Hsem_value_fun : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
+  have Hsem_value_arg : logic_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := logic_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
   have Hsem_expr := logic_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
   --
   --
@@ -237,7 +237,7 @@ lemma compatibility.app₁ :
     apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun₁) HstepArg₁
     -- head
     apply Hstep₁
-  . apply logic_rel_value.weakening
+  . apply logic_rel_value.antimono
     apply Hsem_value; omega
 
 -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
@@ -326,7 +326,7 @@ lemma compatibility.lets :
   have HsemΓ : logic_rel_env (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
     apply logic_rel_env.cons; apply Hsem_value_bind
-    apply logic_rel_env.weakening; apply HsemΓ; omega
+    apply logic_rel_env.antimono; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
   rw [logic_rel_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ Hvalue₀ Hstep₀
@@ -355,7 +355,7 @@ lemma compatibility.lets :
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply HwfBind₁.left; apply Hlc₁.right
     apply head.lets; apply HvalueBind₁
-  . apply logic_rel_value.weakening
+  . apply logic_rel_value.antimono
     apply Hsem_value; omega
 
 lemma compatibility.fix₁.induction :
@@ -433,5 +433,5 @@ lemma compatibility.fix₁ :
     simp; apply lc.value; apply HvalueFun₁
     apply head.fix₁; apply HvalueFun₁
   . apply compatibility.fix₁.induction
-    apply logic_rel_value.weakening
+    apply logic_rel_value.antimono
     apply Hsem_value_fun; omega
