@@ -48,7 +48,7 @@ lemma compatibility.lit :
     simp [← HEqv, Hj]
 
 -- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≤𝑙𝑜𝑔 e₁⟦0 ↦ x⟧ : τ𝕓
--- ———————————————————————————————————————
+-- ——————————————————————————————————————————
 -- Γ ⊧ λ.e₀ ≤𝑙𝑜𝑔 λ.e₁ : τ𝕒 → τ𝕓
 lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
@@ -134,52 +134,91 @@ lemma compatibility.lam :
 -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
 -- —————————————————————————————————
 -- Γ ⊧ f₀ @ arg₀ ≤𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
-lemma compatibility.app :
+lemma compatibility.app₁ :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
     logic_rel_typing Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
     logic_rel_typing Γ arg₀ arg₁ τ𝕒 →
     logic_rel_typing Γ (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
   by
   intros Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓 Hf Harg
-  have ⟨Hwf_f₀, Hwf_f₁, Hf⟩ := Hf
-  have ⟨Hwf_arg₀, Hwf_arg₁, Harg⟩ := Harg
+  have ⟨HwfFun₀, HwfFun₁, Hf⟩ := Hf
+  have ⟨HwfArg₀, HwfArg₁, Harg⟩ := Harg
   constructor; constructor
-  . constructor; apply Hwf_f₀.left; apply Hwf_arg₀.left
-  . constructor; apply Hwf_f₀.right; apply Hwf_arg₀.right
+  . constructor; apply HwfFun₀.left; apply HwfArg₀.left
+  . constructor; apply HwfFun₀.right; apply HwfArg₀.right
   constructor; constructor
-  . constructor; apply Hwf_f₁.left; apply Hwf_arg₁.left
-  . constructor; apply Hwf_f₁.right; apply Hwf_arg₁.right
+  . constructor; apply HwfFun₁.left; apply HwfArg₁.left
+  . constructor; apply HwfFun₁.right; apply HwfArg₁.right
   intros k γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
   rw [logic_rel_expr]
-  intros j Hindex v₀ Hvalue₀ Hstep₀
+  intros j Hindex v₀ HvalueRes₀ Hstep₀
+  --
+  --
+  -- γ₀(f₀) @ γ₀(arg₀) ⇾ ⟦j⟧ v₀
+  -- ———————————————————————————
+  -- i₀ + i₁ + i₂ = j
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- γ₀(f₀) ⇾ ⟦i₁⟧ argv₀
+  -- fv₀ @ argv₀ ⇾ ⟦i₂⟧ v₀
   simp at Hstep₀
-  have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueF₀, HvalueArg₀, HstepF₀, HstepArg₀, HstepHead₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ Hstep₀
-  simp only [logic_rel_expr] at Hf Harg
-  have ⟨fv₁, HstepF₁, Hsem_value_f⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueF₀ HstepF₀
+  have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, HstepRes₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ HvalueRes₀ Hstep₀
+  --
+  --
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
+  -- ———————————————————————————————
+  -- γ₁(f₁) ⇾* fv₁
+  -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧⟦k - i₀⟧
+  simp only [logic_rel_expr] at Hf
+  have ⟨fv₁, HstepFun₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFun₀ HstepFun₀
+  have ⟨Hvalue_fun₀, Hvalue_fun₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value_fun
+  --
+  --
+  -- γ₀(arg₀) ⇾ ⟦i₁⟧ argv₀
+  -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
+  -- —————————————————————————————
+  -- γ₁(arg₁) ⇾* argv₁
+  -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧⟦k - i₁⟧
+  simp only [logic_rel_expr] at Harg
   have ⟨argv₁, HstepArg₁, Hsem_value_arg⟩ := Harg _ _ _ HsemΓ i₁ (by omega) _ HvalueArg₀ HstepArg₀
-  have Hsem_value_f : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.weakening _ _ _ _ _ Hsem_value_f (by omega)
+  --
+  --
+  -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧⟦k - i₀⟧
+  -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧⟦k - i₁⟧
+  -- ———————————————————————————————————————————————
+  -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧⟦k - i₀ - i₁⟧
+  have Hsem_value_fun : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.weakening _ _ _ _ _ Hsem_value_fun (by omega)
   have Hsem_value_arg : logic_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := logic_rel_value.weakening _ _ _ _ _ Hsem_value_arg (by omega)
-  have ⟨e₀, e₁, HEq₀, HEq₁⟩ := logic_rel_value.arrow_ty_iff_lam _ fv₀ fv₁ _ _ Hsem_value_f
-  rw [HEq₀] at HstepF₀ HstepHead₀ Hsem_value_f
-  rw [HEq₁] at HstepF₁ Hsem_value_f
-  simp only [logic_rel_value] at Hsem_value_f
-  have ⟨Hwf₀, Hwf₁, Hsem_value_f⟩ := Hsem_value_f
-  have Hsem_expr := Hsem_value_f (k - i₀ - i₁) (by omega) _ _ Hsem_value_arg
+  have Hsem_expr := logic_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
+  --
+  --
+  -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧⟦k - i₀ - i₁⟧
+  -- fv₀ @ argv₀ ⇾ ⟦i₂⟧ v₀
+  -- ———————————————————————————————————————————————
+  -- fv₁ @ argv₁ ⇾* v₁
+  -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧⟦k - i₀ - i₁ - i₂⟧
   simp only [logic_rel_expr] at Hsem_expr
-  have ⟨v₁, HstepHead₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ Hvalue₀ HstepHead₀
+  have ⟨v₁, HstepRes₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ HvalueRes₀ HstepRes₀
+  --
+  --
+  -- γ₁(f₁) ⇾* fv₁
+  -- γ₁(arg₁) ⇾* argv₁
+  -- fv₁ @ argv₁ ⇾* v₁
+  -- ————————————————————————
+  -- γ₁(f₁) @ γ₁(arg₁) ⇾* v₁
   exists v₁; constructor
   . simp
     apply pure_stepn.trans
-    -- left step
-    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _) HstepF₁
-    apply lc.under_multi_subst; apply Hmulti_wf₁; apply Hwf_arg₁.left
-    -- right step
+    -- left
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _) HstepFun₁
+    apply lc.under_multi_subst; apply Hmulti_wf₁; apply HwfArg₁.left
+    -- right
     apply pure_stepn.trans
     apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ _) HstepArg₁
-    apply value.lam; apply Hwf₁.left
-    -- head step
-    apply HstepHead₁
+    apply Hvalue_fun₁
+    -- head
+    apply HstepRes₁
   . have HEq : k - j = k - i₀ - i₁ - i₂ := by omega
     rw [HEq]; apply Hsem_value
 

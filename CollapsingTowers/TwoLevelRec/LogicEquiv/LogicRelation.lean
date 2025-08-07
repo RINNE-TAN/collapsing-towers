@@ -146,6 +146,30 @@ lemma logic_rel_value.wf :
     apply Hwf₀; apply Hwf₁
   all_goals simp at Hsem_value
 
+lemma logic_rel_value.arrow_ty_iff_lam :
+  ∀ k f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
+    ∃ e₀ e₁,
+      f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
+  by
+  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value
+  cases f₀ <;> cases f₁ <;> simp at Hsem_value
+  simp
+
+lemma logic_rel_value.apply :
+  ∀ k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓,
+    logic_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
+    logic_rel_value k arg₀ arg₁ τ𝕒 →
+    logic_rel_expr k (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
+  by
+  intros k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓 Hsem_value_fun Hsem_value_arg
+  have ⟨e₀, e₁, HEq₀, HEq₁⟩ := logic_rel_value.arrow_ty_iff_lam _ f₀ f₁ _ _ Hsem_value_fun
+  rw [HEq₀, HEq₁]
+  rw [HEq₀, HEq₁] at Hsem_value_fun
+  simp only [logic_rel_value] at Hsem_value_fun
+  have ⟨Hwf₀, Hwf₁, Hsem_value_fun⟩ := Hsem_value_fun
+  apply Hsem_value_fun; rfl; apply Hsem_value_arg
+
 lemma logic_rel_env.length :
   ∀ k γ₀ γ₁ Γ,
     logic_rel_env k γ₀ γ₁ Γ →
@@ -198,16 +222,6 @@ lemma logic_rel_env.multi_wf :
     . constructor; apply And.right
       apply logic_rel_value.wf
       apply Hsem_value; apply IH.right
-
-lemma logic_rel_value.arrow_ty_iff_lam :
-  ∀ k f₀ f₁ τ𝕒 τ𝕓,
-    logic_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
-    ∃ e₀ e₁,
-      f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
-  by
-  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value
-  cases f₀ <;> cases f₁ <;> simp at Hsem_value
-  simp
 
 lemma logic_rel_expr.stepn :
   ∀ k i e₀ e₁ r₀ r₁ τ,
