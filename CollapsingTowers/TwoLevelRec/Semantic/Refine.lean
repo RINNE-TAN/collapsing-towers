@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.Semantic.Deterministic
+import CollapsingTowers.TwoLevelRec.Semantic.Confluence
 
 -- B⟦e₀⟧ ⇾ r
 -- ———————————————————————
@@ -75,6 +75,29 @@ lemma pure_stepn_indexed.refine :
       constructor; apply pure_stepn_indexed.multi
       apply Hstep₀; apply Hstep₁; apply Hstep₂
 
+lemma pure_stepn_indexed.refine.lam :
+  ∀ e arg v j,
+    lc (.lam e) →
+    value arg →
+    value v →
+    ((.app₁ (.lam e) arg) ⇾ ⟦j⟧ v) →
+    ∃ i,
+      i + 1 = j ∧
+      ((opening 0 arg e) ⇾ ⟦i⟧ v) :=
+  by
+  intros e arg v j Hlc HvalueArg Hvalue Hstep
+  have HstepHead : (.app₁ (.lam e) arg) ⇾ ⟦1⟧ (opening 0 arg e) :=
+    by
+    apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    constructor; apply Hlc; apply lc.value; apply HvalueArg
+    apply head.app₁; apply HvalueArg
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqv]; apply Hstepr
+
 lemma pure_stepn_indexed.refine.app₁ :
   ∀ f arg v j,
     value v →
@@ -86,11 +109,11 @@ lemma pure_stepn_indexed.refine.app₁ :
   by
   intros f arg v j Hvalue Hstep
   have Hlc := lc.under_pure_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
-  have ⟨i₀, k, fᵥ, HEqj, HvalueF, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue Hstep
-  have ⟨i₁, i₂, argᵥ, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueF) Hvalue Hstep
+  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue Hstep
+  have ⟨i₁, i₂, argᵥ, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueFun) Hvalue Hstep
   exists i₀, i₁, i₂, fᵥ, argᵥ
   constructor; omega
-  constructor; apply HvalueF
+  constructor; apply HvalueFun
   constructor; apply HvalueArg
   constructor; apply Hstep₀
   constructor; apply Hstep₁

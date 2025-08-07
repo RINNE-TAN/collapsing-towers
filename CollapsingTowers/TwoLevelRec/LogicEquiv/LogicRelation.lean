@@ -222,22 +222,3 @@ lemma logic_rel_env.multi_wf :
     . constructor; apply And.right
       apply logic_rel_value.wf
       apply Hsem_value; apply IH.right
-
-lemma logic_rel_expr.stepn :
-  ∀ k i e₀ e₁ r₀ r₁ τ,
-    logic_rel_expr (k - i) r₀ r₁ τ →
-    (e₀ ⇾ ⟦i⟧ r₀) → (e₁ ⇾* r₁) →
-    logic_rel_expr k e₀ e₁ τ :=
-  by
-  intros k i e₀ e₁ r₀ r₁ τ Hsem_expr Hstepe₀ Hstepe₁
-  simp only [logic_rel_expr] at *
-  intros j Hindexj v₀ Hvalue₀ Hstep₀
-  have ⟨jl, jr, v, HEqIndex, Hstepv₀, Hstepr₀⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep₀ Hstepe₀
-  have ⟨HEqv, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₀ Hstepv₀
-  rw [← HEqv] at Hstepr₀
-  rw [Hj] at HEqIndex
-  have ⟨v₁, Hstepr₁, Hsem_value⟩ := Hsem_expr jr (by omega) _ Hvalue₀ Hstepr₀
-  exists v₁
-  constructor; apply pure_stepn.trans; apply Hstepe₁; apply Hstepr₁
-  have HEqIndex : k - j = k - i - jr := by omega
-  rw [HEqIndex]; apply Hsem_value

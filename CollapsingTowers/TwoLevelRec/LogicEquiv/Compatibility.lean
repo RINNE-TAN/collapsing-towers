@@ -17,14 +17,14 @@ lemma compatibility.fvar :
     exists τ, 𝟙
   intros k γ₀ γ₁ HsemΓ
   simp only [logic_rel_expr]
-  intros j Hindex v₀ Hvalue₀ Hstep₀
+  intros z Hindexz v₀ Hvalue₀ Hstep₀
   exists multi_subst γ₁ (.fvar x)
   constructor
   . apply pure_stepn.refl
   . have Hsem_value := logic_rel_env.binds_logic_rel_value _ _ _ _ _ _ HsemΓ Hbinds
     have ⟨Hvalue₀, Hvalue₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value
-    have ⟨HEqv, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₀ Hstep₀
-    rw [← HEqv, Hj]; apply Hsem_value
+    have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₀ Hstep₀
+    rw [← HEqv, Hz]; apply Hsem_value
 
 -- Γ ⊧ n ≤𝑙𝑜𝑔 n : ℕ
 lemma compatibility.lit :
@@ -39,17 +39,17 @@ lemma compatibility.lit :
   . constructor
   intros k γ₀ γ₁ semΓ
   simp only [logic_rel_expr]
-  intros j Hindex v₀ Hvalue₀ Hstep₀
+  intros z Hindexz v₀ Hvalue₀ Hstep₀
   exists .lit n
   constructor
   . simp; apply pure_stepn.refl
   . simp at Hstep₀
-    have ⟨HEqv, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ (value.lit n) Hstep₀
-    simp [← HEqv, Hj]
+    have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ (value.lit n) Hstep₀
+    simp [← HEqv, Hz]
 
--- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≤𝑙𝑜𝑔 e₁⟦0 ↦ x⟧ : τ𝕓
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ𝕓
 -- ——————————————————————————————————————————
--- Γ ⊧ λ.e₀ ≤𝑙𝑜𝑔 λ.e₁ : τ𝕒 → τ𝕓
+-- Γ ⊧ λx.e₀ ≤𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
 lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     closed_at (.lam e₀) Γ.length →
@@ -57,78 +57,97 @@ lemma compatibility.lam :
     logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
     logic_rel_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
-  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ Hsem
-  have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hclosed₀ Hclosed₁ He
+  have ⟨Hwf₀, Hwf₁, He⟩ := He
   have Hlc₀ : lc (.lam e₀) := by apply (lc.under_opening _ _ _).mp; apply Hwf₀.left
   have Hlc₁ : lc (.lam e₁) := by apply (lc.under_opening _ _ _).mp; apply Hwf₁.left
   constructor; constructor
-  . apply Hlc₀
-  . apply Hclosed₀
+  apply Hlc₀; apply Hclosed₀
   constructor; constructor
-  . apply Hlc₁
-  . apply Hclosed₁
+  apply Hlc₁; apply Hclosed₁
   intros k γ₀ γ₁ HsemΓ
   have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
   have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
+  have Hlc₀ : lc (.lam (multi_subst γ₀ e₀)) :=
+    by apply lc.under_multi_subst; apply Hmulti_wf₀; apply Hlc₀
+  have Hlc₁ : lc (.lam (multi_subst γ₁ e₁)) :=
+    by apply lc.under_multi_subst; apply Hmulti_wf₁; apply Hlc₁
+  have Hclosed₀ : closed (.lam (multi_subst γ₀ e₀)) :=
+    by apply closed.under_multi_subst; apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀
+  have Hclosed₁ : closed (.lam (multi_subst γ₁ e₁)) :=
+    by apply closed.under_multi_subst; apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
   rw [logic_rel_expr]
-  intros j Hindexj lam₀ HvalueLam₀ Hstep₀
+  intros z Hindexz v₀ HvalueRes₀ Hstep₀
+  --
+  --
+  -- λx.γ₀(e₀) ⇾ ⟦z⟧ v₀
+  -- ——————————————————
+  -- z = 0
+  -- v₀ = λx.γ₀(e₀)
+  simp at Hstep₀
+  have ⟨HEqv₀, HEqz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ (value.lam _ Hlc₀) Hstep₀
   exists multi_subst γ₁ (.lam e₁)
   constructor; apply pure_stepn.refl
-  have Hvalue_lam₀ : value (multi_subst γ₀ (.lam e₀)) :=
-    by
-    simp; apply value.lam; rw [← multi_subst.lam]
-    apply lc.under_multi_subst
-    apply Hmulti_wf₀; apply Hlc₀
-  have ⟨HEq_lam₀, Hj⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue_lam₀ Hstep₀
-  simp only [← HEq_lam₀, Hj, multi_subst.lam, logic_rel_value]
+  simp only [← HEqv₀, HEqz, multi_subst.lam, logic_rel_value]
   constructor; constructor
-  . rw [← multi_subst.lam]
-    apply lc.under_multi_subst
-    apply Hmulti_wf₀; apply Hlc₀
-  . rw [← multi_subst.lam]
-    apply closed.under_multi_subst
-    apply Hmulti_wf₀; rw [HEq₀]; apply Hclosed₀
+  apply Hlc₀; apply Hclosed₀
   constructor; constructor
-  . rw [← multi_subst.lam]
-    apply lc.under_multi_subst
-    apply Hmulti_wf₁; apply Hlc₁
-  . rw [← multi_subst.lam]
-    apply closed.under_multi_subst
-    apply Hmulti_wf₁; rw [HEq₁]; apply Hclosed₁
-  intros j Hindexj argv₀ argv₁ Hsem_value_arg
+  apply Hlc₁; apply Hclosed₁
+  intros k Hindexk argv₀ argv₁ Hsem_value_arg
   have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value_arg
   have ⟨HwfArg₀, HwfArg₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value_arg
-  apply logic_rel_expr.stepn j 1; apply Hsem _ (argv₀ :: γ₀) (argv₁ :: γ₁)
-  apply logic_rel_env.cons; apply logic_rel_value.weakening; apply Hsem_value_arg; omega
-  apply logic_rel_env.weakening; apply HsemΓ; omega
-  . apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
-    rw [multi_subst, ← comm.multi_subst_subst, comm.multi_subst_opening]
+  rw [logic_rel_expr]
+  intros j Hindexj v₀ HvalueRes₀ Hstep₀
+  --
+  --
+  -- λx.γ₀(e₀) @ argv₀ ⇾ ⟦j⟧ v₀
+  -- ——————————————————————————————————
+  -- j = i + 1
+  -- ⟦x ↦ argv₀⟧γ₀(e₀) ⇾ ⟦i⟧ v₀
+  have ⟨i, HEqj, HstepRes₀⟩ := pure_stepn_indexed.refine.lam _ _ _ _ Hlc₀ HvalueArg₀ HvalueRes₀ Hstep₀
+  have HEqSubst₀ : opening 0 argv₀ (multi_subst γ₀ e₀) = multi_subst (argv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
+    by
+    rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ _ _ Hmulti_wf₀]
+    rw [comm.multi_subst_opening _ _ _ _ _ Hmulti_wf₀]
     rw [HEq₀, intros.subst]
+    apply closed.inc; apply Hclosed₀; omega
+    omega; omega; apply HwfArg₀.right
+  rw [HEqSubst₀] at HstepRes₀
+  --
+  --
+  -- ⟦x ↦ argv₀⟧γ₀(e₀) ⇾ ⟦i⟧ v₀
+  -- (⟦x ↦ argv₀⟧γ₀(e₀), ⟦x ↦ argv₁⟧γ₁(e₁)) ∈ 𝓔⟦τ𝕓⟧⟦k⟧
+  -- —————————————————————————————————————————————————
+  -- ⟦x ↦ argv₁⟧γ₁(e₁) ⇾* v₁
+  -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧⟦k - i⟧
+  have HsemΓ : logic_rel_env k (argv₀ :: γ₀) (argv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
+    by
+    apply logic_rel_env.cons; apply Hsem_value_arg
+    apply logic_rel_env.weakening; apply HsemΓ; omega
+  have Hsem_expr := He _ _ _ HsemΓ
+  rw [logic_rel_expr] at Hsem_expr
+  have ⟨v₁, HstepRes₁, Hsem_value⟩ := Hsem_expr i (by omega) _ HvalueRes₀ HstepRes₀
+  --
+  --
+  -- ⟦x ↦ argv₁⟧γ₁(e₁) ⇾* v₁
+  -- ————————————————————————
+  -- λx.γ₁(e₁) @ argv₁ ⇾* v₁
+  exists v₁
+  constructor
+  . have HEqSubst₁ : opening 0 argv₁ (multi_subst γ₁ e₁) = multi_subst (argv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
+      by
+      rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ _ _ Hmulti_wf₁]
+      rw [comm.multi_subst_opening _ _ _ _ _ Hmulti_wf₁]
+      rw [HEq₁, intros.subst]
+      apply closed.inc; apply Hclosed₁; omega
+      omega; omega; apply HwfArg₁.right
+    rw [← HEqSubst₁] at HstepRes₁
+    apply pure_stepn.multi _ _ _ _ HstepRes₁
     apply pure_step.pure id; apply ctx𝕄.hole
-    constructor
-    . rw [← multi_subst.lam]
-      apply lc.under_multi_subst
-      apply Hmulti_wf₀; apply Hlc₀
-    . apply lc.value; apply HvalueArg₀
-    apply head.app₁; apply HvalueArg₀
-    apply closed.inc; apply closed.under_multi_subst; apply Hmulti_wf₀
-    rw [HEq₀]; apply Hclosed₀; omega
-    omega; apply Hmulti_wf₀; omega
-    apply HwfArg₀.right; apply Hmulti_wf₀
-  . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
-    rw [multi_subst, ← comm.multi_subst_subst, comm.multi_subst_opening]
-    rw [HEq₁, intros.subst]
-    apply pure_step.pure id; apply ctx𝕄.hole
-    constructor
-    . rw [← multi_subst.lam]
-      apply lc.under_multi_subst
-      apply Hmulti_wf₁; apply Hlc₁
-    . apply lc.value; apply HvalueArg₁
+    constructor; apply Hlc₁; apply lc.value; apply HvalueArg₁
     apply head.app₁; apply HvalueArg₁
-    apply closed.inc; apply closed.under_multi_subst; apply Hmulti_wf₁
-    rw [HEq₁]; apply Hclosed₁; omega
-    omega; apply Hmulti_wf₁; omega
-    apply HwfArg₁.right; apply Hmulti_wf₁
+  . apply logic_rel_value.weakening
+    apply Hsem_value; omega
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
@@ -255,7 +274,7 @@ lemma compatibility.lets :
   rw [logic_rel_expr]
   intros j Hindex v₀ Hvalue₀ Hstep₀
   simp at Hstep₀
-  have ⟨i₀, i₁, bv₀, HEqj, HvalueB₀, HstepB₀, HstepHead₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ Hvalue₀ Hstep₀
+  have ⟨i₀, i₁, bv₀, HEqj, HvalueB₀, HstepB₀, HstepRes₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ Hvalue₀ Hstep₀
   have Hb := Hb _ _ _ HsemΓ
   rw [logic_rel_expr] at Hb
   have ⟨bv₁, HstepB₁, Hsem_valueB⟩ := Hb i₀ (by omega) _ HvalueB₀ HstepB₀
