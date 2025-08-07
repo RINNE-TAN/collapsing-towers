@@ -357,3 +357,32 @@ lemma compatibility.lets :
     apply head.lets; apply HvalueBind₁
   . apply logic_rel_value.weakening
     apply Hsem_value; omega
+
+lemma compatibility.fix₁.induction :
+  ∀ k f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_expr k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    logic_rel_expr k (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_expr
+  induction k
+  case zero =>
+    rw [logic_rel_expr]
+    intros j Hindexj; contradiction
+  case succ k IH =>
+    admit
+
+lemma compatibility.fix₁ :
+  ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_typing Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    logic_rel_typing Γ (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros Γ f₀ f₁ τ𝕒 τ𝕓 Hf
+  have ⟨Hwf₀, Hwf₁, Hf⟩ := Hf
+  constructor; constructor
+  apply Hwf₀.left; apply Hwf₀.right
+  constructor; constructor
+  apply Hwf₁.left; apply Hwf₁.right
+  intros k γ₀ γ₁ HsemΓ
+  simp only [multi_subst.fix₁]
+  apply compatibility.fix₁.induction
+  apply Hf; apply HsemΓ
