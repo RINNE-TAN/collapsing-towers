@@ -124,12 +124,23 @@ lemma pure_stepn_indexed.refine.lets :
     value v →
     ((.lets b e) ⇾ ⟦j⟧ v) →
     ∃ i₀ i₁ bᵥ,
-      i₀ + i₁ = j ∧
+      i₀ + 1 + i₁ = j ∧
       value bᵥ ∧
-      (b ⇾ ⟦i₀⟧ bᵥ) ∧ ((.lets bᵥ e) ⇾ ⟦i₁⟧ v) :=
+      (b ⇾ ⟦i₀⟧ bᵥ) ∧ ((opening 0 bᵥ e) ⇾ ⟦i₁⟧ v) :=
   by
   intros b e v j Hvalue Hstep
   have Hlc := lc.under_pure_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
-  apply pure_stepn_indexed.refine
-  apply ctx𝔹.lets; apply Hlc.right
-  apply Hvalue; apply Hstep
+  have ⟨i₀, k, bᵥ, HEqj, HvalueBind, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ (ctx𝔹.lets _ Hlc.right) Hvalue Hstep
+  have HstepHead : (.lets bᵥ e) ⇾ ⟦1⟧ (opening 0 bᵥ e) :=
+    by
+    apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    constructor; apply lc.value; apply HvalueBind; apply Hlc.right
+    apply head.lets; apply HvalueBind
+  have ⟨z, i₁, r, HEqIndex, Hstepl, Hstepr⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i₀, i₁, bᵥ
+  constructor; omega
+  constructor; apply HvalueBind
+  constructor; apply Hstep₀
+  rw [HEqv]; apply Hstepr
