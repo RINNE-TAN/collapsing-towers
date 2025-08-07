@@ -144,3 +144,33 @@ lemma pure_stepn_indexed.refine.lets :
   constructor; apply HvalueBind
   constructor; apply Hstep₀
   rw [HEqv]; apply Hstepr
+
+lemma pure_stepn_indexed.refine.fix₁ :
+  ∀ f v j,
+    value v →
+    ((.fix₁ f) ⇾ ⟦j⟧ v) →
+    ∃ i fᵥ,
+      i + 1 = j ∧
+      value fᵥ ∧
+      (f ⇾ ⟦i⟧ fᵥ) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))  :=
+  by
+  intros f v j Hvalue₀ Hstep
+  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := pure_stepn_indexed.refine _ _ _ _ ctx𝔹.fix₁ Hvalue₀ Hstep
+  have HstepHead : (.fix₁ fᵥ) ⇾ ⟦1⟧ .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
+    by
+    apply pure_stepn_indexed.multi _ _ _ _ _ (pure_stepn_indexed.refl _)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFun
+    apply head.fix₁; apply HvalueFun
+  have Hvalue₁ : value (.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))) :=
+    by
+    apply value.lam; simp; apply lc.inc
+    apply lc.value; apply HvalueFun; omega
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := pure_stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv₀, Hz₀⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₀ Hstepl
+  have ⟨HEqv₁, Hz₁⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₁ Hstepr
+  exists i₀, fᵥ
+  constructor; omega
+  constructor; apply HvalueFun
+  constructor; apply Hstep₀
+  rw [HEqv₀, HEqv₁]

@@ -360,17 +360,24 @@ lemma compatibility.lets :
 
 lemma compatibility.fix₁.induction :
   ∀ k f₀ f₁ τ𝕒 τ𝕓,
-    logic_rel_expr k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
-    logic_rel_expr k (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+    logic_rel_value k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    logic_rel_value k (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))) (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
-  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_expr
+  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value_fun
+  have ⟨HwfFun₀, HwfFun₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value_fun
   induction k
   case zero =>
+    rw [logic_rel_value]
+    constructor; constructor
+    . simp; apply lc.inc; apply HwfFun₀.left; omega
+    . simp; apply HwfFun₀.right
+    constructor; constructor
+    . simp; apply lc.inc; apply HwfFun₁.left; omega
+    . simp; apply HwfFun₁.right
+    intro z Hindexz argv₀ argv₁ Hsem_value_arg
     rw [logic_rel_expr]
-    intros j Hindexj; contradiction
+    intro j Hindexj; omega
   case succ k IH =>
-    rw [logic_rel_expr]
-    intros j Hindexj v₀ Hvalue₀ Hstep₀
     admit
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
@@ -388,6 +395,43 @@ lemma compatibility.fix₁ :
   constructor; constructor
   apply Hwf₁.left; apply Hwf₁.right
   intros k γ₀ γ₁ HsemΓ
-  simp only [multi_subst.fix₁]
-  apply compatibility.fix₁.induction
-  apply Hf; apply HsemΓ
+  simp only [multi_subst.fix₁, logic_rel_expr]
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- fix γ₀(f₀) ⇾ ⟦j⟧ v₀
+  -- ——————————————————————————
+  -- i₀ + 1 = j
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- v₀ = λx.fv₀ @ fix fv₀ @ x
+  have ⟨i₀, fv₀, HEqj, HvalueFun₀, HstepFun₀, HEqv₀⟩ := pure_stepn_indexed.refine.fix₁ _ _ _ Hvalue₀ Hstep₀
+  rw [HEqv₀]
+  --
+  --
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- (γ₀(f₀), γ₁(f₁)) ∈ 𝓔⟦τ𝕓⟧⟦k⟧
+  -- ——————————————————————————————
+  -- γ₁(f₁) ⇾* fv₁
+  -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕓⟧⟦k - i₀⟧
+  simp only [logic_rel_expr] at Hf
+  have ⟨fv₁, HstepFun₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFun₀ HstepFun₀
+  have ⟨HvalueFun₀, HvalueFun₁⟩ := logic_rel_value.syntactic_value _ _ _ _ Hsem_value_fun
+  have ⟨HwfFun₀, HwfFun₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value_fun
+  --
+  --
+  -- γ₁(f₁) ⇾* fv₁
+  -- ———————————————————————————————
+  -- fix γ₁(f₁) ⇾* λx.fv₁ @ fix fv₁ @ x
+  exists .lam (.app₁ (.app₁ fv₁ (.fix₁ fv₁)) (.bvar 0))
+  constructor
+  . apply pure_stepn.trans
+    -- left
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ ctx𝔹.fix₁ HstepFun₁
+    -- head
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFun₁
+    apply head.fix₁; apply HvalueFun₁
+  . apply compatibility.fix₁.induction
+    apply logic_rel_value.weakening
+    apply Hsem_value_fun; omega

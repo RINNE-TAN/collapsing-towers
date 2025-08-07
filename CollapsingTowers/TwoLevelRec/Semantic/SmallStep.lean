@@ -40,7 +40,7 @@ inductive pure_stepn_indexed : ℕ → Expr → Expr → Prop
   | refl : ∀ e, pure_stepn_indexed 0 e e
   | multi : ∀ k e₀ e₁ e₂, (e₀ ⇾ e₁) → pure_stepn_indexed k e₁ e₂ → pure_stepn_indexed (k + 1) e₀ e₂
 
-notation:max e₀ " ⇾ " "⟦" k "⟧" e₁  => pure_stepn_indexed k e₀ e₁
+notation:max e₀ " ⇾ " "⟦" k "⟧ " e₁  => pure_stepn_indexed k e₀ e₁
 
 lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → (e₀ ⇝ e₁) :=
   by
