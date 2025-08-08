@@ -60,6 +60,17 @@ lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → (e₀ ⇝* e�
     apply pure_step_impl_step; apply H
     apply IH
 
+lemma pure_stepn_impl_pure_stepn_indexed : ∀ e₀ e₁, (e₀ ⇾* e₁) → ∃ k, (e₀ ⇾ ⟦k⟧ e₁) :=
+  by
+  intros e₀ e₁ Hstepn
+  induction Hstepn
+  case refl => exists 0; apply pure_stepn_indexed.refl
+  case multi H _ IH =>
+    have ⟨k, IH⟩ := IH
+    exists k + 1
+    apply pure_stepn_indexed.multi
+    apply H; apply IH
+
 lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇾* e₁) → (e₁ ⇾* e₂) → (e₀ ⇾* e₂) :=
   by
   intros e₀ e₁ e₂ Hstep₀ Hstep₁

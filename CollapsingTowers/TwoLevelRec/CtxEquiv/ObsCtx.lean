@@ -116,10 +116,10 @@ lemma typing.congruence_under_ObsCtxℂ :
     apply IH; apply typing.congruence_under_ObsCtx𝔹
     apply Hτ; apply HB
 
--- e₁⇓ ≜ ∃ v, e ⇝* v
+-- e₁⇓ ≜ ∃ v, e ⇾* v
 @[simp]
 def termination (e : Expr) : Prop :=
-  ∃ v, value v ∧ e ⇝* v
+  ∃ v, value v ∧ e ⇾* v
 
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
 --   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
@@ -131,8 +131,8 @@ def ctx_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   typing Γ 𝟙 e₀ τ ∅ →
   typing Γ 𝟙 e₁ τ ∅ →
     ∀ C τ𝕔, ObsCtxℂ Γ τ C [] τ𝕔 →
-    termination C⟦e₀⟧ →
-    termination C⟦e₁⟧
+      termination C⟦e₀⟧ →
+      termination C⟦e₁⟧
 
 -- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊢ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
