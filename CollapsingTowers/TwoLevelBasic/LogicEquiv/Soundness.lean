@@ -12,7 +12,7 @@ lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
   intros Δ Γ τδ τγ B e₀ e₁ Hτ₀ Hτ₁ Hsem HB
   induction HB generalizing e₀ e₁
   case lam =>
-    apply compatibility_lam
+    apply compatibility.lam
     . simp; rw [← closed.under_closing]
       apply typing.closed_at_env _ _ _ _ _ Hτ₀
     . simp; rw [← closed.under_closing]
@@ -23,11 +23,11 @@ lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
       apply typing.regular; apply Hτ₁
       apply typing.regular; apply Hτ₀
   case appl₁ Harg =>
-    apply compatibility_app
+    apply compatibility.app
     . apply Hsem
     . apply typing.fundamental _ _ _ _ _ Harg
   case appr₁ Hf =>
-    apply compatibility_app
+    apply compatibility.app
     . apply typing.fundamental _ _ _ _ _ Hf
     . apply Hsem
   case letsl Hclosed He =>

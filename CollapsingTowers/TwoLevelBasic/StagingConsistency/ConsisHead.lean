@@ -8,7 +8,7 @@ theorem consistency.head :
     logic_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros Γ e₀ e₁ τ φ Hhead Hτ₀ Hτ₁
-  cases Hhead <;> try apply typing.erase_fundamental; apply Hτ₀
+  cases Hhead <;> try apply typing.erase.fundamental; apply Hτ₀
   case lets Hvalue =>
     constructor; constructor
     . rw [lc, ← lc.under_erase]; apply typing.regular; apply Hτ₀
@@ -21,7 +21,7 @@ theorem consistency.head :
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
     apply logic_equiv_expr.stepn
-    apply (typing.erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
+    apply (typing.erase.fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [comm.erase_opening_subst, comm.multi_subst_opening_value _ _ _ _ Hmulti_wf₀]
       apply pure_step.pure id; apply ctx𝕄.hole
@@ -71,7 +71,7 @@ theorem consistency.head :
     intros γ₀ γ₁ HsemΓ
     have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
     apply logic_equiv_expr.stepn
-    apply (typing.erase_fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
+    apply (typing.erase.fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [comm.erase_opening_subst, comm.multi_subst_opening_value _ _ _ _ Hmulti_wf₀]
       apply pure_step.pure id; apply ctx𝕄.hole
@@ -87,4 +87,4 @@ theorem consistency.head :
   case lift_lam e =>
     have HEq : ‖.lam𝕔 (maping𝕔 0 e)‖ = ‖.lift (.lam e)‖ :=
       by simp [identity.erase_maping𝕔]
-    rw [HEq]; apply typing.erase_fundamental; apply Hτ₀
+    rw [HEq]; apply typing.erase.fundamental; apply Hτ₀

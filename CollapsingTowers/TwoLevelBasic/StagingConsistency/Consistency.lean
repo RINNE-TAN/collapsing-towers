@@ -83,7 +83,7 @@ theorem consistency.stepn :
   by
   intros e₀ e₁ τ φ Hstepn Hτ₀
   induction Hstepn generalizing φ
-  case refl => apply typing_reification.erase_fundamental _ _ _ _ Hτ₀
+  case refl => apply typing_reification.erase.fundamental _ _ _ _ Hτ₀
   case multi Hstep Hstepn IH =>
     have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
     apply logic_equiv_typing.trans

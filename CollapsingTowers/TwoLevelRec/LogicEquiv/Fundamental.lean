@@ -1,5 +1,5 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Compatibility
-import CollapsingTowers.TwoLevelBasic.Erasure.Defs
+import CollapsingTowers.TwoLevelRec.LogicEquiv.Compatibility
+import CollapsingTowers.TwoLevelRec.Erasure.Defs
 
 -- Γ ⊢ e : τ
 -- —————————————————————
@@ -7,62 +7,51 @@ import CollapsingTowers.TwoLevelBasic.Erasure.Defs
 theorem typing.erase.fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    logic_rel_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-          logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
+          logic_rel_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
-          logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
-  case fvar =>
-    intros _ _ _ _ Hbinds _
+          logic_rel_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
+  <;> intros
+  case fvar Hbinds _ =>
     apply compatibility.fvar
     apply env.erase.binds; apply Hbinds
-  case lam =>
-    intros _ _ _ _ _ _ H _ Hclose IH
+  case lam H _ Hclose IH =>
     apply compatibility.lam
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     rw [← env.erase.length, ← comm.erase_opening]
     apply IH
-  case lift_lam =>
-    intros _ _ _ _ _ _ _ IH
+  case lift_lam IH =>
     apply IH
-  case app₁ =>
-    intros _ _ _ _ _ _ _ _ _ Hf Harg IHf IHarg
-    apply compatibility.app
+  case app₁ IHf IHarg =>
+    apply compatibility.app₁
     apply IHf; apply IHarg
-  case app₂ =>
-    intros _ _ _ _ _ _ _ _ _ IHf IHarg
-    apply compatibility.app
+  case app₂ IHf IHarg =>
+    apply compatibility.app₁
     apply IHf; apply IHarg
   case lit =>
-    intros _ _ n
     apply compatibility.lit
-  case lift_lit =>
-    intros _ _ _ _ IH
+  case lift_lit IH =>
     apply IH
-  case code_fragment =>
-    intros _ x _ Hbinds _
+  case code_fragment x _ Hbinds _ =>
     apply compatibility.fvar; simp
     apply env.erase.binds; apply Hbinds
-  case code_rep =>
-    intros _ _ _ _ IH
+  case code_rep IH =>
     apply IH
-  case reflect =>
-    intros _ _ _ _ IH
+  case reflect IH =>
     apply IH
-  case lam𝕔 =>
-    intros _ _ _ _ _ H _ Hclose IH
+  case lam𝕔 Hclose IH =>
     apply compatibility.lam
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     rw [← env.erase.length, ← comm.erase_opening]
     apply IH
-  case lets =>
-    intros _ _ _ _ _ _ _ _ Hb He _ Hclose IHb IHe
+  case lets Hb He _ Hclose IHb IHe =>
     apply compatibility.lets
     constructor
     . simp [← env.erase.length, ← closed.under_erase]; apply typing.closed_at_env; apply Hb
@@ -73,8 +62,7 @@ theorem typing.erase.fundamental :
     apply IHb
     rw [← env.erase.length, ← comm.erase_opening]
     apply IHe
-  case lets𝕔 =>
-    intros _ _ _ _ _ _ Hb He _ Hclose IHb IHe
+  case lets𝕔 Hb He _ Hclose IHb IHe =>
     apply compatibility.lets
     constructor
     . simp [← env.erase.length, ← closed.under_erase]; apply typing.closed_at_env; apply Hb
@@ -85,21 +73,24 @@ theorem typing.erase.fundamental :
     apply IHb
     rw [← env.erase.length, ← comm.erase_opening]
     apply IHe
-  case run =>
-    intros _ _ _ _ _ _ IH
+  case fix₁ IH =>
+    apply compatibility.fix₁
     apply IH
-  case pure =>
-    intros _ _ _ _ IH
+  case fix₂ IH =>
+    apply compatibility.fix₁
     apply IH
-  case reify =>
-    intros _ _ _ _ _ IH
+  case run IH =>
+    apply IH
+  case pure IH =>
+    apply IH
+  case reify IH =>
     apply IH
   apply Hτ
 
 theorem typing_reification.erase.fundamental :
   ∀ Γ e τ φ,
     typing_reification Γ e τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    logic_rel_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ e τ φ Hτ
   cases Hτ
@@ -110,7 +101,7 @@ theorem typing_reification.erase.fundamental :
 theorem typing.fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing ‖Γ‖𝛾 𝕊 ‖e‖ ‖τ‖𝜏 φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    logic_rel_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   rw [← identity.env.erase_erase, ← identity.erase_erase, ← identity.ty.erase_erase]

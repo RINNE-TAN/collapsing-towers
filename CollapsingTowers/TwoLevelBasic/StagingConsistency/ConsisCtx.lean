@@ -20,26 +20,26 @@ lemma consistency.under_ctx𝔹 :
   case appl₁ =>
     cases Hτ
     case app₁ τ𝕒 _ _ _ Harg HX =>
-      apply compatibility_app
+      apply compatibility.app
       apply IH (.arrow τ𝕒 τ _); apply HX
-      apply typing.erase_fundamental; apply Harg
+      apply typing.erase.fundamental; apply Harg
   case appr₁ =>
     cases Hτ
     case app₁ τ𝕒 _ _ _ HX Hf =>
-      apply compatibility_app
-      apply typing.erase_fundamental _ _ _ (.arrow τ𝕒 τ _); apply Hf
+      apply compatibility.app
+      apply typing.erase.fundamental _ _ _ (.arrow τ𝕒 τ _); apply Hf
       apply IH; apply HX
   case appl₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 _ _ HX Harg =>
-      apply compatibility_app
+      apply compatibility.app
       apply IH (.fragment (.arrow τ𝕒 τ𝕓 _)); apply HX
-      apply typing.erase_fundamental _ _ _ (.fragment τ𝕒); apply Harg
+      apply typing.erase.fundamental _ _ _ (.fragment τ𝕒); apply Harg
   case appr₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 _ _ Hf HX =>
-      apply compatibility_app
-      apply typing.erase_fundamental _ _ _ (.fragment (.arrow τ𝕒 τ𝕓 _)); apply Hf
+      apply compatibility.app
+      apply typing.erase.fundamental _ _ _ (.fragment (.arrow τ𝕒 τ𝕓 _)); apply Hf
       apply IH (.fragment τ𝕒); apply HX
   case lift =>
     cases Hτ
@@ -60,7 +60,7 @@ lemma consistency.under_ctx𝔹 :
       . apply Hwf₁.right
       . rw [← env.erase.length, ← closed.under_erase]; apply Hclose
       apply Hsem
-      rw [← env.erase, ← comm.erase_opening]; apply typing.erase_fundamental
+      rw [← env.erase, ← comm.erase_opening]; apply typing.erase.fundamental
       rw [← env.erase.length]; apply He
 
 -- Γ ⊢ e₀ : τ →
@@ -91,7 +91,7 @@ lemma consistency.under_ctxℝ :
         rw [← List.singleton_append, identity.opening_closing _ _ _ Hlc] at Hτ
         have Hsem := IH _ _ _ (by simp) Hτ
         have ⟨Hwf₀, Hwf₁, _⟩ := Hsem
-        apply compatibility_lam
+        apply compatibility.lam
         . simp [← env.erase.length, ← closed.under_erase]; apply Hclose
         . simp [← env.erase.length, ← closed.under_erase, ← closed.under_closing]
           rw [← env.erase.length] at Hwf₁
@@ -119,7 +119,7 @@ lemma consistency.under_ctxℝ :
         . simp [← env.erase.length, ← closed.under_erase, ← closed.under_closing]
           rw [← env.erase.length] at Hwf₁
           rw [closed.under_erase]; apply Hwf₁.right
-        apply typing.erase_fundamental; apply Hτb
+        apply typing.erase.fundamental; apply Hτb
         rw [← comm.erase_opening, ← comm.erase_opening]
         rw [← env.erase.length, identity.opening_closing, identity.opening_closing]
         apply Hsem
@@ -153,7 +153,7 @@ lemma consistency.under_ctx𝔼 :
   induction HE generalizing τ φ
   case hole =>
     exists τ
-    constructor; apply typing.erase_fundamental; apply Hτ
+    constructor; apply typing.erase.fundamental; apply Hτ
     apply compatibility.fvar
     apply env.erase.binds; simp; rfl
   case cons𝔹 B E HB HE IH =>
@@ -164,17 +164,17 @@ lemma consistency.under_ctx𝔼 :
         have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
         exists τ𝕖
         constructor; apply Hsem𝕖
-        apply compatibility_app
+        apply compatibility.app
         apply HsemX
-        apply typing.erase_fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Harg)
+        apply typing.erase.fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Harg)
     case appr₁ =>
       cases Hτ
       case app₁ HX Hf =>
         have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
         exists τ𝕖
         constructor; apply Hsem𝕖
-        apply compatibility_app
-        apply typing.erase_fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Hf)
+        apply compatibility.app
+        apply typing.erase.fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Hf)
         apply HsemX
     case appl₂ =>
       cases Hτ
@@ -182,17 +182,17 @@ lemma consistency.under_ctx𝔼 :
         have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
         exists τ𝕖
         constructor; apply Hsem𝕖
-        apply compatibility_app
+        apply compatibility.app
         apply HsemX
-        apply typing.erase_fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Harg)
+        apply typing.erase.fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Harg)
     case appr₂ =>
       cases Hτ
       case app₂ Hf HX =>
         have ⟨τ𝕖, Hsem𝕖, HsemX⟩ := IH _ _ HX
         exists τ𝕖
         constructor; apply Hsem𝕖
-        apply compatibility_app
-        apply typing.erase_fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Hf)
+        apply compatibility.app
+        apply typing.erase.fundamental _ _ _ _ _ (typing.weakening.singleton _ _ _ _ _ _ _ Hf)
         apply HsemX
     case lift =>
       cases Hτ
@@ -221,7 +221,7 @@ lemma consistency.under_ctx𝔼 :
             apply closed.inc; apply Hclose; simp
         . apply HsemX
         . rw [← env.erase, ← comm.erase_opening]
-          apply typing.erase_fundamental
+          apply typing.erase.fundamental
           rw [← List.singleton_append, List.append_cons, ← env.erase.length]
           have HEq : ({0 ↦ ((τ𝕖, 𝟙) :: Γ).length} e) = shiftl_at Γ.length [(τ𝕖, 𝟙)].length ({0 ↦ Γ.length} e) :=
             by

@@ -24,7 +24,7 @@ lemma compatibility.fvar :
   apply HsemΓ; apply Hbinds
 
 -- Γ ⊧ n ≈ n : nat
-lemma compatibility_lit :
+lemma compatibility.lit :
   ∀ Γ n, logic_equiv_typing Γ (.lit n) (.lit n) .nat :=
   by
   intros _ n
@@ -42,7 +42,7 @@ lemma compatibility_lit :
 -- x ↦ τ𝕒, Γ ⊧ e₀⟦0 ↦ x⟧ ≈ e₁⟦0 ↦ x⟧ : τ𝕓
 -- ———————————————————————————————————————
 -- Γ ⊧ λ.e₀ ≈ λ.e₁ : τ𝕒 → τ𝕓
-lemma compatibility_lam :
+lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     closed_at (.lam e₀) Γ.length →
     closed_at (.lam e₁) Γ.length →
@@ -91,7 +91,7 @@ lemma compatibility_lam :
 -- Γ ⊧ arg₀ ≈ arg₁ : τ𝕒
 -- ——————————————————————————————
 -- Γ ⊧ f₀ @ arg₀ ≈ f₁ @ arg₁ : τ𝕓
-lemma compatibility_app :
+lemma compatibility.app :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
     logic_equiv_typing Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
     logic_equiv_typing Γ arg₀ arg₁ τ𝕒 →
