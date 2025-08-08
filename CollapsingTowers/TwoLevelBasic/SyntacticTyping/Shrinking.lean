@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Typing
 
-lemma typing.shrinking_strengthened :
+lemma typing.shrinking.strengthened :
   ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
     Γ = Ψ ++ Φ :: Δ →
@@ -155,7 +155,7 @@ theorem typing.shrinking :
     typing Γ 𝕊 e τ φ :=
   by
   intros Γ Φ 𝕊 e τ φ Hτ Hclose
-  have H := typing.shrinking_strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
+  have H := typing.shrinking.strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
   rw [identity.shiftr] at H
   apply H; apply Hτ; rfl
   apply closed_impl_fv_not_in; apply Hclose; omega

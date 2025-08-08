@@ -2,7 +2,7 @@ import Mathlib.Tactic.ApplyAt
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Weakening
 
-lemma preservation.maping_strengthened :
+lemma preservation.maping.strengthened :
   ∀ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 φ,
     typing (Δ ++ (τ𝕔, 𝟙) :: Φ) 𝟙 e τ𝕓 φ →
     typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ∅ →
@@ -176,4 +176,4 @@ theorem preservation.maping :
     typing ((τ𝕒, 𝕊𝕒) :: Γ) 𝟙 (subst Γ.length v e) τ𝕓 φ := by
   intros Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 φ
   rw [← List.nil_append ((τ𝕔, 𝟙) :: Γ), ← List.nil_append ((τ𝕒, 𝕊𝕒) :: Γ)]
-  apply preservation.maping_strengthened
+  apply preservation.maping.strengthened

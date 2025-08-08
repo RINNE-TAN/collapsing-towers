@@ -3,7 +3,7 @@ import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvSubst
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvMaping
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking
 
-lemma typing.escape_strengthened :
+lemma typing.escape.strengthened :
   ∀ Γ e τ,
     typing Γ 𝟚 e τ ∅ →
     typing (escape Γ) 𝟙 e τ ∅ :=
@@ -54,7 +54,7 @@ lemma typing.escape :
   by
   intros Γ e τ Hclose Hτ
   rw [← List.append_nil Γ]; apply typing.weakening
-  rw [escape.nil]; apply typing.escape_strengthened
+  rw [escape.nil]; apply typing.escape.strengthened
   induction Γ with
   | nil => apply Hτ
   | cons _ _ IH =>
