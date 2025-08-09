@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.Semantic.SmallStep
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.SmallStep
 @[pp_using_anonymous_constructor]
 structure HeadStepable (e : Expr) where
   mk ::

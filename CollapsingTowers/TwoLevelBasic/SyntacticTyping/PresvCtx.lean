@@ -1,6 +1,6 @@
 import Mathlib.Tactic.ApplyAt
 import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Weakening
-import CollapsingTowers.TwoLevelBasic.Semantic.Defs
+import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Defs
 
 lemma preservation.under_ctx𝔹 :
   ∀ Γ B e₀ e₁ τ φ,

@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.Semantic.SmallStep
+import CollapsingTowers.TwoLevelBasic.OperationalSemantics.SmallStep
 
 lemma pure_step.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀ ⇾ e₁) → (B⟦e₀⟧ ⇾ B⟦e₁⟧) :=
   by

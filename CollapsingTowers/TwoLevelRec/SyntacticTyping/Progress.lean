@@ -1,5 +1,5 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
-import CollapsingTowers.TwoLevelRec.Semantic.Defs
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 
 @[simp]
 def dyn_env (Γ : TEnv) : Prop :=

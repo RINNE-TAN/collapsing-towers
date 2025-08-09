@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelBasic.Semantic.Deterministic
+import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Deterministic
 
 lemma value_ctx𝕄_impl_ctx_is_hole : ∀ lvl M e, ctx𝕄 lvl M → value M⟦e⟧ → M = id :=
   by

@@ -1,5 +1,5 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvCtx
-import CollapsingTowers.TwoLevelRec.Semantic.Defs
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 
 lemma typing.pure_under_ctx𝔹 :
   ∀ Γ B e τ φ,

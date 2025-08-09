@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.Semantic.Defs
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvSubst
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.PresvMaping
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking

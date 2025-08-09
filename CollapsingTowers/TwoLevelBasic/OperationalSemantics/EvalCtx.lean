@@ -1,5 +1,5 @@
 import CollapsingTowers.TwoLevelBasic.Syntax.Defs
-import CollapsingTowers.TwoLevelBasic.Semantic.Value
+import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Value
 
 abbrev Ctx :=
   Expr → Expr

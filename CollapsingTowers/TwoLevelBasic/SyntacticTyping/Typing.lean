@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelBasic.Syntax.Defs
 import CollapsingTowers.TwoLevelBasic.Utils.Defs
-import CollapsingTowers.TwoLevelBasic.Semantic.Defs
+import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Defs
 @[simp]
 def wbt : Stage → Ty → Prop
   | 𝟙, .nat => true

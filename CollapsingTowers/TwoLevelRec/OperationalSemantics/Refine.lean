@@ -1,5 +1,5 @@
-import CollapsingTowers.TwoLevelRec.Semantic.Confluence
-import CollapsingTowers.TwoLevelRec.Semantic.Congruence
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Confluence
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Congruence
 
 -- B⟦e₀⟧ ⇾ r
 -- ———————————————————————
