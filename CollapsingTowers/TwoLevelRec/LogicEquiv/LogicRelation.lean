@@ -1,14 +1,22 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 mutual
--- 𝓥⟦ℕ⟧ₖ ≜ {(n, n) | n ∈ ℕ}
--- 𝓥⟦τ𝕒 → τ𝕓⟧ₖ ≜ {(λ.e₀, λ.e₁) | ∀ j ≤ k, (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧ⱼ. (λ.e₀ @ v₀, λ.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧ⱼ}
 @[simp]
 def logic_rel_value : ℕ → Expr → Expr → Ty → Prop
+  --
+  --
+  -- 𝓥⟦ℕ⟧ₖ ≜ {(n, n) | n ∈ ℕ}
   | _, .lit n₀, .lit n₁, .nat => n₀ = n₁
+  --
+  --
+  -- 𝓥⟦τ𝕒 → τ𝕓⟧ₖ ≜ {(λx.e₀, λx.e₁) |
+  --   ∅ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
+  --   ∅ ⊢ λx.e₁ : τ𝕒 → τ𝕓 ∧
+  --   ∀ j ≤ k, (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧ⱼ. (λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧ⱼ
+  -- }
   | k, .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
-    wf (.lam e₀) ∧
-    wf (.lam e₁) ∧
+    typing [] 𝟙 (.lam e₀) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
+    typing [] 𝟙 (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
     ∀ j, j ≤ k →
       ∀ v₀ v₁,
         logic_rel_value j v₀ v₁ τ𝕒 →
@@ -37,11 +45,14 @@ inductive logic_rel_env : ℕ → Subst → Subst → TEnv → Prop where
       logic_rel_env k γ₀ γ₁ Γ →
       logic_rel_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟙) :: Γ)
 
--- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜ ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜
+--   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
+--   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
+--   ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
 @[simp]
 def logic_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
-  wf_at e₀ Γ.length ∧
-  wf_at e₁ Γ.length ∧
+  typing Γ 𝟙 e₀ τ ∅ ∧
+  typing Γ 𝟙 e₁ τ ∅ ∧
   ∀ k γ₀ γ₁,
     logic_rel_env k γ₀ γ₁ Γ →
     logic_rel_expr k (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
@@ -71,10 +82,10 @@ lemma logic_rel_value.antimono :
     case reify => simp at Hsem_value
     case pure =>
       simp only [logic_rel_value] at Hsem_value
-      have ⟨Hwf₀, Hwf₁, Hsem_value_lam⟩ := Hsem_value
+      have ⟨Hτ₀, Hτ₁, Hsem_value_lam⟩ := Hsem_value
       simp only [logic_rel_value]
-      constructor; apply Hwf₀
-      constructor; apply Hwf₁
+      constructor; apply Hτ₀
+      constructor; apply Hτ₁
       intros j HLe; apply Hsem_value_lam; omega
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
@@ -109,7 +120,7 @@ lemma logic_rel_env.antimono :
     apply logic_rel_value.antimono; apply Hsem_value; apply HLe
     apply IH
 
-lemma logic_rel_value.syntactic_value :
+lemma logic_rel_value.syntactic.value :
   ∀ k v₀ v₁ τ,
     logic_rel_value k v₀ v₁ τ →
     value v₀ ∧ value v₁ :=
@@ -123,38 +134,27 @@ lemma logic_rel_value.syntactic_value :
     apply value.lit
   case arrow φ =>
     cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
-    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
+    have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
     constructor
-    apply value.lam; apply Hwf₀.left
-    apply value.lam; apply Hwf₁.left
+    apply value.lam; apply typing.regular; apply Hτ₀
+    apply value.lam; apply typing.regular; apply Hτ₁
   all_goals simp at Hsem_value
 
-lemma logic_rel_value.wf :
+lemma logic_rel_value.syntactic.typing :
   ∀ k v₀ v₁ τ,
     logic_rel_value k v₀ v₁ τ →
-    wf v₀ ∧ wf v₁ :=
+    typing [] 𝟙 v₀ τ ∅ ∧ typing [] 𝟙 v₁ τ ∅ :=
   by
   intros k v₀ v₁ τ Hsem_value
   cases τ
   case nat =>
     cases v₀ <;> cases v₁ <;> simp at Hsem_value
-    repeat constructor
+    constructor; apply typing.lit; apply typing.lit
   case arrow φ =>
     cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
-    have ⟨Hwf₀, Hwf₁, _⟩ := Hsem_value
-    constructor
-    apply Hwf₀; apply Hwf₁
+    have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
+    constructor; apply Hτ₀; apply Hτ₁
   all_goals simp at Hsem_value
-
-lemma logic_rel_value.arrow_ty_iff_lam :
-  ∀ k f₀ f₁ τ𝕒 τ𝕓,
-    logic_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
-    ∃ e₀ e₁,
-      f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
-  by
-  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value
-  cases f₀ <;> cases f₁ <;> simp at Hsem_value
-  simp
 
 lemma logic_rel_value.apply :
   ∀ k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓,
@@ -163,11 +163,8 @@ lemma logic_rel_value.apply :
     logic_rel_expr k (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
   by
   intros k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓 Hsem_value_fun Hsem_value_arg
-  have ⟨e₀, e₁, HEq₀, HEq₁⟩ := logic_rel_value.arrow_ty_iff_lam _ f₀ f₁ _ _ Hsem_value_fun
-  rw [HEq₀, HEq₁]
-  rw [HEq₀, HEq₁] at Hsem_value_fun
-  simp only [logic_rel_value] at Hsem_value_fun
-  have ⟨Hwf₀, Hwf₁, Hsem_value_fun⟩ := Hsem_value_fun
+  cases f₀ <;> cases f₁ <;> simp only [logic_rel_value] at Hsem_value_fun <;> try contradiction
+  have ⟨_, _, Hsem_value_fun⟩ := Hsem_value_fun
   apply Hsem_value_fun; rfl; apply Hsem_value_arg
 
 lemma logic_rel_env.length :
@@ -194,14 +191,16 @@ lemma logic_rel_env.binds_logic_rel_value :
   induction HsemΓ
   case nil => nomatch Hbinds
   case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
-    have ⟨Hwf₀, Hwf₁⟩ := logic_rel_value.wf _ _ _ _ Hsem_value
+    have ⟨Hτ₀, Hτ₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value
     have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
     simp [HEq₀, HEq₁]
     by_cases HEqx : Γ.length = x
     . simp [if_pos HEqx]
       simp [if_pos HEqx] at Hbinds
       rw [← Hbinds, identity.multi_subst, identity.multi_subst]
-      apply Hsem_value; apply Hwf₁.right; apply Hwf₀.right
+      apply Hsem_value
+      apply typing.closed_at_env []; apply Hτ₁
+      apply typing.closed_at_env []; apply Hτ₀
     . simp [if_neg HEqx]
       simp [if_neg HEqx] at Hbinds
       apply IH; apply Hbinds
@@ -215,10 +214,13 @@ lemma logic_rel_env.multi_wf :
   induction H
   case nil => repeat constructor
   case cons Hsem_value _ IH =>
+    have ⟨Hτ₀, Hτ₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value
     constructor
-    . constructor; apply And.left
-      apply logic_rel_value.wf
-      apply Hsem_value; apply IH.left
-    . constructor; apply And.right
-      apply logic_rel_value.wf
-      apply Hsem_value; apply IH.right
+    . constructor; constructor
+      . apply typing.regular; apply Hτ₀
+      . apply typing.closed_at_env []; apply Hτ₀
+      apply IH.left
+    . constructor; constructor
+      . apply typing.regular; apply Hτ₁
+      . apply typing.closed_at_env []; apply Hτ₁
+      apply IH.right
