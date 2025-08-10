@@ -230,3 +230,110 @@ lemma compatibility.app₁ :
     apply Hstep₁
   . apply logic_rel_value.antimono
     apply Hsem_value; omega
+
+-- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ𝕓
+-- —————————————————————————————————————————————————
+-- Γ ⊧ lets x = b₀ in e₀ ≤𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
+lemma compatibility.lets :
+  ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
+    wbt 𝟙 τ𝕒 →
+    closed_at e₀ Γ.length →
+    closed_at e₁ Γ.length →
+    logic_rel_typing Γ b₀ b₁ τ𝕒 →
+    logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    logic_rel_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
+  by
+  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ Hb He
+  have ⟨Hτb₀, Hτb₁, Hb⟩ := Hb
+  have ⟨Hτe₀, Hτe₁, He⟩ := He
+  have Hτ₀ : typing Γ 𝟙 (.lets b₀ e₀) τ𝕓 ∅ :=
+    by
+    rw [← union_pure_left ∅]; apply typing.lets
+    apply Hτb₀; apply Hτe₀; apply Hwbt; apply Hclosed₀
+  have Hτ₁ : typing Γ 𝟙 (.lets b₁ e₁) τ𝕓 ∅ :=
+    by
+    rw [← union_pure_left ∅]; apply typing.lets
+    apply Hτb₁; apply Hτe₁; apply Hwbt; apply Hclosed₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
+  have ⟨Hτ₀, Hτ₁⟩ := logic_rel_env.subst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ Hτ₀
+  have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ Hτ₁
+  simp at Hτ₀ Hτ₁ Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
+  rw [logic_rel_expr]
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- lets x = γ₀(b₀) in γ₀(e₀) ⇾ ⟦j⟧ v₀
+  -- ——————————————————————————————————
+  -- i₀ + 1 + i₁ = j
+  -- γ₀(b₀) ⇾ ⟦i₀⟧ bv₀
+  -- (x ↦ bv₀, γ₀)(e₀) ⇾ ⟦i₁⟧ v₀
+  simp at Hstep₀
+  have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, Hstep₀⟩ := pure_stepn_indexed.refine.lets _ _ _ _ Hvalue₀ Hstep₀
+  --
+  --
+  -- γ₀(b₀) ⇾ ⟦i₀⟧ bv₀
+  -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒 → τ𝕓
+  -- ———————————————————————————————
+  -- γ₁(b₁) ⇾* bv₁
+  -- (bv₀, bv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
+  simp only [logic_rel_expr] at Hb
+  have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := Hb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
+  have ⟨HvalueBind₀, HvalueBind₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_bind
+  have ⟨HτBind₀, HτBind₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_bind
+  have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
+  have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
+  --
+  --
+  -- (x ↦ bv₀, γ₀)(e₀) ⇾ ⟦i₁⟧ v₀
+  -- ((x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧{k - i₀}
+  -- ———————————————————————————————————————————————————————
+  -- (x ↦ bv₁, γ₁)(e₁) ⇾* v₁
+  -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{k - i₀ - i₁}
+  have HEqSubst₀ : opening 0 bv₀ (multi_subst γ₀ e₀) = multi_subst (bv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
+    by
+    rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ _ _ Hmulti_wf₀]
+    rw [comm.multi_subst_opening _ _ _ _ _ Hmulti_wf₀]
+    rw [HEq₀, intros.subst]
+    apply closed.inc; apply Hclosed₀.right; omega
+    omega; omega; apply HclosedBind₀
+  rw [HEqSubst₀] at Hstep₀
+  have HsemΓ : logic_rel_env (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
+    by
+    apply logic_rel_env.cons; apply Hsem_value_bind
+    apply logic_rel_env.antimono; apply HsemΓ; omega
+  have Hsem_expr := He _ _ _ HsemΓ
+  rw [logic_rel_expr] at Hsem_expr
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ Hvalue₀ Hstep₀
+  --
+  --
+  -- γ₁(b₁) ⇾* bv₁
+  -- (x ↦ bv₁, γ₁)(e₁) ⇾* v₁
+  -- ———————————————————————————————
+  -- lets x = γ₁(b₁) in γ₁(e₁) ⇾* v₁
+  exists v₁
+  constructor
+  . simp
+    -- left
+    apply pure_stepn.trans
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ Hlc₁.right) HstepBind₁
+    -- head
+    have HEqSubst₁ : opening 0 bv₁ (multi_subst γ₁ e₁) = multi_subst (bv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
+      by
+      rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ _ _ Hmulti_wf₁]
+      rw [comm.multi_subst_opening _ _ _ _ _ Hmulti_wf₁]
+      rw [HEq₁, intros.subst]
+      apply closed.inc; apply Hclosed₁.right; omega
+      omega; omega; apply HclosedBind₁
+    rw [← HEqSubst₁] at Hstep₁
+    apply pure_stepn.multi _ _ _ _ Hstep₁
+    apply pure_step.pure id; apply ctx𝕄.hole
+    constructor; apply HlcBind₁; apply Hlc₁.right
+    apply head.lets; apply HvalueBind₁
+  . apply logic_rel_value.antimono
+    apply Hsem_value; omega
