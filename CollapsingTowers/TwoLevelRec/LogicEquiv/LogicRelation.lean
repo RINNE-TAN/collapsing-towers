@@ -210,17 +210,35 @@ lemma logic_rel_env.multi_wf :
     logic_rel_env k γ₀ γ₁ Γ →
     multi_wf γ₀ ∧ multi_wf γ₁ :=
   by
-  intros k γ₀ γ₁ Γ H
-  induction H
+  intros k γ₀ γ₁ Γ HsemΓ
+  induction HsemΓ
   case nil => repeat constructor
   case cons Hsem_value _ IH =>
     have ⟨Hτ₀, Hτ₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value
     constructor
-    . constructor; constructor
-      . apply typing.regular; apply Hτ₀
-      . apply typing.closed_at_env []; apply Hτ₀
+    . constructor
+      apply typing.wf []; apply Hτ₀
       apply IH.left
-    . constructor; constructor
-      . apply typing.regular; apply Hτ₁
-      . apply typing.closed_at_env []; apply Hτ₁
+    . constructor
+      apply typing.wf []; apply Hτ₁
       apply IH.right
+
+lemma logic_rel_env.subst.typing :
+  ∀ k γ₀ γ₁ e₀ e₁ Γ τ,
+    typing Γ 𝟙 e₀ τ ∅ →
+    typing Γ 𝟙 e₁ τ ∅ →
+    logic_rel_env k γ₀ γ₁ Γ →
+    typing [] 𝟙 (multi_subst γ₀ e₀) τ ∅ ∧
+    typing [] 𝟙 (multi_subst γ₁ e₁) τ ∅ :=
+  by
+  intros k γ₀ γ₁ e₀ e₁ Γ τ Hτ₀ Hτ₁ HsemΓ
+  induction HsemΓ generalizing e₀ e₁
+  case nil => constructor; apply Hτ₀; apply Hτ₁
+  case cons Γ Hsem_value HsemΓ IH =>
+    have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
+    have ⟨Hτv₀, Hτv₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value
+    apply IH
+    . rw [HEq₀]; apply preservation.subst; rw [← List.append_nil Γ]
+      apply typing.weakening; apply Hτv₀; apply Hτ₀
+    . rw [HEq₁]; apply preservation.subst; rw [← List.append_nil Γ]
+      apply typing.weakening; apply Hτv₁; apply Hτ₁

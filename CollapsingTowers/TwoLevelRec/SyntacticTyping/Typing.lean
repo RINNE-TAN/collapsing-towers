@@ -156,11 +156,19 @@ lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → clo
 lemma typing_reification.closed_at_env : ∀ Γ e τ φ, typing_reification Γ e τ φ → closed_at e Γ.length :=
   by
   intros Γ e τ φ Hτ
-  cases Hτ
-  all_goals
-    next Hτ =>
-      apply typing.closed_at_env
-      apply Hτ
+  cases Hτ <;> (apply typing.closed_at_env; assumption)
+
+lemma typing.wf : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → wf_at e Γ.length :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  constructor
+  apply typing.regular; apply Hτ
+  apply typing.closed_at_env; apply Hτ
+
+lemma typing_reification.wf : ∀ Γ e τ φ, typing_reification Γ e τ φ → wf_at e Γ.length :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;> (apply typing.wf; assumption)
 
 lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ∅ :=
   by
