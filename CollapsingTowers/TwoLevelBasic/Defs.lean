@@ -4,5 +4,5 @@ import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Defs
 import CollapsingTowers.TwoLevelBasic.Erasure.Defs
 import CollapsingTowers.TwoLevelBasic.CtxEquiv.Defs
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Defs
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Defs
 import CollapsingTowers.TwoLevelBasic.StagingConsistency.Defs

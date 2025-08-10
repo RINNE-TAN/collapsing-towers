@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Compatibility
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Compatibility
 import CollapsingTowers.TwoLevelBasic.Erasure.Defs
 
 -- Γ ⊢ e : τ
@@ -7,15 +7,15 @@ import CollapsingTowers.TwoLevelBasic.Erasure.Defs
 theorem typing.erase.fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing Γ 𝕊 e τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-          logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
+          log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
-          logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
+          log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏)
   case fvar =>
     intros _ _ _ _ Hbinds _
     apply compatibility.fvar
@@ -99,7 +99,7 @@ theorem typing.erase.fundamental :
 theorem typing_reification.erase.fundamental :
   ∀ Γ e τ φ,
     typing_reification Γ e τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ e τ φ Hτ
   cases Hτ
@@ -110,7 +110,7 @@ theorem typing_reification.erase.fundamental :
 theorem typing.fundamental :
   ∀ Γ 𝕊 e τ φ,
     typing ‖Γ‖𝛾 𝕊 ‖e‖ ‖τ‖𝜏 φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ‖𝜏 :=
   by
   intros Γ 𝕊 e τ φ Hτ
   rw [← identity.env.erase_erase, ← identity.erase_erase, ← identity.ty.erase_erase]

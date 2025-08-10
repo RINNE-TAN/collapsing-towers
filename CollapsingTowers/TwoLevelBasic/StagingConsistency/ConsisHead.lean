@@ -1,11 +1,11 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Defs
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Defs
 
 theorem consistency.head :
   ∀ Γ e₀ e₁ τ φ,
     head e₀ e₁ →
     typing Γ 𝟙 e₀ τ φ →
     typing Γ 𝟙 e₁ τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros Γ e₀ e₁ τ φ Hhead Hτ₀ Hτ₁
   cases Hhead <;> try apply typing.erase.fundamental; apply Hτ₀
@@ -19,8 +19,8 @@ theorem consistency.head :
     . rw [← env.erase.length, ← closed.under_erase]
       apply typing.closed_at_env; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
-    have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
-    apply logic_equiv_expr.stepn
+    have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_equiv_env.multi_wf _ _ _ HsemΓ
+    apply log_equiv_expr.stepn
     apply (typing.erase.fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [comm.erase_opening_subst, comm.multi_subst_opening_value _ _ _ _ Hmulti_wf₀]
@@ -29,7 +29,7 @@ theorem consistency.head :
       simp; apply head.lets
       cases Hτ₀ with
       | lets _ _ _ _ _ _ _ _ Hτv _ HwellBinds _ =>
-          apply And.left; apply logic_equiv_env.erase_value
+          apply And.left; apply log_equiv_env.erase_value
           apply Hτv; apply HsemΓ; apply Hvalue; apply HwellBinds
     . apply pure_stepn.refl
   case app₁ Hvalue =>
@@ -69,8 +69,8 @@ theorem consistency.head :
     . rw [← env.erase.length, ← closed.under_erase]
       apply typing.closed_at_env; apply Hτ₁
     intros γ₀ γ₁ HsemΓ
-    have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
-    apply logic_equiv_expr.stepn
+    have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_equiv_env.multi_wf _ _ _ HsemΓ
+    apply log_equiv_expr.stepn
     apply (typing.erase.fundamental _ _ _ _ _ Hτ₁).right.right; apply HsemΓ
     . apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
       rw [comm.erase_opening_subst, comm.multi_subst_opening_value _ _ _ _ Hmulti_wf₀]
@@ -81,7 +81,7 @@ theorem consistency.head :
       | app₁ _ _ _ _ _ _ _ _ _ Hτe Hτv =>
         cases Hτe with
         | lam _ _ _ _ _ _ _ HwellBinds =>
-          apply And.left; apply logic_equiv_env.erase_value
+          apply And.left; apply log_equiv_env.erase_value
           apply Hτv; apply HsemΓ; apply Hvalue; apply HwellBinds
     . apply pure_stepn.refl
   case lift_lam e =>

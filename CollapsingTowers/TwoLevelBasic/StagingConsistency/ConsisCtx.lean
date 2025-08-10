@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Defs
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Defs
 
 -- Γ ⊢ e₀ : τ →
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈ ‖e₁‖ : ‖τ‖
@@ -10,10 +10,10 @@ lemma consistency.under_ctx𝔹 :
     ctx𝔹 B →
     (∀ τ φ,
       typing Γ 𝟙 e₀ τ φ →
-      logic_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
+      log_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
     ) →
     typing Γ 𝟙 B⟦e₀⟧ τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖B⟦e₀⟧‖ ‖B⟦e₁⟧‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖B⟦e₀⟧‖ ‖B⟦e₁⟧‖ ‖τ‖𝜏 :=
   by
   intros Γ B e₀ e₁ τ φ HB IH Hτ
   cases HB
@@ -75,10 +75,10 @@ lemma consistency.under_ctxℝ :
     (∀ Δ τ φ,
       Δ.length = intro →
       typing (Δ ++ Γ) 𝟙 e₀ τ φ →
-      logic_equiv_typing ‖Δ ++ Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
+      log_equiv_typing ‖Δ ++ Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏
     ) →
     typing Γ 𝟙 R⟦e₀⟧ τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖R⟦e₀⟧‖ ‖R⟦e₁⟧‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖R⟦e₀⟧‖ ‖R⟦e₁⟧‖ ‖τ‖𝜏 :=
   by
   intros intro Γ R e₀ e₁ τ φ HR Hlc IH Hτ
   cases HR
@@ -146,8 +146,8 @@ lemma consistency.under_ctx𝔼 :
     ctx𝔼 E →
     typing Γ 𝟙 E⟦e⟧ τ φ →
     ∃ τ𝕖,
-      logic_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ𝕖‖𝜏 ∧
-      logic_equiv_typing ‖(τ𝕖, 𝟙) :: Γ‖𝛾 ‖E⟦.fvar Γ.length⟧‖ ‖E⟦.fvar Γ.length⟧‖ ‖τ‖𝜏 :=
+      log_equiv_typing ‖Γ‖𝛾 ‖e‖ ‖e‖ ‖τ𝕖‖𝜏 ∧
+      log_equiv_typing ‖(τ𝕖, 𝟙) :: Γ‖𝛾 ‖E⟦.fvar Γ.length⟧‖ ‖E⟦.fvar Γ.length⟧‖ ‖τ‖𝜏 :=
   by
   intros Γ E e τ φ HE Hτ
   induction HE generalizing τ φ

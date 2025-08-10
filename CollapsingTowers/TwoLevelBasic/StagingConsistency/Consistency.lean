@@ -9,7 +9,7 @@ theorem consistency.strengthened :
   ∀ Γ e₀ e₁ τ φ,
     step_lvl Γ.length e₀ e₁ →
     typing Γ 𝟙 e₀ τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros Γ e₀ e₁ τ φ
   generalize HEqlvl : Γ.length = lvl
@@ -60,7 +60,7 @@ theorem consistency :
   ∀ e₀ e₁ τ φ,
     (e₀ ⇝ e₁) →
     typing_reification [] e₀ τ φ →
-    logic_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    log_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros e₀ e₁ τ φ Hstep Hτ
   cases Hτ
@@ -79,14 +79,14 @@ theorem consistency.stepn :
   ∀ e₀ e₁ τ φ,
     (e₀ ⇝* e₁) →
     typing_reification [] e₀ τ φ →
-    logic_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+    log_equiv_typing [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
   by
   intros e₀ e₁ τ φ Hstepn Hτ₀
   induction Hstepn generalizing φ
   case refl => apply typing_reification.erase.fundamental _ _ _ _ Hτ₀
   case multi Hstep Hstepn IH =>
     have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
-    apply logic_equiv_typing.trans
+    apply log_equiv_typing.trans
     . apply consistency _ _ _ _ Hstep Hτ₀
     . apply IH; apply Hτ₁
 
@@ -102,7 +102,7 @@ theorem consistency.stepn.rep :
     typing_reification [] e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧
-      logic_equiv_typing [] ‖e₀‖ e₁ τ :=
+      log_equiv_typing [] ‖e₀‖ e₁ τ :=
   by
   intros e₀ v τ φ Hstepn Hvalue Hτr₀
   have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ Hstepn Hτr₀

@@ -1,13 +1,13 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.Fundamental
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Fundamental
 import CollapsingTowers.TwoLevelBasic.CtxEquiv.Defs
 
-lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
+lemma log_equiv_typing.congruence_under_ObsCtx𝔹 :
   ∀ Δ Γ τδ τγ B e₀ e₁,
     typing Δ 𝟙 e₀ τδ ∅ →
     typing Δ 𝟙 e₁ τδ ∅ →
-    logic_equiv_typing Δ e₀ e₁ τδ →
+    log_equiv_typing Δ e₀ e₁ τδ →
     ObsCtx𝔹 Δ τδ B Γ τγ →
-    logic_equiv_typing Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+    log_equiv_typing Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
   by
   intros Δ Γ τδ τγ B e₀ e₁ Hτ₀ Hτ₁ Hsem HB
   induction HB generalizing e₀ e₁
@@ -64,13 +64,13 @@ lemma logic_equiv_typing.congruence_under_ObsCtx𝔹 :
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
 -- ——————————————————————
 -- Γ ⊢ C⟦e₀⟧ ≈ C⟦e₁⟧ : τγ
-lemma logic_equiv_typing.congruence_under_ObsCtxℂ :
+lemma log_equiv_typing.congruence_under_ObsCtxℂ :
   ∀ Δ Γ τδ τγ C e₀ e₁,
     typing Δ 𝟙 e₀ τδ ∅ →
     typing Δ 𝟙 e₁ τδ ∅ →
-    logic_equiv_typing Δ e₀ e₁ τδ →
+    log_equiv_typing Δ e₀ e₁ τδ →
     ObsCtxℂ Δ τδ C Γ τγ →
-    logic_equiv_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
+    log_equiv_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
   by
   intros Δ Γ τδ τγ C e₀ e₁ Hτ₀ Hτ₁ Hsem HC
   induction HC generalizing e₀ e₁
@@ -81,15 +81,15 @@ lemma logic_equiv_typing.congruence_under_ObsCtxℂ :
       apply Hτ₀; apply HB
     . apply typing.congruence_under_ObsCtx𝔹
       apply Hτ₁; apply HB
-    . apply logic_equiv_typing.congruence_under_ObsCtx𝔹
+    . apply log_equiv_typing.congruence_under_ObsCtx𝔹
       apply Hτ₀; apply Hτ₁; apply Hsem; apply HB
 
 -- Γ ⊧ e₀ ≈ e₁ : τ
 -- ——————————————————
 -- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ
-theorem logic_equiv_typing.soundness :
+theorem log_equiv_typing.soundness :
   ∀ Γ τ e₀ e₁,
-    logic_equiv_typing Γ e₀ e₁ τ →
+    log_equiv_typing Γ e₀ e₁ τ →
     ctx_equiv Γ e₀ e₁ τ :=
   by
   intros Γ τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
@@ -100,8 +100,8 @@ theorem logic_equiv_typing.soundness :
   case hole =>
     rw [← HEqΔ, ← HEqτδ] at Hsem
     have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
-    have Hsem_expr := Hsem _ _ logic_equiv_env.nil
-    rw [logic_equiv_expr] at Hsem_expr
+    have Hsem_expr := Hsem _ _ log_equiv_env.nil
+    rw [log_equiv_expr] at Hsem_expr
     have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
     cases v₀ <;> cases v₁ <;> simp at Hsem_value
     have Hstepv₀ := pure_stepn_impl_stepn _ _ Hstepv₀
@@ -119,7 +119,7 @@ theorem logic_equiv_typing.soundness :
       . apply Hvalue
   case cons𝔹 C B HC HB IH =>
     apply IH
-    apply logic_equiv_typing.congruence_under_ObsCtx𝔹
+    apply log_equiv_typing.congruence_under_ObsCtx𝔹
     apply Hτ₀; apply Hτ₁
     apply Hsem; apply HB
     apply typing.congruence_under_ObsCtx𝔹; apply Hτ₀; apply HB

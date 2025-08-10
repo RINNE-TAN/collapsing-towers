@@ -7,7 +7,7 @@ theorem consistency.reflect :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
     typing Γ 𝟙 E⟦.reflect b⟧ τ φ →
-    logic_equiv_typing ‖Γ‖𝛾 ‖E⟦.reflect b⟧‖ (.lets ‖b‖ ‖E⟦.code (.bvar 0)⟧‖) ‖τ‖𝜏 :=
+    log_equiv_typing ‖Γ‖𝛾 ‖E⟦.reflect b⟧‖ (.lets ‖b‖ ‖E⟦.code (.bvar 0)⟧‖) ‖τ‖𝜏 :=
   by
   intros Γ E b τ φ HE Hτ
   have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
@@ -23,18 +23,18 @@ theorem consistency.reflect :
     . simp [← env.erase.length, ← closed.under_erase]; apply closed.under_ctx𝔼; apply HE
       apply typing.closed_at_env _ _ _ _ _ Hτ; simp
   intros γ₀ γ₁ HsemΓ
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
-  have ⟨HEq₀, HEq₁⟩ := logic_equiv_env.length _ _ _ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_equiv_env.multi_wf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ HsemΓ
   have ⟨τ𝕖, Hsem𝕖, Hsem𝔼⟩ := consistency.under_ctx𝔼 _ _ _ _ _ HE Hτ
-  rw [logic_equiv_typing] at Hsem𝕖 Hsem𝔼
+  rw [log_equiv_typing] at Hsem𝕖 Hsem𝔼
   have Hsem𝕖 := Hsem𝕖.right.right γ₀ γ₁ HsemΓ
-  rw [logic_equiv_expr] at Hsem𝕖
+  rw [log_equiv_expr] at Hsem𝕖
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem𝕖
-  have ⟨Hvalue₀, Hvalue₁⟩ := logic_equiv_value.syntactic_value _ _ _ Hsem_value
-  have ⟨Hwf₀, Hwf₁⟩ := logic_equiv_value.wf _ _ _ Hsem_value
-  have Hsem𝔼 := Hsem𝔼.right.right (v₀ :: γ₀) (v₁ :: γ₁) (logic_equiv_env.cons _ _ _ _ _ _ Hsem_value HsemΓ)
-  apply logic_equiv_expr.stepn; apply Hsem𝔼
-  . have ⟨E, HE, HcloseE, IHγ⟩ := logic_equiv_env.erase_ctx𝔼 _ _ _ _ _ _ _ HE Hτ HsemΓ
+  have ⟨Hvalue₀, Hvalue₁⟩ := log_equiv_value.syntactic_value _ _ _ Hsem_value
+  have ⟨Hwf₀, Hwf₁⟩ := log_equiv_value.wf _ _ _ Hsem_value
+  have Hsem𝔼 := Hsem𝔼.right.right (v₀ :: γ₀) (v₁ :: γ₁) (log_equiv_env.cons _ _ _ _ _ _ Hsem_value HsemΓ)
+  apply log_equiv_expr.stepn; apply Hsem𝔼
+  . have ⟨E, HE, HcloseE, IHγ⟩ := log_equiv_env.erase_ctx𝔼 _ _ _ _ _ _ _ HE Hτ HsemΓ
     rw [multi_subst, ← comm.multi_subst_subst, IHγ, IHγ]
     simp [HEq₀, ← env.erase.length]
     rw [subst.under_ctx𝔼 _ _ _ _ _ HE HcloseE]

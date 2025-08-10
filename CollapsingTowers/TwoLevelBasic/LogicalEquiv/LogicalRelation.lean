@@ -5,45 +5,45 @@ mutual
 -- 𝓥⟦ℕ⟧ ≜ {(n, n) | n ∈ ℕ}
 -- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {(λ.e₀, λ.e₁) | ∀ (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. (e₀⟦0 ↦ v₀⟧, e₁⟦0 ↦ v₁⟧) ∈ 𝓔⟦τ𝕓⟧}
 @[simp]
-def logic_equiv_value : Expr → Expr → Ty → Prop
+def log_equiv_value : Expr → Expr → Ty → Prop
   | .lit n₀, .lit n₁, .nat => n₀ = n₁
   | .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
       wf (.lam e₀) ∧
       wf (.lam e₁) ∧
       ∀ v₀ v₁,
-        logic_equiv_value v₀ v₁ τ𝕒 →
-        logic_equiv_expr (opening 0 v₀ e₀) (opening 0 v₁ e₁) τ𝕓
+        log_equiv_value v₀ v₁ τ𝕒 →
+        log_equiv_expr (opening 0 v₀ e₀) (opening 0 v₁ e₁) τ𝕓
   | _, _, _ => false
 
 -- 𝓔⟦τ⟧ ≜ {(e₀, e₁) | ∃v₀ v₁. e₀ ⇾* v₀ ∧ e₁ ⇾* v₁ ∧ (v₀, v₁) ∈ 𝓥⟦τ⟧}
 @[simp]
-def logic_equiv_expr (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_equiv_expr (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
     ∃ v₀ v₁,
       (e₀ ⇾* v₀) ∧
       (e₁ ⇾* v₁) ∧
-      logic_equiv_value v₀ v₁ τ
+      log_equiv_value v₀ v₁ τ
 end
 
-inductive logic_equiv_env : Subst → Subst → TEnv → Prop where
-  | nil : logic_equiv_env [] [] []
+inductive log_equiv_env : Subst → Subst → TEnv → Prop where
+  | nil : log_equiv_env [] [] []
   | cons :
     ∀ v₀ γ₀ v₁ γ₁ τ Γ,
-      logic_equiv_value v₀ v₁ τ →
-      logic_equiv_env γ₀ γ₁ Γ →
-      logic_equiv_env (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟙) :: Γ)
+      log_equiv_value v₀ v₁ τ →
+      log_equiv_env γ₀ γ₁ Γ →
+      log_equiv_env (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟙) :: Γ)
 
 -- Γ ⊧ e₀ ≈ e₁ : τ ≜ ∀ (γ₀, γ₁) ∈ 𝓖⟦Γ⟧. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧
 @[simp]
-def logic_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_equiv_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
   wf_at e₀ Γ.length ∧
   wf_at e₁ Γ.length ∧
   ∀ γ₀ γ₁,
-    logic_equiv_env γ₀ γ₁ Γ →
-    logic_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
+    log_equiv_env γ₀ γ₁ Γ →
+    log_equiv_expr (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
 
-lemma logic_equiv_value.syntactic_value :
+lemma log_equiv_value.syntactic_value :
   ∀ v₀ v₁ τ,
-    logic_equiv_value v₀ v₁ τ →
+    log_equiv_value v₀ v₁ τ →
     value v₀ ∧ value v₁ :=
   by
   intros v₀ v₁ τ Hsem_value
@@ -61,9 +61,9 @@ lemma logic_equiv_value.syntactic_value :
     apply value.lam; apply Hwf₁.left
   all_goals simp at Hsem_value
 
-lemma logic_equiv_value.wf :
+lemma log_equiv_value.wf :
   ∀ v₀ v₁ τ,
-    logic_equiv_value v₀ v₁ τ →
+    log_equiv_value v₀ v₁ τ →
     wf v₀ ∧
     wf v₁ :=
   by
@@ -79,9 +79,9 @@ lemma logic_equiv_value.wf :
     apply Hwf₀; apply Hwf₁
   all_goals simp at Hsem_value
 
-lemma logic_equiv_env.multi_wf :
+lemma log_equiv_env.multi_wf :
   ∀ γ₀ γ₁ Γ,
-    logic_equiv_env γ₀ γ₁ Γ →
+    log_equiv_env γ₀ γ₁ Γ →
     multi_wf γ₀ ∧
     multi_wf γ₁ :=
   by
@@ -91,15 +91,15 @@ lemma logic_equiv_env.multi_wf :
   case cons Hsem_value _ IH =>
     constructor
     . constructor; apply And.left
-      apply logic_equiv_value.wf
+      apply log_equiv_value.wf
       apply Hsem_value; apply IH.left
     . constructor; apply And.right
-      apply logic_equiv_value.wf
+      apply log_equiv_value.wf
       apply Hsem_value; apply IH.right
 
-lemma logic_equiv_env.length :
+lemma log_equiv_env.length :
   ∀ γ₀ γ₁ Γ,
-    logic_equiv_env γ₀ γ₁ Γ →
+    log_equiv_env γ₀ γ₁ Γ →
     γ₀.length = Γ.length ∧
     γ₁.length = Γ.length :=
   by
@@ -111,18 +111,18 @@ lemma logic_equiv_env.length :
     . simp; apply IH.left
     . simp; apply IH.right
 
-lemma logic_equiv_env.binds_logic_equiv_value :
+lemma log_equiv_env.binds_log_equiv_value :
   ∀ γ₀ γ₁ Γ x τ,
-    logic_equiv_env γ₀ γ₁ Γ →
+    log_equiv_env γ₀ γ₁ Γ →
     binds x (τ, 𝟙) Γ →
-    logic_equiv_value (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
+    log_equiv_value (multi_subst γ₀ (.fvar x)) (multi_subst γ₁ (.fvar x)) τ :=
   by
   intros γ₀ γ₁ Γ x τ HsemΓ Hbinds
   induction HsemΓ
   case nil => nomatch Hbinds
   case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
-    have ⟨Hwf₀, Hwf₁⟩ := logic_equiv_value.wf _ _ _ Hsem_value
-    have ⟨HEq₀, HEq₁⟩ := logic_equiv_env.length _ _ _ HsemΓ
+    have ⟨Hwf₀, Hwf₁⟩ := log_equiv_value.wf _ _ _ Hsem_value
+    have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ HsemΓ
     simp [HEq₀, HEq₁]
     by_cases HEqx : Γ.length = x
     . simp [if_pos HEqx]
@@ -141,16 +141,16 @@ lemma logic_equiv_env.binds_logic_equiv_value :
 -- value n  value λ.e        value (code x)  value (code e)
 -- ———————  ———————————————  ——————————————  ——————————————————
 -- value n  value λ.γ₀(‖e‖)  value γ₀(x)     Binding Time Error
-lemma logic_equiv_env.erase_value :
+lemma log_equiv_env.erase_value :
   ∀ Γ v τ φ γ₀ γ₁,
     typing Γ 𝟙 v τ φ →
-    logic_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
+    log_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
     value v →
     wbt 𝟙 τ →
     value (multi_subst γ₀ ‖v‖) ∧ value (multi_subst γ₁ ‖v‖) :=
   by
   intros Γ v τ φ γ₀ γ₁ Hτ HsemΓ Hvalue HwellBinds
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_equiv_env.multi_wf _ _ _ HsemΓ
   cases Hvalue
   case lam Hlc =>
     simp
@@ -166,23 +166,23 @@ lemma logic_equiv_env.erase_value :
   case code e _ =>
     cases e <;> cases Hτ <;> try simp at HwellBinds
     constructor
-    . apply And.left; apply logic_equiv_value.syntactic_value
-      apply logic_equiv_env.binds_logic_equiv_value
+    . apply And.left; apply log_equiv_value.syntactic_value
+      apply log_equiv_env.binds_log_equiv_value
       apply HsemΓ; apply env.erase.binds; assumption
-    . apply And.right; apply logic_equiv_value.syntactic_value
-      apply logic_equiv_env.binds_logic_equiv_value
+    . apply And.right; apply log_equiv_value.syntactic_value
+      apply log_equiv_env.binds_log_equiv_value
       apply HsemΓ; apply env.erase.binds; assumption
 
-lemma logic_equiv_env.erase_ctx𝔼 :
+lemma log_equiv_env.erase_ctx𝔼 :
   ∀ E₀ Γ e τ φ γ₀ γ₁,
     ctx𝔼 E₀ →
     typing Γ 𝟙 E₀⟦e⟧ τ φ →
-    logic_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
+    log_equiv_env γ₀ γ₁ ‖Γ‖𝛾 →
     ∃ E₁, ctx𝔼 E₁ ∧ closed_at E₁⟦e⟧ Γ.length ∧ (∀ e, multi_subst γ₀ ‖E₀⟦e⟧‖ = E₁⟦multi_subst γ₀ ‖e‖⟧) :=
   by
   intros E₀ Γ e τ φ γ₀ γ₁ HE₀ Hτ HsemΓ
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_equiv_env.multi_wf _ _ _ HsemΓ
-  have ⟨HEq₀, HEq₁⟩ := logic_equiv_env.length _ _ _ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_equiv_env.multi_wf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ HsemΓ
   induction HE₀ generalizing τ φ
   case hole =>
     exists id
@@ -258,8 +258,8 @@ lemma logic_equiv_env.erase_ctx𝔼 :
             exists (fun X => .app₁ (multi_subst γ₀ (‖.code (.fvar x)‖)) X) ∘ E
             constructor
             apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE
-            apply And.left; apply logic_equiv_value.syntactic_value
-            apply logic_equiv_env.binds_logic_equiv_value
+            apply And.left; apply log_equiv_value.syntactic_value
+            apply log_equiv_env.binds_log_equiv_value
             apply HsemΓ; apply env.erase.binds; assumption
             constructor
             constructor
@@ -297,9 +297,9 @@ lemma logic_equiv_env.erase_ctx𝔼 :
           rw [HEq₀, ← env.erase.length]; apply Hclose; omega
         simp; apply IHγ
 
-lemma logic_equiv_value.arrow_ty_iff_lam :
+lemma log_equiv_value.arrow_ty_iff_lam :
   ∀ f₀ f₁ τ𝕒 τ𝕓,
-    logic_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
+    log_equiv_value f₀ f₁ (.arrow τ𝕒 τ𝕓 .pure) →
     ∃ e₀ e₁,
       f₀ = .lam e₀ ∧ f₁ = .lam e₁ :=
   by
@@ -307,14 +307,14 @@ lemma logic_equiv_value.arrow_ty_iff_lam :
   cases f₀ <;> cases f₁ <;> simp at Hsem_value
   simp
 
-lemma logic_equiv_expr.stepn :
+lemma log_equiv_expr.stepn :
   ∀ e₀ e₁ r₀ r₁ τ,
-    logic_equiv_expr r₀ r₁ τ →
+    log_equiv_expr r₀ r₁ τ →
     (e₀ ⇾* r₀) → (e₁ ⇾* r₁) →
-    logic_equiv_expr e₀ e₁ τ :=
+    log_equiv_expr e₀ e₁ τ :=
   by
   intros e₀ e₁ r₀ r₁ τ Hsem_expr Hstepr₀ Hstepr₁
-  simp only [logic_equiv_expr] at *
+  simp only [log_equiv_expr] at *
   have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
   exists v₀, v₁; constructor
   apply pure_stepn.trans; apply Hstepr₀; apply Hstepv₀; constructor

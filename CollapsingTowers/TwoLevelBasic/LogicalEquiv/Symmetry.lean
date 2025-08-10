@@ -1,17 +1,17 @@
-import CollapsingTowers.TwoLevelBasic.LogicEquiv.LogicRelation
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.LogicalRelation
 
 -- (v₀, v₁) ∈ 𝓥⟦τ⟧ → (v₁, v₀) ∈ 𝓥⟦τ⟧
 -- ————————————————————————————————
 -- (e₀, e₁) ∈ 𝓔⟦τ⟧ → (e₁, e₀) ∈ 𝓔⟦τ⟧
 lemma value_symm_impl_expr_symm :
   ∀ τ,
-    (∀ v₀ v₁, logic_equiv_value v₀ v₁ τ → logic_equiv_value v₁ v₀ τ) →
-    (∀ e₀ e₁, logic_equiv_expr e₀ e₁ τ → logic_equiv_expr e₁ e₀ τ) :=
+    (∀ v₀ v₁, log_equiv_value v₀ v₁ τ → log_equiv_value v₁ v₀ τ) →
+    (∀ e₀ e₁, log_equiv_expr e₀ e₁ τ → log_equiv_expr e₁ e₀ τ) :=
     by
     intros τ Hsem_value_symm e₀ e₁ Hsem_expr
-    simp only [logic_equiv_expr] at Hsem_expr
+    simp only [log_equiv_expr] at Hsem_expr
     have ⟨v₀, v₁, Hstepv₀, Hstepv₁, Hsem_value⟩ := Hsem_expr
-    simp only [logic_equiv_expr]
+    simp only [log_equiv_expr]
     exists v₁, v₀
     constructor; apply Hstepv₁
     constructor; apply Hstepv₀
@@ -20,10 +20,10 @@ lemma value_symm_impl_expr_symm :
 -- (v₀, v₁) ∈ 𝓥⟦τ⟧
 -- ———————————————
 -- (v₁, v₀) ∈ 𝓥⟦τ⟧
-lemma logic_equiv_value.symm :
+lemma log_equiv_value.symm :
   ∀ v₀ v₁ τ,
-    logic_equiv_value v₀ v₁ τ →
-    logic_equiv_value v₁ v₀ τ :=
+    log_equiv_value v₀ v₁ τ →
+    log_equiv_value v₁ v₀ τ :=
     by
     intros v₀ v₁ τ Hsem_value
     induction τ generalizing v₀ v₁
@@ -38,9 +38,9 @@ lemma logic_equiv_value.symm :
       cases φ
       case reify => simp at Hsem_value
       case pure =>
-        simp only [logic_equiv_value] at Hsem_value
+        simp only [log_equiv_value] at Hsem_value
         have ⟨Hwf₀, Hwf₁, Hsem_value_lam⟩ := Hsem_value
-        simp only [logic_equiv_value]
+        simp only [log_equiv_value]
         constructor; apply Hwf₁
         constructor; apply Hwf₀
         intros v₀ v₁ Hsem_value
@@ -53,46 +53,46 @@ lemma logic_equiv_value.symm :
 -- (e₀, e₁) ∈ 𝓔⟦τ⟧
 -- ———————————————
 -- (e₁, e₀) ∈ 𝓔⟦τ⟧
-lemma logic_equiv_expr.symm :
+lemma log_equiv_expr.symm :
   ∀ e₀ e₁ τ,
-    logic_equiv_expr e₀ e₁ τ →
-    logic_equiv_expr e₁ e₀ τ :=
+    log_equiv_expr e₀ e₁ τ →
+    log_equiv_expr e₁ e₀ τ :=
   by
   intros e₀ e₁ τ
   apply value_symm_impl_expr_symm
   intros v₀ v₁
-  apply logic_equiv_value.symm
+  apply log_equiv_value.symm
 
 -- (γ₀, γ₁) ∈ 𝓖⟦Γ⟧
 -- ———————————————
 -- (γ₁, γ₀) ∈ 𝓖⟦Γ⟧
-lemma logic_equiv_env.symm :
+lemma log_equiv_env.symm :
   ∀ γ₀ γ₁ Γ,
-    logic_equiv_env γ₀ γ₁ Γ →
-    logic_equiv_env γ₁ γ₀ Γ :=
+    log_equiv_env γ₀ γ₁ Γ →
+    log_equiv_env γ₁ γ₀ Γ :=
   by
   intros γ₀ γ₁ Γ HsemΓ
   induction HsemΓ
-  case nil => apply logic_equiv_env.nil
+  case nil => apply log_equiv_env.nil
   case cons Hsem_value _ IH =>
-    apply logic_equiv_env.cons
-    apply logic_equiv_value.symm; apply Hsem_value
+    apply log_equiv_env.cons
+    apply log_equiv_value.symm; apply Hsem_value
     apply IH
 
 -- Γ ⊧ e₀ ≈ e₁ : τ
 -- ———————————————
 -- Γ ⊧ e₁ ≈ e₀ : τ
-theorem logic_equiv_typing.symm :
+theorem log_equiv_typing.symm :
   ∀ Γ e₀ e₁ τ,
-    logic_equiv_typing Γ e₀ e₁ τ →
-    logic_equiv_typing Γ e₁ e₀ τ :=
+    log_equiv_typing Γ e₀ e₁ τ →
+    log_equiv_typing Γ e₁ e₀ τ :=
   by
   intros Γ e₀ e₁ τ Hsem
-  rw [logic_equiv_typing] at Hsem
-  rw [logic_equiv_typing]
+  rw [log_equiv_typing] at Hsem
+  rw [log_equiv_typing]
   have ⟨Hwf₀, Hwf₁, Hsem⟩ := Hsem
   constructor; apply Hwf₁
   constructor; apply Hwf₀
   intros γ₀ γ₁ HsemΓ
-  apply logic_equiv_expr.symm; apply Hsem
-  apply logic_equiv_env.symm; apply HsemΓ
+  apply log_equiv_expr.symm; apply Hsem
+  apply log_equiv_env.symm; apply HsemΓ

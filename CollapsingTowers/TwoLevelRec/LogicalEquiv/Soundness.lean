@@ -81,7 +81,7 @@ lemma log_rel_typing.congruence_under_ObsCtxℂ :
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ
-theorem logic_equiv_typing.soundness :
+theorem log_rel_typing.soundness :
   ∀ Γ τ e₀ e₁,
     log_rel_typing Γ e₀ e₁ τ →
     ctx_approx Γ e₀ e₁ τ :=
