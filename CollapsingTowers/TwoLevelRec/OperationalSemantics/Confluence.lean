@@ -33,6 +33,15 @@ lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇝* v�
     exfalso; apply step.value_impl_termination
     apply Hvalue; apply Hstep
 
+lemma pure_stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇾* v₁) → v₀ = v₁ :=
+  by
+  intros v₀ v₁ Hvalue Hstepn
+  cases Hstepn
+  case refl => simp
+  case multi Hstep _ =>
+    exfalso; apply step.value_impl_termination
+    apply Hvalue; apply pure_step_impl_step; apply Hstep
+
 lemma pure_stepn_indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ → (v₀ ⇾ ⟦k⟧ v₁) → v₀ = v₁ ∧ k = 0 :=
   by
   intros k v₀ v₁ Hvalue Hstepn
