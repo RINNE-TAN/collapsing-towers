@@ -337,3 +337,200 @@ lemma compatibility.lets :
     apply head.lets; apply HvalueBind₁
   . apply logic_rel_value.antimono
     apply Hsem_value; omega
+
+lemma compatibility.fix₁.induction :
+  ∀ k f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_value k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    logic_rel_value k
+      (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0)))
+      (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0)))
+    (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value_fix
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_fix
+  have ⟨HτFix₀, HτFix₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_fix
+  have ⟨HlcFix₀, HclosedFix₀⟩ := typing.wf _ _ _ _ _ HτFix₀
+  have ⟨HlcFix₁, HclosedFix₁⟩ := typing.wf _ _ _ _ _ HτFix₁
+  have Hwbt: wbt 𝟙 τ𝕒 := by cases HvalueFix₀ <;> cases HτFix₀; next Hwbt _ => apply Hwbt.left
+  have Hτ₀ : typing [] 𝟙 (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ∅) ∅ :=
+    by
+    apply typing.lam; rw [← union_pure_left ∅, ← union_pure_left ∅]
+    apply typing.app₁; rw [← union_pure_left ∅, ← union_pure_left ∅, identity.opening _ _ _ (by simp; apply HlcFix₀)]
+    apply typing.weakening.singleton
+    apply typing.app₁; apply HτFix₀
+    apply typing.fix₁; simp; rfl; apply HτFix₀
+    apply typing.fvar; simp; apply Hwbt; apply Hwbt
+    simp; apply HclosedFix₀
+  have Hτ₁ : typing [] 𝟙 (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ∅) ∅ :=
+    by
+    apply typing.lam; rw [← union_pure_left ∅, ← union_pure_left ∅]
+    apply typing.app₁; rw [← union_pure_left ∅, ← union_pure_left ∅, identity.opening _ _ _ (by simp; apply HlcFix₁)]
+    apply typing.weakening.singleton
+    apply typing.app₁; apply HτFix₁
+    apply typing.fix₁; simp; rfl; apply HτFix₁
+    apply typing.fvar; simp; apply Hwbt; apply Hwbt
+    simp; apply HclosedFix₁
+  induction k
+  case zero =>
+    rw [logic_rel_value]
+    constructor; apply Hτ₀
+    constructor; apply Hτ₁
+    intro z Hindexz argv₀ argv₁ Hsem_value_arg
+    rw [logic_rel_expr]
+    intro j Hindexj; omega
+  case succ k IH =>
+    rw [logic_rel_value]
+    constructor; apply Hτ₀
+    constructor; apply Hτ₁
+    intros s Hindexs argv₀ argv₁ Hsem_value_arg
+    have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_arg
+    have ⟨HτArg₀, HτArg₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_arg
+    have ⟨HlcArg₀, HclosedArg₀⟩ := typing.wf _ _ _ _ _ HτArg₀
+    have ⟨HlcArg₁, HclosedArg₁⟩ := typing.wf _ _ _ _ _ HτArg₁
+    rw [logic_rel_expr]
+    intro j Hindexj v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- (λx.f₀ @ fix f₀ @ x) @ argv₀ ⇾ ⟦j⟧ v₀
+    -- ——————————————————————————————————————————
+    -- i + 2 = j
+    -- f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀ ⇾ ⟦i⟧ v₀
+    have ⟨i, HEqj, Hstep₀⟩ := pure_stepn_indexed.refine.fix₁.induction _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀ ⇾ ⟦i⟧ v₀
+    -- ——————————————————————————————————————————
+    -- i₀ + i₁ = i
+    -- f₀ @ (λx.f₀ @ fix f₀ @ x) ⇾ ⟦i₀⟧ fv₀
+    -- fv₀ @ argv₀ ⇾ ⟦i₁⟧ fv₀
+    have ⟨i₀, z, i₁, fv₀, r₀, HEqj, HvalueFun₀, _, HstepFun₀, HstepArg₀, Hstep₀⟩ := pure_stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ Hstep₀
+    have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ HvalueArg₀ HstepArg₀
+    rw [← HEqv] at Hstep₀
+    --
+    --
+    -- (f₀, f₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)⟧{k + 1}
+    -- (λx.f₀ @ fix f₀ @ x, λx.f₁ @ fix f₁ @ x) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k}
+    -- —————————————————————————————————————————————————————————————————————
+    -- (f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧{k}
+    have Hsem_expr_fun :
+      logic_rel_expr k
+        (.app₁ f₀ (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))))
+        (.app₁ f₁ (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))))
+      (.arrow τ𝕒 τ𝕓 ∅) :=
+      by
+      apply logic_rel_value.apply
+      apply logic_rel_value.antimono; apply Hsem_value_fix; omega
+      apply IH; apply logic_rel_value.antimono; apply Hsem_value_fix; omega
+    --
+    --
+    -- f₀ @ (λx.f₀ @ fix f₀ @ x) ⇾ ⟦i₀⟧ fv₀
+    -- (f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧{k}
+    -- —————————————————————————————————————————————————————————————————————
+    -- f₁ @ (λx.f₁ @ fix f₁ @ x) ⇾* fv₁
+    -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
+    rw [logic_rel_expr] at Hsem_expr_fun
+    have ⟨fv₁, HstepFun₁, Hsem_value_fun⟩ := Hsem_expr_fun i₀ (by omega) _ HvalueFun₀ HstepFun₀
+    --
+    --
+    -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
+    -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{s}
+    -- —————————————————————————————————————————————
+    -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{s - i₀ - 1}
+    have Hsem_value_fun : logic_rel_value (s - i₀ - 1) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
+    have Hsem_value_arg : logic_rel_value (s - i₀ - 1) argv₀ argv₁ τ𝕒 := logic_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
+    have Hsem_expr := logic_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
+    --
+    --
+    -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{s - i₀ - 1}
+    -- fv₀ @ argv₀ ⇾ ⟦i₁⟧ v₀
+    -- —————————————————————————————————————————————
+    -- fv₁ @ argv₁ ⇾* v₁
+    -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{s - i₀ - i₁ - 1}
+    simp only [logic_rel_expr] at Hsem_expr
+    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- f₁ @ (λx.f₁ @ fix f₁ @ x) ⇾* fv₁
+    -- fv₁ @ argv₁ ⇾* v₁
+    -- ——————————————————————————————————
+    -- (λx.f₁ @ fix f₁ @ x) @ argv₁ ⇾* v₁
+    exists v₁
+    constructor
+    . -- head₀
+      apply pure_stepn.multi
+      apply pure_step.pure id; apply ctx𝕄.hole
+      simp; constructor
+      apply lc.inc; apply HlcFix₁; omega
+      apply HlcArg₁
+      apply head.app₁; apply HvalueArg₁
+      simp [identity.opening _ _ _ HlcFix₁]
+      -- head₁
+      apply pure_stepn.multi
+      apply pure_step.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
+      apply pure_step.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFix₁)
+      apply pure_step.pure id; apply ctx𝕄.hole
+      apply HlcFix₁
+      apply head.fix₁; apply HvalueFix₁
+      -- left
+      apply pure_stepn.trans
+      apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _) HstepFun₁
+      apply HlcArg₁
+      -- head₂
+      apply Hstep₁
+    . apply logic_rel_value.antimono
+      apply Hsem_value; omega
+
+-- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
+-- ————————————————————————————————————
+-- Γ ⊧ fix f₀ ≤𝑙𝑜𝑔 fix f₁ : τ𝕒 → τ𝕓
+lemma compatibility.fix₁ :
+  ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
+    logic_rel_typing Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    logic_rel_typing Γ (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+  by
+  intros Γ f₀ f₁ τ𝕒 τ𝕓 Hf
+  have ⟨Hτf₀, Hτf₁, Hf⟩ := Hf
+  have Hτ₀ : typing Γ 𝟙 (.fix₁ f₀) (.arrow τ𝕒 τ𝕓 ∅) ∅ := by apply typing.fix₁; simp; rfl; apply Hτf₀
+  have Hτ₁ : typing Γ 𝟙 (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) ∅ := by apply typing.fix₁; simp; rfl; apply Hτf₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k γ₀ γ₁ HsemΓ
+  simp only [multi_subst.fix₁, logic_rel_expr]
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- fix γ₀(f₀) ⇾ ⟦j⟧ v₀
+  -- ——————————————————————————
+  -- i₀ + 1 = j
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- v₀ = λx.fv₀ @ fix fv₀ @ x
+  have ⟨i₀, fv₀, HEqj, HvalueFix₀, HstepFix₀, HEqv₀⟩ := pure_stepn_indexed.refine.fix₁ _ _ _ Hvalue₀ Hstep₀
+  rw [HEqv₀]
+  --
+  --
+  -- γ₀(f₀) ⇾ ⟦i₀⟧ fv₀
+  -- (γ₀(f₀), γ₁(f₁)) ∈ 𝓔⟦τ𝕓⟧{k}
+  -- ——————————————————————————
+  -- γ₁(f₁) ⇾* fv₁
+  -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕓⟧{k - i₀}
+  simp only [logic_rel_expr] at Hf
+  have ⟨fv₁, HstepFix₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFix₀ HstepFix₀
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_fun
+  --
+  --
+  -- γ₁(f₁) ⇾* fv₁
+  -- ———————————————————————————————————
+  -- fix γ₁(f₁) ⇾* λx.fv₁ @ fix fv₁ @ x
+  exists .lam (.app₁ (.app₁ fv₁ (.fix₁ fv₁)) (.bvar 0))
+  constructor
+  . -- left
+    apply pure_stepn.trans
+    apply pure_stepn.congruence_under_ctx𝔹 _ _ _ ctx𝔹.fix₁ HstepFix₁
+    -- head
+    apply pure_stepn.multi _ _ _ _ (pure_stepn.refl _)
+    apply pure_step.pure id; apply ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFix₁
+    apply head.fix₁; apply HvalueFix₁
+  . apply compatibility.fix₁.induction
+    apply logic_rel_value.antimono
+    apply Hsem_value_fun; omega
