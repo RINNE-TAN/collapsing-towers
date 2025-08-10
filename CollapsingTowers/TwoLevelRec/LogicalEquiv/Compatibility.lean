@@ -1,35 +1,35 @@
-import CollapsingTowers.TwoLevelRec.LogicEquiv.LogicRelation
+import CollapsingTowers.TwoLevelRec.LogicalEquiv.LogicalRelation
 
 -- Γ ⊧ x ≤𝑙𝑜𝑔 x : Γ(x)
 lemma compatibility.fvar :
   ∀ Γ x τ,
     binds x (τ, 𝟙) Γ →
     wbt 𝟙 τ →
-    logic_rel_typing Γ (.fvar x) (.fvar x) τ :=
+    log_rel_typing Γ (.fvar x) (.fvar x) τ :=
   by
   intros Γ x τ Hbinds Hwbt
   constructor; apply typing.fvar; apply Hbinds; apply Hwbt
   constructor; apply typing.fvar; apply Hbinds; apply Hwbt
   intros k γ₀ γ₁ HsemΓ
-  simp only [logic_rel_expr]
+  simp only [log_rel_expr]
   intros z Hindexz v₀ Hvalue₀ Hstep₀
   exists multi_subst γ₁ (.fvar x)
   constructor
   . apply pure_stepn.refl
-  . have Hsem_value := logic_rel_env.binds_logic_rel_value _ _ _ _ _ _ HsemΓ Hbinds
-    have ⟨Hvalue₀, Hvalue₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value
+  . have Hsem_value := log_rel_env.binds_log_rel_value _ _ _ _ _ _ HsemΓ Hbinds
+    have ⟨Hvalue₀, Hvalue₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value
     have ⟨HEqv, Hz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ Hvalue₀ Hstep₀
     rw [← HEqv, Hz]; apply Hsem_value
 
 -- Γ ⊧ n ≤𝑙𝑜𝑔 n : ℕ
 lemma compatibility.lit :
-  ∀ Γ n, logic_rel_typing Γ (.lit n) (.lit n) .nat :=
+  ∀ Γ n, log_rel_typing Γ (.lit n) (.lit n) .nat :=
   by
   intros _ n
   constructor; apply typing.lit
   constructor; apply typing.lit
   intros k γ₀ γ₁ semΓ
-  simp only [logic_rel_expr]
+  simp only [log_rel_expr]
   intros z Hindexz v₀ Hvalue₀ Hstep₀
   exists .lit n
   constructor
@@ -46,8 +46,8 @@ lemma compatibility.lam :
     wbt 𝟙 τ𝕒 →
     closed_at e₀ Γ.length →
     closed_at e₁ Γ.length →
-    logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
-    logic_rel_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+    log_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    log_rel_typing Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
   intros Γ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ He
   have ⟨Hτ₀, Hτ₁, He⟩ := He
@@ -56,13 +56,13 @@ lemma compatibility.lam :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
-  have ⟨Hτ₀, Hτ₁⟩ := logic_rel_env.subst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  have ⟨Hτ₀, Hτ₁⟩ := log_rel_env.subst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
   have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ Hτ₀
   have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ Hτ₁
   simp at Hτ₀ Hτ₁ Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
-  have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
-  rw [logic_rel_expr]
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_rel_env.multi_wf _ _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_rel_env.length _ _ _ _ HsemΓ
+  rw [log_rel_expr]
   intros z Hindexz v₀ Hvalue₀ Hstep₀
   --
   --
@@ -74,15 +74,15 @@ lemma compatibility.lam :
   have ⟨HEqv₀, HEqz⟩ := pure_stepn_indexed.value_impl_termination _ _ _ (value.lam _ Hlc₀) Hstep₀
   exists multi_subst γ₁ (.lam e₁)
   constructor; apply pure_stepn.refl
-  simp only [← HEqv₀, HEqz, multi_subst.lam, logic_rel_value]
+  simp only [← HEqv₀, HEqz, multi_subst.lam, log_rel_value]
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros k Hindexk argv₀ argv₁ Hsem_value_arg
-  have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_arg
-  have ⟨HτArg₀, HτArg₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_arg
+  have ⟨HvalueArg₀, HvalueArg₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_arg
+  have ⟨HτArg₀, HτArg₁⟩ := log_rel_value.syntactic.typing _ _ _ _ Hsem_value_arg
   have ⟨HlcArg₀, HclosedArg₀⟩ := typing.wf _ _ _ _ _ HτArg₀
   have ⟨HlcArg₁, HclosedArg₁⟩ := typing.wf _ _ _ _ _ HτArg₁
-  rw [logic_rel_expr]
+  rw [log_rel_expr]
   intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
@@ -106,12 +106,12 @@ lemma compatibility.lam :
     apply closed.inc; apply Hclosed₀; simp
     omega; omega; apply HclosedArg₀
   rw [HEqSubst₀] at Hstep₀
-  have HsemΓ : logic_rel_env k (argv₀ :: γ₀) (argv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
+  have HsemΓ : log_rel_env k (argv₀ :: γ₀) (argv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
-    apply logic_rel_env.cons; apply Hsem_value_arg
-    apply logic_rel_env.antimono; apply HsemΓ; omega
+    apply log_rel_env.cons; apply Hsem_value_arg
+    apply log_rel_env.antimono; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
-  rw [logic_rel_expr] at Hsem_expr
+  rw [log_rel_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i (by omega) _ Hvalue₀ Hstep₀
   --
   --
@@ -132,7 +132,7 @@ lemma compatibility.lam :
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply Hlc₁; apply lc.value; apply HvalueArg₁
     apply head.app₁; apply HvalueArg₁
-  . apply logic_rel_value.antimono
+  . apply log_rel_value.antimono
     apply Hsem_value; omega
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
@@ -141,9 +141,9 @@ lemma compatibility.lam :
 -- Γ ⊧ f₀ @ arg₀ ≤𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
 lemma compatibility.app₁ :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
-    logic_rel_typing Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
-    logic_rel_typing Γ arg₀ arg₁ τ𝕒 →
-    logic_rel_typing Γ (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
+    log_rel_typing Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
+    log_rel_typing Γ arg₀ arg₁ τ𝕒 →
+    log_rel_typing Γ (.app₁ f₀ arg₀) (.app₁ f₁ arg₁) τ𝕓 :=
   by
   intros Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓 Hf Harg
   have ⟨HτFun₀, HτFun₁, Hf⟩ := Hf
@@ -159,8 +159,8 @@ lemma compatibility.app₁ :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
-  rw [logic_rel_expr]
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_rel_env.multi_wf _ _ _ _ HsemΓ
+  rw [log_rel_expr]
   intros j Hindex v₀ Hvalue₀ Hstep₀
   --
   --
@@ -179,9 +179,9 @@ lemma compatibility.app₁ :
   -- ———————————————————————————————
   -- γ₁(f₁) ⇾* fv₁
   -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
-  simp only [logic_rel_expr] at Hf
+  simp only [log_rel_expr] at Hf
   have ⟨fv₁, HstepFun₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFun₀ HstepFun₀
-  have ⟨HvalueFun₀, HvalueFun₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_fun
+  have ⟨HvalueFun₀, HvalueFun₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_fun
   --
   --
   -- γ₀(arg₀) ⇾ ⟦i₁⟧ argv₀
@@ -189,7 +189,7 @@ lemma compatibility.app₁ :
   -- ——————————————————————————————
   -- γ₁(arg₁) ⇾* argv₁
   -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{k - i₁}
-  simp only [logic_rel_expr] at Harg
+  simp only [log_rel_expr] at Harg
   have ⟨argv₁, HstepArg₁, Hsem_value_arg⟩ := Harg _ _ _ HsemΓ i₁ (by omega) _ HvalueArg₀ HstepArg₀
   --
   --
@@ -197,9 +197,9 @@ lemma compatibility.app₁ :
   -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{k - i₁}
   -- ———————————————————————————————————————————————
   -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{k - i₀ - i₁}
-  have Hsem_value_fun : logic_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
-  have Hsem_value_arg : logic_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := logic_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
-  have Hsem_expr := logic_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
+  have Hsem_value_fun : log_rel_value (k - i₀ - i₁) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := log_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
+  have Hsem_value_arg : log_rel_value (k - i₀ - i₁) argv₀ argv₁ τ𝕒 := log_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
+  have Hsem_expr := log_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
   --
   --
   -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{k - i₀ - i₁}
@@ -207,7 +207,7 @@ lemma compatibility.app₁ :
   -- ———————————————————————————————————————————————
   -- fv₁ @ argv₁ ⇾* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{k - i₀ - i₁ - i₂}
-  simp only [logic_rel_expr] at Hsem_expr
+  simp only [log_rel_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₂ (by omega) v₀ Hvalue₀ Hstep₀
   --
   --
@@ -228,7 +228,7 @@ lemma compatibility.app₁ :
     apply pure_stepn.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun₁) HstepArg₁
     -- head
     apply Hstep₁
-  . apply logic_rel_value.antimono
+  . apply log_rel_value.antimono
     apply Hsem_value; omega
 
 -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
@@ -240,9 +240,9 @@ lemma compatibility.lets :
     wbt 𝟙 τ𝕒 →
     closed_at e₀ Γ.length →
     closed_at e₁ Γ.length →
-    logic_rel_typing Γ b₀ b₁ τ𝕒 →
-    logic_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
-    logic_rel_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
+    log_rel_typing Γ b₀ b₁ τ𝕒 →
+    log_rel_typing ((τ𝕒, 𝟙) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    log_rel_typing Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
   by
   intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ Hb He
   have ⟨Hτb₀, Hτb₁, Hb⟩ := Hb
@@ -258,13 +258,13 @@ lemma compatibility.lets :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
-  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := logic_rel_env.multi_wf _ _ _ _ HsemΓ
-  have ⟨HEq₀, HEq₁⟩ := logic_rel_env.length _ _ _ _ HsemΓ
-  have ⟨Hτ₀, Hτ₁⟩ := logic_rel_env.subst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_rel_env.multi_wf _ _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_rel_env.length _ _ _ _ HsemΓ
+  have ⟨Hτ₀, Hτ₁⟩ := log_rel_env.subst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
   have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ Hτ₀
   have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ Hτ₁
   simp at Hτ₀ Hτ₁ Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
-  rw [logic_rel_expr]
+  rw [log_rel_expr]
   intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
@@ -282,10 +282,10 @@ lemma compatibility.lets :
   -- ———————————————————————————————
   -- γ₁(b₁) ⇾* bv₁
   -- (bv₀, bv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
-  simp only [logic_rel_expr] at Hb
+  simp only [log_rel_expr] at Hb
   have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := Hb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
-  have ⟨HvalueBind₀, HvalueBind₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_bind
-  have ⟨HτBind₀, HτBind₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_bind
+  have ⟨HvalueBind₀, HvalueBind₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_bind
+  have ⟨HτBind₀, HτBind₁⟩ := log_rel_value.syntactic.typing _ _ _ _ Hsem_value_bind
   have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
   have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
   --
@@ -303,12 +303,12 @@ lemma compatibility.lets :
     apply closed.inc; apply Hclosed₀.right; omega
     omega; omega; apply HclosedBind₀
   rw [HEqSubst₀] at Hstep₀
-  have HsemΓ : logic_rel_env (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
+  have HsemΓ : log_rel_env (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) ((τ𝕒, 𝟙) :: Γ) :=
     by
-    apply logic_rel_env.cons; apply Hsem_value_bind
-    apply logic_rel_env.antimono; apply HsemΓ; omega
+    apply log_rel_env.cons; apply Hsem_value_bind
+    apply log_rel_env.antimono; apply HsemΓ; omega
   have Hsem_expr := He _ _ _ HsemΓ
-  rw [logic_rel_expr] at Hsem_expr
+  rw [log_rel_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ Hvalue₀ Hstep₀
   --
   --
@@ -335,20 +335,20 @@ lemma compatibility.lets :
     apply pure_step.pure id; apply ctx𝕄.hole
     constructor; apply HlcBind₁; apply Hlc₁.right
     apply head.lets; apply HvalueBind₁
-  . apply logic_rel_value.antimono
+  . apply log_rel_value.antimono
     apply Hsem_value; omega
 
 lemma compatibility.fix₁.induction :
   ∀ k f₀ f₁ τ𝕒 τ𝕓,
-    logic_rel_value k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
-    logic_rel_value k
+    log_rel_value k f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    log_rel_value k
       (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0)))
       (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0)))
     (.arrow τ𝕒 τ𝕓 ∅) :=
   by
   intros k f₀ f₁ τ𝕒 τ𝕓 Hsem_value_fix
-  have ⟨HvalueFix₀, HvalueFix₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_fix
-  have ⟨HτFix₀, HτFix₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_fix
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_fix
+  have ⟨HτFix₀, HτFix₁⟩ := log_rel_value.syntactic.typing _ _ _ _ Hsem_value_fix
   have ⟨HlcFix₀, HclosedFix₀⟩ := typing.wf _ _ _ _ _ HτFix₀
   have ⟨HlcFix₁, HclosedFix₁⟩ := typing.wf _ _ _ _ _ HτFix₁
   have Hwbt: wbt 𝟙 τ𝕒 := by cases HvalueFix₀ <;> cases HτFix₀; next Hwbt _ => apply Hwbt.left
@@ -372,22 +372,22 @@ lemma compatibility.fix₁.induction :
     simp; apply HclosedFix₁
   induction k
   case zero =>
-    rw [logic_rel_value]
+    rw [log_rel_value]
     constructor; apply Hτ₀
     constructor; apply Hτ₁
     intro z Hindexz argv₀ argv₁ Hsem_value_arg
-    rw [logic_rel_expr]
+    rw [log_rel_expr]
     intro j Hindexj; omega
   case succ k IH =>
-    rw [logic_rel_value]
+    rw [log_rel_value]
     constructor; apply Hτ₀
     constructor; apply Hτ₁
     intros s Hindexs argv₀ argv₁ Hsem_value_arg
-    have ⟨HvalueArg₀, HvalueArg₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_arg
-    have ⟨HτArg₀, HτArg₁⟩ := logic_rel_value.syntactic.typing _ _ _ _ Hsem_value_arg
+    have ⟨HvalueArg₀, HvalueArg₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_arg
+    have ⟨HτArg₀, HτArg₁⟩ := log_rel_value.syntactic.typing _ _ _ _ Hsem_value_arg
     have ⟨HlcArg₀, HclosedArg₀⟩ := typing.wf _ _ _ _ _ HτArg₀
     have ⟨HlcArg₁, HclosedArg₁⟩ := typing.wf _ _ _ _ _ HτArg₁
-    rw [logic_rel_expr]
+    rw [log_rel_expr]
     intro j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
@@ -413,14 +413,14 @@ lemma compatibility.fix₁.induction :
     -- —————————————————————————————————————————————————————————————————————
     -- (f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧{k}
     have Hsem_expr_fun :
-      logic_rel_expr k
+      log_rel_expr k
         (.app₁ f₀ (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))))
         (.app₁ f₁ (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))))
       (.arrow τ𝕒 τ𝕓 ∅) :=
       by
-      apply logic_rel_value.apply
-      apply logic_rel_value.antimono; apply Hsem_value_fix; omega
-      apply IH; apply logic_rel_value.antimono; apply Hsem_value_fix; omega
+      apply log_rel_value.apply
+      apply log_rel_value.antimono; apply Hsem_value_fix; omega
+      apply IH; apply log_rel_value.antimono; apply Hsem_value_fix; omega
     --
     --
     -- f₀ @ (λx.f₀ @ fix f₀ @ x) ⇾ ⟦i₀⟧ fv₀
@@ -428,7 +428,7 @@ lemma compatibility.fix₁.induction :
     -- —————————————————————————————————————————————————————————————————————
     -- f₁ @ (λx.f₁ @ fix f₁ @ x) ⇾* fv₁
     -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k - i₀}
-    rw [logic_rel_expr] at Hsem_expr_fun
+    rw [log_rel_expr] at Hsem_expr_fun
     have ⟨fv₁, HstepFun₁, Hsem_value_fun⟩ := Hsem_expr_fun i₀ (by omega) _ HvalueFun₀ HstepFun₀
     --
     --
@@ -436,9 +436,9 @@ lemma compatibility.fix₁.induction :
     -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{s}
     -- —————————————————————————————————————————————
     -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{s - i₀ - 1}
-    have Hsem_value_fun : logic_rel_value (s - i₀ - 1) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := logic_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
-    have Hsem_value_arg : logic_rel_value (s - i₀ - 1) argv₀ argv₁ τ𝕒 := logic_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
-    have Hsem_expr := logic_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
+    have Hsem_value_fun : log_rel_value (s - i₀ - 1) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ∅) := log_rel_value.antimono _ _ _ _ _ Hsem_value_fun (by omega)
+    have Hsem_value_arg : log_rel_value (s - i₀ - 1) argv₀ argv₁ τ𝕒 := log_rel_value.antimono _ _ _ _ _ Hsem_value_arg (by omega)
+    have Hsem_expr := log_rel_value.apply _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
     --
     --
     -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{s - i₀ - 1}
@@ -446,7 +446,7 @@ lemma compatibility.fix₁.induction :
     -- —————————————————————————————————————————————
     -- fv₁ @ argv₁ ⇾* v₁
     -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{s - i₀ - i₁ - 1}
-    simp only [logic_rel_expr] at Hsem_expr
+    simp only [log_rel_expr] at Hsem_expr
     have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i₁ (by omega) v₀ Hvalue₀ Hstep₀
     --
     --
@@ -477,7 +477,7 @@ lemma compatibility.fix₁.induction :
       apply HlcArg₁
       -- head₂
       apply Hstep₁
-    . apply logic_rel_value.antimono
+    . apply log_rel_value.antimono
       apply Hsem_value; omega
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
@@ -485,8 +485,8 @@ lemma compatibility.fix₁.induction :
 -- Γ ⊧ fix f₀ ≤𝑙𝑜𝑔 fix f₁ : τ𝕒 → τ𝕓
 lemma compatibility.fix₁ :
   ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
-    logic_rel_typing Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
-    logic_rel_typing Γ (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
+    log_rel_typing Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ∅) (.arrow τ𝕒 τ𝕓 ∅) ∅) →
+    log_rel_typing Γ (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ∅) :=
   by
   intros Γ f₀ f₁ τ𝕒 τ𝕓 Hf
   have ⟨Hτf₀, Hτf₁, Hf⟩ := Hf
@@ -495,7 +495,7 @@ lemma compatibility.fix₁ :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
-  simp only [multi_subst.fix₁, logic_rel_expr]
+  simp only [multi_subst.fix₁, log_rel_expr]
   intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
@@ -513,9 +513,9 @@ lemma compatibility.fix₁ :
   -- ——————————————————————————
   -- γ₁(f₁) ⇾* fv₁
   -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕓⟧{k - i₀}
-  simp only [logic_rel_expr] at Hf
+  simp only [log_rel_expr] at Hf
   have ⟨fv₁, HstepFix₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFix₀ HstepFix₀
-  have ⟨HvalueFix₀, HvalueFix₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value_fun
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value_fun
   --
   --
   -- γ₁(f₁) ⇾* fv₁
@@ -532,5 +532,5 @@ lemma compatibility.fix₁ :
     simp; apply lc.value; apply HvalueFix₁
     apply head.fix₁; apply HvalueFix₁
   . apply compatibility.fix₁.induction
-    apply logic_rel_value.antimono
+    apply log_rel_value.antimono
     apply Hsem_value_fun; omega

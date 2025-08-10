@@ -1,13 +1,13 @@
-import CollapsingTowers.TwoLevelRec.LogicEquiv.Fundamental
+import CollapsingTowers.TwoLevelRec.LogicalEquiv.Fundamental
 import CollapsingTowers.TwoLevelRec.CtxEquiv.Defs
 
-lemma logic_rel_typing.congruence_under_ObsCtx𝔹 :
+lemma log_rel_typing.congruence_under_ObsCtx𝔹 :
   ∀ Δ Γ τδ τγ B e₀ e₁,
     typing Δ 𝟙 e₀ τδ ∅ →
     typing Δ 𝟙 e₁ τδ ∅ →
-    logic_rel_typing Δ e₀ e₁ τδ →
+    log_rel_typing Δ e₀ e₁ τδ →
     ObsCtx𝔹 Δ τδ B Γ τγ →
-    logic_rel_typing Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+    log_rel_typing Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
   by
   intros Δ Γ τδ τγ B e₀ e₁ Hτ₀ Hτ₁ Hsem HB
   induction HB generalizing e₀ e₁
@@ -58,13 +58,13 @@ lemma logic_rel_typing.congruence_under_ObsCtx𝔹 :
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
 -- ————————————————————————
 -- Γ ⊧ C⟦e₀⟧ ≤𝑙𝑜𝑔 C⟦e₁⟧ : τγ
-lemma logic_rel_typing.congruence_under_ObsCtxℂ :
+lemma log_rel_typing.congruence_under_ObsCtxℂ :
   ∀ Δ Γ τδ τγ C e₀ e₁,
     typing Δ 𝟙 e₀ τδ ∅ →
     typing Δ 𝟙 e₁ τδ ∅ →
-    logic_rel_typing Δ e₀ e₁ τδ →
+    log_rel_typing Δ e₀ e₁ τδ →
     ObsCtxℂ Δ τδ C Γ τγ →
-    logic_rel_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
+    log_rel_typing Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
   by
   intros Δ Γ τδ τγ C e₀ e₁ Hτ₀ Hτ₁ Hsem HC
   induction HC generalizing e₀ e₁
@@ -75,7 +75,7 @@ lemma logic_rel_typing.congruence_under_ObsCtxℂ :
       apply Hτ₀; apply HB
     . apply typing.congruence_under_ObsCtx𝔹
       apply Hτ₁; apply HB
-    . apply logic_rel_typing.congruence_under_ObsCtx𝔹
+    . apply log_rel_typing.congruence_under_ObsCtx𝔹
       apply Hτ₀; apply Hτ₁; apply Hsem; apply HB
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
@@ -83,7 +83,7 @@ lemma logic_rel_typing.congruence_under_ObsCtxℂ :
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ
 theorem logic_equiv_typing.soundness :
   ∀ Γ τ e₀ e₁,
-    logic_rel_typing Γ e₀ e₁ τ →
+    log_rel_typing Γ e₀ e₁ τ →
     ctx_approx Γ e₀ e₁ τ :=
   by
   intros Γ τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
@@ -95,13 +95,13 @@ theorem logic_equiv_typing.soundness :
     have ⟨k, Hstep₀⟩ := pure_stepn_impl_pure_stepn_indexed _ _ Hstep₀
     rw [← HEqΔ] at Hsem
     have ⟨Hwf₀, Hwf₁, Hsem_expr⟩ := Hsem
-    simp only [logic_rel_expr] at Hsem_expr
-    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (logic_rel_env.nil _) k (by omega) _ Hvalue₀ Hstep₀
-    have ⟨_, Hvalue₁⟩ := logic_rel_value.syntactic.value _ _ _ _ Hsem_value
+    simp only [log_rel_expr] at Hsem_expr
+    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (log_rel_env.nil _) k (by omega) _ Hvalue₀ Hstep₀
+    have ⟨_, Hvalue₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value
     exists v₁
   case cons𝔹 C B HC HB IH =>
     apply IH
-    apply logic_rel_typing.congruence_under_ObsCtx𝔹
+    apply log_rel_typing.congruence_under_ObsCtx𝔹
     apply Hτ₀; apply Hτ₁
     apply Hsem; apply HB
     apply typing.congruence_under_ObsCtx𝔹; apply Hτ₀; apply HB
