@@ -48,7 +48,7 @@ theorem typing.erase.fundamental :
   case reflect IH =>
     apply IH
   case lam𝕔 Hclose IH =>
-    apply compatibility.lam;apply ty.erase.wbt
+    apply compatibility.lam; apply ty.erase.wbt
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     simp [← env.erase.length, ← closed.under_erase]; apply Hclose
     rw [← env.erase.length, ← comm.erase_opening]
