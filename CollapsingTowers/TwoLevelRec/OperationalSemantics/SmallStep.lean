@@ -25,60 +25,11 @@ inductive stepn : Expr → Expr → Prop
 
 notation:max e₀ " ⇝* " e₁  => stepn e₀ e₁
 
-inductive pure_step : Expr → Expr → Prop where
-  | pure : ∀ M e₀ e₁, ctx𝕄 0 M → lc e₀ → head e₀ e₁ → pure_step M⟦e₀⟧ M⟦e₁⟧
+inductive stepn.indexed : ℕ → Expr → Expr → Prop
+  | refl : ∀ e, stepn.indexed 0 e e
+  | multi : ∀ k e₀ e₁ e₂, (e₀ ⇝ e₁) → stepn.indexed k e₁ e₂ → stepn.indexed (k + 1) e₀ e₂
 
-notation:max e₀ " ⇾ " e₁  => pure_step e₀ e₁
-
-inductive pure_stepn : Expr → Expr → Prop
-  | refl : ∀ e, pure_stepn e e
-  | multi : ∀ e₀ e₁ e₂, (e₀ ⇾ e₁) → pure_stepn e₁ e₂ → pure_stepn e₀ e₂
-
-notation:max e₀ " ⇾* " e₁  => pure_stepn e₀ e₁
-
-inductive pure_stepn_indexed : ℕ → Expr → Expr → Prop
-  | refl : ∀ e, pure_stepn_indexed 0 e e
-  | multi : ∀ k e₀ e₁ e₂, (e₀ ⇾ e₁) → pure_stepn_indexed k e₁ e₂ → pure_stepn_indexed (k + 1) e₀ e₂
-
-notation:max e₀ " ⇾ " "⟦" k "⟧ " e₁  => pure_stepn_indexed k e₀ e₁
-
-lemma pure_step_impl_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → (e₀ ⇝ e₁) :=
-  by
-  intros e₀ e₁ Hstep
-  cases Hstep
-  case pure HM Hlc Hhead =>
-    apply step_lvl.pure
-    apply HM; apply Hlc; apply Hhead
-
-lemma pure_stepn_impl_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → (e₀ ⇝* e₁) :=
-  by
-  intros e₀ e₁ Hstepn
-  induction Hstepn
-  case refl => apply stepn.refl
-  case multi H _ IH =>
-    apply stepn.multi
-    apply pure_step_impl_step; apply H
-    apply IH
-
-lemma pure_stepn_impl_pure_stepn_indexed : ∀ e₀ e₁, (e₀ ⇾* e₁) → ∃ k, (e₀ ⇾ ⟦k⟧ e₁) :=
-  by
-  intros e₀ e₁ Hstepn
-  induction Hstepn
-  case refl => exists 0; apply pure_stepn_indexed.refl
-  case multi H _ IH =>
-    have ⟨k, IH⟩ := IH
-    exists k + 1
-    apply pure_stepn_indexed.multi
-    apply H; apply IH
-
-lemma pure_stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇾* e₁) → (e₁ ⇾* e₂) → (e₀ ⇾* e₂) :=
-  by
-  intros e₀ e₁ e₂ Hstep₀ Hstep₁
-  induction Hstep₀
-  case refl => apply Hstep₁
-  case multi H _ IH =>
-    apply pure_stepn.multi
-    apply H; apply IH; apply Hstep₁
+notation:max e₀ " ⇝ " "⟦" k "⟧ " e₁  => stepn.indexed k e₀ e₁
 
 lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
@@ -92,23 +43,27 @@ lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   case lift_lam =>
     rw [← fv.under_maping𝕔]
 
-lemma lc.under_pure_step : ∀ e₀ e₁, (e₀ ⇾ e₁) → lc e₀ :=
+lemma lc.under_step : ∀ e₀ e₁, (e₀ ⇝ e₁) → lc e₀ :=
   by
   intros e₀ e₁ Hstep
   cases Hstep
   case pure HM Hlc Hhead =>
     apply lc.under_ctx𝕄; apply HM; apply Hlc
+  case reflect HP HE Hlc =>
+    apply lc.under_ctxℙ; apply HP
+    apply lc.under_ctx𝔼; apply HE
+    apply Hlc
 
-lemma lc.under_pure_stepn : ∀ e₀ e₁, (e₀ ⇾* e₁) → lc e₁ → lc e₀ :=
+lemma lc.under_stepn : ∀ e₀ e₁, (e₀ ⇝* e₁) → lc e₁ → lc e₀ :=
   by
   intros e₀ e₁ Hstepn Hlc
   induction Hstepn
   case refl => apply Hlc
-  case multi H _ IH => apply lc.under_pure_step; apply H
+  case multi H _ IH => apply lc.under_step; apply H
 
-lemma lc.under_pure_stepn_indexed : ∀ e₀ e₁ k, (e₀ ⇾ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
+lemma lc.under_stepn.indexed : ∀ e₀ e₁ k, (e₀ ⇝ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
   by
   intros e₀ e₁ k Hstepn Hlc
   induction Hstepn
   case refl => apply Hlc
-  case multi H _ IH => apply lc.under_pure_step; apply H
+  case multi H _ IH => apply lc.under_step; apply H

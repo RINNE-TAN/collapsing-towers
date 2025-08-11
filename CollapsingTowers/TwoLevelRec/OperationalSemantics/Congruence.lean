@@ -1,25 +1,5 @@
 import CollapsingTowers.TwoLevelRec.OperationalSemantics.SmallStep
 
-lemma pure_step.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀ ⇾ e₁) → (B⟦e₀⟧ ⇾ B⟦e₁⟧) :=
-  by
-  intros B e₀ e₁ HB Hstep
-  cases Hstep
-  case pure M _ _ HM Hlc Hhead =>
-    rw [ctx_comp B M]
-    apply pure_step.pure
-    apply ctx𝕄.cons𝔹; apply HB; apply HM
-    apply Hlc; apply Hhead
-
-lemma pure_stepn.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀ ⇾* e₁) → (B⟦e₀⟧ ⇾* B⟦e₁⟧) :=
-  by
-  intros B e₀ e₁ HB Hstepn
-  induction Hstepn
-  case refl => apply pure_stepn.refl
-  case multi H _ IH =>
-    apply pure_stepn.multi
-    apply pure_step.congruence_under_ctx𝔹
-    apply HB; apply H; apply IH
-
 lemma step.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ e₁) → (B⟦e₀⟧ ⇝ B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstep

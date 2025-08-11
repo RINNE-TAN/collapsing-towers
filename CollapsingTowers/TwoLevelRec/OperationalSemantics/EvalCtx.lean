@@ -118,6 +118,15 @@ lemma lc.under_ctxℚ : ∀ Q e i lvl, ctxℚ lvl Q → lc_at e i → lc_at Q⟦
     simp; apply lc.under_ctxℝ
     apply HR; apply IHlc
 
+lemma lc.under_ctxℙ : ∀ P e i lvl, ctxℙ lvl P → lc_at e i → lc_at P⟦e⟧ i :=
+  by
+  intros _ _ _ _ HP Hlc
+  cases HP
+  case hole => apply Hlc
+  case consℚ HQ =>
+    apply lc.under_ctxℚ
+    apply HQ; apply Hlc
+
 lemma fv.under_ctx𝔹 :
   ∀ B e₀ e₁,
     ctx𝔹 B →

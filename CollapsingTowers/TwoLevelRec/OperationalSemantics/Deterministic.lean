@@ -543,14 +543,3 @@ theorem step.deterministic :
       have ⟨HEqr, HEqP, HEqE⟩ := deterministic.under_ctxℙ _ _ _ _ _ _ _ HPl HPr HEl HEr HEq Hstepablel Hstepabler
       simp at HEqr
       simp [HEqr, HEqP, HEqE]
-
-theorem pure_step.deterministic :
-  ∀ e l r,
-    (e ⇾ l) →
-    (e ⇾ r) →
-    l = r :=
-  by
-  intros e l r Hstepl Hstepr
-  apply step.deterministic
-  apply pure_step_impl_step; apply Hstepl
-  apply pure_step_impl_step; apply Hstepr
