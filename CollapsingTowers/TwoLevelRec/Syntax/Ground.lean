@@ -46,12 +46,50 @@ lemma erasable.reflect : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.reflect e₁ :=
 lemma grounded_iff_erase_identity : ∀ e, grounded e ↔ ‖e‖ = e :=
   by
   intros e
-  induction e <;> simp
-  case lam IH => apply IH
-  case app₁ IH₀ IH₁ => rw [IH₀, IH₁]
-  case lift => apply erasable.lift
-  case run => apply erasable.run
-  case code => apply erasable.code
-  case reflect => apply erasable.reflect
-  case lets IH₀ IH₁ => rw [IH₀, IH₁]
-  case fix₁ IH => apply IH
+  induction e with
+  | bvar| fvar| app₂| lit| lam𝕔| lets𝕔| fix₂ => simp
+  | lam _ IH
+  | fix₁ _ IH => simp [IH]
+  | app₁ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp [IH₀, IH₁]
+  | lift => simp; apply erasable.lift
+  | run => simp; apply erasable.run
+  | code => simp; apply erasable.code
+  | reflect => simp; apply erasable.reflect
+
+lemma grounded.under_opening : ∀ e i x, grounded e ↔ grounded ({i ↦ x} e) :=
+  by
+  intros e i x
+  induction e generalizing i with
+  | fvar| app₂| lit| lam𝕔| lets𝕔| fix₂| lift| run| code| reflect => simp
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | lam _ IH
+  | fix₁ _ IH =>
+    simp; rw [IH]
+  | app₁ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]
+
+lemma grounded.under_subst : ∀ e v x, grounded e → grounded v → grounded (subst x v e) :=
+  by
+  intros e v x
+  induction e with
+  | bvar| app₂| lit| lam𝕔| lets𝕔| fix₂| lift| run| code| reflect => simp
+  | fvar y =>
+    simp; intros Hv
+    by_cases HEq : x = y
+    . simp [if_pos HEq, Hv]
+    . simp [if_neg HEq]
+  | lam _ IH
+  | fix₁ _ IH
+    => simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; intros H₀ H₁ Hv
+    constructor
+    apply IH₀; apply H₀; apply Hv
+    apply IH₁; apply H₁; apply Hv

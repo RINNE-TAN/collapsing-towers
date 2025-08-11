@@ -158,6 +158,22 @@ lemma log_rel_value.syntactic.typing :
     constructor; apply Hτ₀; apply Hτ₁
   all_goals simp at Hsem_value
 
+lemma log_rel_value.syntactic.grounded :
+  ∀ k v₀ v₁ τ,
+    log_rel_value k v₀ v₁ τ →
+    grounded v₀ ∧ grounded v₁ :=
+  by
+  intros k v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> cases v₁ <;> simp at Hsem_value
+    constructor; simp; simp
+  case arrow φ =>
+    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+    have ⟨HG₀, _, HG₁, _, _⟩ := Hsem_value
+    constructor; apply HG₀; apply HG₁
+  all_goals simp at Hsem_value
+
 lemma log_rel_value.apply :
   ∀ k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓,
     log_rel_value k f₀ f₁ (.arrow τ𝕒 τ𝕓 ∅) →
@@ -225,7 +241,7 @@ lemma log_rel_env.multi_wf :
       apply typing.wf []; apply Hτ₁
       apply IH.right
 
-lemma log_rel_env.subst.typing :
+lemma log_rel_env.multi_subst.typing :
   ∀ k γ₀ γ₁ e₀ e₁ Γ τ,
     typing Γ 𝟙 e₀ τ ∅ →
     typing Γ 𝟙 e₁ τ ∅ →
@@ -244,3 +260,21 @@ lemma log_rel_env.subst.typing :
       apply typing.weakening; apply Hτv₀; apply Hτ₀
     . rw [HEq₁]; apply preservation.subst; rw [← List.append_nil Γ]
       apply typing.weakening; apply Hτv₁; apply Hτ₁
+
+lemma log_rel_env.multi_subst.grounded :
+  ∀ k γ₀ γ₁ e₀ e₁ Γ,
+    grounded e₀ →
+    grounded e₁ →
+    log_rel_env k γ₀ γ₁ Γ →
+    grounded (multi_subst γ₀ e₀) ∧
+    grounded (multi_subst γ₁ e₁) :=
+  by
+  intros k γ₀ γ₁ e₀ e₁ Γ HG₀ HG₁ HsemΓ
+  induction HsemΓ generalizing e₀ e₁
+  case nil => constructor; apply HG₀; apply HG₁
+  case cons Γ Hsem_value HsemΓ IH =>
+    have ⟨HEq₀, HEq₁⟩ := log_rel_env.length _ _ _ _ HsemΓ
+    have ⟨HGv₀, HGv₁⟩ := log_rel_value.syntactic.grounded _ _ _ _ Hsem_value
+    apply IH
+    apply grounded.under_subst; apply HG₀; apply HGv₀
+    apply grounded.under_subst; apply HG₁; apply HGv₁
