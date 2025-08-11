@@ -302,6 +302,41 @@ lemma closed.under_ctx𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀
     simp; apply closed.under_ctx𝔹; apply HB; apply He₀
     apply IH; apply closed.decompose_ctx𝔹; apply HB; apply He₀
 
+lemma grounded.under_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → grounded e :=
+  by
+  intros B e HB He
+  cases HB with
+  | appl₁| lets => apply He.left
+  | appr₁ => apply He.right
+  | fix₁ => apply He
+  | appl₂| appr₂| lift| fix₂ => nomatch He
+
+lemma grounded.under_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → ¬grounded R⟦e⟧ :=
+  by
+  intros intro lvl R e HR He
+  cases HR <;> nomatch He
+
+lemma grounded.under_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → grounded M⟦e⟧ → grounded e :=
+  by
+  intros lvl M e HM He
+  induction HM
+  case hole => apply He
+  case cons𝔹 HB _ IH =>
+    apply IH; apply grounded.under_ctx𝔹
+    apply HB; apply He
+  case consℝ HR _ IH =>
+    exfalso; apply grounded.under_ctxℝ
+    apply HR; apply He
+
+lemma grounded.under_ctx𝔼 : ∀ E e, ctx𝔼 E → grounded E⟦e⟧ → grounded e :=
+  by
+  intros E e HE He
+  induction HE
+  case hole => apply He
+  case cons𝔹 HB _ IH =>
+    apply IH; apply grounded.under_ctx𝔹
+    apply HB; apply He
+
 lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,
     ctx𝕄 lvl M →

@@ -10,15 +10,6 @@ lemma pure_step.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀ 
     apply ctx𝕄.cons𝔹; apply HB; apply HM
     apply Hlc; apply Hhead
 
-lemma pure_step.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → (e₀ ⇾ e₁) → (E⟦e₀⟧ ⇾ E⟦e₁⟧) :=
-  by
-  intros E e₀ e₁ HE Hstep
-  induction HE
-  case hole => apply Hstep
-  case cons𝔹 HB _ IH =>
-    simp; apply congruence_under_ctx𝔹
-    apply HB; apply IH
-
 lemma pure_stepn.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀ ⇾* e₁) → (B⟦e₀⟧ ⇾* B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB Hstepn
@@ -29,15 +20,31 @@ lemma pure_stepn.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → (e₀
     apply pure_step.congruence_under_ctx𝔹
     apply HB; apply H; apply IH
 
-lemma pure_stepn.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → (e₀ ⇾* e₁) → (E⟦e₀⟧ ⇾* E⟦e₁⟧) :=
+lemma step.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ e₁) → (B⟦e₀⟧ ⇝ B⟦e₁⟧) :=
   by
-  intros E e₀ e₁ HE Hstepn
+  intros B e₀ e₁ HB HG Hstep
+  cases Hstep
+  case pure M _ _ HM Hlc Hhead =>
+    rw [ctx_comp B M]
+    apply step_lvl.pure
+    apply ctx𝕄.cons𝔹; apply HB; apply HM
+    apply Hlc; apply Hhead
+  case reflect M E _ HP HE _ =>
+    have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
+    have HG := grounded.under_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.under_ctx𝔼 _ _ HE HG
+    simp at HG
+
+lemma stepn.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝* e₁) → (B⟦e₀⟧ ⇝* B⟦e₁⟧) :=
+  by
+  intros B e₀ e₁ HB HG Hstepn
   induction Hstepn
-  case refl => apply pure_stepn.refl
+  case refl => apply stepn.refl
   case multi H _ IH =>
-    apply pure_stepn.multi
-    apply pure_step.congruence_under_ctx𝔼
-    apply HE; apply H; apply IH
+    apply stepn.multi
+    apply step.congruence_under_ctx𝔹.grounded
+    apply HB; apply HG; apply H
+    apply IH; admit
 
 lemma step.congruence_under_ctx𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
   by
