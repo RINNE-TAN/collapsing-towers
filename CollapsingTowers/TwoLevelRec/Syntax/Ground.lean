@@ -74,7 +74,7 @@ lemma grounded.under_opening : ∀ e i x, grounded e ↔ grounded ({i ↦ x} e) 
   | lets _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
 
-lemma grounded.under_subst : ∀ e v x, grounded e → grounded v → grounded (subst x v e) :=
+lemma grounded.under_subst : ∀ e v x, grounded v → grounded e → grounded (subst x v e) :=
   by
   intros e v x
   induction e with
@@ -89,7 +89,27 @@ lemma grounded.under_subst : ∀ e v x, grounded e → grounded v → grounded (
     => simp; apply IH
   | app₁ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁ =>
-    simp; intros H₀ H₁ Hv
+    simp; intros Hv H₀ H₁
     constructor
-    apply IH₀; apply H₀; apply Hv
-    apply IH₁; apply H₁; apply Hv
+    apply IH₀; apply Hv; apply H₀
+    apply IH₁; apply Hv; apply H₁
+
+lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → grounded (opening i v e) :=
+  by
+  intros e v i
+  induction e generalizing i with
+  | fvar| app₂| lit| lam𝕔| lets𝕔| fix₂| lift| run| code| reflect => simp
+  | bvar j =>
+    simp; intros Hv
+    by_cases HEq : j = i
+    . simp [if_pos HEq, Hv]
+    . simp [if_neg HEq]
+  | lam _ IH
+  | fix₁ _ IH
+    => simp; apply IH
+  | app₁ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁ =>
+    simp; intros Hv H₀ H₁
+    constructor
+    apply IH₀; apply Hv; apply H₀
+    apply IH₁; apply Hv; apply H₁

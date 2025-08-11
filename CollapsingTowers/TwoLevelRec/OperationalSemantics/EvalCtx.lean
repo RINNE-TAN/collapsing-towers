@@ -311,7 +311,7 @@ lemma closed.under_ctx𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀
     simp; apply closed.under_ctx𝔹; apply HB; apply He₀
     apply IH; apply closed.decompose_ctx𝔹; apply HB; apply He₀
 
-lemma grounded.under_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → grounded e :=
+lemma grounded.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → grounded e :=
   by
   intros B e HB He
   cases HB with
@@ -320,31 +320,56 @@ lemma grounded.under_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → grou
   | fix₁ => apply He
   | appl₂| appr₂| lift| fix₂ => nomatch He
 
-lemma grounded.under_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → ¬grounded R⟦e⟧ :=
+lemma grounded.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → ¬grounded R⟦e⟧ :=
   by
   intros intro lvl R e HR He
   cases HR <;> nomatch He
 
-lemma grounded.under_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → grounded M⟦e⟧ → grounded e :=
+lemma grounded.decompose_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → grounded M⟦e⟧ → grounded e :=
   by
   intros lvl M e HM He
   induction HM
   case hole => apply He
   case cons𝔹 HB _ IH =>
-    apply IH; apply grounded.under_ctx𝔹
+    apply IH; apply grounded.decompose_ctx𝔹
     apply HB; apply He
   case consℝ HR _ IH =>
-    exfalso; apply grounded.under_ctxℝ
+    exfalso; apply grounded.decompose_ctxℝ
     apply HR; apply He
 
-lemma grounded.under_ctx𝔼 : ∀ E e, ctx𝔼 E → grounded E⟦e⟧ → grounded e :=
+lemma grounded.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → grounded E⟦e⟧ → grounded e :=
   by
   intros E e HE He
   induction HE
   case hole => apply He
   case cons𝔹 HB _ IH =>
-    apply IH; apply grounded.under_ctx𝔹
+    apply IH; apply grounded.decompose_ctx𝔹
     apply HB; apply He
+
+lemma grounded.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded B⟦e₀⟧ → grounded e₁ → grounded B⟦e₁⟧ :=
+  by
+  intros B e₀ e₁ HB He₀ He₁
+  cases HB with
+  | appl₁| lets =>
+    constructor; apply He₁; apply He₀.right
+  | appr₁ =>
+    constructor; apply He₀.left; apply He₁
+  | fix₁ => apply He₁
+  | appl₂| appr₂| lift| fix₂ =>
+    nomatch He₀
+
+lemma grounded.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → grounded M⟦e₀⟧ → grounded e₁ → grounded M⟦e₁⟧ :=
+  by
+  intros lvl M e₀ e₁ HM He₀ He₁
+  induction HM
+  case hole => apply He₁
+  case cons𝔹 B M HB _ IH =>
+    apply grounded.under_ctx𝔹 B; apply HB; apply He₀
+    apply IH
+    apply grounded.decompose_ctx𝔹; apply HB; apply He₀
+  case consℝ HR _ IH =>
+    exfalso; apply grounded.decompose_ctxℝ
+    apply HR; apply He₀
 
 lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,

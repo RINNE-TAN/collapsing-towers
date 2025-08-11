@@ -97,7 +97,7 @@ lemma comm.shiftl_opening : ∀ x y e n i, x ≤ y → (shiftl_at x n {i ↦ y} 
   | fix₂ _ IH =>
     simp; apply IH
 
-lemma comm.shiftr_opening : ∀ x y e i, x < y → shiftr_at x (opening i (.fvar y) e) = opening i (.fvar (y - 1)) (shiftr_at x e) :=
+lemma comm.shiftr_opening : ∀ x y e i, x < y → shiftr_at x ({i ↦ y} e) = {i ↦ (y - 1)} (shiftr_at x e) :=
   by
   intros x y e i HLe
   induction e generalizing i with

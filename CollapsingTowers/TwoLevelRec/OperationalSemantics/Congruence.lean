@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelRec.OperationalSemantics.SmallStep
 
-lemma step.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ e₁) → (B⟦e₀⟧ ⇝ B⟦e₁⟧) :=
+lemma step.grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ e₁) → (B⟦e₀⟧ ⇝ B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstep
   cases Hstep
@@ -11,20 +11,21 @@ lemma step.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → gr
     apply Hlc; apply Hhead
   case reflect M E _ HP HE _ =>
     have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
-    have HG := grounded.under_ctx𝕄 _ _ _ HM HG
-    have HG := grounded.under_ctx𝔼 _ _ HE HG
+    have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma stepn.congruence_under_ctx𝔹.grounded : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝* e₁) → (B⟦e₀⟧ ⇝* B⟦e₁⟧) :=
+lemma stepn.grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝* e₁) → (B⟦e₀⟧ ⇝* B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstepn
   induction Hstepn
   case refl => apply stepn.refl
   case multi H _ IH =>
     apply stepn.multi
-    apply step.congruence_under_ctx𝔹.grounded
+    apply step.grounded.congruence_under_ctx𝔹
     apply HB; apply HG; apply H
-    apply IH; admit
+    apply IH; apply grounded.under_step
+    apply H; apply HG
 
 lemma step.congruence_under_ctx𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
   by

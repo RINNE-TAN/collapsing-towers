@@ -67,3 +67,38 @@ lemma lc.under_stepn.indexed : ∀ e₀ e₁ k, (e₀ ⇝ ⟦k⟧ e₁) → lc e
   induction Hstepn
   case refl => apply Hlc
   case multi H _ IH => apply lc.under_step; apply H
+
+lemma grounded.under_head : ∀ e₀ e₁, head e₀ e₁ → grounded e₀ → grounded e₁ :=
+  by
+  intros e₀ e₁ Hhead HG
+  cases Hhead <;> simp at HG
+  case lets =>
+    apply grounded.under_opening_value
+    apply HG.left; apply HG.right
+  case app₁ =>
+    apply grounded.under_opening_value
+    apply HG.right; apply HG.left
+  case fix₁ => simp; apply HG
+
+lemma grounded.under_step : ∀ e₀ e₁, (e₀ ⇝ e₁) → grounded e₀ → grounded e₁ :=
+  by
+  intros e₀ e₁ Hstep HG
+  cases Hstep
+  case pure HM _ Hhead =>
+    apply grounded.under_ctx𝕄; apply HM; apply HG
+    apply grounded.under_head; apply Hhead
+    apply grounded.decompose_ctx𝕄; apply HM; apply HG
+  case reflect M E _ HP HE _ =>
+    have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
+    have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.decompose_ctx𝔼 _ _ HE HG
+    simp at HG
+
+lemma grounded.under_stepn : ∀ e₀ e₁, (e₀ ⇝* e₁) → grounded e₀ → grounded e₁ :=
+  by
+  intros e₀ e₁ Hstepn HG
+  induction Hstepn
+  case refl => apply HG
+  case multi H _ IH =>
+    apply IH; apply grounded.under_step
+    apply H; apply HG
