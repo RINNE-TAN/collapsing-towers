@@ -33,7 +33,7 @@ lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇝* v�
     exfalso; apply step.value_impl_termination
     apply Hvalue; apply Hstep
 
-lemma stepn.indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ → (v₀ ⇝ ⟦k⟧ v₁) → v₀ = v₁ ∧ k = 0 :=
+lemma stepn_indexed.value_impl_termination : ∀ k v₀ v₁, value v₀ → (v₀ ⇝ ⟦k⟧ v₁) → v₀ = v₁ ∧ k = 0 :=
   by
   intros k v₀ v₁ Hvalue Hstepn
   cases Hstepn
@@ -67,7 +67,7 @@ theorem stepn.church_rosser :
       rw [step.deterministic _ _ _ IHstepl IHstepr]
       apply IHsteprn
 
-theorem stepn.indexed.church_rosser :
+theorem stepn_indexed.church_rosser :
   ∀ il ir e l r,
     (e ⇝ ⟦il⟧ l) →
     (e ⇝ ⟦ir⟧ r) →
@@ -82,14 +82,14 @@ theorem stepn.indexed.church_rosser :
     exists ir, 0, r
     constructor; omega
     constructor; apply Hstepr
-    apply stepn.indexed.refl
+    apply stepn_indexed.refl
   case multi il le₀ le₁ le₂ IHstepl IHstepln IH =>
     cases Hstepr
     case refl =>
       exists 0, il + 1, le₂
       constructor; omega
-      constructor; apply stepn.indexed.refl
-      apply stepn.indexed.multi
+      constructor; apply stepn_indexed.refl
+      apply stepn_indexed.multi
       apply IHstepl; apply IHstepln
     case multi ir re₀ IHstepr IHsteprn =>
       have IHstepln : (le₁ ⇝ ⟦ir⟧r) :=

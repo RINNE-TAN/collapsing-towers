@@ -25,11 +25,20 @@ inductive stepn : Expr → Expr → Prop
 
 notation:max e₀ " ⇝* " e₁  => stepn e₀ e₁
 
-inductive stepn.indexed : ℕ → Expr → Expr → Prop
-  | refl : ∀ e, stepn.indexed 0 e e
-  | multi : ∀ k e₀ e₁ e₂, (e₀ ⇝ e₁) → stepn.indexed k e₁ e₂ → stepn.indexed (k + 1) e₀ e₂
+inductive stepn_indexed : ℕ → Expr → Expr → Prop
+  | refl : ∀ e, stepn_indexed 0 e e
+  | multi : ∀ k e₀ e₁ e₂, (e₀ ⇝ e₁) → stepn_indexed k e₁ e₂ → stepn_indexed (k + 1) e₀ e₂
 
-notation:max e₀ " ⇝ " "⟦" k "⟧ " e₁  => stepn.indexed k e₀ e₁
+notation:max e₀ " ⇝ " "⟦" k "⟧ " e₁  => stepn_indexed k e₀ e₁
+
+lemma stepn_indexed_impl_stepn : ∀ k e₀ e₁, (e₀ ⇝ ⟦k⟧ e₁) → (e₀ ⇝* e₁) :=
+  by
+  intros k e₀ e₁ Hstepn
+  induction Hstepn
+  case refl => apply stepn.refl
+  case multi H _ IH =>
+    apply stepn.multi
+    apply H; apply IH
 
 lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
@@ -61,7 +70,7 @@ lemma lc.under_stepn : ∀ e₀ e₁, (e₀ ⇝* e₁) → lc e₁ → lc e₀ :
   case refl => apply Hlc
   case multi H _ IH => apply lc.under_step; apply H
 
-lemma lc.under_stepn.indexed : ∀ e₀ e₁ k, (e₀ ⇝ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
+lemma lc.under_stepn_indexed : ∀ e₀ e₁ k, (e₀ ⇝ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
   by
   intros e₀ e₁ k Hstepn Hlc
   induction Hstepn
