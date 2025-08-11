@@ -31,6 +31,15 @@ inductive stepn_indexed : ℕ → Expr → Expr → Prop
 
 notation:max e₀ " ⇝ " "⟦" k "⟧ " e₁  => stepn_indexed k e₀ e₁
 
+lemma stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇝* e₁) → (e₁ ⇝* e₂) → (e₀ ⇝* e₂) :=
+  by
+  intros e₀ e₁ e₂ Hstep₀ Hstep₁
+  induction Hstep₀
+  case refl => apply Hstep₁
+  case multi H _ IH =>
+    apply stepn.multi
+    apply H; apply IH; apply Hstep₁
+
 lemma stepn_indexed_impl_stepn : ∀ k e₀ e₁, (e₀ ⇝ ⟦k⟧ e₁) → (e₀ ⇝* e₁) :=
   by
   intros k e₀ e₁ Hstepn
