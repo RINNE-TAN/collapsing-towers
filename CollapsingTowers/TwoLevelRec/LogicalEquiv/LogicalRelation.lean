@@ -10,13 +10,13 @@ def log_rel_value : ℕ → Expr → Expr → Ty → Prop
   --
   --
   -- 𝓥⟦τ𝕒 → τ𝕓⟧ₖ ≜ {(λx.e₀, λx.e₁) |
-  --   ∅ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
-  --   ∅ ⊢ λx.e₁ : τ𝕒 → τ𝕓 ∧
+  --   𝔾(e₀) ∧ ∅ ⊢ λx.e₀ : τ𝕒 → τ𝕓
+  --   𝔾(e₁) ∧ ∅ ⊢ λx.e₁ : τ𝕒 → τ𝕓
   --   ∀ j ≤ k, (v₀, v₁) ∈ 𝓥⟦τ𝕒⟧ⱼ. (λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧ⱼ
   -- }
   | k, .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 .pure) =>
-    typing [] 𝟙 (.lam e₀) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
-    typing [] 𝟙 (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
+    grounded e₀ ∧ typing [] 𝟙 (.lam e₀) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
+    grounded e₁ ∧ typing [] 𝟙 (.lam e₁) (.arrow τ𝕒 τ𝕓 ∅) ∅ ∧
     ∀ j, j ≤ k →
       ∀ v₀ v₁,
         log_rel_value j v₀ v₁ τ𝕒 →
@@ -46,13 +46,13 @@ inductive log_rel_env : ℕ → Subst → Subst → TEnv → Prop where
       log_rel_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟙) :: Γ)
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜
---   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
---   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
+--   𝔾(e₀) ∧ Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓
+--   𝔾(e₁) ∧ Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓
 --   ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
 @[simp]
 def log_rel_typing (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
-  typing Γ 𝟙 e₀ τ ∅ ∧
-  typing Γ 𝟙 e₁ τ ∅ ∧
+  grounded e₀ ∧ typing Γ 𝟙 e₀ τ ∅ ∧
+  grounded e₁ ∧ typing Γ 𝟙 e₁ τ ∅ ∧
   ∀ k γ₀ γ₁,
     log_rel_env k γ₀ γ₁ Γ →
     log_rel_expr k (multi_subst γ₀ e₀) (multi_subst γ₁ e₁) τ
@@ -82,9 +82,11 @@ lemma log_rel_value.antimono :
     case reify => simp at Hsem_value
     case pure =>
       simp only [log_rel_value] at Hsem_value
-      have ⟨Hτ₀, Hτ₁, Hsem_value_lam⟩ := Hsem_value
+      have ⟨HG₀, Hτ₀, HG₁, Hτ₁, Hsem_value_lam⟩ := Hsem_value
       simp only [log_rel_value]
+      constructor; apply HG₀
       constructor; apply Hτ₀
+      constructor; apply HG₁
       constructor; apply Hτ₁
       intros j HLe; apply Hsem_value_lam; omega
   case fragment => simp at Hsem_value
@@ -134,7 +136,7 @@ lemma log_rel_value.syntactic.value :
     apply value.lit
   case arrow φ =>
     cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
-    have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
+    have ⟨_, Hτ₀, _, Hτ₁, _⟩ := Hsem_value
     constructor
     apply value.lam; apply typing.regular; apply Hτ₀
     apply value.lam; apply typing.regular; apply Hτ₁
@@ -152,7 +154,7 @@ lemma log_rel_value.syntactic.typing :
     constructor; apply typing.lit; apply typing.lit
   case arrow φ =>
     cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
-    have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
+    have ⟨_, Hτ₀, _, Hτ₁, _⟩ := Hsem_value
     constructor; apply Hτ₀; apply Hτ₁
   all_goals simp at Hsem_value
 
@@ -164,7 +166,7 @@ lemma log_rel_value.apply :
   by
   intros k f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓 Hsem_value_fun Hsem_value_arg
   cases f₀ <;> cases f₁ <;> simp only [log_rel_value] at Hsem_value_fun <;> try contradiction
-  have ⟨_, _, Hsem_value_fun⟩ := Hsem_value_fun
+  have ⟨_, _, _, _, Hsem_value_fun⟩ := Hsem_value_fun
   apply Hsem_value_fun; rfl; apply Hsem_value_arg
 
 lemma log_rel_env.length :
