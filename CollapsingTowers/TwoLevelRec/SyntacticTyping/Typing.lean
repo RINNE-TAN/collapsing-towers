@@ -220,20 +220,3 @@ lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚
     . apply Hφ
   case pure => simp
   case reify => simp
-
-lemma typing.rep_ty_iff_value_code :
-  ∀ v τ φ,
-    value v →
-    typing_reification [] v (.rep τ) φ →
-    ∃ e, v = .code e ∧ typing [] 𝟚 e τ ∅ :=
-  by
-  intros v τ φ Hvalue Hτ
-  cases Hvalue
-  case code e _ =>
-    exists e; simp
-    cases Hτ
-    case pure Hτ => cases Hτ; assumption
-    case reify Hτ => nomatch Hτ
-  all_goals
-  next =>
-    cases Hτ <;> next Hτ => nomatch Hτ

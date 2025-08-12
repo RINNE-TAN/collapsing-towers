@@ -3,13 +3,13 @@ import CollapsingTowers.TwoLevelRec.Erasure.Erase
 -- Γ ⊢ e : τ
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
-theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing ‖Γ‖𝛾 𝟙 ‖e‖ ‖τ‖𝜏 ∅ :=
+theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing ‖Γ‖𝛾 𝟚 ‖e‖ ‖τ‖𝜏 ∅ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing ‖Γ‖𝛾 𝟙 ‖e‖ ‖τ‖𝜏 ∅)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing ‖Γ‖𝛾 𝟙 ‖e‖ ‖τ‖𝜏 ∅)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing ‖Γ‖𝛾 𝟚 ‖e‖ ‖τ‖𝜏 ∅)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing ‖Γ‖𝛾 𝟚 ‖e‖ ‖τ‖𝜏 ∅)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar
@@ -82,11 +82,3 @@ theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → ty
   case reify IH=>
     apply IH
   apply Hτ
-
-theorem typing_reification.erase_safety : ∀ Γ e τ φ, typing_reification Γ e τ φ → typing_reification ‖Γ‖𝛾 ‖e‖ ‖τ‖𝜏 ∅ :=
-  by
-  intros Γ e τ φ Hτ
-  cases Hτ <;>
-  next Hτ =>
-    apply typing_reification.pure
-    apply typing.erase_safety _ _ _ _ _ Hτ

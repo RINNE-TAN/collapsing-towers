@@ -12,7 +12,7 @@ notation:max "‖" τ "‖𝜏" => ty.erase τ
 @[simp]
 def env.erase : TEnv → TEnv
   | [] => []
-  | (τ, _) :: Γ => (‖τ‖𝜏, 𝟙) :: erase Γ
+  | (τ, _) :: Γ => (‖τ‖𝜏, 𝟚) :: erase Γ
 
 notation:max "‖" Γ "‖𝛾" => env.erase Γ
 
@@ -38,7 +38,7 @@ lemma env.erase.length : ∀ Γ, Γ.length = ‖Γ‖𝛾.length :=
   case nil => rfl
   case cons IH => simp; apply IH
 
-lemma env.erase.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖τ‖𝜏, 𝟙) ‖Γ‖𝛾 :=
+lemma env.erase.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖τ‖𝜏, 𝟚) ‖Γ‖𝛾 :=
   by
   intros x τ 𝕊 Γ Hbinds
   induction Γ
