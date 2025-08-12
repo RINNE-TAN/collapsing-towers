@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.LogicalRelation
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Compatibility
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Fundamental
+import CollapsingTowers.TwoLevelRec.LogicalEquiv.Transitive
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Soundness
