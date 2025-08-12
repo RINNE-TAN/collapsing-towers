@@ -170,7 +170,7 @@ lemma typing_reification.wf : ∀ Γ e τ φ, typing_reification Γ e τ φ → 
   intros Γ e τ φ Hτ
   cases Hτ <;> (apply typing.wf; assumption)
 
-lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ∅ :=
+lemma typing.wbt_pure_at_dyn : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ∅ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ e τ φ Hτ
@@ -178,9 +178,9 @@ lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚
   apply @typing.rec
     (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → wbt 𝕊 τ ∧ φ = ∅)
     (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
-  <;> (try intros; assumption)
-  <;> (try intros; contradiction)
   <;> intros
+  <;> (try assumption)
+  <;> (try contradiction)
   case fvar x _ Hbinds Hwbt HEq𝕊 =>
     constructor; apply Hwbt; rfl
   case lam Hwbt₀ Hclose IH HEq𝕊 =>
@@ -220,3 +220,28 @@ lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚
     . apply Hφ
   case pure => simp
   case reify => simp
+
+lemma typing.grounded_at_dyn : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → grounded e :=
+  by
+  generalize HEq𝕊 : 𝟚 = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → grounded e)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> intros
+  <;> (try assumption)
+  <;> (try contradiction)
+  <;> simp
+  case lam IH HEq𝕊 =>
+    rw [grounded.under_opening]; apply IH; apply HEq𝕊
+  case app₁ IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    apply IH₁; apply HEq𝕊
+  case lets IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    rw [grounded.under_opening]; apply IH₁; apply HEq𝕊
+  case fix₁ IH HEq𝕊 =>
+    apply IH; apply HEq𝕊

@@ -50,7 +50,7 @@ lemma preservation.reflect :
     have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
     cases Hτr with
     | reflect _ _ _ Hτe =>
-      have ⟨Hwbt, _⟩ := typing.dyn_impl_pure _ _ _ _ Hτe
+      have ⟨Hwbt, _⟩ := typing.wbt_pure_at_dyn _ _ _ _ Hτe
       apply typing_reification.pure
       apply typing.lets𝕔; apply Hτe
       apply typing_reification.reify
