@@ -49,6 +49,17 @@ lemma stepn_indexed_impl_stepn : ∀ k e₀ e₁, (e₀ ⇝ ⟦k⟧ e₁) → (e
     apply stepn.multi
     apply H; apply IH
 
+lemma stepn_impl_stepn_indexed : ∀ e₀ e₁, (e₀ ⇝* e₁) → ∃ k, (e₀ ⇝ ⟦k⟧ e₁) :=
+  by
+  intros e₀ e₁ Hstepn
+  induction Hstepn
+  case refl => exists 0; apply stepn_indexed.refl
+  case multi H _ IH =>
+    have ⟨k, IH⟩ := IH
+    exists k + 1
+    apply stepn_indexed.multi
+    apply H; apply IH
+
 lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
   intros e₀ e₁ Hhead
