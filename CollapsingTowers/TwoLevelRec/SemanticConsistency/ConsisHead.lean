@@ -95,7 +95,7 @@ lemma consistency.head :
       -- ‖Γ‖ ⊧ ‖(x ↦ bᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ bᵥ)e‖ : ‖τ‖
       -- —————————————————————————————————————————
       -- γ₁‖(x ↦ bᵥ)e‖ ⇝* v₁
-      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - i}
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - i}
       have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
       simp only [log_approx_expr] at IH
       have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ i (by omega) _ Hvalue₀ Hstep₀
@@ -162,7 +162,7 @@ lemma consistency.head :
       -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
       -- —————————————————————————————————————————
       -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
-      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - i}
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - i}
       have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
       simp only [log_approx_expr] at IH
       have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ i (by omega) _ Hvalue₀ Hstep₀
@@ -177,7 +177,58 @@ lemma consistency.head :
       rw [HEq]
       apply log_approx.fundamental; apply typing.erase_safety; apply Hτ₀
     case fix₁ fᵥ HvalueFix =>
-      admit
+      have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₀
+      have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₁
+      constructor; apply HEτ₀
+      constructor; apply HEτ₁
+      intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_approx_env.multi_wf _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.multi_subst.typing _ _ _ _ _ _ _ HEτ₀ HEτ₁ HsemΓ
+      simp at HSτ₀ HSτ₁
+      simp only [log_approx_expr]
+      intros j Hindexj v₀ Hvalue₀ Hstep₀
+      simp at Hstep₀
+      --
+      --
+      -- value fᵥ
+      -- ————————————
+      -- value γ₀‖fᵥ‖
+      -- value γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖
+      have HvalueFix₀ : value (multi_subst γ₀ ‖fᵥ‖) :=
+        by
+        cases HvalueFix
+        case lam e =>
+          simp; apply value.lam
+          apply lc.under_multi_subst; apply Hmulti_wf₀
+          rw [← lc.under_erase]; apply typing.regular _ _ _ _ _ Hτ₀
+        all_goals nomatch Hτ₀
+      have HvalueFun₀ : value (multi_subst γ₀ ‖.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))‖) :=
+        by
+        simp; apply value.lam
+        simp; apply lc.inc; apply lc.value
+        apply HvalueFix₀; omega
+      --
+      --
+      -- fix γ₀‖fᵥ‖ ⇝ ⟦j⟧ v₀
+      -- —————————————————————————————
+      -- v₀ = γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖
+      have ⟨z, r, HEqj, _, Hstepr, HEqv⟩ := stepn_indexed.refine.fix₁ _ _ _ Hvalue₀ (typing.grounded_at_dyn _ _ _ _ HSτ₀) Hstep₀
+      have ⟨HEqr, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ HvalueFix₀ Hstepr
+      --
+      --
+      -- ‖Γ‖ ⊧ ‖λx.fᵥ @ (fix fᵥ) @ x‖ ≤𝑙𝑜𝑔 ‖λx.fᵥ @ (fix fᵥ) @ x‖ : ‖τ‖
+      -- ———————————————————————————————————————————————————————————————
+      -- (γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖, γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖) ∈ 𝓥⟦‖τ‖⟧{k}
+      have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
+      simp only [log_approx_expr] at IH
+      have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ 0 (by omega) _ HvalueFun₀ (stepn_indexed.refl _)
+      exists v₁
+      constructor
+      . apply Hstep₁
+      . rw [HEqv, ← HEqr]
+        simp at Hsem_value
+        apply log_approx_value.antimono
+        apply Hsem_value; omega
   -- right hand side
   . cases Hhead <;> try apply log_approx.fundamental; apply typing.erase_safety; apply Hτ₁
     case lets e bᵥ HvalueBind =>
@@ -197,7 +248,7 @@ lemma consistency.head :
       -- ‖Γ‖ ⊧ ‖(x ↦ bᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ bᵥ)e‖ : ‖τ‖
       -- —————————————————————————————————————————
       -- γ₁‖(x ↦ bᵥ)e‖ ⇝* v₁
-      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - j}
       have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
       simp only [log_approx_expr] at IH
       have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
@@ -249,7 +300,7 @@ lemma consistency.head :
       -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
       -- ————————————————————————————————————————————
       -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
-      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - j}
       have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
       simp only [log_approx_expr] at IH
       have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
@@ -308,7 +359,7 @@ lemma consistency.head :
       -- ‖Γ‖ ⊧ ‖λx.fᵥ @ (fix fᵥ) @ x‖ ≤𝑙𝑜𝑔 ‖λx.fᵥ @ (fix fᵥ) @ x‖ : ‖τ‖
       -- —————————————————————————————————————————————————————————————
       -- γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖ ⇝* v₁
-      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - j}
       have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
       simp only [log_approx_expr] at IH
       have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
