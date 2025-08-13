@@ -149,7 +149,7 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
   | fix₁ _ IH
   | fix₂ _ IH => simp; apply IH
 
-lemma comm.erase_opening_subst : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
+lemma comm.erase_opening_value : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
   by
   intros i v e
   induction e generalizing i with
