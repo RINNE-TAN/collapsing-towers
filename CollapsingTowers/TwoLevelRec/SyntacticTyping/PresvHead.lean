@@ -65,11 +65,11 @@ lemma typing.escape :
 theorem preservation.head :
   ∀ Γ e₀ e₁ τ φ,
     head e₀ e₁ →
-    lc e₀ →
     typing Γ 𝟙 e₀ τ φ →
     typing Γ 𝟙 e₁ τ φ :=
   by
-  intros Γ e₀ e₁ τ φ Hhead Hlc Hτ
+  intros Γ e₀ e₁ τ φ Hhead Hτ
+  have Hlc := typing.regular _ _ _ _ _ Hτ
   cases Hhead
   case lets Hvalue =>
     cases Hτ

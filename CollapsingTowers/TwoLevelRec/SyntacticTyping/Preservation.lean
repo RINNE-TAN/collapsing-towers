@@ -20,8 +20,7 @@ theorem preservation.strengthened :
       apply preservation.under_ctx𝕄
       apply HM; apply Hlc
       apply head.fv_shrink; apply Hhead; intros _ _ _
-      apply preservation.head; apply Hhead; apply Hlc
-      apply Hτ
+      apply preservation.head; apply Hhead; apply Hτ
   case reflect P E e HP HE Hlc =>
     cases HP
     case hole =>
