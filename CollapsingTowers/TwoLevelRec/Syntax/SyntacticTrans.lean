@@ -142,6 +142,14 @@ def multi_subst : Subst → Expr → Expr
   | v :: γ, e => multi_subst γ (subst γ.length v e)
 
 @[simp]
+lemma multi_subst.bvar: ∀ γ i, multi_subst γ (.bvar i) = .bvar i :=
+  by
+  intros γ i
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
 lemma multi_subst.fvar: ∀ γ x, x ≥ γ.length → multi_subst γ (.fvar x) = .fvar x :=
   by
   intros γ x HGe
