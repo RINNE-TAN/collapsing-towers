@@ -104,8 +104,73 @@ lemma consistency.head :
       . apply Hstep₁
       . apply log_approx_value.antimono
         apply Hsem_value; omega
-    case app₁ =>
-      admit
+    case app₁ e argᵥ HvalueArg =>
+      have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₀
+      have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₁
+      constructor; apply HEτ₀
+      constructor; apply HEτ₁
+      intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_approx_env.multi_wf _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.multi_subst.typing _ _ _ _ _ _ _ HEτ₀ HEτ₁ HsemΓ
+      simp at HSτ₀ HSτ₁
+      simp only [log_approx_expr]
+      intros j Hindexj v₀ Hvalue₀ Hstep₀
+      --
+      --
+      -- value argᵥ
+      -- ———————————————————————————————
+      -- value γ₀‖argᵥ‖ ∧ value γ₁‖argᵥ‖
+      have ⟨HvalueArg₀, HvalueArg₁⟩ : value (multi_subst γ₀ ‖argᵥ‖) ∧ value (multi_subst γ₁ ‖argᵥ‖) :=
+        by
+        cases Hτ₀
+        case app₁ Hτarg Hτf =>
+          cases Hτf
+          case lam Hwbt _ =>
+            apply consistency.erase_value
+            apply HvalueArg; apply Hwbt; apply Hτarg; apply HsemΓ
+      --
+      --
+      -- value λx.e
+      -- ——————————————
+      -- value γ₀‖λx.e‖
+      have HvalueFun₀ : value (.lam (multi_subst γ₀ ‖e‖)) :=
+        by
+        cases Hτ₀
+        case app₁ Hτf =>
+          apply value.lam
+          apply lc.under_multi_subst; apply Hmulti_wf₀
+          rw [← lc.under_erase]; apply typing.regular _ _ _ _ _ Hτf
+      --
+      --
+      -- λx.γ₀‖e₀‖ @ γ₀‖argᵥ‖ ⇝ ⟦j⟧ v₀
+      -- ————————————————————————————————
+      -- j = i + 1
+      -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+      simp at Hstep₀
+      have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.lam _ _ _ _ HvalueFun₀ HvalueArg₀ Hvalue₀ Hstep₀
+      --
+      --
+      -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+      -- ———————————————————————————————
+      -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦i⟧ v₀
+      have HEq : opening 0 (multi_subst γ₀ ‖argᵥ‖) (multi_subst γ₀ ‖e‖) = multi_subst γ₀ ‖opening 0 argᵥ e‖ :=
+        by rw [comm.erase_opening_value, comm.multi_subst_opening_value]; apply Hmulti_wf₀
+      rw [HEq] at Hstep₀
+      --
+      --
+      -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦i⟧ v₀
+      -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
+      -- —————————————————————————————————————————
+      -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - i}
+      have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
+      simp only [log_approx_expr] at IH
+      have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ i (by omega) _ Hvalue₀ Hstep₀
+      exists v₁
+      constructor
+      . apply Hstep₁
+      . apply log_approx_value.antimono
+        apply Hsem_value; omega
     case lift_lam e =>
       have HEq : ‖.lam𝕔 (maping𝕔 0 e)‖ = ‖.lift (.lam e)‖ :=
         by simp [identity.erase_maping𝕔]
@@ -167,8 +232,60 @@ lemma consistency.head :
             apply HvalueBind; apply Hwbt; apply Hτb; apply HsemΓ
         apply HvalueBind₁
       . apply Hsem_value
-    case app₁ =>
-      admit
+    case app₁ e argᵥ HvalueArg =>
+      have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₁
+      have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₀
+      constructor; apply HEτ₀
+      constructor; apply HEτ₁
+      intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_approx_env.multi_wf _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.multi_subst.typing _ _ _ _ _ _ _ HEτ₀ HEτ₁ HsemΓ
+      simp at HSτ₀ HSτ₁
+      simp only [log_approx_expr]
+      intros j Hindexj v₀ Hvalue₀ Hstep₀
+      --
+      --
+      -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦j⟧ v₀
+      -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
+      -- —————————————————————————————————————————
+      -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+      -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+      have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
+      simp only [log_approx_expr] at IH
+      have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
+      --
+      --
+      -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+      -- —————————————————————————————
+      -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⇝* v₁
+      have HEq : multi_subst γ₁ ‖opening 0 argᵥ e‖ = opening 0 (multi_subst γ₁ ‖argᵥ‖) (multi_subst γ₁ ‖e‖) :=
+        by rw [comm.erase_opening_value, comm.multi_subst_opening_value]; apply Hmulti_wf₁
+      rw [HEq] at Hstep₁
+      -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⇝* v₁
+      -- —————————————————————————————————
+      -- (λx.γ₁‖e‖) @ γ₁‖argᵥ‖ ⇝* v₀
+      exists v₁
+      constructor
+      . simp
+        apply stepn.multi _ _ _ _ Hstep₁
+        apply step_lvl.pure id; apply ctx𝕄.hole
+        apply typing.regular; apply HSτ₁
+        apply head.app₁
+        --
+        --
+        -- value argᵥ
+        -- ———————————————————————————
+        -- value γ₀‖argᵥ‖ ∧ value γ₁‖argᵥ‖
+        have ⟨HvalueArg₀, HvalueArg₁⟩ : value (multi_subst γ₀ ‖argᵥ‖) ∧ value (multi_subst γ₁ ‖argᵥ‖) :=
+          by
+          cases Hτ₀
+          case app₁ Hτarg Hτf =>
+            cases Hτf
+            case lam Hwbt _ =>
+              apply consistency.erase_value
+              apply HvalueArg; apply Hwbt; apply Hτarg; apply HsemΓ
+        apply HvalueArg₁
+      . apply Hsem_value
     case lift_lam e =>
       have HEq : ‖.lam𝕔 (maping𝕔 0 e)‖ = ‖.lift (.lam e)‖ :=
         by simp [identity.erase_maping𝕔]
