@@ -45,6 +45,15 @@ inductive log_rel_env : ℕ → Subst → Subst → TEnv → Prop where
       log_rel_env k γ₀ γ₁ Γ →
       log_rel_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟚) :: Γ)
 
+inductive typing.subst : Subst → TEnv → Prop where
+  | nil : typing.subst [] []
+  | cons :
+    ∀ v γ τ Γ,
+      value v →
+      typing [] 𝟚 v τ ∅ →
+      typing.subst γ Γ →
+      typing.subst (v :: γ) ((τ, 𝟚) :: Γ)
+
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜
 --   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
 --   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
@@ -242,3 +251,27 @@ lemma log_rel_env.multi_subst.typing :
       apply typing.weakening; apply Hτv₀; apply Hτ₀
     . rw [HEq₁]; apply preservation.dyn_subst; rw [← List.append_nil Γ]
       apply typing.weakening; apply Hτv₁; apply Hτ₁
+
+lemma log_rel_env.syntactic.typing :
+  ∀ k γ₀ γ₁ Γ,
+    log_rel_env k γ₀ γ₁ Γ →
+    typing.subst γ₀ Γ ∧
+    typing.subst γ₁ Γ :=
+  by
+  intros k γ₀ γ₁ Γ HsemΓ
+  induction HsemΓ
+  case nil =>
+    constructor
+    . apply typing.subst.nil
+    . apply typing.subst.nil
+  case cons Hsem_value _ IH =>
+    have ⟨IH₀, IH₁⟩ := IH
+    have ⟨Hτv₀, Hτv₁⟩ := log_rel_value.syntactic.typing _ _ _ _ Hsem_value
+    have ⟨Hvalue₀, Hvalue₁⟩ := log_rel_value.syntactic.value _ _ _ _ Hsem_value
+    constructor
+    . apply typing.subst.cons
+      apply Hvalue₀; apply Hτv₀
+      apply IH₀
+    . apply typing.subst.cons
+      apply Hvalue₁; apply Hτv₁
+      apply IH₁

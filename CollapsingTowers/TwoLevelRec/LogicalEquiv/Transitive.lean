@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Fundamental
+
 mutual
 lemma log_rel_value.trans (k : Nat) (v₀ v₁ v₂ : Expr) (τ : Ty) :
     log_rel_value k v₀ v₁ τ →
@@ -33,16 +34,10 @@ lemma log_rel_value.trans (k : Nat) (v₀ v₁ v₂ : Expr) (τ : Ty) :
       apply log_rel_expr.trans; apply Hsem_expr₀
       apply Hindexj; apply Hsem_value_arg₀
       intros k
-      cases k
-      case zero => simp
-      case succ k =>
-        have ⟨Hτ₁, Hτ₂, Hsem_expr₁⟩ := Hsem_value₁ (k + 1)
-        apply Hsem_expr₁; omega
-        have ⟨_, _, Hsem_expr_argv₁⟩ := typing.fundamental _ _ _ HτArg₁
-        simp only [log_rel_expr] at Hsem_expr_argv₁
-        have ⟨argv₂, Hstep, Hsem_value_arg₁⟩ := Hsem_expr_argv₁ (k + 1) _ _ (log_rel_env.nil _) 0 (by omega) _ HvalueArg₁ (stepn_indexed.refl _)
-        rw [← stepn.value_impl_termination _ _ HvalueArg₁ Hstep] at Hsem_value_arg₁
-        apply Hsem_value_arg₁
+      have ⟨Hτ₁, Hτ₂, Hsem_expr₁⟩ := Hsem_value₁ k
+      apply Hsem_expr₁; rfl
+      apply log_rel_value.fundamental
+      apply HvalueArg₁; apply HτArg₁
     | .fragment _ => by simp
     | .rep _ => by simp
 
@@ -80,3 +75,26 @@ lemma log_rel_expr.trans :
 termination_by k _ _ _ τ => (τ, k + 1)
 decreasing_by apply Prod.Lex.right; omega
 end
+
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₁ ≤𝑙𝑜𝑔 e₂ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₂ : τ
+theorem log_rel_typing.trans :
+  ∀ Γ e₀ e₁ e₂ τ,
+    log_rel_typing Γ e₀ e₁ τ →
+    log_rel_typing Γ e₁ e₂ τ →
+    log_rel_typing Γ e₀ e₂ τ :=
+  by
+  intros Γ e₀ e₁ e₂ τ H₀ H₁
+  have ⟨Hτ₀, Hτ₁, H₀⟩ := H₀
+  have ⟨Hτ₁, Hτ₂, H₁⟩ := H₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₂
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨HτΓ₀, HτΓ₁⟩ := log_rel_env.syntactic.typing _ _ _ _ HsemΓ
+  apply log_rel_expr.trans
+  apply H₀; apply HsemΓ
+  intro k; apply H₁
+  apply log_rel_env.fundamental
+  apply HτΓ₁

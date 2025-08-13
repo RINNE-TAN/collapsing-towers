@@ -22,10 +22,10 @@ lemma log_rel_typing.congruence_under_ObsCtx𝔹 :
   case appl₁ Harg =>
     apply compatibility.app₁
     . apply Hsem
-    . apply typing.fundamental _ _ _ Harg
+    . apply log_rel_typing.fundamental _ _ _ Harg
   case appr₁ Hf =>
     apply compatibility.app₁
-    . apply typing.fundamental _ _ _ Hf
+    . apply log_rel_typing.fundamental _ _ _ Hf
     . apply Hsem
   case letsl τ𝕒 τ𝕓 Hclosed He =>
     apply compatibility.lets
@@ -34,14 +34,14 @@ lemma log_rel_typing.congruence_under_ObsCtx𝔹 :
     . apply Hclosed
     . apply Hclosed
     . apply Hsem
-    . apply typing.fundamental _ _ _ He
+    . apply log_rel_typing.fundamental _ _ _ He
   case letsr τ𝕒 τ𝕓 Hb =>
     apply compatibility.lets
     . have ⟨Hwbt, _⟩ := typing.wbt_pure_at_dyn _ _ _ _ Hb
       apply Hwbt
     . rw [← closed.under_closing]; apply typing.closed_at_env _ _ _ _ _ Hτ₀
     . rw [← closed.under_closing]; apply typing.closed_at_env _ _ _ _ _ Hτ₁
-    . apply typing.fundamental _ _ _ Hb
+    . apply log_rel_typing.fundamental _ _ _ Hb
     . rw [identity.opening_closing, identity.opening_closing]
       apply Hsem
       apply typing.regular; apply Hτ₁
