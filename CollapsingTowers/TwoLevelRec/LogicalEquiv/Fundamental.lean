@@ -66,19 +66,6 @@ theorem log_approx.fundamental :
   case reify => simp
   apply Hτ
 
--- Γ ⊢ e : τ
--- ————————————————
--- Γ ⊧ e ≈𝑙𝑜𝑔 e : τ
-theorem log_equiv.fundamental :
-  ∀ Γ e τ,
-    typing Γ 𝟚 e τ ∅ →
-    log_equiv Γ e e τ :=
-  by
-  intros Γ e τ Hτ
-  constructor
-  . apply log_approx.fundamental; apply Hτ
-  . apply log_approx.fundamental; apply Hτ
-
 lemma log_approx_value.fundamental :
   ∀ k v τ,
     value v →

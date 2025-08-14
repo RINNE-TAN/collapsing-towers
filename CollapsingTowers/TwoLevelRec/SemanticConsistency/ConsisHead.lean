@@ -46,7 +46,7 @@ lemma consistency.lets :
   by
   intros Γ e bᵥ τ φ HvalueBind Hτ₀ Hτ₁
   constructor
-  -- left hand side
+  -- left approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₀
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₁
     constructor; apply HEτ₀
@@ -102,7 +102,7 @@ lemma consistency.lets :
     . apply Hstep₁
     . apply log_approx_value.antimono
       apply Hsem_value; omega
-  -- right hand side
+  -- right approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₁
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₀
     constructor; apply HEτ₀
@@ -164,7 +164,7 @@ lemma consistency.app₁ :
   by
   intros Γ e argᵥ τ φ HvalueArg Hτ₀ Hτ₁
   constructor
-  -- left hand side
+  -- left approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₀
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₁
     constructor; apply HEτ₀
@@ -231,7 +231,7 @@ lemma consistency.app₁ :
     . apply Hstep₁
     . apply log_approx_value.antimono
       apply Hsem_value; omega
-  -- right hand side
+  -- right approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₁
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₀
     constructor; apply HEτ₀
@@ -297,9 +297,9 @@ lemma consistency.lift_lam :
     by simp [identity.erase_maping𝕔]
   rw [HEq]
   constructor
-  -- left hand side
+  -- left approximation
   . apply log_approx.fundamental; apply typing.erase_safety; apply Hτ₀
-  -- right hand side
+  -- right approximation
   . apply log_approx.fundamental; apply typing.erase_safety; apply Hτ₀
 
 lemma consistency.fix₁ :
@@ -311,7 +311,7 @@ lemma consistency.fix₁ :
   by
   intros Γ fᵥ τ φ HvalueFix Hτ₀ Hτ₁
   constructor
-  -- left hand side
+  -- left approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₀
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₁
     constructor; apply HEτ₀
@@ -364,7 +364,7 @@ lemma consistency.fix₁ :
       simp at Hsem_value
       apply log_approx_value.antimono
       apply Hsem_value; omega
-  -- right hand side
+  -- right approximation
   . have HEτ₀ := typing.erase_safety _ _ _ _ _ Hτ₁
     have HEτ₁ := typing.erase_safety _ _ _ _ _ Hτ₀
     constructor; apply HEτ₀
@@ -434,6 +434,12 @@ theorem consistency.head :
     apply consistency.fix₁
     apply HvalueFix; apply Hτ₀; apply Hτ₁
   all_goals
-    apply log_equiv.fundamental
-    apply typing.erase_safety
-    apply Hτ₀
+    constructor
+    -- left approximation
+    . apply log_approx.fundamental
+      apply typing.erase_safety
+      apply Hτ₀
+    -- right approximation
+    . apply log_approx.fundamental
+      apply typing.erase_safety
+      apply Hτ₁
