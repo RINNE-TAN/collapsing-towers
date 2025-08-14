@@ -149,6 +149,30 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
   | fix₁ _ IH
   | fix₂ _ IH => simp; apply IH
 
+lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
+  by
+  intros i x e
+  induction e generalizing i with
+  | fvar y =>
+    by_cases HEq : x = y
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | bvar| lit => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; constructor
+    apply IH₀; apply IH₁
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | lam _ IH
+  | lam𝕔 _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH => simp; apply IH
+
 lemma comm.erase_opening_value : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
   by
   intros i v e
