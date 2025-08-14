@@ -43,6 +43,26 @@ lemma erasable.reflect : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.reflect e₁ :=
   induction e₀ <;> simp
   all_goals next IH => apply IH
 
+lemma grounded.under_erase : ∀ e, grounded ‖e‖ :=
+  by
+  intros e
+  induction e with
+  | bvar| fvar| lit => simp
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp [IH₀, IH₁]
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
+    simp [IH]
+
 lemma grounded_iff_erase_identity : ∀ e, grounded e ↔ ‖e‖ = e :=
   by
   intros e

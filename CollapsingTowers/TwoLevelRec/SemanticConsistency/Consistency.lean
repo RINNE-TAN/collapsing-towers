@@ -1,5 +1,6 @@
-import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisHead
 import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisCtx
+import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisHead
+import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisReflect
 
 -- e₀ ⇝ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
@@ -34,14 +35,15 @@ theorem consistency.strengthened :
   case reflect HP HE Hlc =>
     cases HP
     case hole =>
-      all_goals admit
+      apply consistency.reflect; apply HE; apply Hτ
     case consℚ HQ =>
       induction HQ generalizing Γ τ φ
       case holeℝ HR =>
         apply consistency.under_ctxℝ; rw [HEqlvl]; apply HR
         apply lc.under_ctx𝔼; apply HE; apply Hlc
         intros _ _ _ _ Hτ
-        all_goals admit
+        apply consistency.reflect; apply HE; apply Hτ
+        apply Hτ
       case cons𝔹 B Q HB HQ IH =>
         rw [← ctx_comp B Q]
         apply consistency.under_ctx𝔹; apply HB
@@ -54,3 +56,18 @@ theorem consistency.strengthened :
         apply lc.under_ctx𝔼; apply HE; apply Hlc
         intros _ _ _ HEqintro; apply IH
         simp; omega; apply Hτ
+
+theorem consistency :
+  ∀ e₀ e₁ τ φ,
+    (e₀ ⇝ e₁) →
+    typing_reification [] e₀ τ φ →
+    log_equiv [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+  by
+  intros e₀ e₁ τ φ Hstep Hτ
+  cases Hτ
+  case pure Hτ =>
+    apply consistency.strengthened []
+    apply Hstep; apply Hτ
+  case reify τ Hτ =>
+    apply consistency.strengthened [] _ _ (.fragment τ)
+    apply Hstep; apply Hτ

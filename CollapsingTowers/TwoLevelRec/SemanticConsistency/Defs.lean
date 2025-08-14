@@ -1,3 +1,4 @@
-import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisHead
 import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisCtx
+import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisHead
+import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisReflect
 import CollapsingTowers.TwoLevelRec.SemanticConsistency.Consistency
