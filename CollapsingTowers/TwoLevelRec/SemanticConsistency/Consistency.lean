@@ -71,3 +71,29 @@ theorem consistency :
   case reify τ Hτ =>
     apply consistency.strengthened [] _ _ (.fragment τ)
     apply Hstep; apply Hτ
+
+-- e₀ ⇝* e₁
+-- ∅ ⊢ e₀ : τ
+-- ———————————————————————
+-- ∅ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
+theorem consistency.stepn :
+  ∀ e₀ e₁ τ φ,
+    (e₀ ⇝* e₁) →
+    typing_reification [] e₀ τ φ →
+    log_equiv [] ‖e₀‖ ‖e₁‖ ‖τ‖𝜏 :=
+  by
+  intros e₀ e₁ τ φ Hstepn Hτ₀
+  induction Hstepn generalizing φ
+  case refl =>
+    cases Hτ₀
+    all_goals next Hτ₀ =>
+      constructor
+      . apply log_approx.fundamental
+        apply typing.erase_safety _ _ _ _ _ Hτ₀
+      . apply log_approx.fundamental
+        apply typing.erase_safety _ _ _ _ _ Hτ₀
+  case multi Hstep Hstepn IH =>
+    have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
+    apply log_equiv.trans
+    . apply consistency _ _ _ _ Hstep Hτ₀
+    . apply IH; apply Hτ₁

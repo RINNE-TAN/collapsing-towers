@@ -98,3 +98,22 @@ theorem log_approx.trans :
   intro k; apply H₁
   apply log_approx_env.fundamental
   apply HτΓ₁
+
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₁ ≈𝑙𝑜𝑔 e₂ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₂ : τ
+theorem log_equiv.trans :
+  ∀ Γ e₀ e₁ e₂ τ,
+    log_equiv Γ e₀ e₁ τ →
+    log_equiv Γ e₁ e₂ τ →
+    log_equiv Γ e₀ e₂ τ :=
+  by
+  intros Γ e₀ e₁ e₂ τ H₀ H₁
+  have ⟨Hl₀, Hr₀⟩ := H₀
+  have ⟨Hl₁, Hr₁⟩ := H₁
+  constructor
+  . apply log_approx.trans
+    apply Hl₀; apply Hl₁
+  . apply log_approx.trans
+    apply Hr₁; apply Hr₀
