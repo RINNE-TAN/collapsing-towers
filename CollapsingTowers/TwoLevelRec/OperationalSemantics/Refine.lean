@@ -4,7 +4,7 @@ import CollapsingTowers.TwoLevelRec.OperationalSemantics.Congruence
 -- B⟦e₀⟧ ⇝ r
 -- ———————————————————————
 -- B⟦e₀⟧ ⇝ B⟦e₁⟧ ∧ e₀ ⇝ e₁
-lemma step.refine :
+lemma step.refine_at_ctx𝔹 :
   ∀ B₀ e₀ r,
     ctx𝔹 B₀ →
     ¬value e₀ →
@@ -47,7 +47,7 @@ lemma step.refine :
 -- B⟦e⟧ ⇝ₖ v
 -- —————————————————————————————————
 -- k = i + j ∧ e ⇝ᵢ v𝕖 ∧ B⟦v𝕖⟧ ⇝ⱼ v
-lemma stepn_indexed.refine :
+lemma stepn_indexed.refine_at_ctx𝔹 :
   ∀ B e₀ v k,
     ctx𝔹 B →
     value v →
@@ -77,7 +77,7 @@ lemma stepn_indexed.refine :
       apply stepn_indexed.multi; apply Hstep; apply Hstepn
     | isFalse HNv =>
       rw [← HEqe₀] at HG₀
-      have ⟨e₁, HEqe₁, Hstep₀⟩ := step.refine _ _ _ HB HNv HG₀ Hstep
+      have ⟨e₁, HEqe₁, Hstep₀⟩ := step.refine_at_ctx𝔹 _ _ _ HB HNv HG₀ Hstep
       have HG₁ := grounded.under_step _ _ Hstep HG₀
       have ⟨i, j, v𝕖, HEqk, Hvalue, Hstep₁, Hstep₂⟩ := IH _ HEqe₁ Hvalue HG₁
       exists i + 1, j, v𝕖
@@ -85,6 +85,44 @@ lemma stepn_indexed.refine :
       constructor; apply Hvalue
       constructor; apply stepn_indexed.multi
       apply Hstep₀; apply Hstep₁; apply Hstep₂
+
+-- E⟦e⟧ ⇝ₖ v
+-- —————————————————————————————————
+-- k = i + j ∧ e ⇝ᵢ v𝕖 ∧ E⟦v𝕖⟧ ⇝ⱼ v
+lemma stepn_indexed.refine_at_ctx𝔼 :
+  ∀ E e₀ v k,
+    ctx𝔼 E →
+    value v →
+    grounded E⟦e₀⟧  →
+    (E⟦e₀⟧ ⇝ ⟦k⟧ v) →
+    ∃ i j v𝕖,
+      i + j = k ∧
+      value v𝕖 ∧
+      (e₀ ⇝ ⟦i⟧ v𝕖) ∧
+      (E⟦v𝕖⟧ ⇝ ⟦j⟧ v) :=
+  by
+  intros E e₀ v k HE Hvalue HG₀ Hstep
+  induction HE generalizing v k
+  case hole =>
+    exists k, 0, v
+    constructor; rfl
+    constructor; apply Hvalue
+    constructor; apply Hstep
+    apply stepn_indexed.refl
+  case cons𝔹 B E HB HE IH =>
+    have HGE₀ := grounded.decompose_ctx𝔹 _ _ HB HG₀
+    have HGe₀ := grounded.decompose_ctx𝔼 _ _ HE HGE₀
+    have ⟨i₀, j₀, v𝕖₀, HEq₀, Hvalue₀, Hstepl₀, Hstepr₀⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ HB Hvalue HG₀ Hstep
+    have ⟨i₁, j₁, v𝕖₁, HEq₁, Hvalue₁, Hstepl₁, Hstepr₁⟩ := IH _ _ Hvalue₀ HGE₀ Hstepl₀
+    exists i₁, j₁ + j₀, v𝕖₁
+    constructor; omega
+    constructor; apply Hvalue₁
+    constructor; apply Hstepl₁
+    apply stepn_indexed.trans
+    apply stepn_indexed.grounded.congruence_under_ctx𝔹 _ _ _ _ HB
+    apply grounded.under_ctx𝔼 _ _ _ HE HGE₀
+    apply grounded.under_stepn; apply stepn_indexed_impl_stepn; apply Hstepl₁; apply HGe₀
+    apply Hstepr₁; apply Hstepr₀
 
 lemma stepn_indexed.refine.lam :
   ∀ e arg v j,
@@ -120,10 +158,10 @@ lemma stepn_indexed.refine.app₁ :
   intros f arg v j Hvalue HG₀ Hstep
   have ⟨HGFun, HGArg⟩ := HG₀
   have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
-  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue HG₀ Hstep
+  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.appl₁ _ Hlc.right) Hvalue HG₀ Hstep
   have HGFunᵥ := grounded.under_stepn _ _ (stepn_indexed_impl_stepn _ _ _ Hstep₀) HGFun
   have HG₁ : grounded (.app₁ fᵥ arg) := by constructor; apply HGFunᵥ; apply HGArg
-  have ⟨i₁, i₂, argᵥ, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := stepn_indexed.refine _ _ _ _ (ctx𝔹.appr₁ _ HvalueFun) Hvalue HG₁ Hstep
+  have ⟨i₁, i₂, argᵥ, HEqj, HvalueArg, Hstep₁, Hstep₂⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.appr₁ _ HvalueFun) Hvalue HG₁ Hstep
   exists i₀, i₁, i₂, fᵥ, argᵥ
   constructor; omega
   constructor; apply HvalueFun
@@ -144,7 +182,7 @@ lemma stepn_indexed.refine.lets :
   by
   intros b e v j Hvalue HG Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
-  have ⟨i₀, k, bᵥ, HEqj, HvalueBind, Hstep₀, Hstep⟩ := stepn_indexed.refine _ _ _ _ (ctx𝔹.lets _ Hlc.right) Hvalue HG Hstep
+  have ⟨i₀, k, bᵥ, HEqj, HvalueBind, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.lets _ Hlc.right) Hvalue HG Hstep
   have HstepHead : (.lets bᵥ e) ⇝ ⟦1⟧ (opening 0 bᵥ e) :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
@@ -170,7 +208,7 @@ lemma stepn_indexed.refine.fix₁ :
       (f ⇝ ⟦i⟧ fᵥ) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))  :=
   by
   intros f v j Hvalue₀ HG Hstep
-  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine _ _ _ _ ctx𝔹.fix₁ Hvalue₀ HG Hstep
+  have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ ctx𝔹.fix₁ Hvalue₀ HG Hstep
   have HstepHead : (.fix₁ fᵥ) ⇝ ⟦1⟧ .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)

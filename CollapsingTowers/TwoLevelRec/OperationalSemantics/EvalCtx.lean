@@ -382,6 +382,16 @@ lemma grounded.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded B⟦e₀�
   | appl₂| appr₂| lift| fix₂ =>
     nomatch He₀
 
+lemma grounded.under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded E⟦e₀⟧ → grounded e₁ → grounded E⟦e₁⟧ :=
+  by
+  intros E e₀ e₁ HE He₀ He₁
+  induction HE
+  case hole => apply He₁
+  case cons𝔹 B M HB _ IH =>
+    apply grounded.under_ctx𝔹 B; apply HB; apply He₀
+    apply IH
+    apply grounded.decompose_ctx𝔹; apply HB; apply He₀
+
 lemma grounded.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → grounded M⟦e₀⟧ → grounded e₁ → grounded M⟦e₁⟧ :=
   by
   intros lvl M e₀ e₁ HM He₀ He₁

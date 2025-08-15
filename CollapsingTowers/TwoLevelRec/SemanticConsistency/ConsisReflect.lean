@@ -201,7 +201,19 @@ theorem consistency.reflect :
     . constructor; apply HEτ₀
       constructor; apply HEτ₁
       intros k γ₀ γ₁ HsemΓ
-      simp only [log_approx_expr]
+      --
+      --
+      -- (γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧{k}
+      -- ————————————————————
+      -- γ₀‖E⟦X⟧‖ = E₀⟦γ₀‖X‖⟧
+      -- γ₁‖E⟦X⟧‖ = E₁⟦γ₀‖X‖⟧
+      have ⟨HE₀, HE₁⟩ := consistency.erase_ctx𝔼 _ _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
+      have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
+      have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
+      simp [HEqE₀, HEqE₁]
+      --
+      --
+      -- ———————————————————————————————
       intros j Hindexj v₀ Hvalue₀ Hstep₀
       admit
     -- right approximation

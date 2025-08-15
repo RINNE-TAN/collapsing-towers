@@ -40,6 +40,17 @@ lemma stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇝* e₁) → (e₁ ⇝* e₂) �
     apply stepn.multi
     apply H; apply IH; apply Hstep₁
 
+lemma stepn_indexed.trans : ∀ i j e₀ e₁ e₂, (e₀ ⇝ ⟦i⟧ e₁) → (e₁ ⇝ ⟦j⟧ e₂) → (e₀ ⇝ ⟦i + j⟧ e₂) :=
+  by
+  intros i j e₀ e₁ e₂ Hstep₀ Hstep₁
+  induction Hstep₀
+  case refl => simp; apply Hstep₁
+  case multi k _ _ _ H _ IH =>
+    have HEq : k + 1 + j = k + j + 1 := by omega
+    rw [HEq]
+    apply stepn_indexed.multi
+    apply H; apply IH; apply Hstep₁
+
 lemma stepn_indexed_impl_stepn : ∀ k e₀ e₁, (e₀ ⇝ ⟦k⟧ e₁) → (e₀ ⇝* e₁) :=
   by
   intros k e₀ e₁ Hstepn
