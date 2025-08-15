@@ -1,6 +1,164 @@
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Defs
 import CollapsingTowers.TwoLevelRec.Erasure.Defs
 
+lemma consistency.erase_ctx𝔼 :
+  ∀ E Γ e τ φ k γ₀ γ₁,
+    ctx𝔼 E →
+    typing Γ 𝟙 E⟦e⟧ τ φ →
+    log_approx_env k γ₀ γ₁ ‖Γ‖𝛾 →
+    (∃ E₀, ctx𝔼 E₀ ∧ (∀ e, multi_subst γ₀ ‖E⟦e⟧‖ = E₀⟦multi_subst γ₀ ‖e‖⟧)) ∧
+    (∃ E₁, ctx𝔼 E₁ ∧ (∀ e, multi_subst γ₁ ‖E⟦e⟧‖ = E₁⟦multi_subst γ₁ ‖e‖⟧)) :=
+  by
+  intros E Γ e τ φ k γ₀ γ₁ HE Hτ HsemΓ
+  induction HE generalizing τ φ
+  case hole =>
+    constructor
+    . exists id; constructor; apply ctx𝔼.hole; simp
+    . exists id; constructor; apply ctx𝔼.hole; simp
+  case cons𝔹 HB HE IH =>
+    have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_approx_env.multi_wf _ _ _ _ HsemΓ
+    cases HB
+    case appl₁ arg Hlc =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .app₁ X (multi_subst γ₀ ‖arg‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₀
+            apply lc.under_multi_subst; apply Hmulti_wf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .app₁ X (multi_subst γ₁ ‖arg‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₁
+            apply lc.under_multi_subst; apply Hmulti_wf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case appr₁ f HvalueFun =>
+      cases Hτ
+      case app₁ HX Hf =>
+        cases HvalueFun with
+        | lam e Hlc =>
+          have ⟨IH₀, IH₁⟩ := IH _ _ HX
+          have ⟨E₀, HE₀, IH₀⟩ := IH₀
+          have ⟨E₁, HE₁, IH₁⟩ := IH₁
+          constructor
+          . exists (fun X => .app₁ (multi_subst γ₀ ‖.lam e‖) X) ∘ E₀
+            constructor
+            . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₀
+              simp; apply value.lam
+              apply lc.under_multi_subst; apply Hmulti_wf₀
+              rw [← lc.under_erase]; apply Hlc
+            . simp; apply IH₀
+          . exists (fun X => .app₁ (multi_subst γ₁ ‖.lam e‖) X) ∘ E₁
+            constructor
+            . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₁
+              simp; apply value.lam
+              apply lc.under_multi_subst; apply Hmulti_wf₁
+              rw [← lc.under_erase]; apply Hlc
+            . simp; apply IH₁
+        | _ => cases Hf
+    case appl₂ arg Hlc =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .app₁ X (multi_subst γ₀ ‖arg‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₀
+            apply lc.under_multi_subst; apply Hmulti_wf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .app₁ X (multi_subst γ₁ ‖arg‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₁
+            apply lc.under_multi_subst; apply Hmulti_wf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case appr₂ f HvalueFun =>
+      cases Hτ
+      case app₂ Hf HX =>
+        cases HvalueFun with
+        | code e Hlc =>
+          cases Hf with
+          | code_fragment _ x _ HBinds =>
+            have HBinds := env.erase.binds _ _ _ _ HBinds
+            have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ HBinds
+            have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
+            have ⟨IH₀, IH₁⟩ := IH _ _ HX
+            have ⟨E₀, HE₀, IH₀⟩ := IH₀
+            have ⟨E₁, HE₁, IH₁⟩ := IH₁
+            constructor
+            . exists (fun X => .app₁ (multi_subst γ₀ (.fvar x)) X) ∘ E₀
+              constructor
+              . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₀
+                apply Hvalue₀
+              . simp; apply IH₀
+            . exists (fun X => .app₁ (multi_subst γ₁ (.fvar x)) X) ∘ E₁
+              constructor
+              . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₁
+                apply Hvalue₁
+              . simp; apply IH₁
+        | _ => cases Hf
+    case lift =>
+      cases Hτ
+      case lift_lam HX => apply IH _ _ HX
+      case lift_lit HX => apply IH _ _ HX
+    case lets e Hlc =>
+      cases Hτ
+      case lets HX Hclose He =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .lets X (multi_subst γ₀ ‖e‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE₀
+            apply lc.under_multi_subst; apply Hmulti_wf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .lets X (multi_subst γ₁ ‖e‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE₁
+            apply lc.under_multi_subst; apply Hmulti_wf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case fix₁ =>
+      cases Hτ
+      case fix₁ HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .fix₁ X) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₀
+          . simp; apply IH₀
+        . exists (fun X => .fix₁ X) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₁
+          . simp; apply IH₁
+    case fix₂ =>
+      cases Hτ
+      case fix₂ HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .fix₁ X) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₀
+          . simp; apply IH₀
+        . exists (fun X => .fix₁ X) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₁
+          . simp; apply IH₁
+
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ——————————————————————————————————————————————————————————
 -- ‖Γ‖ ⊨ ‖E⟦reflect b⟧‖ ≈𝑙𝑜𝑔 ‖lets𝕔 x = b in ‖E⟦code x⟧‖ : ‖τ‖
