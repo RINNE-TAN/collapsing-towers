@@ -20,7 +20,10 @@ lemma step.grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → gr
   intros E e₀ e₁ HE HG Hstep
   cases Hstep
   case pure M _ _ HM Hlc Hhead =>
-    admit
+    rw [ctx_comp E M]
+    apply step_lvl.pure
+    apply compose.ctx𝔼_ctx𝕄; apply HM; apply HE
+    apply Hlc; apply Hhead
   case reflect M E _ HP HE _ =>
     have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
     have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG

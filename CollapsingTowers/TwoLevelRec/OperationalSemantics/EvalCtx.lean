@@ -438,6 +438,20 @@ lemma compose.ctx𝕄_ctx𝔼 :
     apply compose.ctx𝕄_ctx𝔹
     apply HM; apply HB
 
+lemma compose.ctx𝔼_ctx𝕄 :
+  ∀ lvl M E,
+    ctx𝕄 lvl M →
+    ctx𝔼 E →
+    ctx𝕄 lvl (E ∘ M) :=
+  by
+  intros lvl M E HM HE
+  induction HE generalizing M
+  case hole =>
+    apply HM
+  case cons𝔹 B E HB _ IH =>
+    apply ctx𝕄.cons𝔹 _ _ HB
+    apply IH; apply HM
+
 lemma rewrite.ctxℚ_ctx𝕄 :
   ∀ lvl Q,
     ctxℚ lvl Q →
