@@ -50,3 +50,28 @@ lemma env.erase.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (‖
     . simp [if_neg HEq] at Hbinds
       simp [← env.erase.length, if_neg HEq]
       apply IH; apply Hbinds
+
+lemma erasable.fragment : ∀ τ₀ τ₁, ‖τ₀‖𝜏 ≠ .fragment τ₁ :=
+  by
+  intros τ₀ τ₁
+  induction τ₀ <;> simp
+  all_goals next IH => apply IH
+
+lemma erasable.rep : ∀ τ₀ τ₁, ‖τ₀‖𝜏 ≠ .rep τ₁ :=
+  by
+  intros τ₀ τ₁
+  induction τ₀ <;> simp
+  all_goals next IH => apply IH
+
+lemma wbt_dyn_iff_erase_identity : ∀ τ, wbt 𝟚 τ ↔ ‖τ‖𝜏 = τ :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH𝕒 IH𝕓 =>
+    simp [IH𝕒, IH𝕓]
+    constructor
+    . intros H; simp [H]
+    . intros H; simp [H]
+  case fragment => simp; apply erasable.fragment
+  case rep => simp; apply erasable.rep

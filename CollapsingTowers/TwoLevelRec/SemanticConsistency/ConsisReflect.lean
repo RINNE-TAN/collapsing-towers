@@ -111,7 +111,7 @@ lemma consistency.erase_ctx𝔼 :
       case lift_lit HX => apply IH _ _ HX
     case lets e Hlc =>
       cases Hτ
-      case lets HX Hclose He =>
+      case lets HX Hclosed He =>
         have ⟨IH₀, IH₁⟩ := IH _ _ HX
         have ⟨E₀, HE₀, IH₀⟩ := IH₀
         have ⟨E₁, HE₁, IH₁⟩ := IH₁

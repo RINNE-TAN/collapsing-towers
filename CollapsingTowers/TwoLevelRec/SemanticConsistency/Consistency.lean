@@ -97,3 +97,28 @@ theorem consistency.stepn :
     apply log_equiv.trans
     . apply consistency _ _ _ _ Hstep Hτ₀
     . apply IH; apply Hτ₁
+
+-- e₀ ⇝* v
+-- ∅ ⊢ e₀ : <τ>
+-- ——————————————————
+-- v = code e₁
+-- ∅ ⊢ ‖e₀‖ ≈ e₁ : τ
+theorem consistency.stepn.rep :
+  ∀ e₀ v τ φ,
+    (e₀ ⇝* v) →
+    value v →
+    typing_reification [] e₀ (.rep τ) φ →
+    ∃ e₁,
+      v = .code e₁ ∧
+      log_equiv [] ‖e₀‖ e₁ τ :=
+  by
+  intros e₀ v τ φ Hstepn Hvalue Hτr₀
+  have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ Hstepn Hτr₀
+  have ⟨e₁, HEq, Hτe₁⟩ := typing.rep_ty_iff_value_code _ _ _ Hvalue Hτr₁
+  rw [HEq] at Hstepn
+  have HGe₁ := typing.grounded_at_dyn _ _ _ _ Hτe₁
+  have ⟨Hwbt, _⟩ := typing.wbt_pure_at_dyn _ _ _ _ Hτe₁
+  exists e₁
+  constructor; apply HEq
+  rw [← (grounded_iff_erase_identity e₁).mp HGe₁, ← (wbt_dyn_iff_erase_identity _).mp Hwbt]
+  apply consistency.stepn _ _ _ _ Hstepn Hτr₀
