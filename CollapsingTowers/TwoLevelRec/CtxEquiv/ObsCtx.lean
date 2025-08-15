@@ -127,9 +127,9 @@ def termination (e : Expr) : Prop :=
   ∃ v, value v ∧ e ⇝* v
 
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
---   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
 --   Γ ⊢ e₀ : τ →
 --   Γ ⊢ e₁ : τ →
+--   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
 --   C⟦e₀⟧⇓ → C⟦e₁⟧⇓
 @[simp]
 def ctx_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
