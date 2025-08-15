@@ -15,6 +15,18 @@ lemma step.grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → gr
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
+lemma step.grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⇝ e₁) → (E⟦e₀⟧ ⇝ E⟦e₁⟧) :=
+  by
+  intros E e₀ e₁ HE HG Hstep
+  cases Hstep
+  case pure M _ _ HM Hlc Hhead =>
+    admit
+  case reflect M E _ HP HE _ =>
+    have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
+    have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.decompose_ctx𝔼 _ _ HE HG
+    simp at HG
+
 lemma stepn.grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝* e₁) → (B⟦e₀⟧ ⇝* B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstepn
@@ -24,6 +36,18 @@ lemma stepn.grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → g
     apply stepn.multi
     apply step.grounded.congruence_under_ctx𝔹
     apply HB; apply HG; apply H
+    apply IH; apply grounded.under_step
+    apply H; apply HG
+
+lemma stepn.grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⇝* e₁) → (E⟦e₀⟧ ⇝* E⟦e₁⟧) :=
+  by
+  intros E e₀ e₁ HE HG Hstepn
+  induction Hstepn
+  case refl => apply stepn.refl
+  case multi H _ IH =>
+    apply stepn.multi
+    apply step.grounded.congruence_under_ctx𝔼
+    apply HE; apply HG; apply H
     apply IH; apply grounded.under_step
     apply H; apply HG
 
