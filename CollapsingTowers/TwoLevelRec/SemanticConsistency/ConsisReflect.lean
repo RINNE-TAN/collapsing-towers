@@ -201,6 +201,10 @@ theorem consistency.reflect :
     . constructor; apply HEτ₀
       constructor; apply HEτ₁
       intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmulti_wf₀, Hmulti_wf₁⟩ := log_approx_env.multi_wf _ _ _ _ HsemΓ
+      have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.multi_subst.typing _ _ _ _ _ _ _ HEτ₀ HEτ₁ HsemΓ
+      have ⟨HSτb₀, HSτb₁⟩ := log_approx_env.multi_subst.typing _ _ _ _ _ _ _ HEτb₀ HEτb₀ HsemΓ
       --
       --
       -- (γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧{k}
@@ -211,11 +215,92 @@ theorem consistency.reflect :
       have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
       have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
       simp [HEqE₀, HEqE₁]
+      simp [HEqE₀, HEqE₁] at HSτ₀ HSτ₁
+      have ⟨HlcE₀, HclosedE₀⟩ := typing.wf _ _ _ _ _ HSτ₀
+      have ⟨HlcE₁, HclosedE₁⟩ := typing.wf _ _ _ _ _ HSτ₁
       --
       --
-      -- ———————————————————————————————
+      -- E₀⟦γ₀‖b‖⟧ ⇝ ⟦j⟧ v₀
+      -- ——————————————————
+      -- i₀ + i₁ = j
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
       intros j Hindexj v₀ Hvalue₀ Hstep₀
-      admit
+      have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ HE₀ Hvalue₀ (typing.grounded_at_dyn _ _ _ _ HSτ₀) Hstep₀
+      --
+      --
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
+      -- —————————————————————————
+      -- γ₁‖b‖ ⇝* bv₁
+      -- (bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧{k - i₀}
+      have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
+      simp only [log_approx_expr] at IHb
+      have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := IHb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
+      have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_bind
+      have ⟨HτBind₀, HτBind₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value_bind
+      have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
+      have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
+      --
+      --
+      -- ‖Γ‖ ⊧ ‖E⟦x⟧‖ ≤𝑙𝑜𝑔 ‖E⟦x⟧‖ : ‖τ‖
+      -- (bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧{k - i₀}
+      -- ———————————————————————————————————————————————————————————
+      -- ((x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧{k - i₀}
+      have ⟨_, _, IHE⟩ := log_approx.fundamental _ _ _ HEτE₀
+      have Hsem_exprE := IHE (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) (
+        by
+        apply log_approx_env.cons; apply Hsem_value_bind
+        apply log_approx_env.antimono; apply HsemΓ; omega
+      )
+      --
+      --
+      -- ((x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧{k - i₀}
+      -- ———————————————————————————————————————————————————————————
+      -- (E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧{k - i₀}
+      have HEqE₀ : (multi_subst (bv₀ :: γ₀) ‖E⟦.fvar Γ.length⟧‖) = E₀⟦bv₀⟧:=
+        by
+        rw [env.erase.length, ← HEq₀]
+        rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ (by omega) HclosedBind₀ Hmulti_wf₀]
+        rw [HEqE₀, subst.under_ctx𝔼 _ _ _ _ _ HE₀]
+        simp; apply closed.inc; apply HclosedE₀; simp
+      have HEqE₁ : (multi_subst (bv₁ :: γ₁) ‖E⟦.fvar Γ.length⟧‖) = E₁⟦bv₁⟧:=
+        by
+        rw [env.erase.length, ← HEq₁]
+        rw [multi_subst, ← comm.multi_subst_subst _ _ _ _ (by omega) HclosedBind₁ Hmulti_wf₁]
+        rw [HEqE₁, subst.under_ctx𝔼 _ _ _ _ _ HE₁]
+        simp; apply closed.inc; apply HclosedE₁.right; simp
+      rw [HEqE₀, HEqE₁] at Hsem_exprE
+      --
+      --
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- (E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧{k - i₀}
+      -- ———————————————————————————————————
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- (v₀, v₁) ∈ 𝓥⟦‖τ‖⟧{k - i₀ - i₁}
+      simp only [log_approx_expr] at Hsem_exprE
+      have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ Hvalue₀ HstepE₀
+      --
+      --
+      -- γ₁‖b‖ ⇝* bv₁
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- ——————————————————————————————
+      -- lets x = γ₁‖b‖ in E₁⟦x⟧ ⇝* v₁
+      exists v₁
+      constructor
+      . apply stepn.trans
+        apply stepn.grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ HlcE₁.right) (typing.grounded_at_dyn _ _ _ _ HSτb₁) HstepBind₁
+        apply stepn.multi _ _ _ _ Hstep₁
+        apply step_lvl.pure id; apply ctx𝕄.hole
+        . constructor
+          . apply lc.value; apply HvalueBind₁
+          . apply lc.under_ctx𝔼; apply HE₁; simp
+        . have HEq : E₁⟦bv₁⟧ = opening 0 bv₁ E₁⟦.bvar 0⟧ :=
+            by rw [opening.under_ctx𝔼 _ _ _ _ HE₁]; rfl
+          rw [HEq]
+          apply head.lets; apply HvalueBind₁
+      . apply log_approx_value.antimono
+        apply Hsem_value; omega
     -- right approximation
     . constructor; apply HEτ₁
       constructor; apply HEτ₀
