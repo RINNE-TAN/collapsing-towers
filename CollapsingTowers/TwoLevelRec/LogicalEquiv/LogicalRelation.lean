@@ -275,3 +275,13 @@ lemma log_approx_env.syntactic.typing :
     . apply typing.subst.cons
       apply Hvalue₁; apply Hτv₁
       apply IH₁
+
+lemma typing.subst.length :
+  ∀ γ Γ,
+    typing.subst γ Γ →
+    γ.length = Γ.length :=
+  by
+  intros γ Γ Hτγ
+  induction Hτγ
+  case nil => simp
+  case cons IH => simp [IH]
