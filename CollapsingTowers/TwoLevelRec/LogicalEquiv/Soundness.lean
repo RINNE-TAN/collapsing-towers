@@ -76,15 +76,17 @@ theorem log_approx.soundness :
     log_approx Γ e₀ e₁ τ →
     ctx_approx Γ e₀ e₁ τ :=
   by
-  intros Γ τ e₀ e₁ Hsem Hτ₀ Hτ₁ C
+  intros Γ τ e₀ e₁ Hsem
+  constructor; apply Hsem.left
+  constructor; apply Hsem.right.left
   generalize HEqΔ : [] = Δ
-  intros τ𝕔 HC Htermination
+  intros C τ𝕔 HC Htermination
   induction HC generalizing e₀ e₁
   case hole =>
     have ⟨v₀, Hvalue₀, Hstep₀⟩ := Htermination
     have ⟨k, Hstep₀⟩ := stepn_impl_stepn_indexed _ _ Hstep₀
     rw [← HEqΔ] at Hsem
-    have ⟨Hwf₀, Hwf₁, Hsem_expr⟩ := Hsem
+    have ⟨_, _, Hsem_expr⟩ := Hsem
     simp only [log_approx_expr] at Hsem_expr
     have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (log_approx_env.nil _) k (by omega) _ Hvalue₀ Hstep₀
     have ⟨_, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
@@ -92,7 +94,4 @@ theorem log_approx.soundness :
   case cons𝔹 C B HC HB IH =>
     apply IH
     apply log_approx.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB
-    apply typing.congruence_under_ObsCtx𝔹; apply Hτ₀; apply HB
-    apply typing.congruence_under_ObsCtx𝔹; apply Hτ₁; apply HB
-    apply HEqΔ; apply Htermination
+    apply Hsem; apply HB; apply HEqΔ; apply Htermination

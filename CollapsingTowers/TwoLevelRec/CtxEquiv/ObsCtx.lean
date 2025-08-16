@@ -127,17 +127,50 @@ def termination (e : Expr) : Prop :=
   ∃ v, value v ∧ e ⇝* v
 
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
---   Γ ⊢ e₀ : τ →
---   Γ ⊢ e₁ : τ →
+--   Γ ⊢ e₀ : τ ∧
+--   Γ ⊢ e₁ : τ ∧
 --   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
 --   C⟦e₀⟧⇓ → C⟦e₁⟧⇓
 @[simp]
 def ctx_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
-  typing Γ 𝟚 e₀ τ ∅ →
-  typing Γ 𝟚 e₁ τ ∅ →
+  typing Γ 𝟚 e₀ τ ∅ ∧
+  typing Γ 𝟚 e₁ τ ∅ ∧
     ∀ C τ𝕔, ObsCtxℂ Γ τ C [] τ𝕔 →
       termination C⟦e₀⟧ →
       termination C⟦e₁⟧
+
+lemma ctx_approx.congruence_under_ObsCtx𝔹 :
+  ∀ Δ Γ τδ τγ B e₀ e₁,
+    ctx_approx Δ e₀ e₁ τδ →
+    ObsCtx𝔹 Δ τδ B Γ τγ →
+    ctx_approx Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+  by
+  intros Δ Γ τδ τγ B e₀ e₁ Hctx HB
+  have ⟨Hτ₀, Hτ₁, Hctx⟩ := Hctx
+  constructor; apply typing.congruence_under_ObsCtx𝔹 _ _ _ _ _ _ Hτ₀ HB
+  constructor; apply typing.congruence_under_ObsCtx𝔹 _ _ _ _ _ _ Hτ₁ HB
+  intros C τ𝕔 HC
+  rw [ctx_comp C B, ctx_comp C B]
+  apply Hctx
+  apply ObsCtxℂ.cons𝔹; apply HC; apply HB
+
+-- Δ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τδ
+-- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
+-- ————————————————————————
+-- Γ ⊧ C⟦e₀⟧ ≤𝑐𝑡𝑥 C⟦e₁⟧ : τγ
+lemma ctx_approx.congruence_under_ObsCtxℂ :
+  ∀ Δ Γ τδ τγ C e₀ e₁,
+    ctx_approx Δ e₀ e₁ τδ →
+    ObsCtxℂ Δ τδ C Γ τγ →
+    ctx_approx Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
+  by
+  intros Δ Γ τδ τγ C e₀ e₁ Hsem HC
+  induction HC generalizing e₀ e₁
+  case hole => apply Hsem
+  case cons𝔹 HB IH =>
+    apply IH
+    apply ctx_approx.congruence_under_ObsCtx𝔹
+    apply Hsem; apply HB
 
 -- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊢ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
