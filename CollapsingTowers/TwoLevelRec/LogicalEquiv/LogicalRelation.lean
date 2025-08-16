@@ -55,8 +55,8 @@ inductive typing.subst : Subst → TEnv → Prop where
       typing.subst (v :: γ) ((τ, 𝟚) :: Γ)
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜
---   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
---   Γ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
+--   Γ ⊢ e₀ : τ ∧
+--   Γ ⊢ e₁ : τ ∧
 --   ∀ k ≥ 0, (γ₀, γ₁) ∈ 𝓖⟦Γ⟧ₖ. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧ₖ
 @[simp]
 def log_approx (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
