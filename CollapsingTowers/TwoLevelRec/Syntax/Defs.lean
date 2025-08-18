@@ -3,3 +3,4 @@ import CollapsingTowers.TwoLevelRec.Syntax.Transform
 import CollapsingTowers.TwoLevelRec.Syntax.Fv
 import CollapsingTowers.TwoLevelRec.Syntax.LocallyNameless
 import CollapsingTowers.TwoLevelRec.Syntax.Grounded
+import CollapsingTowers.TwoLevelRec.Syntax.Identity
