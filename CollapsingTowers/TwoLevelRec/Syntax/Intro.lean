@@ -1,11 +1,17 @@
 import CollapsingTowers.TwoLevelRec.Syntax.LocallyNameless
 
-lemma intro.maping𝕔 : ∀ x e i, closed_at e x → ({i ↤ x} subst x (.code (.fvar x)) ({i ↦ x} e)) = codify i e :=
+lemma intro.codify : ∀ x e i, closed_at e x → ({i ↤ x} subst x (.code (.fvar x)) ({i ↦ x} e)) = codify i e :=
   by
   intros x e i Hclosed
   induction e generalizing i with
-  | bvar j => by_cases HEq : j = i; rw [HEq]; simp; simp [if_neg HEq]
-  | fvar y => simp at *; by_cases HEq : x = y; omega; rw [if_neg HEq]; simp; apply HEq
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [HEq]
+    . simp [if_neg HEq]
+  | fvar y =>
+    by_cases HEq : x = y
+    . simp at *; omega
+    . simp [if_neg HEq]
   | lit => simp
   | lam _ IH
   | lift _ IH
