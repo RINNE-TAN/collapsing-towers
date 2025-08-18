@@ -1,0 +1,2 @@
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Ty
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
