@@ -116,7 +116,7 @@ mutual
     | ifz₁ : ∀ Γ 𝕊 c l r τ φ₀ φ₁ φ₂,
       typing Γ 𝕊 c .nat φ₀ →
       typing Γ 𝕊 l τ φ₁ →
-      typing Γ 𝕊 r τ φ₁ →
+      typing Γ 𝕊 r τ φ₂ →
       typing Γ 𝕊 (.ifz₁ c l r) τ (φ₀ ∪ φ₁ ∪ φ₂)
     | ifz₂ : ∀ Γ c l r τ φ₀ φ₁ φ₂,
       typing Γ 𝟚 c (.fragment .nat) φ₀ →
@@ -128,3 +128,179 @@ mutual
     | pure : ∀ Γ e τ, typing Γ 𝟚 e τ ⊥ → typing_reification Γ e τ ⊥
     | reify : ∀ Γ e τ φ, typing Γ 𝟚 e (.fragment τ) φ → typing_reification Γ e (.rep τ) φ
 end
+
+lemma typing.regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => lc e)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e)
+  <;> try simp
+  <;> intros
+  case lam IH =>
+    rw [← lc.under_opening]; apply IH
+  case lam𝕔 IH =>
+    rw [← lc.under_opening]; apply IH
+  case app₁ IHf IHarg => simp [IHf, IHarg]
+  case app₂ IHf IHarg => simp [IHf, IHarg]
+  case binary₁ IHl IHr => simp [IHl, IHr]
+  case binary₂ IHl IHr => simp [IHl, IHr]
+  case lets IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  case lets𝕔 IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  case ifz₁ IHc IHl IHr => simp [IHc, IHl, IHr]
+  case ifz₂ IHc IHl IHr => simp [IHc, IHl, IHr]
+  apply Hτ
+
+lemma typing_reification.regular : ∀ Γ e τ φ, typing_reification Γ e τ φ → lc e :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;> (apply typing.regular; assumption)
+
+lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_at e Γ.length :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  apply
+    @typing.rec
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => closed_at e Γ.length)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length)
+  <;> try simp
+  <;> (intros; try assumption)
+  case fvar Hbinds _ =>
+    simp [getr_exists_iff_index_lt_length]
+    constructor; constructor; apply Hbinds
+  case app₁ IHf IHarg => simp [IHf, IHarg]
+  case app₂ IHf IHarg => simp [IHf, IHarg]
+  case binary₁ IHl IHr => simp [IHl, IHr]
+  case binary₂ IHl IHr => simp [IHl, IHr]
+  case code_fragment Hbinds _ =>
+    simp [getr_exists_iff_index_lt_length]
+    constructor; constructor; apply Hbinds
+  case lets Hclosed IHb _ =>
+    constructor; apply IHb; apply Hclosed
+  case lets𝕔 Hclosed IHb _ =>
+    constructor; apply IHb; apply Hclosed
+  case ifz₁ IHc IHl IHr => simp [IHc, IHl, IHr]
+  case ifz₂ IHc IHl IHr => simp [IHc, IHl, IHr]
+  apply Hτ
+
+lemma typing_reification.closed_at_env : ∀ Γ e τ φ, typing_reification Γ e τ φ → closed_at e Γ.length :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;> (apply typing.closed_at_env; assumption)
+
+lemma typing.wf : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → wf_at e Γ.length :=
+  by
+  intros Γ 𝕊 e τ φ Hτ
+  constructor
+  apply typing.regular; apply Hτ
+  apply typing.closed_at_env; apply Hτ
+
+lemma typing_reification.wf : ∀ Γ e τ φ, typing_reification Γ e τ φ → wf_at e Γ.length :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ <;> (apply typing.wf; assumption)
+
+lemma typing.static_impl_pure : ∀ Γ e τ φ, typing Γ 𝟙 e τ φ → wbt 𝟙 τ ∧ φ = ⊥ :=
+  by
+  generalize HEq𝕊 : 𝟙 = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟙 = 𝕊 → wbt 𝕊 τ ∧ φ = ⊥)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> intros
+  <;> (try assumption)
+  <;> (try contradiction)
+  case fvar x _ Hbinds Hwbt HEq𝕊 =>
+    constructor; apply Hwbt; rfl
+  case lam Hwbt₀ Hclose IH HEq𝕊 =>
+    have ⟨Hwbt₁, Hφ₀⟩ := IH HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hwbt₀ Hwbt₁
+    constructor
+    . constructor
+      apply Hφ₀; constructor
+      apply Hwbt₀; apply Hwbt₁
+    . rfl
+  case app₁ IHf IHarg HEq𝕊 =>
+    have ⟨Hwbt₁, Hφ₁⟩ := IHf HEq𝕊
+    have ⟨Hwbt₂, Hφ₂⟩ := IHarg HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hwbt₁ Hwbt₂
+    constructor
+    . apply Hwbt₁.right.right
+    . simp [Hφ₁, Hφ₂, Hwbt₁.left]
+  case binary₁ IHl IHr HEq𝕊 =>
+    have ⟨Hwbt₀, Hφ₀⟩ := IHl HEq𝕊
+    have ⟨Hwbt₁, Hφ₁⟩ := IHr HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hwbt₀ Hwbt₁
+    constructor
+    . simp
+    . simp [Hφ₀, Hφ₁]
+  case lit HEq𝕊 =>
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rfl
+  case lets Hwbt Hclose IHb IHe HEq𝕊 =>
+    have ⟨Hwbt₀, Hφ₀⟩ := IHb HEq𝕊
+    have ⟨Hwbt₁, Hφ₁⟩ := IHe HEq𝕊
+    constructor
+    . apply Hwbt₁
+    . simp [Hφ₀, Hφ₁]
+  case fix₁ IHf HEq𝕊 =>
+    have ⟨Hwbt, Hφ⟩ := IHf HEq𝕊
+    rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hwbt
+    constructor
+    . apply Hwbt.right.left
+    . simp [Hφ]
+  case ifz₁ IHc IHl IHr HEq𝕊 =>
+    have ⟨Hwbt₀, Hφ₀⟩ := IHc HEq𝕊
+    have ⟨Hwbt₁, Hφ₁⟩ := IHl HEq𝕊
+    have ⟨Hwbt₂, Hφ₂⟩ := IHr HEq𝕊
+    constructor
+    . apply Hwbt₂
+    . simp [Hφ₀, Hφ₁, Hφ₂]
+  case pure => simp
+  case reify => simp
+
+lemma typing.static_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟙 e τ φ → grounded e :=
+  by
+  generalize HEq𝕊 : 𝟙 = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟙 = 𝕊 → grounded e)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> intros
+  <;> (try assumption)
+  <;> (try contradiction)
+  <;> simp
+  case lam IH HEq𝕊 =>
+    rw [grounded.under_opening]; apply IH; apply HEq𝕊
+  case app₁ IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    apply IH₁; apply HEq𝕊
+  case binary₁ IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    apply IH₁; apply HEq𝕊
+  case lets IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    rw [grounded.under_opening]; apply IH₁; apply HEq𝕊
+  case fix₁ IH HEq𝕊 =>
+    apply IH; apply HEq𝕊
+  case ifz₁ IH₀ IH₁ IH₂ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊; constructor
+    apply IH₁; apply HEq𝕊
+    apply IH₂; apply HEq𝕊
