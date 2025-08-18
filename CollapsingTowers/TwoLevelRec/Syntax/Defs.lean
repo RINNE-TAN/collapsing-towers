@@ -1,9 +1,0 @@
-import CollapsingTowers.TwoLevelRec.Syntax.Effect
-import CollapsingTowers.TwoLevelRec.Syntax.Basic
-import CollapsingTowers.TwoLevelRec.Syntax.SyntacticTrans
-import CollapsingTowers.TwoLevelRec.Syntax.Fv
-import CollapsingTowers.TwoLevelRec.Syntax.Closedness
-import CollapsingTowers.TwoLevelRec.Syntax.Ground
-import CollapsingTowers.TwoLevelRec.Syntax.Identity
-import CollapsingTowers.TwoLevelRec.Syntax.Commutative
-import CollapsingTowers.TwoLevelRec.Syntax.Intros
