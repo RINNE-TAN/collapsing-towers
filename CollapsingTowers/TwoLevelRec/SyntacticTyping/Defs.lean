@@ -1,3 +1,4 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Ty
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Weakening
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking

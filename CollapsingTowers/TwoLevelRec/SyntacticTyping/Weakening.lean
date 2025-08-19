@@ -1,14 +1,15 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
 
-lemma binds.weakening :
+lemma fvar.weakening :
   ∀ (Ψ Δ Φ : TEnv) 𝕊 x τ,
     binds x (τ, 𝕊) (Ψ ++ Φ) →
     binds (if Φ.length ≤ x then x + Δ.length else x) (τ, 𝕊) (Ψ ++ Δ ++ Φ) :=
   by
   intros Ψ Δ Φ 𝕊 x τ HBinds
   by_cases HLe : Φ.length <= x
-  . have HEq : x + Δ.length = x - Φ.length + Δ.length + Φ.length := by omega
-    rw [if_pos HLe, HEq]
+  . rw [if_pos HLe]
+    have HEq : x + Δ.length = x - Φ.length + Δ.length + Φ.length := by omega
+    rw [HEq]
     apply binds.extendr
     apply binds.extendr
     apply binds.shrinkr
@@ -40,21 +41,20 @@ theorem typing.weakening.strengthened :
           typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ)
   <;> intros
   case fvar x _ HBinds Hwbt Ψ HEqΓ =>
-    simp only [shiftl, ← apply_ite]
     rw [HEqΓ] at HBinds
+    simp only [shiftl, ← apply_ite]
     apply typing.fvar
-    . apply binds.weakening
+    . apply fvar.weakening
       apply HBinds
     . apply Hwbt
   case code_fragment x _ HBinds Hwbt Ψ HEqΓ =>
-    simp only [shiftl, ← apply_ite]
     rw [HEqΓ] at HBinds
+    simp only [shiftl, ← apply_ite]
     apply typing.code_fragment
-    . apply binds.weakening
+    . apply fvar.weakening
       apply HBinds
     . apply Hwbt
   case lam Hwbt Hclosed IH Ψ HEqΓ =>
-    simp only [shiftl]
     rw [HEqΓ] at Hclosed IH
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lam
@@ -65,7 +65,6 @@ theorem typing.weakening.strengthened :
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
   case lam𝕔 Hwbt Hclosed IH Ψ HEqΓ =>
-    simp only [shiftl]
     rw [HEqΓ] at Hclosed IH
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lam𝕔
@@ -86,6 +85,7 @@ theorem typing.weakening.strengthened :
     apply typing.app₂
     apply IHf; apply HEqΓ
     apply IHarg; apply HEqΓ
+  case lit => apply typing.lit
   case binary₁ IHl IHr Ψ HEqΓ =>
     apply typing.binary₁
     apply IHl; apply HEqΓ
@@ -94,7 +94,6 @@ theorem typing.weakening.strengthened :
     apply typing.binary₂
     apply IHl; apply HEqΓ
     apply IHr; apply HEqΓ
-  case lit => apply typing.lit
   case lift_lit IH Ψ HEqΓ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ
@@ -105,7 +104,6 @@ theorem typing.weakening.strengthened :
     apply typing.reflect
     apply IH; apply HEqΓ
   case lets Hwbt Hclosed IHb IHe Ψ HEqΓ =>
-    simp only [shiftl]
     rw [HEqΓ] at Hclosed IHb IHe
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lets
@@ -117,7 +115,6 @@ theorem typing.weakening.strengthened :
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
   case lets𝕔 Hwbt Hclosed IHb IHe Ψ HEqΓ =>
-    simp only [shiftl]
     rw [HEqΓ] at Hclosed IHb IHe
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lets𝕔
