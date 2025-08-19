@@ -120,9 +120,9 @@ lemma typing.shrinking.strengthened :
     apply IH; apply HEqΓ; apply HclosedΔ
   case lets Hwbt Hclosed IHb IHe Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; simp [HEqΓ] at Hclosed
-    rw [HEqΓ] at IHb IHe
+    rw [HEqΓ] at IHe
     apply typing.lets
-    . apply IHb; rfl; apply HclosedΔ.left
+    . apply IHb; apply HEqΓ; apply HclosedΔ.left
     . have HEq : (Ψ ++ Δ).length = (Ψ ++ Φ :: Δ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening]
       apply IHe (_ :: Ψ) rfl
@@ -134,9 +134,9 @@ lemma typing.shrinking.strengthened :
       apply Hclosed; apply HclosedΔ.right
   case lets𝕔 Hwbt Hclosed IHb IHe Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; simp [HEqΓ] at Hclosed
-    rw [HEqΓ] at IHb IHe
+    rw [HEqΓ] at IHe
     apply typing.lets𝕔
-    . apply IHb; rfl; apply HclosedΔ.left
+    . apply IHb; apply HEqΓ; apply HclosedΔ.left
     . have HEq : (Ψ ++ Δ).length = (Ψ ++ Φ :: Δ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening]
       apply IHe (_ :: Ψ) rfl

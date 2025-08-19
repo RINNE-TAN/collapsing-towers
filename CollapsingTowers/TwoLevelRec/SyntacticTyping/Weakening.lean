@@ -104,10 +104,10 @@ theorem typing.weakening.strengthened :
     apply typing.reflect
     apply IH; apply HEqΓ
   case lets Hwbt Hclosed IHb IHe Ψ HEqΓ =>
-    rw [HEqΓ] at Hclosed IHb IHe
+    rw [HEqΓ] at Hclosed IHe
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lets
-    . apply IHb; rfl
+    . apply IHb; apply HEqΓ
     . rw [HEq, ← comm.shiftl_opening]
       apply IHe (_ :: Ψ) rfl
       simp
@@ -115,10 +115,10 @@ theorem typing.weakening.strengthened :
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
   case lets𝕔 Hwbt Hclosed IHb IHe Ψ HEqΓ =>
-    rw [HEqΓ] at Hclosed IHb IHe
+    rw [HEqΓ] at Hclosed IHe
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lets𝕔
-    . apply IHb; rfl
+    . apply IHb; apply HEqΓ
     . rw [HEq, ← comm.shiftl_opening]
       apply IHe (_ :: Ψ) rfl
       simp
