@@ -1,44 +1,5 @@
 import CollapsingTowers.TwoLevelRec.Syntax.Defs
-import CollapsingTowers.TwoLevelRec.SyntacticTyping.Ty
-import CollapsingTowers.TwoLevelRec.Utils.Defs
-
-inductive Stage : Type where
-  | stat
-  | dyn
-
-notation:max "𝟙" => Stage.stat
-
-notation:max "𝟚" => Stage.dyn
-
-@[simp]
-def wbt : Stage → Ty → Prop
-  | 𝟙, .nat => true
-  | 𝟙, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
-  | 𝟙, _ => false
-  | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 _) => wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
-  | 𝟚, (.fragment τ) => wbt 𝟙 τ
-  | 𝟚, _ => false
-
-lemma wbt.escape : ∀ 𝕊 τ, wbt 𝕊 τ → wbt 𝟚 τ :=
-  by
-  intros 𝕊 τ Hwbt
-  cases 𝕊
-  case stat =>
-    induction τ with
-    | nat => simp
-    | arrow _ _ _ IH₀ IH₁ =>
-      constructor
-      apply IH₀; apply Hwbt.right.left
-      apply IH₁; apply Hwbt.right.right
-    | fragment => nomatch Hwbt
-    | rep => nomatch Hwbt
-  case dyn => assumption
-
-abbrev TEnv :=
-  List (Ty × Stage)
-
-notation:max "⦰" => ([] : TEnv)
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Env
 
 mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effect → Prop where
@@ -62,6 +23,11 @@ mutual
       typing Γ 𝟚 f (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) φ₀ →
       typing Γ 𝟚 arg (.fragment τ𝕒) φ₁ →
       typing Γ 𝟚 (.app₂ f arg) (.fragment τ𝕓) ⊤
+    | lit : ∀ Γ 𝕊 n,
+      typing Γ 𝕊 (.lit n) .nat ⊥
+    | lift_lit : ∀ Γ n φ,
+      typing Γ 𝟚 n .nat φ →
+      typing Γ 𝟚 (.lift n) (.fragment .nat) ⊤
     | binary₁ : ∀ Γ 𝕊 op l r φ₀ φ₁,
       typing Γ 𝕊 l .nat φ₀ →
       typing Γ 𝕊 r .nat φ₁ →
@@ -70,11 +36,6 @@ mutual
       typing Γ 𝟚 l (.fragment .nat) φ₀ →
       typing Γ 𝟚 r (.fragment .nat) φ₁ →
       typing Γ 𝟚 (.binary₂ op l r) (.fragment .nat) ⊤
-    | lit : ∀ Γ 𝕊 n,
-      typing Γ 𝕊 (.lit n) .nat ⊥
-    | lift_lit : ∀ Γ n φ,
-      typing Γ 𝟚 n .nat φ →
-      typing Γ 𝟚 (.lift n) (.fragment .nat) ⊤
     | code_fragment : ∀ Γ x τ,
       binds x (τ, 𝟙) Γ →
       wbt 𝟙 τ →
@@ -235,6 +196,11 @@ lemma typing.static_impl_pure : ∀ Γ e τ φ, typing Γ 𝟙 e τ φ → wbt �
     constructor
     . apply Hwbt₁.right.right
     . simp [Hφ₁, Hφ₂, Hwbt₁.left]
+  case lit HEq𝕊 =>
+    rw [← HEq𝕊]
+    constructor
+    . simp
+    . rfl
   case binary₁ IHl IHr HEq𝕊 =>
     have ⟨Hwbt₀, Hφ₀⟩ := IHl HEq𝕊
     have ⟨Hwbt₁, Hφ₁⟩ := IHr HEq𝕊
@@ -243,11 +209,6 @@ lemma typing.static_impl_pure : ∀ Γ e τ φ, typing Γ 𝟙 e τ φ → wbt �
     constructor
     . simp
     . simp [Hφ₀, Hφ₁]
-  case lit HEq𝕊 =>
-    rw [← HEq𝕊]
-    constructor
-    . simp
-    . rfl
   case lets Hwbt Hclose IHb IHe HEq𝕊 =>
     have ⟨Hwbt₀, Hφ₀⟩ := IHb HEq𝕊
     have ⟨Hwbt₁, Hφ₁⟩ := IHe HEq𝕊

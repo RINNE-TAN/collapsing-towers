@@ -1,64 +1,68 @@
-import Mathlib.Order.Basic
-
-inductive Effect : Type where
-  | pure
-  | reify
-
-notation:max "⊥" => Effect.pure
-
-notation:max "⊤" => Effect.reify
-
-@[simp]
-def Effect.union : Effect → Effect → Effect
-  | ⊥, ⊥ => ⊥
-  | ⊤, _ => ⊤
-  | _, ⊤ => ⊤
-
-@[simp]
-instance : Union Effect where union := Effect.union
-
-@[simp]
-lemma Effect.union_pure : forall φ : Effect, φ ∪ ⊥ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma Effect.pure_union : forall φ : Effect, ⊥ ∪ φ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma Effect.union_reify : forall φ : Effect, φ ∪ ⊤ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma Effect.reify_union : forall φ : Effect, ⊤ ∪ φ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-def Effect.le : Effect → Effect → Prop
-  | ⊥, _ => true
-  | ⊤, ⊤ => true
-  | _, _ => false
-
-@[simp]
-instance : LE Effect where le := Effect.le
-
-instance : Preorder Effect where
-  le_refl := by intro x; cases x <;> simp
-  le_trans := by intros x y z; cases x <;> cases y <;> cases z <;> simp
-  lt_iff_le_not_ge := by intros x y; cases x <;> cases y <;> simp
-
-instance : PartialOrder Effect where
-  le_antisymm := by
-    intros x y
-    cases x <;> cases y <;> simp
-    all_goals intro _ _; contradiction
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Effect
 
 inductive Ty : Type where
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effect)
   | fragment (τ : Ty)
   | rep (τ : Ty)
+
+@[simp]
+def erase_ty : Ty → Ty
+  | .nat => .nat
+  | .arrow τa τb _ => .arrow (erase_ty τa) (erase_ty τb) ⊥
+  | .fragment τ => erase_ty τ
+  | .rep τ => erase_ty τ
+
+inductive Stage : Type where
+  | stat
+  | dyn
+
+notation:max "𝟙" => Stage.stat
+
+notation:max "𝟚" => Stage.dyn
+
+@[simp]
+def wbt : Stage → Ty → Prop
+  | 𝟙, .nat => true
+  | 𝟙, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
+  | 𝟙, _ => false
+  | 𝟚, .nat => true
+  | 𝟚, (.arrow τ𝕒 τ𝕓 _) => wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
+  | 𝟚, (.fragment τ) => wbt 𝟙 τ
+  | 𝟚, _ => false
+
+lemma grounded_ty.under_erase : ∀ τ, wbt 𝟙 (erase_ty τ) :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH₀ IH₁ =>
+    constructor; rfl
+    constructor; apply IH₀; apply IH₁
+  case fragment IH => apply IH
+  case rep IH => apply IH
+
+lemma erasable.fragment : ∀ τ₀ τ₁, erase_ty τ₀ ≠ .fragment τ₁ :=
+  by
+  intros τ₀ τ₁
+  induction τ₀ <;> simp
+  all_goals next IH => apply IH
+
+lemma erasable.rep : ∀ τ₀ τ₁, erase_ty τ₀ ≠ .rep τ₁ :=
+  by
+  intros τ₀ τ₁
+  induction τ₀ <;> simp
+  all_goals next IH => apply IH
+
+lemma grounded_ty_iff_erase_identity : ∀ τ, wbt 𝟙 τ ↔ erase_ty τ = τ :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH𝕒 IH𝕓 =>
+    simp [IH𝕒, IH𝕓]
+    constructor
+    . intros H; simp [H]
+    . intros H; simp [H]
+  case fragment => simp; apply erasable.fragment
+  case rep => simp; apply erasable.rep

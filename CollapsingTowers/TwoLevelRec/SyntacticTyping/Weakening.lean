@@ -79,24 +79,24 @@ theorem typing.weakening.strengthened :
     apply IH; apply HEqΓ
   case app₁ IHf IHarg Ψ HEqΓ =>
     apply typing.app₁
-    apply IHf; apply HEqΓ
-    apply IHarg; apply HEqΓ
+    . apply IHf; apply HEqΓ
+    . apply IHarg; apply HEqΓ
   case app₂ IHf IHarg Ψ HEqΓ =>
     apply typing.app₂
-    apply IHf; apply HEqΓ
-    apply IHarg; apply HEqΓ
+    . apply IHf; apply HEqΓ
+    . apply IHarg; apply HEqΓ
   case lit => apply typing.lit
-  case binary₁ IHl IHr Ψ HEqΓ =>
-    apply typing.binary₁
-    apply IHl; apply HEqΓ
-    apply IHr; apply HEqΓ
-  case binary₂ IHl IHr Ψ HEqΓ =>
-    apply typing.binary₂
-    apply IHl; apply HEqΓ
-    apply IHr; apply HEqΓ
   case lift_lit IH Ψ HEqΓ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ
+  case binary₁ IHl IHr Ψ HEqΓ =>
+    apply typing.binary₁
+    . apply IHl; apply HEqΓ
+    . apply IHr; apply HEqΓ
+  case binary₂ IHl IHr Ψ HEqΓ =>
+    apply typing.binary₂
+    . apply IHl; apply HEqΓ
+    . apply IHr; apply HEqΓ
   case code_rep IH Ψ HEqΓ =>
     apply typing.code_rep
     apply IH; apply HEqΓ
@@ -125,11 +125,11 @@ theorem typing.weakening.strengthened :
     . apply Hwbt
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
-  case run Hclose IH Ψ HEqΓ =>
+  case run Hclosed IH Ψ HEqΓ =>
     apply typing.run
-    apply IH; apply HEqΓ
-    rw [identity.shiftl]; apply Hclose
-    apply closed.inc; apply Hclose; omega
+    . apply IH; apply HEqΓ
+    . rw [identity.shiftl]; apply Hclosed
+      apply closed.inc; apply Hclosed; omega
   case fix₁ Hfixφ _ IH Ψ HEqΓ =>
     apply typing.fix₁; apply Hfixφ
     apply IH; apply HEqΓ
@@ -138,14 +138,14 @@ theorem typing.weakening.strengthened :
     apply IH; apply HEqΓ
   case ifz₁ IHc IHl IHr Ψ HEqΓ =>
     apply typing.ifz₁
-    apply IHc; apply HEqΓ
-    apply IHl; apply HEqΓ
-    apply IHr; apply HEqΓ
+    . apply IHc; apply HEqΓ
+    . apply IHl; apply HEqΓ
+    . apply IHr; apply HEqΓ
   case ifz₂ IHc IHl IHr Ψ HEqΓ =>
     apply typing.ifz₂
-    apply IHc; apply HEqΓ
-    apply IHl; apply HEqΓ
-    apply IHr; apply HEqΓ
+    . apply IHc; apply HEqΓ
+    . apply IHl; apply HEqΓ
+    . apply IHr; apply HEqΓ
   case pure IH Ψ HEqΓ =>
     apply typing_reification.pure
     apply IH; apply HEqΓ

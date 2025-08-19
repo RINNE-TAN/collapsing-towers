@@ -94,24 +94,24 @@ lemma typing.shrinking.strengthened :
       apply Hclosed; apply HclosedΔ
   case app₁ IHf IHarg Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.app₁
-    apply IHf; apply HEqΓ; apply HclosedΔ.left
-    apply IHarg; apply HEqΓ; apply HclosedΔ.right
+    . apply IHf; apply HEqΓ; apply HclosedΔ.left
+    . apply IHarg; apply HEqΓ; apply HclosedΔ.right
   case app₂ IHf IHarg Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.app₂
-    apply IHf; apply HEqΓ; apply HclosedΔ.left
-    apply IHarg; apply HEqΓ; apply HclosedΔ.right
+    . apply IHf; apply HEqΓ; apply HclosedΔ.left
+    . apply IHarg; apply HEqΓ; apply HclosedΔ.right
   case lit => apply typing.lit
-  case binary₁ IHl IHr Ψ HEqΓ HclosedΔ =>
-    simp at HclosedΔ; apply typing.binary₁
-    apply IHl; apply HEqΓ; apply HclosedΔ.left
-    apply IHr; apply HEqΓ; apply HclosedΔ.right
-  case binary₂ IHl IHr Ψ HEqΓ HclosedΔ =>
-    simp at HclosedΔ; apply typing.binary₂
-    apply IHl; apply HEqΓ; apply HclosedΔ.left
-    apply IHr; apply HEqΓ; apply HclosedΔ.right
   case lift_lit IH Ψ HEqΓ HclosedΔ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply HclosedΔ
+  case binary₁ IHl IHr Ψ HEqΓ HclosedΔ =>
+    simp at HclosedΔ; apply typing.binary₁
+    . apply IHl; apply HEqΓ; apply HclosedΔ.left
+    . apply IHr; apply HEqΓ; apply HclosedΔ.right
+  case binary₂ IHl IHr Ψ HEqΓ HclosedΔ =>
+    simp at HclosedΔ; apply typing.binary₂
+    . apply IHl; apply HEqΓ; apply HclosedΔ.left
+    . apply IHr; apply HEqΓ; apply HclosedΔ.right
   case code_rep IH Ψ HEqΓ HclosedΔ =>
     apply typing.code_rep
     apply IH; apply HEqΓ; apply HclosedΔ
@@ -148,9 +148,9 @@ lemma typing.shrinking.strengthened :
       apply Hclosed; apply HclosedΔ.right
   case run Hclosed IH Ψ HEqΓ HclosedΔ =>
     apply typing.run
-    apply IH; apply HEqΓ; apply HclosedΔ
-    rw [identity.shiftr]; apply Hclosed
-    apply closed.inc; apply Hclosed; omega
+    . apply IH; apply HEqΓ; apply HclosedΔ
+    . rw [identity.shiftr]; apply Hclosed
+      apply closed.inc; apply Hclosed; omega
   case fix₁ Hfixφ _ IH Ψ HEqΓ HclosedΔ =>
     apply typing.fix₁; apply Hfixφ
     apply IH; apply HEqΓ; apply HclosedΔ
@@ -159,14 +159,14 @@ lemma typing.shrinking.strengthened :
     apply IH; apply HEqΓ; apply HclosedΔ
   case ifz₁ IHc IHl IHr Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.ifz₁
-    apply IHc; apply HEqΓ; apply HclosedΔ.left.left
-    apply IHl; apply HEqΓ; apply HclosedΔ.left.right
-    apply IHr; apply HEqΓ; apply HclosedΔ.right
+    . apply IHc; apply HEqΓ; apply HclosedΔ.left.left
+    . apply IHl; apply HEqΓ; apply HclosedΔ.left.right
+    . apply IHr; apply HEqΓ; apply HclosedΔ.right
   case ifz₂ IHc IHl IHr Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.ifz₂
-    apply IHc; apply HEqΓ; apply HclosedΔ.left.left
-    apply IHl; apply HEqΓ; apply HclosedΔ.left.right
-    apply IHr; apply HEqΓ; apply HclosedΔ.right
+    . apply IHc; apply HEqΓ; apply HclosedΔ.left.left
+    . apply IHl; apply HEqΓ; apply HclosedΔ.left.right
+    . apply IHr; apply HEqΓ; apply HclosedΔ.right
   case pure IH Ψ HEqΓ HclosedΔ =>
     apply typing_reification.pure
     apply IH; apply HEqΓ; apply HclosedΔ
