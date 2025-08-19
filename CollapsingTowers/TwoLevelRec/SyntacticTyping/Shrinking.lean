@@ -174,3 +174,16 @@ lemma typing.shrinking.strengthened :
     apply typing_reification.reify
     apply IH; apply HEqΓ; apply HclosedΔ
   apply Hτ
+
+theorem typing.shrinking :
+  ∀ Γ Φ 𝕊 e τ φ,
+    typing (Φ :: Γ) 𝕊 e τ φ →
+    closed_at e Γ.length →
+    typing Γ 𝕊 e τ φ :=
+  by
+  intros Γ Φ 𝕊 e τ φ Hτ Hclosed
+  have H := typing.shrinking.strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
+  rw [identity.shiftr] at H
+  apply H; apply Hτ; rfl
+  apply closed_impl_not_in_fv; apply Hclosed; omega
+  apply closed.inc; apply Hclosed; omega
