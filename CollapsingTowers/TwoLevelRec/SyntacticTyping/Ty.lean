@@ -31,6 +31,18 @@ def wbt : Stage → Ty → Prop
   | 𝟚, (.fragment τ) => wbt 𝟙 τ
   | 𝟚, _ => false
 
+lemma wbt.escape : ∀ τ, wbt 𝟙 τ → wbt 𝟚 τ :=
+  by
+  intros τ Hwbt
+  induction τ with
+  | nat => simp
+  | arrow _ _ _ IH₀ IH₁ =>
+    constructor
+    apply IH₀; apply Hwbt.right.left
+    apply IH₁; apply Hwbt.right.right
+  | fragment => nomatch Hwbt
+  | rep => nomatch Hwbt
+
 lemma grounded_ty.under_erase : ∀ τ, wbt 𝟙 (erase_ty τ) :=
   by
   intros τ

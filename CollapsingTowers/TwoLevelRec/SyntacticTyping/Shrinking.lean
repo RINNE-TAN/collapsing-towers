@@ -175,7 +175,7 @@ lemma typing.shrinking.strengthened :
     apply IH; apply HEqΓ; apply HclosedΔ
   apply Hτ
 
-theorem typing.shrinking :
+theorem typing.shrinking.singleton :
   ∀ Γ Φ 𝕊 e τ φ,
     typing (Φ :: Γ) 𝕊 e τ φ →
     closed_at e Γ.length →
@@ -187,3 +187,17 @@ theorem typing.shrinking :
   apply H; apply Hτ; rfl
   apply closed_impl_not_in_fv; apply Hclosed; omega
   apply closed.inc; apply Hclosed; omega
+
+theorem typing.shrinking :
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing (Δ ++ Γ) 𝕊 e τ φ →
+    closed_at e Γ.length →
+    typing Γ 𝕊 e τ φ :=
+  by
+  intros Γ Δ 𝕊 e τ φ Hτ Hclosed
+  induction Δ
+  case nil => apply Hτ
+  case cons IH =>
+    apply IH
+    apply typing.shrinking.singleton _ _ _ _ _ _ Hτ
+    apply closed.inc; apply Hclosed; simp

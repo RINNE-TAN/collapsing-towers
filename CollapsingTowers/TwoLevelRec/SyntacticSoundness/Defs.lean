@@ -1,2 +1,4 @@
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvSubst
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvMaping
+import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvHead
+import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Preservation

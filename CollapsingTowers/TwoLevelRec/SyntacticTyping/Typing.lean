@@ -265,3 +265,18 @@ lemma typing.static_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟙 e τ φ → g
     apply IH₀; apply HEq𝕊; constructor
     apply IH₁; apply HEq𝕊
     apply IH₂; apply HEq𝕊
+
+lemma typing_reification.under_code :
+  ∀ Γ e τ φ,
+    typing_reification Γ (.code e) (.rep τ) φ →
+    typing Γ 𝟙 e τ ⊥ :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ
+  case pure Hτ =>
+    cases Hτ
+    case code_rep Hτ => apply Hτ
+  case reify Hτ =>
+    cases Hτ
+    case code_fragment Hwbt Hbinds =>
+      apply typing.fvar; apply Hbinds; apply Hwbt

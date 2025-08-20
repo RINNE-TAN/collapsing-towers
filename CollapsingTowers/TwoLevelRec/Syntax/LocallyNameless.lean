@@ -415,6 +415,37 @@ lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp [IH₀, IH₁, IH₂]
 
+lemma closed.under_codify : ∀ e x i, closed_at e x ↔ closed_at (codify i e) x :=
+  by
+  intros e x i
+  induction e generalizing i with
+  | fvar| lit => simp
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | code _ IH
+  | reflect _ IH
+  | lift _ IH
+  | run _ IH
+  | fix₁ _ IH
+  | fix₂ _ IH =>
+    simp [IH i]
+  | lam _ IH
+  | lam𝕔 _ IH =>
+    simp [IH (i + 1)]
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁ =>
+    simp [IH₀ i, IH₁ i]
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp [IH₀ i, IH₁ (i + 1)]
+  | ifz₁ _ _ _ IH₀ IH₁ IH₂
+  | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
+    simp [IH₀ i, IH₁ i, IH₂ i]
+
 lemma closed.under_msubst : ∀ γ e, mwf γ → closed_at e γ.length → closed (msubst γ e) :=
   by
   intros γ e Hγ He
