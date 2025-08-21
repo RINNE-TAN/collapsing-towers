@@ -168,6 +168,7 @@ lemma preservation.under_ctxℝ :
   ∀ intro Γ R e₀ e₁ τ φ₀,
     ctxℝ intro Γ.length R →
     lc e₀ →
+    fv e₁ ⊆ fv e₀ →
     (∀ Δ τ φ₀,
       Δ.length = intro →
       typing (Δ ++ Γ) 𝟚 e₀ τ φ₀ →
@@ -175,13 +176,12 @@ lemma preservation.under_ctxℝ :
         typing (Δ ++ Γ) 𝟚 e₁ τ φ₁ ∧
         φ₁ ≤ φ₀
     ) →
-    fv e₁ ⊆ fv e₀ →
     typing Γ 𝟚 R⟦e₀⟧ τ φ₀ →
     ∃ φ₁,
       typing Γ 𝟚 R⟦e₁⟧ τ φ₁ ∧
       φ₁ ≤ φ₀ :=
   by
-  intros intro Γ R e₀ e₁ τ φ₀ HR Hlc IH Hfv Hτ
+  intros intro Γ R e₀ e₁ τ φ₀ HR Hlc Hfv IH Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
@@ -326,3 +326,58 @@ lemma preservation.under_ctxℝ :
           . apply typing_reification.reify
             apply HX
         . simp
+
+lemma preservation.under_ctx𝕄 :
+  ∀ Γ M e₀ e₁ τ φ₀,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    fv e₁ ⊆ fv e₀ →
+    (∀ Γ τ φ₀,
+      typing Γ 𝟚 e₀ τ φ₀ →
+      ∃ φ₁,
+        typing Γ 𝟚 e₁ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    typing Γ 𝟚 M⟦e₀⟧ τ φ₀ →
+    ∃ φ₁,
+      typing Γ 𝟚 M⟦e₁⟧ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros Γ M e₀ e₁ τ φ₀ HM Hlc Hfv IH Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing τ φ₀ Γ
+  case hole => apply IH; apply Hτ
+  case cons𝔹 B M HB HM IHM =>
+    rw [← ctx_comp B M]
+    apply preservation.under_ctx𝔹
+    . apply HB
+    . intros _ _ IHτ
+      apply IHM
+      . apply IHτ
+      . simp [HEqlvl]
+    . apply Hτ
+  case consℝ R M HR HM IHM =>
+      rw [← ctx_comp R M]
+      apply preservation.under_ctxℝ
+      . rw [HEqlvl]; apply HR
+      . apply lc.under_ctx𝕄; apply HM; apply Hlc
+      . apply fv.under_ctx𝕄; apply HM; apply Hfv
+      . intros _ _ _ HEqintro IHτ
+        apply IHM
+        . apply IHτ
+        . simp [HEqlvl, HEqintro]; omega
+      . apply Hτ
+
+lemma preservation.under_ctx𝔼 :
+  ∀ Γ E e τ φ,
+    ctx𝔼 E →
+    typing Γ 𝟚 (E e) τ φ →
+    ∃ τ𝕖 φ𝕖 φ𝔼,
+      φ = φ𝕖 ∪ φ𝔼 ∧
+      typing Γ 𝟚 e τ𝕖 φ𝕖 ∧
+      ∀ e φ Δ,
+        typing (Δ ++ Γ) 𝟚 e τ𝕖 φ →
+        typing (Δ ++ Γ) 𝟚 (E e) τ (φ ∪ φ𝔼) :=
+  by
+  admit
