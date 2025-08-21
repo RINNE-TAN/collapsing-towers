@@ -1,45 +1,96 @@
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvCtx
 
 lemma preservation.reflect :
-  ∀ Γ E e τ φ,
+  ∀ Γ E e τ φ₀,
     ctx𝔼 E →
-    typing_reification Γ E⟦.reflect e⟧ (.rep τ) φ →
-    typing_reification Γ (.lets𝕔 e E⟦.code (.bvar 0)⟧) (.rep τ) ⊥ :=
+    typing_reification Γ E⟦.reflect e⟧ τ φ₀ →
+    ∃ φ₁,
+      typing_reification Γ (.lets𝕔 e E⟦.code (.bvar 0)⟧) τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
   by
-  intros Γ E e τ φ HE Hτ
+  intros Γ E e τ φ₀ HE Hτ
   admit
 
 lemma preservation.reify :
-  ∀ Γ intro R E e τ φ,
+  ∀ Γ intro R e₀ e₁ τ φ₀,
     ctxℝ intro Γ.length R →
-    ctx𝔼 E →
-    lc e →
-    typing Γ 𝟚 R⟦E⟦.reflect e⟧⟧ τ φ →
-    typing Γ 𝟚 R⟦(.lets𝕔 e E⟦.code (.bvar 0)⟧)⟧ τ φ :=
+    lc e₀ →
+    fv e₁ ⊆ fv e₀ →
+    (∀ Γ τ φ₀,
+      typing_reification Γ e₀ τ φ₀ →
+      ∃ φ₁,
+        typing_reification Γ e₁ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    typing Γ 𝟚 R⟦e₀⟧ τ φ₀ →
+    ∃ φ₁,
+      typing Γ 𝟚 R⟦e₁⟧ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
   by
-  intros Γ intro R E e τ φ HR HE Hlc Hτ
-  have Hlcl : lc E⟦.reflect e⟧ := by apply lc.under_ctx𝔼; apply HE; apply Hlc
-  have Hlcr : lc (.lets𝕔 e E⟦.code (.bvar 0)⟧) :=
-    by
-    constructor
-    . apply Hlc
-    . apply lc.under_ctx𝔼; apply HE; simp
+  intros Γ intro R e₀ e₁ τ φ₀ HR Hlc Hfv IH Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
     case lam𝕔 τ𝕒 τ𝕓 _ Hwbt HX Hclosed =>
-      rw [identity.opening_closing _ _ _ Hlcl] at HX
-      apply typing.lam𝕔
-      . rw [identity.opening_closing _ _ _ Hlcr]
-        apply preservation.reflect _ _ _ _ _ HE HX
-      . apply Hwbt
-      . rw [← closed.under_closing]; constructor
-        . apply closed.decompose_ctx𝔼 _ (.reflect e); apply HE
+      rw [identity.opening_closing _ _ _ Hlc] at HX
+      have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX
+      exists ⊤
+      constructor
+      . apply typing.lam𝕔
+        . rw [identity.opening_closing]
+          apply HX
+          apply typing_reification.regular _ _ _ _ HX
+        . apply Hwbt
+        . rw [← closed.under_closing]
           apply typing_reification.closed_at_env _ _ _ _ HX
-        . apply closed.under_ctx𝔼; apply HE
+      . simp
+  case lets𝕔 =>
+    cases Hτ
+    case lets𝕔 τ𝕒 τ𝕓 _ Hwbt Hb HX Hclosed =>
+      rw [identity.opening_closing _ _ _ Hlc] at HX
+      have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX
+      exists ⊥
+      constructor
+      . apply typing.lets𝕔
+        . apply Hb
+        . rw [identity.opening_closing]
+          apply HX
+          apply typing_reification.regular _ _ _ _ HX
+        . apply Hwbt
+        . rw [← closed.under_closing]
           apply typing_reification.closed_at_env _ _ _ _ HX
-          simp
-  case lets𝕔 => admit
-  case run => admit
-  case ifzl₂ => admit
-  case ifzr₂ => admit
+      . simp
+  case run =>
+    cases Hτ
+    case run Hclosed HX =>
+      have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX
+      exists ⊥
+      constructor
+      . apply typing.run
+        . apply HX
+        . rw [closed_iff_fv_empty] at Hclosed
+          simp [Hclosed] at Hfv
+          rw [closed_iff_fv_empty, Hfv]
+      . simp
+  case ifzl₂ =>
+    cases Hτ
+    case ifz₂ Hc HX Hr =>
+      have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX
+      exists ⊤
+      constructor
+      . apply typing.ifz₂
+        . apply Hc
+        . apply HX
+        . apply Hr
+      . simp
+  case ifzr₂ =>
+    cases Hτ
+    case ifz₂ Hc Hl HX =>
+      have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX
+      exists ⊤
+      constructor
+      . apply typing.ifz₂
+        . apply Hc
+        . apply Hl
+        . apply HX
+      . simp

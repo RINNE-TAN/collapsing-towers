@@ -358,13 +358,58 @@ lemma preservation.under_ctx𝕄 :
       . simp [HEqlvl]
     . apply Hτ
   case consℝ R M HR HM IHM =>
-      rw [← ctx_comp R M]
-      apply preservation.under_ctxℝ
-      . rw [HEqlvl]; apply HR
-      . apply lc.under_ctx𝕄; apply HM; apply Hlc
-      . apply fv.under_ctx𝕄; apply HM; apply Hfv
-      . intros _ _ _ HEqintro IHτ
-        apply IHM
-        . apply IHτ
-        . simp [HEqlvl, HEqintro]; omega
-      . apply Hτ
+    rw [← ctx_comp R M]
+    apply preservation.under_ctxℝ
+    . rw [HEqlvl]; apply HR
+    . apply lc.under_ctx𝕄; apply HM; apply Hlc
+    . apply fv.under_ctx𝕄; apply HM; apply Hfv
+    . intros _ _ _ HEqintro IHτ
+      apply IHM
+      . apply IHτ
+      . simp [HEqlvl, HEqintro]; omega
+    . apply Hτ
+
+lemma preservation.under_ctxℚ :
+  ∀ Γ Q e₀ e₁ τ φ₀,
+    ctxℚ Γ.length Q →
+    lc e₀ →
+    fv e₁ ⊆ fv e₀ →
+    (∀ Γ intro R τ φ₀,
+      ctxℝ intro Γ.length R →
+      typing Γ 𝟚 R⟦e₀⟧ τ φ₀ →
+      ∃ φ₁,
+        typing Γ 𝟚 R⟦e₁⟧ τ φ₁ ∧
+        φ₁ ≤ φ₀
+    ) →
+    typing Γ 𝟚 Q⟦e₀⟧ τ φ₀ →
+    ∃ φ₁,
+      typing Γ 𝟚 Q⟦e₁⟧ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros Γ Q e₀ e₁ τ φ₀ HQ Hlc Hfv IH Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HQ
+  induction HQ generalizing τ φ₀ Γ
+  case holeℝ HR =>
+    rw [← HEqlvl] at HR
+    apply IH; apply HR; apply Hτ
+  case cons𝔹 B Q HB HQ IHQ =>
+    rw [← ctx_comp B Q]
+    apply preservation.under_ctx𝔹
+    . apply HB
+    . intros _ _ IHτ
+      apply IHQ
+      . apply IHτ
+      . simp [HEqlvl]
+    . apply Hτ
+  case consℝ R Q HR HQ IHQ =>
+    rw [← ctx_comp R Q]
+    apply preservation.under_ctxℝ
+    . rw [HEqlvl]; apply HR
+    . apply lc.under_ctxℚ; apply HQ; apply Hlc
+    . apply fv.under_ctxℚ; apply HQ; apply Hfv
+    . intros _ _ _ HEqintro IHτ
+      apply IHQ
+      . apply IHτ
+      . simp [HEqlvl, HEqintro]; omega
+    . apply Hτ
