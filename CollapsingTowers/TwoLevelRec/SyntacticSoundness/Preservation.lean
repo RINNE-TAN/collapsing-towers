@@ -28,4 +28,7 @@ theorem preservation.strengthened :
       . apply typing_reification.reify; apply Hτ
       . apply Hφ
   case reflect P E e HP HE Hlc =>
-    admit
+    cases HP
+    case hole => admit
+    case consℚ HQ =>
+      admit

@@ -368,16 +368,3 @@ lemma preservation.under_ctx𝕄 :
         . apply IHτ
         . simp [HEqlvl, HEqintro]; omega
       . apply Hτ
-
-lemma preservation.under_ctx𝔼 :
-  ∀ Γ E e τ φ,
-    ctx𝔼 E →
-    typing Γ 𝟚 (E e) τ φ →
-    ∃ τ𝕖 φ𝕖 φ𝔼,
-      φ = φ𝕖 ∪ φ𝔼 ∧
-      typing Γ 𝟚 e τ𝕖 φ𝕖 ∧
-      ∀ e φ Δ,
-        typing (Δ ++ Γ) 𝟚 e τ𝕖 φ →
-        typing (Δ ++ Γ) 𝟚 (E e) τ (φ ∪ φ𝔼) :=
-  by
-  admit
