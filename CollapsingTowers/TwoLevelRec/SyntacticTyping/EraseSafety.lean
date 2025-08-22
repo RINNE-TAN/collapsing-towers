@@ -3,7 +3,7 @@ import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
 -- Γ ⊢ e : τ
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
-theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+theorem typing.erase.safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
