@@ -188,3 +188,17 @@ lemma preservation.under_ctxℝ :
       case reify HX =>
         have HX := IH _ _ _ (by simp) HX
         apply typing.ifz₂; apply Hc; apply Hl; apply typing_reification.reify _ _ _ _ HX
+
+lemma preservation.under_ctx𝔼 :
+  ∀ Γ E e τ φ,
+    ctx𝔼 E →
+    typing Γ 𝟙 E⟦e⟧ τ φ →
+    ∃ τ𝕖 φ𝕖 φ𝔼,
+      φ = φ𝕖 ∪ φ𝔼 ∧
+      typing Γ 𝟙 e τ𝕖 φ𝕖 ∧
+      ∀ Δ e φ,
+        typing (Δ ++ Γ) 𝟙 e τ𝕖 φ →
+        typing (Δ ++ Γ) 𝟙 E⟦e⟧ τ (φ ∪ φ𝔼) :=
+  by
+  intros Γ E e τ φ HE Hτ
+  admit

@@ -6,7 +6,27 @@ lemma preservation.reflect.head :
     typing_reification Γ E⟦.reflect e⟧ τ φ →
     typing_reification Γ (.lets𝕔 e E⟦.code (.bvar 0)⟧) τ ⊥ :=
   by
-  admit
+  intros Γ E e τ φ HE Hτ
+  cases Hτ
+  case pure Hτ =>
+    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
+    cases Hτr; simp at HEqφ
+  case reify Hτ =>
+    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
+    cases Hτr
+    case reflect τ𝕖 Hτe =>
+      have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτe
+      apply typing_reification.pure
+      apply typing.lets𝕔
+      . apply Hτe
+      . simp [opening.under_ctx𝔼 _ _ _ _ HE]
+        apply typing_reification.reify
+        apply HτE [(τ𝕖, 𝟚)]
+        apply typing.code_fragment; simp; apply Hwbt
+      . apply Hwbt
+      . apply closed.under_ctx𝔼; apply HE
+        apply typing.closed_at_env _ _ _ _ _ Hτ
+        simp
 
 lemma preservation.reflect :
   ∀ Γ Q E e τ φ,
