@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvHead
+import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvPure
 
 theorem preservation.strengthened :
   ∀ Γ e₀ e₁ τ φ₀,
@@ -9,10 +9,20 @@ theorem preservation.strengthened :
       φ₁ ≤ φ₀ :=
   by
   intro Γ e₀ e₁ τ φ₀
-  generalize HEqlvl : Γ.length = lvl
   intro Hstep Hτ
   cases Hstep
   case pure HM Hlc Hhead =>
-    admit
+    cases Hτ
+    case pure Hτ =>
+      have ⟨φ, Hτ, Hφ⟩ := preservation.pure _ _ _ _ _ _ HM Hlc Hhead Hτ
+      cases φ <;> simp at Hφ
+      exists ⊥; constructor
+      . apply typing_reification.pure _ _ _ Hτ
+      . simp
+    case reify Hτ =>
+      have ⟨φ, Hτ, Hφ⟩ := preservation.pure _ _ _ _ _ _ HM Hlc Hhead Hτ
+      exists φ; constructor
+      . apply typing_reification.reify _ _ _ _ Hτ
+      . apply Hφ
   case reflect P E e HP HE Hlc =>
     admit
