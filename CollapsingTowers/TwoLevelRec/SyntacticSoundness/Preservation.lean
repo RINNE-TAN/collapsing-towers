@@ -48,9 +48,9 @@ theorem preservation.stepn :
       φ₁ ≤ φ₀ :=
   by
   intro e₀ e₁ τ φ₀ Hstepn Hτ
-  induction Hstepn generalizing φ₀ with
-  | refl => exists φ₀
-  | multi _ _ _ Hstep _ IH =>
+  induction Hstepn generalizing φ₀
+  case refl => exists φ₀
+  case multi Hstep _ IH =>
     have ⟨φ₁, IHτ₁, Hφ₁⟩ := preservation _ _ _ _ Hstep Hτ
     have ⟨φ₂, IHτ₂, Hφ₂⟩ := IH _ IHτ₁
     exists φ₂

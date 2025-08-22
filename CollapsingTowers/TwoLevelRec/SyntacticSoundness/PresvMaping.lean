@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.SyntacticTyping.Weakening
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 lemma preservation.maping.strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 φ,

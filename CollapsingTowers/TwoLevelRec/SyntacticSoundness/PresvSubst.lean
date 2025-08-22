@@ -1,7 +1,6 @@
-import CollapsingTowers.TwoLevelRec.SyntacticTyping.Weakening
-import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking
+import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
-lemma preservation.dyn_subst.strengthened :
+lemma preservation.dynamic_subst.strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
     typing Γ 𝟚 e τ𝕓 φ →
     Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
@@ -108,14 +107,14 @@ lemma preservation.dyn_subst.strengthened :
   case reify => simp
   apply Hτe
 
-theorem preservation.dyn_subst :
+theorem preservation.dynamic_subst :
   ∀ Γ v e τ𝕒 τ𝕓,
     typing Γ 𝟚 v τ𝕒 ⊥ →
     typing ((τ𝕒, 𝟚) :: Γ) 𝟚 e τ𝕓 ⊥ →
     typing Γ 𝟚 (subst Γ.length v e) τ𝕓 ⊥ :=
   by
   intros Γ v e τ𝕒 τ𝕓 Hτv Hτe
-  have H := preservation.dyn_subst.strengthened ((τ𝕒, 𝟚) :: Γ) ⦰ Γ v e τ𝕒 τ𝕓 ⊥ Hτe rfl Hτv
+  have H := preservation.dynamic_subst.strengthened ((τ𝕒, 𝟚) :: Γ) ⦰ Γ v e τ𝕒 τ𝕓 ⊥ Hτe rfl Hτv
   rw [identity.shiftr] at H; apply H
   apply closed.under_subst
   apply closed.inc; apply typing.closed_at_env; apply Hτv; omega

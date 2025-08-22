@@ -166,7 +166,7 @@ lemma typing_reification.wf : ∀ Γ e τ φ, typing_reification Γ e τ φ → 
   intros Γ e τ φ Hτ
   cases Hτ <;> (apply typing.wf; assumption)
 
-lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ⊥ :=
+lemma typing.dynamic_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ⊥ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ e τ φ Hτ
@@ -232,7 +232,7 @@ lemma typing.dyn_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚
   case pure => simp
   case reify => simp
 
-lemma typing.dyn_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → grounded e :=
+lemma typing.dynamic_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → grounded e :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ e τ φ Hτ
