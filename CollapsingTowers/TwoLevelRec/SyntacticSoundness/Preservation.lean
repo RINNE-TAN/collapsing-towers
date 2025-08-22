@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvPure
+import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvReflect
 
 theorem preservation.strengthened :
   ∀ Γ e₀ e₁ τ φ₀,
@@ -25,7 +26,19 @@ theorem preservation.strengthened :
       . apply typing_reification.reify _ _ _ _ Hτ
       . apply Hφ
   case reflect P E e HP HE Hlc =>
-    admit
+    cases HP
+    case hole =>
+      exists ⊥; simp
+      apply preservation.reflect.head _ _ _ _ _ HE Hτ
+    case consℚ HQ =>
+      exists φ₀; simp
+      cases Hτ
+      case pure Hτ =>
+        apply typing_reification.pure
+        apply preservation.reflect _ _ _ _ _ _ HQ HE Hlc Hτ
+      case reify Hτ =>
+        apply typing_reification.reify
+        apply preservation.reflect _ _ _ _ _ _ HQ HE Hlc Hτ
 
 theorem preservation :
   ∀ e₀ e₁ τ φ₀,

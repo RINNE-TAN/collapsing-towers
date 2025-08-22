@@ -127,7 +127,7 @@ lemma preservation.under_ctxℝ :
           apply typing.closed_at_env _ _ _ _ _ HX
   case lets𝕔 =>
     cases Hτ
-    case lets𝕔 τ𝕒 τ𝕓 _ Hwbt Hb HX Hclosed =>
+    case lets𝕔 Hwbt Hb HX Hclosed =>
       rw [identity.opening_closing _ _ _ Hlc] at HX
       cases HX
       case pure HX =>
