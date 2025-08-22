@@ -9,7 +9,7 @@ notation:max "⦰" => ([] : TEnv)
 @[simp]
 def erase_env : TEnv → TEnv
   | ⦰ => ⦰
-  | (τ, _) :: Γ => (erase_ty τ, 𝟙) :: erase_env Γ
+  | (τ, _) :: Γ => (erase_ty τ, 𝟚) :: erase_env Γ
 
 lemma erase_env.length : ∀ Γ, Γ.length = (erase_env Γ).length :=
   by
@@ -18,7 +18,7 @@ lemma erase_env.length : ∀ Γ, Γ.length = (erase_env Γ).length :=
   case nil => rfl
   case cons IH => simp; apply IH
 
-lemma erase_env.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (erase_ty τ, 𝟙) (erase_env Γ) :=
+lemma erase_env.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (erase_ty τ, 𝟚) (erase_env Γ) :=
   by
   intros x τ 𝕊 Γ Hbinds
   induction Γ
@@ -34,7 +34,7 @@ lemma erase_env.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (era
 @[simp]
 def escape_env : TEnv → TEnv
   | ⦰ => ⦰
-  | (τ, _) :: tails => (τ, 𝟚) :: escape_env tails
+  | (τ, _) :: tails => (τ, 𝟙) :: escape_env tails
 
 lemma escape_env.length : ∀ Γ, Γ.length = (escape_env Γ).length :=
   by
@@ -45,7 +45,7 @@ lemma escape_env.length : ∀ Γ, Γ.length = (escape_env Γ).length :=
     have ⟨τ, 𝕊⟩ := head
     cases 𝕊 <;> (simp; apply IH)
 
-lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, 𝟚) (escape_env Γ) :=
+lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, 𝟙) (escape_env Γ) :=
   by
   intros Γ x τ 𝕊
   induction Γ with

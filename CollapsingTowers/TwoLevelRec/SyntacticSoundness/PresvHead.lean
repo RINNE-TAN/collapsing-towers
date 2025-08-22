@@ -4,15 +4,15 @@ import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvMaping
 
 lemma typing.escape.strengthened :
   ∀ Γ e τ φ,
-    typing Γ 𝟙 e τ φ →
-    typing (escape_env Γ) 𝟚 e τ φ :=
+    typing Γ 𝟚 e τ φ →
+    typing (escape_env Γ) 𝟙 e τ φ :=
   by
-  generalize HEq𝕊 : 𝟙 = 𝕊
+  generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ e τ φ Hτ
   revert HEq𝕊
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟙 = 𝕊 → typing (escape_env Γ) 𝟚 e τ φ)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing (escape_env Γ) 𝟙 e τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> (intros; try contradiction)
   case fvar x _ HBinds Hwbt HEq𝕊 =>
@@ -61,8 +61,8 @@ lemma typing.escape.strengthened :
 
 theorem typing.escape :
   ∀ e τ φ,
-    typing ⦰ 𝟙 e τ φ →
-    typing ⦰ 𝟚 e τ φ :=
+    typing ⦰ 𝟚 e τ φ →
+    typing ⦰ 𝟙 e τ φ :=
   by
   intros e τ φ Hτ
   apply typing.escape.strengthened _ _ _ _ Hτ
@@ -70,9 +70,9 @@ theorem typing.escape :
 theorem preservation.head :
   ∀ Γ e₀ e₁ τ φ₀,
     head e₀ e₁ →
-    typing Γ 𝟚 e₀ τ φ₀ →
+    typing Γ 𝟙 e₀ τ φ₀ →
     ∃ φ₁,
-      typing Γ 𝟚 e₁ τ φ₁ ∧
+      typing Γ 𝟙 e₁ τ φ₁ ∧
       φ₁ ≤ φ₀ :=
   by
   intros Γ e₀ e₁ τ φ₀ Hhead Hτ
@@ -186,7 +186,7 @@ theorem preservation.head :
     cases Hτ
     case fix₁ τ𝕒 τ𝕓 φ₁ φ₂ Hfixφ Hτf =>
       have Hpure : φ₀ = ⊥ := by cases Hvalue <;> cases Hτf; rfl
-      have Hwbt: wbt 𝟚 τ𝕒 := by cases Hvalue <;> cases Hτf; next Hwbt _ => apply Hwbt.left
+      have Hwbt: wbt 𝟙 τ𝕒 := by cases Hvalue <;> cases Hτf; next Hwbt _ => apply Hwbt.left
       rw [Hpure] at Hτf; simp [Hpure]
       apply typing.lam; rw [Hfixφ, ← Effect.union_pure (φ₁ ∪ φ₂)]
       apply typing.app₁; apply typing.weakening.singleton; rw [identity.opening, ← Effect.union_pure φ₂, ← Effect.union_pure φ₂]

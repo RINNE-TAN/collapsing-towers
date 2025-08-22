@@ -182,7 +182,7 @@ theorem typing.shrinking.singleton :
     typing Γ 𝕊 e τ φ :=
   by
   intros Γ Φ 𝕊 e τ φ Hτ Hclosed
-  have H := typing.shrinking.strengthened (Φ :: Γ) [] Γ Φ 𝕊 e τ φ
+  have H := typing.shrinking.strengthened (Φ :: Γ) ⦰ Γ Φ 𝕊 e τ φ
   rw [identity.shiftr] at H
   apply H; apply Hτ; rfl
   apply closed_impl_not_in_fv; apply Hclosed; omega

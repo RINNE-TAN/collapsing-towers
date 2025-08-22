@@ -3,13 +3,13 @@ import CollapsingTowers.TwoLevelRec.SyntacticTyping.Typing
 -- Γ ⊢ e : τ
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
-theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) 𝟙 ‖e‖ (erase_ty τ) ⊥ :=
+theorem typing.erase_safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) 𝟙 ‖e‖ (erase_ty τ) ⊥)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) 𝟙 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar

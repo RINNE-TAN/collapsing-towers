@@ -1,20 +1,20 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Weakening
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Shrinking
 
-lemma preservation.static_subst.strengthened :
+lemma preservation.dyn_subst.strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
-    typing Γ 𝟙 e τ𝕓 φ →
-    Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
-    typing Φ 𝟙 v τ𝕒 ⊥ →
-    typing (Δ ++ Φ) 𝟙 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ :=
+    typing Γ 𝟚 e τ𝕓 φ →
+    Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
+    typing Φ 𝟚 v τ𝕒 ⊥ →
+    typing (Δ ++ Φ) 𝟚 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ :=
   by
-  generalize HEq𝕊 : 𝟙 = 𝕊
+  generalize HEq𝕊 : 𝟚 = 𝕊
   intros Γ Δ Φ v e τ𝕒 τ𝕓 φ Hτe HEqΓ
   revert Δ HEq𝕊
   apply
     @typing.rec
       (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
-        𝟙 = 𝕊 →
+        𝟚 = 𝕊 →
         ∀ Δ,
           Γ = Δ ++ (τ𝕒, 𝕊) :: Φ →
           typing Φ 𝕊 v τ𝕒 ⊥ →
@@ -108,14 +108,14 @@ lemma preservation.static_subst.strengthened :
   case reify => simp
   apply Hτe
 
-theorem preservation.static_subst :
+theorem preservation.dyn_subst :
   ∀ Γ v e τ𝕒 τ𝕓,
-    typing Γ 𝟙 v τ𝕒 ⊥ →
-    typing ((τ𝕒, 𝟙) :: Γ) 𝟙 e τ𝕓 ⊥ →
-    typing Γ 𝟙 (subst Γ.length v e) τ𝕓 ⊥ :=
+    typing Γ 𝟚 v τ𝕒 ⊥ →
+    typing ((τ𝕒, 𝟚) :: Γ) 𝟚 e τ𝕓 ⊥ →
+    typing Γ 𝟚 (subst Γ.length v e) τ𝕓 ⊥ :=
   by
   intros Γ v e τ𝕒 τ𝕓 Hτv Hτe
-  have H := preservation.static_subst.strengthened ((τ𝕒, 𝟙) :: Γ) [] Γ v e τ𝕒 τ𝕓 ⊥ Hτe rfl Hτv
+  have H := preservation.dyn_subst.strengthened ((τ𝕒, 𝟚) :: Γ) ⦰ Γ v e τ𝕒 τ𝕓 ⊥ Hτe rfl Hτv
   rw [identity.shiftr] at H; apply H
   apply closed.under_subst
   apply closed.inc; apply typing.closed_at_env; apply Hτv; omega
@@ -124,8 +124,8 @@ theorem preservation.static_subst :
 lemma preservation.subst.strengthened :
   ∀ Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 φ,
     typing Γ 𝕊 e τ𝕓 φ →
-    Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
-    typing Φ 𝟚 v τ𝕒 ⊥ →
+    Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
+    typing Φ 𝟙 v τ𝕒 ⊥ →
     typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ :=
   by
   intros Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 φ Hτe HEqΓ
@@ -134,13 +134,13 @@ lemma preservation.subst.strengthened :
     @typing.rec
       (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
         ∀ Δ,
-          Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
-          typing Φ 𝟚 v τ𝕒 ⊥ →
+          Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
+          typing Φ 𝟙 v τ𝕒 ⊥ →
           typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
       (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) =>
         ∀ Δ,
-          Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
-          typing Φ 𝟚 v τ𝕒 ⊥ →
+          Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
+          typing Φ 𝟙 v τ𝕒 ⊥ →
           typing_reification (Δ ++ Φ) (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
   <;> intros
   case fvar 𝕊 x _ HBinds Hwbt Δ HEqΓ Hτv =>
@@ -192,7 +192,7 @@ lemma preservation.subst.strengthened :
     simp [HEqΓ] at Hclosed
     rw [HEqΓ] at IH
     apply typing.lam
-    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟚) :: Φ).length - 1 := by simp
+    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟙) :: Φ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening, ← comm.subst_opening]
       apply IH (_ :: Δ) rfl Hτv
       . simp; omega
@@ -212,7 +212,7 @@ lemma preservation.subst.strengthened :
     simp [HEqΓ] at Hclosed
     rw [HEqΓ] at IH
     apply typing.lam𝕔
-    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟚) :: Φ).length - 1 := by simp
+    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟙) :: Φ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening, ← comm.subst_opening]
       apply IH (_ :: Δ) rfl Hτv
       . simp; omega
@@ -262,7 +262,7 @@ lemma preservation.subst.strengthened :
     rw [HEqΓ] at IHe
     apply typing.lets
     . apply IHb; apply HEqΓ; apply Hτv
-    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟚) :: Φ).length - 1 := by simp
+    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟙) :: Φ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening, ← comm.subst_opening]
       apply IHe (_ :: Δ) rfl Hτv
       . simp; omega
@@ -283,7 +283,7 @@ lemma preservation.subst.strengthened :
     rw [HEqΓ] at IHe
     apply typing.lets𝕔
     . apply IHb; apply HEqΓ; apply Hτv
-    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟚) :: Φ).length - 1 := by simp
+    . have HEq : (Δ ++ Φ).length = (Δ ++ (τ𝕒, 𝟙) :: Φ).length - 1 := by simp
       rw [HEq, ← comm.shiftr_opening, ← comm.subst_opening]
       apply IHe (_ :: Δ) rfl Hτv
       . simp; omega
@@ -334,12 +334,12 @@ lemma preservation.subst.strengthened :
 
 theorem preservation.subst :
   ∀ Γ 𝕊 v e τ𝕒 τ𝕓 φ,
-    typing Γ 𝟚 v τ𝕒 ⊥ →
-    typing ((τ𝕒, 𝟚) :: Γ) 𝕊 e τ𝕓 φ →
+    typing Γ 𝟙 v τ𝕒 ⊥ →
+    typing ((τ𝕒, 𝟙) :: Γ) 𝕊 e τ𝕓 φ →
     typing Γ 𝕊 (subst Γ.length v e) τ𝕓 φ :=
   by
   intros Γ 𝕊 v e τ𝕒 τ𝕓 φ Hτv Hτe
-  have H := preservation.subst.strengthened ((τ𝕒, 𝟚) :: Γ) [] Γ 𝕊 v e τ𝕒 τ𝕓 φ Hτe rfl Hτv
+  have H := preservation.subst.strengthened ((τ𝕒, 𝟙) :: Γ) ⦰ Γ 𝕊 v e τ𝕒 τ𝕓 φ Hτe rfl Hτv
   rw [identity.shiftr] at H; apply H
   apply closed.under_subst
   apply closed.inc; apply typing.closed_at_env; apply Hτv; omega

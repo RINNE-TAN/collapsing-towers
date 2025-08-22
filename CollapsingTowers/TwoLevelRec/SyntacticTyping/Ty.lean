@@ -14,24 +14,24 @@ def erase_ty : Ty → Ty
   | .rep τ => erase_ty τ
 
 inductive Stage : Type where
-  | stat
-  | dyn
+  | static
+  | dynamic
 
-notation:max "𝟙" => Stage.stat
+notation:max "𝟙" => Stage.static
 
-notation:max "𝟚" => Stage.dyn
+notation:max "𝟚" => Stage.dynamic
 
 @[simp]
 def wbt : Stage → Ty → Prop
   | 𝟙, .nat => true
-  | 𝟙, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
+  | 𝟙, (.arrow τ𝕒 τ𝕓 _) => wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
+  | 𝟙, (.fragment τ) => wbt 𝟚 τ
   | 𝟙, _ => false
   | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 _) => wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
-  | 𝟚, (.fragment τ) => wbt 𝟙 τ
+  | 𝟚, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, _ => false
 
-lemma wbt.escape : ∀ τ, wbt 𝟙 τ → wbt 𝟚 τ :=
+lemma wbt.escape : ∀ τ, wbt 𝟚 τ → wbt 𝟙 τ :=
   by
   intros τ Hwbt
   induction τ with
@@ -43,7 +43,7 @@ lemma wbt.escape : ∀ τ, wbt 𝟙 τ → wbt 𝟚 τ :=
   | fragment => nomatch Hwbt
   | rep => nomatch Hwbt
 
-lemma grounded_ty.under_erase : ∀ τ, wbt 𝟙 (erase_ty τ) :=
+lemma grounded_ty.under_erase : ∀ τ, wbt 𝟚 (erase_ty τ) :=
   by
   intros τ
   induction τ
@@ -66,7 +66,7 @@ lemma erasable.rep : ∀ τ₀ τ₁, erase_ty τ₀ ≠ .rep τ₁ :=
   induction τ₀ <;> simp
   all_goals next IH => apply IH
 
-lemma grounded_ty_iff_erase_identity : ∀ τ, wbt 𝟙 τ ↔ erase_ty τ = τ :=
+lemma grounded_ty_iff_erase_identity : ∀ τ, wbt 𝟚 τ ↔ erase_ty τ = τ :=
   by
   intros τ
   induction τ
