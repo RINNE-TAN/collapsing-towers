@@ -5,3 +5,4 @@ import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvPure
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.PresvReflect
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Preservation
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Progress
+import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Soundness
