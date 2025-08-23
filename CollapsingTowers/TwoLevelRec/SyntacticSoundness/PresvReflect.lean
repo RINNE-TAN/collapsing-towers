@@ -92,11 +92,10 @@ lemma preservation.reflect :
         have HX := preservation.reflect.head _ _ _ _ _ HE HX
         apply typing.ifz₂; apply Hc; apply Hl; apply HX
   case cons𝔹 B Q HB HQ IH =>
-    rw [← ctx_comp B Q]
-    apply preservation.under_ctx𝔹
-    . apply HB
-    . intro _ _ Hτ; apply IH; apply Hτ; simp [HEqlvl]
-    . apply Hτ
+    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
+    rw [HEqφ]
+    apply IHτB ⦰
+    apply IH _ _ _ Hτ HEqlvl
   case consℝ R Q HR HQ IH =>
     rw [← HEqlvl] at HR
     rw [← ctx_comp R Q]

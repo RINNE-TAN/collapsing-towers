@@ -168,3 +168,14 @@ theorem typing.weakening.singleton : ∀ Γ 𝕊₀ 𝕊₁ e τ𝕒 τ𝕓 φ, 
   intros Γ 𝕊₀ 𝕊₁ e τ𝕒 τ𝕓 φ
   rw [← List.singleton_append]
   apply typing.weakening
+
+theorem typing_reification.weakening : ∀ Γ Δ e τ φ, typing_reification Γ e τ φ → typing_reification (Δ ++ Γ) e τ φ :=
+  by
+  intros Γ Δ e τ φ Hτ
+  cases Hτ
+  case pure Hτ =>
+    apply typing_reification.pure
+    apply typing.weakening _ _ _ _ _ _ Hτ
+  case reify Hτ =>
+    apply typing_reification.reify
+    apply typing.weakening _ _ _ _ _ _ Hτ
