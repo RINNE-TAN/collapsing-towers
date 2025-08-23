@@ -4,3 +4,4 @@ import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Defs
 import CollapsingTowers.TwoLevelRec.CtxEquiv.Defs
+import CollapsingTowers.TwoLevelRec.LogicalEquiv.Defs

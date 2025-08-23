@@ -197,7 +197,7 @@ lemma identity.subst : ∀ x e v, closed_at e x → subst x v e = e :=
     apply IH₁; apply Hclosed.right.left
     apply IH₂; apply Hclosed.right.right
 
-lemma identity.multi_subst : ∀ γ e, closed e → msubst γ e = e :=
+lemma identity.msubst : ∀ γ e, closed e → msubst γ e = e :=
   by
   intro γ e Hclosed
   induction γ generalizing e
