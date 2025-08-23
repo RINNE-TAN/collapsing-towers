@@ -90,7 +90,7 @@ lemma compatibility.lam :
   -- —————————————————————————————
   -- j = i + 1
   -- (x ↦ argv₀, γ₀)(e₀) ⇝ ⟦i⟧ v₀
-  have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.lam _ _ _ _ (value.lam _ Hlc₀) HvalueArg₀ Hvalue₀ Hstep₀
+  have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.app₁.eliminator _ _ _ _ (value.lam _ Hlc₀) HvalueArg₀ Hvalue₀ Hstep₀
   --
   --
   -- (x ↦ argv₀, γ₀)(e₀) ⇝ ⟦i⟧ v₀
@@ -129,7 +129,7 @@ lemma compatibility.lam :
       omega; omega; apply HclosedArg₁
     rw [← HEqSubst₁] at Hstep₁
     apply stepn.multi _ _ _ _ Hstep₁
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     constructor; apply Hlc₁; apply lc.value; apply HvalueArg₁
     apply head.app₁; apply HvalueArg₁
   . apply log_approx_value.antimono
@@ -176,7 +176,7 @@ lemma compatibility.app₁ :
   -- fv₀ @ argv₀ ⇝ ⟦i₂⟧ v₀
   simp at Hstep₀
   have ⟨i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, Hstep₀⟩ :=
-    stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
+    stepn_indexed.refine.app₁.constructor _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
   --
   --
   -- γ₀(f₀) ⇝ ⟦i₀⟧ fv₀
@@ -237,6 +237,105 @@ lemma compatibility.app₁ :
     apply Hstep₁
   . apply log_approx_value.antimono
     apply Hsem_value; omega
+
+-- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+-- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : ℕ
+-- ——————————————————————————————
+-- Γ ⊧ l₀ ⊕ r₀ ≤𝑙𝑜𝑔 l₁ ⊕ r₁ : ℕ
+lemma compatibility.binary₁ :
+  ∀ Γ op l₀ l₁ r₀ r₁,
+    log_approx Γ l₀ l₁ .nat →
+    log_approx Γ r₀ r₁ .nat →
+    log_approx Γ (.binary₁ op l₀ r₀) (.binary₁ op l₁ r₁) .nat :=
+  by
+  intros Γ op l₀ l₁ r₀ r₁ Hl Hr
+  have ⟨Hτl₀, Hτl₁, Hl⟩ := Hl
+  have ⟨Hτr₀, Hτr₁, Hr⟩ := Hr
+  have Hτ₀ : typing Γ 𝟚 (.binary₁ op l₀ r₀) .nat ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.binary₁; apply Hτl₀; apply Hτr₀
+  have Hτ₁ : typing Γ 𝟚 (.binary₁ op l₁ r₁) .nat ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.binary₁; apply Hτl₁; apply Hτr₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨HSτl₀, HSτl₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτl₀ Hτl₁ HsemΓ
+  have ⟨HSτr₀, HSτr₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτr₀ Hτr₁ HsemΓ
+  have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  simp at HSτ₀ HSτ₁
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+  rw [log_approx_expr]
+  intros j Hindex v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- γ₀(l₀) ⊕ γ₀(r₀) ⇝ ⟦j⟧ v₀
+  -- —————————————————————————
+  -- i₀ + i₁ + 1 = j
+  -- γ₀(l₀) ⇝ ⟦i₀⟧ lv₀
+  -- γ₀(r₀) ⇝ ⟦i₁⟧ rv₀
+  -- lv₀ ⊕ rv₀ ⇝ ⟦i₂⟧ v₀
+  simp at Hstep₀
+  have ⟨i₀, i₁, i₂, lv₀, rv₀, HEqj, Hvaluel₀, Hvaluer₀, Hstepl₀, Hstepr₀, Hstep₀⟩ :=
+    stepn_indexed.refine.binary₁.constructor _ _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
+  --
+  --
+  -- γ₀(l₀) ⇝ ⟦i₀⟧ lv₀
+  -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+  -- ——————————————————
+  -- γ₁(l₁) ⇝* lv₁
+  -- lv₀ = lv₁
+  simp only [log_approx_expr] at Hl
+  have ⟨lv₁, Hstepl₁, Hsem_valuel⟩ := Hl _ _ _ HsemΓ i₀ (by omega) _ Hvaluel₀ Hstepl₀
+  have ⟨Hvaluel₀, Hvaluel₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_valuel
+  cases Hvaluel₀ <;> try simp at Hsem_valuel
+  case lit lv₀ =>
+  cases Hvaluel₁ <;> try simp at Hsem_valuel
+  case lit lv₁ =>
+  --
+  --
+  -- γ₀(r₀) ⇝ ⟦i₁⟧ rv₀
+  -- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : ℕ
+  -- ——————————————————
+  -- γ₁(r₁) ⇝* rv₁
+  -- rv₀ = rv₁
+  simp only [log_approx_expr] at Hr
+  have ⟨rv₁, Hstepr₁, Hsem_valuer⟩ := Hr _ _ _ HsemΓ i₁ (by omega) _ Hvaluer₀ Hstepr₀
+  have ⟨Hvaluer₀, Hvaluer₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_valuer
+  cases Hvaluer₀ <;> try simp at Hsem_valuer
+  case lit rv₀ =>
+  cases Hvaluer₁ <;> try simp at Hsem_valuer
+  case lit rv₁ =>
+  --
+  --
+  -- lv₀ ⊕ rv₀ ⇝ ⟦i₂⟧ v₀
+  -- ————————————————————
+  -- v₀ = lv₀ ⊕ rv₀
+  have ⟨_, HEqv₀⟩ := stepn_indexed.refine.binary₁.eliminator _ _ _ _ _ Hvalue₀ Hstep₀
+  --
+  --
+  -- γ₁(l₁) ⇝* lv₁
+  -- γ₁(r₁) ⇝* rv₁
+  -- ——————————————————————————————
+  -- γ₁(l₁) ⊕ γ₁(r₁) ⇝* lv₁ ⊕ rv₁
+  exists v₀; constructor
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.binaryl₁ _ _ _)
+    apply typing.dynamic_impl_grounded; apply HSτl₁; apply Hstepl₁
+    apply lc.under_msubst; apply Hmwf₁
+    apply typing.regular _ _ _ _ _ Hτr₁
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.binaryr₁ _ _ (value.lit _))
+    apply typing.dynamic_impl_grounded; apply HSτr₁; apply Hstepr₁
+    -- head
+    rw [← Hsem_valuel, ← Hsem_valuer]
+    apply stepn_indexed_impl_stepn _ _ _ Hstep₀
+  . simp [HEqv₀]
 
 -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
 -- x ↦ τ𝕒, Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ𝕓
@@ -341,7 +440,7 @@ lemma compatibility.lets :
       omega; omega; apply HclosedBind₁
     rw [← HEqSubst₁] at Hstep₁
     apply stepn.multi _ _ _ _ Hstep₁
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     constructor; apply HlcBind₁; apply Hlc₁.right
     apply head.lets; apply HvalueBind₁
   . apply log_approx_value.antimono
@@ -405,7 +504,7 @@ lemma compatibility.fix₁.induction :
     -- i + 2 = j
     -- f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀ ⇝ ⟦i⟧ v₀
     have ⟨i, HEqj, Hstep₀⟩ :=
-      stepn_indexed.refine.fix₁.induction _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ (
+      stepn_indexed.refine.fix₁.eliminator _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ (
         by
         simp; apply typing.dynamic_impl_grounded
         apply HτFix₀
@@ -418,7 +517,7 @@ lemma compatibility.fix₁.induction :
     -- f₀ @ (λx.f₀ @ fix f₀ @ x) ⇝ ⟦i₀⟧ fv₀
     -- fv₀ @ argv₀ ⇝ ⟦i₁⟧ fv₀
     have ⟨i₀, z, i₁, fv₀, r₀, HEqj, HvalueFun₀, _, HstepFun₀, HstepArg₀, Hstep₀⟩ :=
-      stepn_indexed.refine.app₁ _ _ _ _ Hvalue₀ (
+      stepn_indexed.refine.app₁.constructor _ _ _ _ Hvalue₀ (
           by
           simp; constructor
           apply typing.dynamic_impl_grounded; apply HτFix₀
@@ -478,7 +577,7 @@ lemma compatibility.fix₁.induction :
     constructor
     . -- head₀
       apply stepn.multi
-      apply step_lvl.pure id; apply ctx𝕄.hole
+      apply step_lvl.pure _ _ _ ctx𝕄.hole
       simp; constructor
       apply lc.inc; apply HlcFix₁; omega
       apply HlcArg₁
@@ -490,7 +589,7 @@ lemma compatibility.fix₁.induction :
       simp; apply typing.dynamic_impl_grounded; apply HτFix₁
       apply step_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFix₁)
       simp; apply typing.dynamic_impl_grounded; apply HτFix₁
-      apply step_lvl.pure id; apply ctx𝕄.hole
+      apply step_lvl.pure _ _ _ ctx𝕄.hole
       apply HlcFix₁
       apply head.fix₁; apply HvalueFix₁
       -- left
@@ -529,7 +628,7 @@ lemma compatibility.fix₁ :
   -- γ₀(f₀) ⇝ ⟦i₀⟧ fv₀
   -- v₀ = λx.fv₀ @ fix fv₀ @ x
   have ⟨i₀, fv₀, HEqj, HvalueFix₀, HstepFix₀, HEqv₀⟩ :=
-    stepn_indexed.refine.fix₁ _ _ _ Hvalue₀ (
+    stepn_indexed.refine.fix₁.constructor _ _ _ Hvalue₀ (
       by
       simp; apply typing.dynamic_impl_grounded
       apply HSτFix₀
@@ -558,7 +657,7 @@ lemma compatibility.fix₁ :
     apply typing.dynamic_impl_grounded; apply HSτFix₁; apply HstepFix₁
     -- head
     apply stepn.multi _ _ _ _ (stepn.refl _)
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     simp; apply lc.value; apply HvalueFix₁
     apply head.fix₁; apply HvalueFix₁
   . apply compatibility.fix₁.induction

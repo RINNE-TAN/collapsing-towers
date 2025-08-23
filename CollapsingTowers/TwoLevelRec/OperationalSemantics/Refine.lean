@@ -124,28 +124,7 @@ lemma stepn_indexed.refine_at_ctx𝔼 :
     apply grounded.under_stepn; apply stepn_indexed_impl_stepn; apply Hstepl₁; apply HGe₀
     apply Hstepr₁; apply Hstepr₀
 
-lemma stepn_indexed.refine.lam :
-  ∀ e arg v j,
-    value (.lam e) → value arg → value v →
-    ((.app₁ (.lam e) arg) ⇝ ⟦j⟧ v) →
-    ∃ i,
-      i + 1 = j ∧
-      ((opening 0 arg e) ⇝ ⟦i⟧ v) :=
-  by
-  intros e arg v j HvalueFun HvalueArg Hvalue Hstep
-  have HstepHead : (.app₁ (.lam e) arg) ⇝ ⟦1⟧ (opening 0 arg e) :=
-    by
-    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
-    apply step_lvl.pure id; apply ctx𝕄.hole
-    constructor; apply lc.value; apply HvalueFun; apply lc.value; apply HvalueArg
-    apply head.app₁; apply HvalueArg
-  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
-  have ⟨HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
-  exists i
-  constructor; omega
-  rw [HEqv]; apply Hstepr
-
-lemma stepn_indexed.refine.app₁ :
+lemma stepn_indexed.refine.app₁.constructor :
   ∀ f arg v j,
     value v →
     grounded (.app₁ f arg) →
@@ -170,6 +149,70 @@ lemma stepn_indexed.refine.app₁ :
   constructor; apply Hstep₁
   apply Hstep₂
 
+lemma stepn_indexed.refine.app₁.eliminator :
+  ∀ e arg v j,
+    value (.lam e) → value arg → value v →
+    ((.app₁ (.lam e) arg) ⇝ ⟦j⟧ v) →
+    ∃ i,
+      i + 1 = j ∧
+      ((opening 0 arg e) ⇝ ⟦i⟧ v) :=
+  by
+  intros e arg v j HvalueFun HvalueArg Hvalue Hstep
+  have HstepHead : (.app₁ (.lam e) arg) ⇝ ⟦1⟧ (opening 0 arg e) :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    constructor; apply lc.value; apply HvalueFun; apply lc.value; apply HvalueArg
+    apply head.app₁; apply HvalueArg
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.binary₁.constructor :
+  ∀ op l r v j,
+    value v →
+    grounded (.binary₁ op l r) →
+    ((.binary₁ op l r) ⇝ ⟦j⟧ v) →
+    ∃ i₀ i₁ i₂ lᵥ rᵥ,
+      i₀ + i₁ + i₂ = j ∧
+      value lᵥ ∧ value rᵥ ∧
+      (l ⇝ ⟦i₀⟧ lᵥ) ∧ (r ⇝ ⟦i₁⟧ rᵥ) ∧ ((.binary₁ op lᵥ rᵥ) ⇝ ⟦i₂⟧ v) :=
+  by
+  intros op l r v j Hvalue HG₀ Hstep
+  have ⟨HGl, HGr⟩ := HG₀
+  have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  have ⟨i₀, k, lᵥ, HEqj, Hvaluel, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.binaryl₁ _ _ Hlc.right) Hvalue HG₀ Hstep
+  have HGlᵥ := grounded.under_stepn _ _ (stepn_indexed_impl_stepn _ _ _ Hstep₀) HGl
+  have HG₁ : grounded (.binary₁ op lᵥ r) := by constructor; apply HGlᵥ; apply HGr
+  have ⟨i₁, i₂, rᵥ, HEqj, Hvaluer, Hstep₁, Hstep₂⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.binaryr₁ _ _ Hvaluel) Hvalue HG₁ Hstep
+  exists i₀, i₁, i₂, lᵥ, rᵥ
+  constructor; omega
+  constructor; apply Hvaluel
+  constructor; apply Hvaluer
+  constructor; apply Hstep₀
+  constructor; apply Hstep₁
+  apply Hstep₂
+
+lemma stepn_indexed.refine.binary₁.eliminator :
+  ∀ op l r v j,
+    value v →
+    ((.binary₁ op (.lit l) (.lit r)) ⇝ ⟦j⟧ v) →
+    1 = j ∧ v = .lit (eval op l r) :=
+  by
+  intros op l r v j Hvalue Hstep
+  have HstepHead : (.binary₁ op (.lit l) (.lit r)) ⇝ ⟦1⟧ .lit (eval op l r) :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    . simp
+    . apply head.binary₁
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  have ⟨HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ (value.lit _) Hstepr
+  rw [HEqv₀, HEqv₁]; simp; omega
+
 lemma stepn_indexed.refine.lets :
   ∀ b e v j,
     value v →
@@ -186,7 +229,7 @@ lemma stepn_indexed.refine.lets :
   have HstepHead : (.lets bᵥ e) ⇝ ⟦1⟧ (opening 0 bᵥ e) :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     constructor; apply lc.value; apply HvalueBind; apply Hlc.right
     apply head.lets; apply HvalueBind
   have ⟨z, i₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
@@ -197,7 +240,7 @@ lemma stepn_indexed.refine.lets :
   constructor; apply Hstep₀
   rw [HEqv]; apply Hstepr
 
-lemma stepn_indexed.refine.fix₁ :
+lemma stepn_indexed.refine.fix₁.constructor :
   ∀ f v j,
     value v →
     grounded (.fix₁ f) →
@@ -212,7 +255,7 @@ lemma stepn_indexed.refine.fix₁ :
   have HstepHead : (.fix₁ fᵥ) ⇝ ⟦1⟧ .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     simp; apply lc.value; apply HvalueFun
     apply head.fix₁; apply HvalueFun
   have Hvalue₁ : value (.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))) :=
@@ -228,7 +271,7 @@ lemma stepn_indexed.refine.fix₁ :
   constructor; apply Hstep₀
   rw [HEqv₀, HEqv₁]
 
-lemma stepn_indexed.refine.fix₁.induction :
+lemma stepn_indexed.refine.fix₁.eliminator :
   ∀ f arg v j,
     value f → value arg → value v →
     grounded (.fix₁ f) →
@@ -240,7 +283,7 @@ lemma stepn_indexed.refine.fix₁.induction :
   intros f arg v j HvalueFun HvalueArg Hvalue HG Hstep
   have HstepHead₀ : (.app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg) ⇝ (.app₁ (.app₁ f (.fix₁ f)) arg) :=
     by
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     simp; constructor
     apply lc.inc; apply lc.value; apply HvalueFun; omega
     apply lc.value; apply HvalueArg
@@ -253,7 +296,7 @@ lemma stepn_indexed.refine.fix₁.induction :
     by
     apply step_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg)) (by simp; apply HG)
     apply step_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun) (by simp; apply HG)
-    apply step_lvl.pure id; apply ctx𝕄.hole
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
     simp; apply lc.value; apply HvalueFun
     apply head.fix₁; apply HvalueFun
   have HstepHead : (.app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg) ⇝ ⟦2⟧ (.app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg) :=
