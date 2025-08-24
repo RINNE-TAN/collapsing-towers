@@ -100,3 +100,10 @@ theorem typing.erase.safety : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → ty
   case pure IH => apply IH
   case reify IH => apply IH
   apply Hτ
+
+theorem typing_reification.erase.safety : ∀ Γ e τ φ, typing_reification Γ e τ φ → typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+  by
+  intros Γ e τ φ Hτ
+  cases Hτ
+  all_goals next Hτ =>
+    apply typing.erase.safety _ _ _ _ _ Hτ

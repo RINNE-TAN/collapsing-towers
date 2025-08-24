@@ -93,7 +93,7 @@ lemma log_approx.congruence_under_ObsCtxℂ :
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
--- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
 theorem log_approx.soundness :
   ∀ Γ τ e₀ e₁,
     log_approx Γ e₀ e₁ τ →

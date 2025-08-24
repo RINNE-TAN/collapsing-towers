@@ -1,7 +1,7 @@
 import CollapsingTowers.TwoLevelRec.CtxEquiv.Defs
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Fundamental
 
--- Γ ⊢ e₀ ≤𝑐𝑖𝑢 e₁ : τ ≜
+-- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ γ : Γ, ⦰ ⊢ E⟦⦰ ⊢ τ⟧ : τ𝕖).
@@ -19,7 +19,7 @@ def ciu_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
 
 -- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
 -- ——————————————————
--- Γ ⊢ e₀ ≤𝑐𝑖𝑢 e₁ : τ
+-- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
 theorem ctx_approx_impl_ciu_approx :
   ∀ Γ τ e₀ e₁,
     ctx_approx Γ e₀ e₁ τ →
@@ -120,13 +120,109 @@ theorem ctx_approx_impl_ciu_approx :
         . apply HG₁.left
       ) Hstep𝕖₁
 
+lemma ciu_approx_respects_log_approx_value :
+  ∀ k v₀ v₁ v₂ τ,
+    log_approx_value k v₀ v₁ τ →
+    ciu_approx ⦰ v₁ v₂ τ →
+    log_approx_value k v₀ v₂ τ :=
+  by
+  admit
+
 -- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
 -- ——————————————————
--- Γ ⊢ e₀ ≤𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
 theorem ciu_approx_impl_log_approx :
   ∀ Γ τ e₀ e₁,
     ciu_approx Γ e₀ e₁ τ →
     log_approx Γ e₀ e₁ τ :=
   by
   intros Γ τ e₀ e₁ Hciu
-  admit
+  have ⟨Hτ₀, Hτ₁, Hciu⟩ := Hciu
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨Hγ₀, Hγ₁⟩ := log_approx_env.syntactic.typing _ _ _ _ HsemΓ
+  have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  simp only [log_approx_expr]
+  intros j Hj v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- γ₀(e₀) ⇝ ⟦j⟧ v₀
+  -- Γ ⊢ e₀ : τ
+  -- ——————————————————————
+  -- γ₁(e₀) ⇝* v₁
+  -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+  have ⟨_, _, He₀⟩ := log_approx.fundamental _ _ _ Hτ₀
+  have Hsem_expr := He₀ _ _ _ HsemΓ
+  rw [log_approx_expr] at Hsem_expr
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr _ Hj _ Hvalue₀ Hstep₀
+  have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
+  have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
+  --
+  --
+  -- γ₁(e₀) ⇝* v₁
+  -- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
+  -- ——————————————————
+  -- γ₁(e₁) ⇝* v₂
+  have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu _ Hγ₁ _ _ ctx𝔼.hole (ObsCtxℂ.hole _ _) (by exists v₁)
+  --
+  --
+  -- γ₁(e₁) ⇝* v₂
+  -- ⦰ ⊢ γ₁(e₁) : τ
+  -- ———————————————
+  -- ⦰ ⊢ v₂ : τ
+  have Hτv₂ : typing ⦰ 𝟚 v₂ τ ⊥ :=
+    by
+    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ HSτ₁
+    have HG := typing.dynamic_impl_grounded _ _ _ _ HSτ₁
+    have HG := grounded.under_stepn _ _ Hstep₂ HG
+    rw [← (grounded_iff_erase_identity _).mp HG, ← (grounded_ty_iff_erase_identity _).mp Hwbt]
+    have HSτ₁ := typing.escape _ _ _ HSτ₁
+    have HSτ₁ := typing_reification.pure _ _ _ HSτ₁
+    have ⟨φ, Hτv₂, Hφ⟩ := preservation.stepn _ _ _ _ Hstep₂ HSτ₁
+    cases φ <;> simp at Hφ
+    have Hτv₂ := typing_reification.erase.safety _ _ _ _ Hτv₂
+    apply Hτv₂
+  exists v₂; constructor
+  . apply Hstep₂
+  . apply ciu_approx_respects_log_approx_value; apply Hsem_value
+    constructor; apply Hτv₁
+    constructor; apply Hτv₂
+    intros γ Hγ E τ𝕖 HE HτE Htermination₁
+    cases γ <;> try simp at Hγ
+    --
+    --
+    -- γ₁(e₀) ⇝* v₁
+    -- E⟦v₁⟧⇓
+    -- —————————————
+    -- E⟦γ₁(e₀)⟧⇓
+    have Htermination₁ : termination E⟦msubst γ₁ e₀⟧ :=
+      by
+      admit
+    --
+    --
+    -- E⟦γ₁(e₀)⟧⇓
+    -- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
+    -- ——————————————————
+    -- E⟦γ₁(e₁)⟧⇓
+    have Htermination₂ := Hciu _ Hγ₁ _ _ HE HτE Htermination₁
+    --
+    --
+    -- E⟦γ₁(e₁)⟧⇓
+    -- γ₁(e₁) ⇝* v₂
+    -- —————————————
+    -- E⟦v₂⟧⇓
+    all_goals admit
+
+-- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
+theorem log_approx.completeness :
+  ∀ Γ τ e₀ e₁,
+    ctx_approx Γ e₀ e₁ τ →
+    log_approx Γ e₀ e₁ τ :=
+  by
+  intros Γ τ e₀ e₁ Hctx
+  apply ciu_approx_impl_log_approx
+  apply ctx_approx_impl_ciu_approx
+  apply Hctx

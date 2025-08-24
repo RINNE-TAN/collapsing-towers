@@ -171,7 +171,7 @@ lemma typing.congruence_under_ObsCtxℂ :
 def termination (e : Expr) : Prop :=
   ∃ v, value v ∧ e ⇝* v
 
--- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
+-- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
@@ -217,7 +217,7 @@ lemma ctx_approx.congruence_under_ObsCtxℂ :
     apply ctx_approx.congruence_under_ObsCtx𝔹
     apply Hctx; apply HB
 
--- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊢ e₁ ≤𝑐𝑡𝑥 e₀ : τ
+-- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
 def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   ctx_approx Γ e₀ e₁ τ ∧ ctx_approx Γ e₁ e₀ τ
