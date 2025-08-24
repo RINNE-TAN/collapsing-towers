@@ -226,13 +226,13 @@ lemma compatibility.app₁ :
     -- left
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _)
-    apply typing.dynamic_impl_grounded; apply HSτFun₁; apply HstepFun₁
+    apply typing.dynamic_impl_grounded _ _ _ _ HSτFun₁; apply HstepFun₁
     apply lc.under_msubst; apply Hmwf₁
     apply typing.regular; apply HτArg₁
     -- right
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun₁)
-    apply typing.dynamic_impl_grounded; apply HSτArg₁; apply HstepArg₁
+    apply typing.dynamic_impl_grounded _ _ _ _ HSτArg₁; apply HstepArg₁
     -- head
     apply Hstep₁
   . apply log_approx_value.antimono
@@ -325,13 +325,13 @@ lemma compatibility.binary₁ :
     -- left
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.binaryl₁ _ _ _)
-    apply typing.dynamic_impl_grounded; apply HSτl₁; apply Hstepl₁
+    apply typing.dynamic_impl_grounded _ _ _ _ HSτl₁; apply Hstepl₁
     apply lc.under_msubst; apply Hmwf₁
     apply typing.regular _ _ _ _ _ Hτr₁
     -- right
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.binaryr₁ _ _ (value.lit _))
-    apply typing.dynamic_impl_grounded; apply HSτr₁; apply Hstepr₁
+    apply typing.dynamic_impl_grounded _ _ _ _ HSτr₁; apply Hstepr₁
     -- head
     rw [← Hsem_valuel, ← Hsem_valuer]
     apply stepn_indexed_impl_stepn _ _ _ Hstep₀
@@ -505,9 +505,7 @@ lemma compatibility.fix₁.induction :
     -- f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀ ⇝ ⟦i⟧ v₀
     have ⟨i, HEqj, Hstep₀⟩ :=
       stepn_indexed.refine.fix₁.eliminator _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ (
-        by
-        simp; apply typing.dynamic_impl_grounded
-        apply HτFix₀
+        by simp; apply typing.dynamic_impl_grounded _ _ _ _ HτFix₀
       ) Hstep₀
     --
     --
@@ -520,8 +518,8 @@ lemma compatibility.fix₁.induction :
       stepn_indexed.refine.app₁.constructor _ _ _ _ Hvalue₀ (
           by
           simp; constructor
-          apply typing.dynamic_impl_grounded; apply HτFix₀
-          apply typing.dynamic_impl_grounded; apply HτArg₀
+          apply typing.dynamic_impl_grounded _ _ _ _ HτFix₀
+          apply typing.dynamic_impl_grounded _ _ _ _ HτArg₀
       ) Hstep₀
     have ⟨HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ HvalueArg₀ HstepArg₀
     rw [← HEqv] at Hstep₀
@@ -586,16 +584,16 @@ lemma compatibility.fix₁.induction :
       -- head₁
       apply stepn.multi
       apply step_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
-      simp; apply typing.dynamic_impl_grounded; apply HτFix₁
+      simp; apply typing.dynamic_impl_grounded _ _ _ _ HτFix₁
       apply step_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFix₁)
-      simp; apply typing.dynamic_impl_grounded; apply HτFix₁
+      simp; apply typing.dynamic_impl_grounded _ _ _ _ HτFix₁
       apply step_lvl.pure _ _ _ ctx𝕄.hole
       apply HlcFix₁
       apply head.fix₁; apply HvalueFix₁
       -- left
       apply stepn.trans
       apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _)
-      simp; apply typing.dynamic_impl_grounded; apply HτFix₁; apply HstepFun₁
+      simp; apply typing.dynamic_impl_grounded _ _ _ _ HτFix₁; apply HstepFun₁
       apply HlcArg₁
       -- head₂
       apply Hstep₁
@@ -630,8 +628,7 @@ lemma compatibility.fix₁ :
   have ⟨i₀, fv₀, HEqj, HvalueFix₀, HstepFix₀, HEqv₀⟩ :=
     stepn_indexed.refine.fix₁.constructor _ _ _ Hvalue₀ (
       by
-      simp; apply typing.dynamic_impl_grounded
-      apply HSτFix₀
+      simp; apply typing.dynamic_impl_grounded _ _ _ _ HSτFix₀
     ) Hstep₀
   rw [HEqv₀]
   --
@@ -654,7 +651,7 @@ lemma compatibility.fix₁ :
   . -- left
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ ctx𝔹.fix₁
-    apply typing.dynamic_impl_grounded; apply HSτFix₁; apply HstepFix₁
+    apply typing.dynamic_impl_grounded _ _ _ _ HSτFix₁; apply HstepFix₁
     -- head
     apply stepn.multi _ _ _ _ (stepn.refl _)
     apply step_lvl.pure _ _ _ ctx𝕄.hole
@@ -757,7 +754,7 @@ lemma compatibility.ifz₁ :
       -- condition
       apply stepn.trans
       apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.ifz₁ _ _ _ _)
-      apply typing.dynamic_impl_grounded; apply HSτc₁; apply Hstepc₁
+      apply typing.dynamic_impl_grounded _ _ _ _ HSτc₁; apply Hstepc₁
       apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
       -- head
       apply stepn.multi _ _ _ _ Hstep₁
@@ -797,7 +794,7 @@ lemma compatibility.ifz₁ :
       -- condition
       apply stepn.trans
       apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.ifz₁ _ _ _ _)
-      apply typing.dynamic_impl_grounded; apply HSτc₁; apply Hstepc₁
+      apply typing.dynamic_impl_grounded _ _ _ _ HSτc₁; apply Hstepc₁
       apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
       -- head
       apply stepn.multi _ _ _ _ Hstep₁
