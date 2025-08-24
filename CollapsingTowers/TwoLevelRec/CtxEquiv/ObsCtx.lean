@@ -190,13 +190,13 @@ lemma ctx_approx.congruence_under_ObsCtx𝔹 :
     ObsCtx𝔹 Δ τδ B Γ τγ →
     ctx_approx Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
   by
-  intros Δ Γ τδ τγ B e₀ e₁ Hctx_approx HB
-  have ⟨Hτ₀, Hτ₁, Hctx_approx⟩ := Hctx_approx
+  intros Δ Γ τδ τγ B e₀ e₁ Hctx HB
+  have ⟨Hτ₀, Hτ₁, Hctx⟩ := Hctx
   constructor; apply typing.congruence_under_ObsCtx𝔹 _ _ _ _ _ _ Hτ₀ HB
   constructor; apply typing.congruence_under_ObsCtx𝔹 _ _ _ _ _ _ Hτ₁ HB
   intros C τ𝕔 HC
   rw [ctx_comp C B, ctx_comp C B]
-  apply Hctx_approx
+  apply Hctx
   apply ObsCtxℂ.cons𝔹; apply HC; apply HB
 
 -- Δ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τδ
@@ -209,13 +209,13 @@ lemma ctx_approx.congruence_under_ObsCtxℂ :
     ObsCtxℂ Δ τδ C Γ τγ →
     ctx_approx Γ C⟦e₀⟧ C⟦e₁⟧ τγ :=
   by
-  intros Δ Γ τδ τγ C e₀ e₁ Hctx_approx HC
+  intros Δ Γ τδ τγ C e₀ e₁ Hctx HC
   induction HC generalizing e₀ e₁
-  case hole => apply Hctx_approx
+  case hole => apply Hctx
   case cons𝔹 HB IH =>
     apply IH
     apply ctx_approx.congruence_under_ObsCtx𝔹
-    apply Hctx_approx; apply HB
+    apply Hctx; apply HB
 
 -- Γ ⊢ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊢ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
