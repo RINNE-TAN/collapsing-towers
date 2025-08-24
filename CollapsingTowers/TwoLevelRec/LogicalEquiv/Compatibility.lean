@@ -273,7 +273,7 @@ lemma compatibility.binary₁ :
   --
   -- γ₀(l₀) ⊕ γ₀(r₀) ⇝ ⟦j⟧ v₀
   -- —————————————————————————
-  -- i₀ + i₁ + 1 = j
+  -- i₀ + i₁ + i₂ = j
   -- γ₀(l₀) ⇝ ⟦i₀⟧ lv₀
   -- γ₀(r₀) ⇝ ⟦i₁⟧ rv₀
   -- lv₀ ⊕ rv₀ ⇝ ⟦i₂⟧ v₀
@@ -663,3 +663,78 @@ lemma compatibility.fix₁ :
   . apply compatibility.fix₁.induction
     apply log_approx_value.antimono
     apply Hsem_value_fun; omega
+
+-- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
+-- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : τ
+-- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : τ
+-- ————————————————————————————————————————————————————————
+-- Γ ⊧ if c₀ then l₀ else r₀ ≤𝑙𝑜𝑔 if c₁ then l₁ else r₁ : τ
+lemma compatibility.ifz₁ :
+  ∀ Γ c₀ c₁ l₀ l₁ r₀ r₁ τ,
+    log_approx Γ c₀ c₁ .nat →
+    log_approx Γ l₀ l₁ τ →
+    log_approx Γ r₀ r₁ τ →
+    log_approx Γ (.ifz₁ c₀ l₀ r₀) (.ifz₁ c₁ l₁ r₁) τ :=
+  by
+  intros Γ c₀ c₁ l₀ l₁ r₀ r₁ τ Hc Hl Hr
+  have ⟨Hτc₀, Hτc₁, Hc⟩ := Hc
+  have ⟨Hτl₀, Hτl₁, Hl⟩ := Hl
+  have ⟨Hτr₀, Hτr₁, Hr⟩ := Hr
+  have Hτ₀ : typing Γ 𝟚 (.ifz₁ c₀ l₀ r₀) τ ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.ifz₁; apply Hτc₀; apply Hτl₀; apply Hτr₀
+  have Hτ₁ : typing Γ 𝟚 (.ifz₁ c₁ l₁ r₁) τ ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.ifz₁; apply Hτc₁; apply Hτl₁; apply Hτr₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k γ₀ γ₁ HsemΓ
+  have ⟨HSτc₀, HSτc₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτc₀ Hτc₁ HsemΓ
+  have ⟨HSτl₀, HSτl₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτl₀ Hτl₁ HsemΓ
+  have ⟨HSτr₀, HSτr₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτr₀ Hτr₁ HsemΓ
+  have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  simp at HSτ₀ HSτ₁
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+  rw [log_approx_expr]
+  intros j Hindex v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- if γ₀(c₀) then γ₀(l₀) else γ₀(r₀) ⇝ ⟦j⟧ v₀
+  -- ——————————————————————————————————————————
+  -- i₀ + i₁ = j
+  -- γ₀(c₀) ⇝ ⟦i₀⟧ cv₀
+  -- if cv₀ then γ₀(l₀) else γ₀(r₀) ⇝ ⟦i₁⟧ v₀
+  simp at Hstep₀
+  have ⟨i₀, i₁, cv₀, HEqj, Hvaluec₀, Hstepc₀, Hstep₀⟩ :=
+    stepn_indexed.refine.ifz₁.constructor _ _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
+  --
+  --
+  -- γ₀(c₀) ⇝ ⟦i₀⟧ lv₀
+  -- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
+  -- ——————————————————
+  -- γ₁(l₁) ⇝* cv₁
+  -- cv₀ = cv₁
+  simp only [log_approx_expr] at Hc
+  have ⟨cv₁, Hstepc₁, Hsem_valuec⟩ := Hc _ _ _ HsemΓ i₀ (by omega) _ Hvaluec₀ Hstepc₀
+  have ⟨Hvaluec₀, Hvaluec₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_valuec
+  cases Hvaluec₀ <;> try simp at Hsem_valuec
+  case lit cv₀ =>
+  cases Hvaluec₁ <;> try simp at Hsem_valuec
+  case lit cv₁ =>
+  match cv₀, cv₁ with
+  | .succ _, .zero => nomatch Hsem_valuec
+  | .zero, .succ _ => nomatch Hsem_valuec
+  -- then branch
+  | .zero, .zero =>
+    --
+    --
+    -- if 0 then γ₀(l₀) else γ₀(r₀) ⇝ ⟦i₁⟧ v₀
+    -- ———————————————————————————————————————
+    -- i₁ + 1 = i₂
+    -- γ₀(l₀) ⇝ ⟦i₂⟧ v₀
+    admit
+  -- else branch
+  | .succ cv₀, .succ cv₁ =>
+    admit

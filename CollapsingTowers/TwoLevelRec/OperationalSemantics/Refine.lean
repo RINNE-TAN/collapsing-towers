@@ -309,3 +309,17 @@ lemma stepn_indexed.refine.fix₁.eliminator :
   exists i
   constructor; omega
   rw [HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.ifz₁.constructor :
+  ∀ c l r v j,
+    value v →
+    grounded (.ifz₁ c l r) →
+    ((.ifz₁ c l r) ⇝ ⟦j⟧ v) →
+    ∃ i₀ i₁ cᵥ,
+      i₀ + i₁ = j ∧
+      value cᵥ ∧
+      (c ⇝ ⟦i₀⟧ cᵥ) ∧ ((.ifz₁ cᵥ l r) ⇝ ⟦i₁⟧ v) :=
+  by
+  intros op l r v j Hvalue HG₀ Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  apply stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.ifz₁ _ _ Hlc.right.left Hlc.right.right) Hvalue HG₀ Hstep
