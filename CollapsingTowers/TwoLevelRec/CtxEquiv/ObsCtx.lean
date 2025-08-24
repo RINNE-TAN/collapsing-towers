@@ -174,13 +174,13 @@ def termination (e : Expr) : Prop :=
 -- Γ ⊢ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
---   ∀ (∅ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
+--   ∀ (⦰ ⊢ C⟦Γ ⊢ τ⟧ : τ𝕔).
 --   C⟦e₀⟧⇓ → C⟦e₁⟧⇓
 @[simp]
 def ctx_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   typing Γ 𝟚 e₀ τ ⊥ ∧
   typing Γ 𝟚 e₁ τ ⊥ ∧
-    ∀ C τ𝕔, ObsCtxℂ Γ τ C [] τ𝕔 →
+    ∀ C τ𝕔, ObsCtxℂ Γ τ C ⦰ τ𝕔 →
       termination C⟦e₀⟧ →
       termination C⟦e₁⟧
 

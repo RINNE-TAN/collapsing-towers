@@ -460,7 +460,7 @@ lemma compatibility.fix₁.induction :
   have ⟨HlcFix₀, HclosedFix₀⟩ := typing.wf _ _ _ _ _ HτFix₀
   have ⟨HlcFix₁, HclosedFix₁⟩ := typing.wf _ _ _ _ _ HτFix₁
   have Hwbt: wbt 𝟚 τ𝕒 := by cases HvalueFix₀ <;> cases HτFix₀; next Hwbt _ => apply Hwbt.right.left
-  have Hτ₀ : typing [] 𝟚 (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ :=
+  have Hτ₀ : typing ⦰ 𝟚 (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ :=
     by
     apply typing.lam; rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
     apply typing.app₁; rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥), identity.opening _ _ _ (by simp; apply HlcFix₀)]
@@ -469,7 +469,7 @@ lemma compatibility.fix₁.induction :
     apply typing.fix₁; simp; rfl; apply HτFix₀
     apply typing.fvar; simp; apply Hwbt; apply Hwbt
     simp; apply HclosedFix₀
-  have Hτ₁ : typing [] 𝟚 (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ :=
+  have Hτ₁ : typing ⦰ 𝟚 (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ :=
     by
     apply typing.lam; rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
     apply typing.app₁; rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥), identity.opening _ _ _ (by simp; apply HlcFix₁)]
