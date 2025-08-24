@@ -84,7 +84,9 @@ theorem log_approx.fundamental :
   case reify => simp
   apply Hτ
 
-lemma log_approx_value.fundamental :
+alias log_approx.refl := log_approx.fundamental
+
+lemma log_approx_value.refl :
   ∀ k v τ,
     value v →
     typing ⦰ 𝟚 v τ ⊥ →
@@ -109,13 +111,13 @@ lemma log_approx_value.fundamental :
       simp
     case code => nomatch Hτ
   case succ k =>
-    have ⟨_, _, Hsem_expr⟩ := log_approx.fundamental _ _ _ Hτ
+    have ⟨_, _, Hsem_expr⟩ := log_approx.refl _ _ _ Hτ
     simp only [log_approx_expr] at Hsem_expr
     have ⟨r, Hstep, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (log_approx_env.nil _) 0 (by omega) _ Hvalue (stepn_indexed.refl _)
     rw [← stepn.value_impl_termination _ _ Hvalue Hstep] at Hsem_value
     apply Hsem_value
 
-lemma log_approx_env.fundamental :
+lemma log_approx_env.refl :
   ∀ k γ Γ,
     typing.subst γ Γ →
     log_approx_env k γ γ Γ :=
@@ -125,6 +127,6 @@ lemma log_approx_env.fundamental :
   case nil => apply log_approx_env.nil
   case cons v γ τ Γ Hvalue Hτ _ IH =>
     apply log_approx_env.cons
-    . apply log_approx_value.fundamental
+    . apply log_approx_value.refl
       apply Hvalue; apply Hτ
     . apply IH
