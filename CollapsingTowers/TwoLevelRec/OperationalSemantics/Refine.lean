@@ -323,3 +323,47 @@ lemma stepn_indexed.refine.ifz₁.constructor :
   intros op l r v j Hvalue HG₀ Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
   apply stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.ifz₁ _ _ Hlc.right.left Hlc.right.right) Hvalue HG₀ Hstep
+
+lemma stepn_indexed.refine.ifz₁_then.eliminator :
+  ∀ l r v j,
+    value v →
+    ((.ifz₁ (.lit 0) l r) ⇝ ⟦j⟧ v) →
+    ∃ i,
+      i + 1 = j ∧
+      (l ⇝ ⟦i⟧ v) :=
+  by
+  intros l r v j Hvalue Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  have HstepHead : (.ifz₁ (.lit 0) l r) ⇝ ⟦1⟧ l :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    . apply Hlc
+    . apply head.ifz₁_then
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.ifz₁_else.eliminator :
+  ∀ n l r v j,
+    value v →
+    ((.ifz₁ (.lit (.succ n)) l r) ⇝ ⟦j⟧ v) →
+    ∃ i,
+      i + 1 = j ∧
+      (r ⇝ ⟦i⟧ v) :=
+  by
+  intros n l r v j Hvalue Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
+  have HstepHead : (.ifz₁ (.lit (.succ n)) l r) ⇝ ⟦1⟧ r :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    . apply Hlc
+    . apply head.ifz₁_else
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqv]; apply Hstepr

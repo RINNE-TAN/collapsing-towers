@@ -714,7 +714,7 @@ lemma compatibility.ifz₁ :
   -- γ₀(c₀) ⇝ ⟦i₀⟧ lv₀
   -- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
   -- ——————————————————
-  -- γ₁(l₁) ⇝* cv₁
+  -- γ₁(c₁) ⇝* cv₁
   -- cv₀ = cv₁
   simp only [log_approx_expr] at Hc
   have ⟨cv₁, Hstepc₁, Hsem_valuec⟩ := Hc _ _ _ HsemΓ i₀ (by omega) _ Hvaluec₀ Hstepc₀
@@ -726,15 +726,83 @@ lemma compatibility.ifz₁ :
   match cv₀, cv₁ with
   | .succ _, .zero => nomatch Hsem_valuec
   | .zero, .succ _ => nomatch Hsem_valuec
+  --
+  --
   -- then branch
   | .zero, .zero =>
     --
     --
     -- if 0 then γ₀(l₀) else γ₀(r₀) ⇝ ⟦i₁⟧ v₀
     -- ———————————————————————————————————————
-    -- i₁ + 1 = i₂
+    -- i₂ + 1 = i₁
     -- γ₀(l₀) ⇝ ⟦i₂⟧ v₀
-    admit
+    have ⟨i₂, HEqi₁, Hstep₀⟩ := stepn_indexed.refine.ifz₁_then.eliminator _ _ _ _ Hvalue₀ Hstep₀
+    --
+    --
+    -- γ₀(l₀) ⇝ ⟦i₂⟧ v₀
+    -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : τ
+    -- ——————————————————————
+    -- γ₁(l₁) ⇝* v₁
+    -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - i₂}
+    simp only [log_approx_expr] at Hl
+    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hl _ _ _ HsemΓ i₂ (by omega) _ Hvalue₀ Hstep₀
+    --
+    --
+    -- γ₁(c₁) ⇝* 0
+    -- γ₁(l₁) ⇝* v₁
+    -- ————————————————————————————————————————
+    -- if γ₁(c₁) then γ₁(l₁) else γ₁(r₁) ⇝* v₁
+    exists v₁; constructor
+    . simp
+      -- condition
+      apply stepn.trans
+      apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.ifz₁ _ _ _ _)
+      apply typing.dynamic_impl_grounded; apply HSτc₁; apply Hstepc₁
+      apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
+      -- head
+      apply stepn.multi _ _ _ _ Hstep₁
+      apply step_lvl.pure _ _ _ ctx𝕄.hole
+      simp; constructor; apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
+      apply head.ifz₁_then
+    . apply log_approx_value.antimono
+      apply Hsem_value; omega
+  --
+  --
   -- else branch
   | .succ cv₀, .succ cv₁ =>
-    admit
+    --
+    --
+    -- if (n + 1) then γ₀(l₀) else γ₀(r₀) ⇝ ⟦i₁⟧ v₀
+    -- ————————————————————————————————————————————
+    -- i₂ + 1 = i₁
+    -- γ₀(r₀) ⇝ ⟦i₂⟧ v₀
+    have ⟨i₂, HEqi₁, Hstep₀⟩ := stepn_indexed.refine.ifz₁_else.eliminator _ _ _ _ _ Hvalue₀ Hstep₀
+    --
+    --
+    -- γ₀(r₀) ⇝ ⟦i₂⟧ v₀
+    -- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : τ
+    -- ——————————————————————
+    -- γ₁(r₁) ⇝* v₁
+    -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - i₂}
+    simp only [log_approx_expr] at Hr
+    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hr _ _ _ HsemΓ i₂ (by omega) _ Hvalue₀ Hstep₀
+    --
+    --
+    -- γ₁(c₁) ⇝* n + 1
+    -- γ₁(r₁) ⇝* v₁
+    -- ————————————————————————————————————————
+    -- if γ₁(c₁) then γ₁(l₁) else γ₁(r₁) ⇝* v₁
+    exists v₁; constructor
+    . simp
+      -- condition
+      apply stepn.trans
+      apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.ifz₁ _ _ _ _)
+      apply typing.dynamic_impl_grounded; apply HSτc₁; apply Hstepc₁
+      apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
+      -- head
+      apply stepn.multi _ _ _ _ Hstep₁
+      apply step_lvl.pure _ _ _ ctx𝕄.hole
+      simp; constructor; apply typing.regular _ _ _ _ _ HSτl₁; apply typing.regular _ _ _ _ _ HSτr₁
+      apply head.ifz₁_else
+    . apply log_approx_value.antimono
+      apply Hsem_value; omega
