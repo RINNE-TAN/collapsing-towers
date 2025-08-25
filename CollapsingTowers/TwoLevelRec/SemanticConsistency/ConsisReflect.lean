@@ -1,34 +1,5 @@
 import CollapsingTowers.TwoLevelRec.LogicalEquiv.Defs
 
-lemma consistency.erase_ctx𝔹 :
-  ∀ B Γ e τ φ k γ₀ γ₁,
-    ctx𝔹 B →
-    typing Γ 𝟙 B⟦e⟧ τ φ →
-    log_approx_env k γ₀ γ₁ (erase_env Γ) →
-    (∃ B₀, ctx𝔹 B₀ ∧ (∀ e, msubst γ₀ ‖B⟦e⟧‖ = B₀⟦msubst γ₀ ‖e‖⟧)) ∧
-    (∃ B₁, ctx𝔹 B₁ ∧ (∀ e, msubst γ₁ ‖B⟦e⟧‖ = B₁⟦msubst γ₁ ‖e‖⟧)) :=
-  by
-  intros B Γ e τ φ k γ₀ γ₁ HB Hτ HsemΓ
-  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
-  cases HB
-  case appl₁ arg Hlc =>
-    cases Hτ
-    case app₁ Harg HX =>
-      constructor
-      . exists fun X => .app₁ X (msubst γ₀ ‖arg‖)
-        constructor
-        . apply ctx𝔹.appl₁
-          apply lc.under_msubst; apply Hmwf₀
-          rw [← lc.under_erase]; apply Hlc
-        . simp
-      . exists fun X => .app₁ X (msubst γ₁ ‖arg‖)
-        constructor
-        . apply ctx𝔹.appl₁
-          apply lc.under_msubst; apply Hmwf₁
-          rw [← lc.under_erase]; apply Hlc
-        . simp
-  all_goals admit
-
 lemma consistency.erase_ctx𝔼 :
   ∀ E Γ e τ φ k γ₀ γ₁,
     ctx𝔼 E →
@@ -44,22 +15,152 @@ lemma consistency.erase_ctx𝔼 :
     . exists id; constructor; apply ctx𝔼.hole; simp
     . exists id; constructor; apply ctx𝔼.hole; simp
   case cons𝔹 HB HE IH =>
-    have ⟨IH₀, IH₁⟩ := consistency.erase_ctx𝔹 _ _ _ _ _ _ _ _ HB Hτ HsemΓ
-    have ⟨B₀, HB₀, IHB₀⟩ := IH₀
-    have ⟨B₁, HB₁, IHB₁⟩ := IH₁
-    have ⟨τ𝕖, φ₀, φ₁, HEqφ₀, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
-    have ⟨IH₀, IH₁⟩ := IH _ _ Hτ
-    have ⟨E₀, HE₀, IHE₀⟩ := IH₀
-    have ⟨E₁, HE₁, IHE₁⟩ := IH₁
-    constructor
-    . exists B₀ ∘ E₀
-      constructor
-      . apply ctx𝔼.cons𝔹 _ _ HB₀ HE₀
-      . intros e; rw [← ctx_comp B₀ E₀, ← IHE₀, ← IHB₀]; rfl
-    . exists B₁ ∘ E₁
-      constructor
-      . apply ctx𝔼.cons𝔹 _ _ HB₁ HE₁
-      . intros e; rw [← ctx_comp B₁ E₁, ← IHE₁, ← IHB₁]; rfl
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+    cases HB
+    case appl₁ arg Hlc =>
+      cases Hτ
+      case app₁ Harg HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .app₁ X (msubst γ₀ ‖arg‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₀
+            apply lc.under_msubst; apply Hmwf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .app₁ X (msubst γ₁ ‖arg‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₁
+            apply lc.under_msubst; apply Hmwf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case appr₁ f HvalueFun =>
+      cases HvalueFun <;> try contradiction
+      case lam e Hlc =>
+      cases Hτ
+      case app₁ HX Hf =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .app₁ (msubst γ₀ ‖.lam e‖) X) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₀
+            simp; apply value.lam
+            apply lc.under_msubst; apply Hmwf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .app₁ (msubst γ₁ ‖.lam e‖) X) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₁
+            simp; apply value.lam
+            apply lc.under_msubst; apply Hmwf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case appl₂ arg Hlc =>
+      cases Hτ
+      case app₂ HX Harg =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .app₁ X (msubst γ₀ ‖arg‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₀
+            apply lc.under_msubst; apply Hmwf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .app₁ X (msubst γ₁ ‖arg‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ _) HE₁
+            apply lc.under_msubst; apply Hmwf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case appr₂ f HvalueFun =>
+      cases HvalueFun <;> try contradiction
+      case code e Hlc =>
+      cases Hτ
+      case app₂ Hf HX =>
+        cases Hf
+        case code_fragment x _ HBinds =>
+          have HBinds := erase_env.binds _ _ _ _ HBinds
+          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ HBinds
+          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
+          have ⟨IH₀, IH₁⟩ := IH _ _ HX
+          have ⟨E₀, HE₀, IH₀⟩ := IH₀
+          have ⟨E₁, HE₁, IH₁⟩ := IH₁
+          constructor
+          . exists (fun X => .app₁ (msubst γ₀ (.fvar x)) X) ∘ E₀
+            constructor
+            . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₀
+              apply Hvalue₀
+            . simp; apply IH₀
+          . exists (fun X => .app₁ (msubst γ₁ (.fvar x)) X) ∘ E₁
+            constructor
+            . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.appr₁ _ _) HE₁
+              apply Hvalue₁
+            . simp; apply IH₁
+    case binaryl₁ => admit
+    case binaryr₁ => admit
+    case binaryl₂ => admit
+    case binaryr₂ => admit
+    case lift =>
+      cases Hτ
+      case lift_lam HX => apply IH _ _ HX
+      case lift_lit HX => apply IH _ _ HX
+    case lets e Hlc =>
+      cases Hτ
+      case lets HX Hclosed He =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .lets X (msubst γ₀ ‖e‖)) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE₀
+            apply lc.under_msubst; apply Hmwf₀
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₀
+        . exists (fun X => .lets X (msubst γ₁ ‖e‖)) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE₁
+            apply lc.under_msubst; apply Hmwf₁
+            rw [← lc.under_erase]; apply Hlc
+          . simp; apply IH₁
+    case fix₁ =>
+      cases Hτ
+      case fix₁ HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .fix₁ X) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₀
+          . simp; apply IH₀
+        . exists (fun X => .fix₁ X) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₁
+          . simp; apply IH₁
+    case fix₂ =>
+      cases Hτ
+      case fix₂ HX =>
+        have ⟨IH₀, IH₁⟩ := IH _ _ HX
+        have ⟨E₀, HE₀, IH₀⟩ := IH₀
+        have ⟨E₁, HE₁, IH₁⟩ := IH₁
+        constructor
+        . exists (fun X => .fix₁ X) ∘ E₀
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₀
+          . simp; apply IH₀
+        . exists (fun X => .fix₁ X) ∘ E₁
+          constructor
+          . apply ctx𝔼.cons𝔹 _ _ ctx𝔹.fix₁ HE₁
+          . simp; apply IH₁
+    case ifz₁ => admit
+    case ifz₂ => admit
 
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ——————————————————————————————————————————————————————————
