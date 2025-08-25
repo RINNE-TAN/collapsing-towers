@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.OperationalSemantics.SmallStep
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
@@ -165,11 +165,6 @@ lemma typing.congruence_under_ObsCtxℂ :
   case cons𝔹 HB IH =>
     apply IH; apply typing.congruence_under_ObsCtx𝔹
     apply HX; apply HB
-
--- e₁⇓ ≜ ∃ v, e ⇝* v
-@[simp]
-def termination (e : Expr) : Prop :=
-  ∃ v, value v ∧ e ⇝* v
 
 -- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
