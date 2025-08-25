@@ -70,3 +70,21 @@ theorem preservation.stepn :
     constructor
     . apply IHτ₂
     . apply le_trans; apply Hφ₂; apply Hφ₁
+
+theorem preservation.dynamic :
+  ∀ e₀ e₁ τ,
+    (e₀ ⇝* e₁) →
+    typing ⦰ 𝟚 e₀ τ ⊥ →
+    typing ⦰ 𝟚 e₁ τ ⊥ :=
+  by
+  intros e₀ e₁ τ Hstepn Hτ
+  have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτ
+  have HG := typing.dynamic_impl_grounded _ _ _ _ Hτ
+  have HG := grounded.under_stepn _ _ Hstepn HG
+  rw [← (grounded_iff_erase_identity _).mp HG, ← (grounded_ty_iff_erase_identity _).mp Hwbt]
+  have Hτ := typing.escape _ _ _ Hτ
+  have Hτ := typing_reification.pure _ _ _ Hτ
+  have ⟨φ, Hτ, Hφ⟩ := preservation.stepn _ _ _ _ Hstepn Hτ
+  cases φ <;> simp at Hφ
+  have Hτ := typing_reification.erase.safety _ _ _ _ Hτ
+  apply Hτ

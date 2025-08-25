@@ -178,7 +178,7 @@ lemma ciu_approx_respects_log_approx_value :
     have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
     --
     --
-    -- ⦰ ⊢ (X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕓
+    -- ⦰ ⊢ (fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕓
     -- ⦰ ⊧ λx.e₁ ≤𝑐𝑖𝑢 λx.e₂ : τ𝕒 → τ𝕓
     -- λx.e₁ @ argv₁ ⇝* v₁
     -- ———————————————————————————————————
@@ -186,16 +186,69 @@ lemma ciu_approx_respects_log_approx_value :
     have HE : ctx𝔼 (fun X => .app₁ X argv₁) := ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁)) ctx𝔼.hole
     have HτE : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (fun X => .app₁ X argv₁) ⦰ τ𝕓 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ (ObsCtxℂ.hole _ _) (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
     have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists v₁)
+    --
+    --
+    -- ⦰ ⊢ λx.e₂ : τ𝕒 → τ𝕓
+    -- ⦰ ⊢ argv₁ : τ𝕒
+    -- λx.e₂ @ argv₁ ⇝* v₂
+    -- ————————————————————
+    -- ⦰ ⊢ v₂ : τ𝕓
+    have Hτv₂ : typing ⦰ 𝟚 v₂ τ𝕓 ⊥ :=
+      by
+      apply preservation.dynamic _ _ _ Hstep₂
+      rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+      apply typing.app₁; apply Hτ₂; apply HτArg₁
     exists v₂; constructor
     . apply Hstep₂
     . apply IH𝕓 _ _ _ _ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value
       constructor; apply Hτv₁
-      constructor; admit
+      constructor; apply Hτv₂
       intros γ Hγ E τ𝕖 HE HτE Htermination₁
       cases γ <;> cases Hγ
+      --
+      --
+      -- λx.e₁ @ argv₁ ⇝* v₁
+      -- E⟦v₁⟧⇓
+      -- —————————————
+      -- E⟦λx.e₁ @ argv₁⟧⇓
+      have Htermination₁ : termination E⟦.app₁ (.lam e₁) argv₁⟧ :=
+        by
+        rw [termination.under_stepn]
+        apply Htermination₁
+        apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE (
+          by
+          constructor
+          . apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+          . apply typing.dynamic_impl_grounded _ _ _ _ HτArg₁
+        ) Hstep₁
+      --
+      --
+      -- ⦰ ⊢ E⟦⦰ ⊢ τ𝕓⟧ : τ𝕖
+      -- ———————————————————————————————————————————————
+      -- ⦰ ⊢ (E ∘ fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕖
+      have HEApp : ctx𝔼 (E ∘ fun X => .app₁ X argv₁) := compose.ctx𝔼_ctx𝔹 _ _ HE (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
+      have HτEApp : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (E ∘ fun X => .app₁ X argv₁) ⦰ τ𝕖 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτE (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
+      --
+      --
+      -- ⦰ ⊢ (E ∘ fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕖
+      -- ⦰ ⊧ λx.e₁ ≤𝑐𝑖𝑢 λx.e₂ : τ𝕒 → τ𝕓
+      -- E⟦λx.e₁ @ argv₁⟧⇓
+      -- ———————————————————————————————————————————————
+      -- E⟦λx.e₂ @ argv₁⟧⇓
+      have Htermination₂ := Hciu_value _ typing.subst.nil _ _ HEApp HτEApp Htermination₁
+      --
+      --
+      -- E⟦λx.e₂ @ argv₁⟧⇓
+      -- λx.e₂ @ argv₁ ⇝* v₂
+      -- ———————————————————
+      -- E⟦v₂⟧⇓
       rw [← termination.under_stepn]
-      apply Hciu_value _ typing.subst.nil _ _ HE
-      all_goals admit
+      apply Htermination₂; apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE (
+        by
+        constructor
+        . apply typing.dynamic_impl_grounded _ _ _ _ Hτ₂
+        . apply typing.dynamic_impl_grounded _ _ _ _ HτArg₁
+      ) Hstep₂
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
 
@@ -243,18 +296,7 @@ theorem ciu_approx_impl_log_approx :
   -- ⦰ ⊢ γ₁(e₁) : τ
   -- ———————————————
   -- ⦰ ⊢ v₂ : τ
-  have Hτv₂ : typing ⦰ 𝟚 v₂ τ ⊥ :=
-    by
-    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ HSγ₁τ₁
-    have HG := typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₁
-    have HG := grounded.under_stepn _ _ Hstep₂ HG
-    rw [← (grounded_iff_erase_identity _).mp HG, ← (grounded_ty_iff_erase_identity _).mp Hwbt]
-    have HSγ₁τ₁ := typing.escape _ _ _ HSγ₁τ₁
-    have HSγ₁τ₁ := typing_reification.pure _ _ _ HSγ₁τ₁
-    have ⟨φ, Hτv₂, Hφ⟩ := preservation.stepn _ _ _ _ Hstep₂ HSγ₁τ₁
-    cases φ <;> simp at Hφ
-    have Hτv₂ := typing_reification.erase.safety _ _ _ _ Hτv₂
-    apply Hτv₂
+  have Hτv₂ : typing ⦰ 𝟚 v₂ τ ⊥ := preservation.dynamic _ _ _ Hstep₂ HSγ₁τ₁
   exists v₂; constructor
   . apply Hstep₂
   . apply ciu_approx_respects_log_approx_value _ _ _ _ _ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value

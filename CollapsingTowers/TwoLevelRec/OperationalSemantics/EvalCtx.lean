@@ -428,6 +428,19 @@ lemma grounded.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → grounded M
   case consℝ HR _ IH =>
     exfalso; apply grounded.decompose_ctxℝ _ _ _ _ HR HG₀
 
+lemma compose.ctx𝔼_ctx𝔹 :
+  ∀ E B,
+    ctx𝔼 E →
+    ctx𝔹 B →
+    ctx𝔼 (E ∘ B) :=
+  by
+  intros E B HE HB
+  induction HE
+  case hole =>
+    apply ctx𝔼.cons𝔹 _ _ HB ctx𝔼.hole
+  case cons𝔹 HB _ IH =>
+    apply ctx𝔼.cons𝔹 _ _ HB IH
+
 lemma compose.ctx𝕄_ctx𝔹 :
   ∀ lvl M B,
     ctx𝕄 lvl M →
