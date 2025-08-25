@@ -62,11 +62,11 @@ theorem ctx_approx_impl_ciu_approx :
       have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτv
       have Hτv := typing.weakening _ Γ _ _ _ _ Hτv
       simp at Hτv
-      have HC₀ := ObsCtxℂ.hole Γ τ
-      have HB₀ := ObsCtx𝔹.appl₁ Γ v τ𝕧 τ Hτv
-      have HC₁ := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HC₀ HB₀
-      have HB₁ := ObsCtx𝔹.lam Γ τ𝕧 τ Hwbt
-      apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HC₁ HB₁
+      have HτC := ObsCtxℂ.hole Γ τ
+      have HτB := ObsCtx𝔹.appl₁ Γ v τ𝕧 τ Hτv
+      have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+      have HτB := ObsCtx𝔹.lam Γ τ𝕧 τ Hwbt
+      apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
     have ⟨Hτ₀, Hτ₁, _⟩ := Hctx
     have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
     have HSτE₀ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₀ HCE
@@ -137,10 +137,145 @@ lemma ciu_approx_respects_log_approx_value :
     case lit n₁ =>
     cases Hvalue₂ <;> try contradiction
     case lit n₂ =>
-    by_cases HEq : n₀ = n₂
-    . simp [HEq]
-    . exfalso
-      admit
+    simp at Hsem_value
+    cases Hn : compare n₁ n₂ with
+    | eq =>
+      rw [compare_eq_iff_eq] at Hn
+      simp [Hsem_value, Hn]
+    | lt =>
+      exfalso; apply divergence
+      rw [compare_lt_iff_lt] at Hn
+      --
+      --
+      -- n₁ < n₂
+      -- E = fun X => if (X - n₁) then 0 else diverge
+      -- —————————————————————————————————————————————
+      -- E⟦n₁⟧ ⇝* 0
+      -- E⟦n₂⟧ ⇝* diverge
+      -- ⦰ ⊢ E⟦⦰ ⊢ ℕ⟧ : ℕ
+      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₁)) (.lit 0) diverge) ⇝* (.lit 0)) :=
+        by
+        -- head sub
+        apply stepn.multi
+        apply step_lvl.pure (fun X => .ifz₁ X (.lit 0) diverge)
+        . apply ctx𝕄.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (by simp) (typing.regular _ _ _ _ _ typing_diverge)) ctx𝕄.hole
+        . simp
+        . apply head.binary₁
+        -- head if then
+        apply stepn.multi _ _ _ _ (stepn.refl _)
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
+        . simp; apply typing.regular _ _ _ _ _ typing_diverge
+        . simp; apply head.ifz₁_then
+      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₁)) (.lit 0) diverge) ⇝* diverge) :=
+        by
+        -- head sub
+        apply stepn.multi
+        apply step_lvl.pure (fun X => .ifz₁ X (.lit 0) diverge)
+        . apply ctx𝕄.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (by simp) (typing.regular _ _ _ _ _ typing_diverge)) ctx𝕄.hole
+        . simp
+        . apply head.binary₁
+        -- head if else
+        apply stepn.multi _ _ _ _ (stepn.refl _)
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
+        . simp; apply typing.regular _ _ _ _ _ typing_diverge
+        . have ⟨n, HEqn⟩ : ∃ n, n₂ - n₁ = n + 1 := by exists n₂ - n₁ - 1; omega
+          simp [HEqn]
+          apply head.ifz₁_else
+      have HE : ctx𝔼 (fun X => .ifz₁ (.binary₁ .sub X (.lit n₁)) (.lit 0) diverge) :=
+        by
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (by simp) (typing.regular _ _ _ _ _ typing_diverge))
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.binaryl₁ _ _ (by simp))
+        apply ctx𝔼.hole
+      have HτE : ObsCtxℂ ⦰ .nat (fun X => .ifz₁ (.binary₁ .sub X (.lit n₁)) (.lit 0) diverge) ⦰ .nat :=
+        by
+        have HτC := ObsCtxℂ.hole ⦰ .nat
+        have HτB := ObsCtx𝔹.ifz₁ _ _ _ _ (typing.lit _ _ 0) typing_diverge
+        have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔹.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₁)
+        apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+      --
+      --
+      -- E⟦n₁⟧⇓
+      -- ⦰ ⊧ n₁ ≤𝑐𝑖𝑢 n₂ : ℕ
+      -- ——————————————————
+      -- E⟦n₂⟧⇓
+      have Htermination := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists .lit 0)
+      --
+      --
+      -- E⟦n₂⟧⇓
+      -- E⟦n₂⟧ ⇝* diverge
+      -- ——————————————————
+      -- diverge⇓
+      rw [← termination.under_stepn]
+      apply Htermination
+      apply Hstep₂
+    | gt =>
+      exfalso; apply divergence
+      rw [compare_gt_iff_gt] at Hn
+      --
+      --
+      -- n₁ > n₂
+      -- E = fun X => if (X - n₂) then diverge else 0
+      -- —————————————————————————————————————————————
+      -- E⟦n₁⟧ ⇝* 0
+      -- E⟦n₂⟧ ⇝* diverge
+      -- ⦰ ⊢ E⟦⦰ ⊢ ℕ⟧ : ℕ
+      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₂)) diverge (.lit 0)) ⇝* (.lit 0)) :=
+        by
+        -- head sub
+        apply stepn.multi
+        apply step_lvl.pure (fun X => .ifz₁ X diverge (.lit 0))
+        . apply ctx𝕄.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (typing.regular _ _ _ _ _ typing_diverge) (by simp)) ctx𝕄.hole
+        . simp
+        . apply head.binary₁
+        -- head if then
+        apply stepn.multi _ _ _ _ (stepn.refl _)
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
+        . simp; apply typing.regular _ _ _ _ _ typing_diverge
+        . have ⟨n, HEqn⟩ : ∃ n, n₁ - n₂ = n + 1 := by exists n₁ - n₂ - 1; omega
+          simp [HEqn]
+          apply head.ifz₁_else
+      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₂)) diverge (.lit 0)) ⇝* diverge) :=
+        by
+        -- head sub
+        apply stepn.multi
+        apply step_lvl.pure (fun X => .ifz₁ X diverge (.lit 0))
+        . apply ctx𝕄.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (typing.regular _ _ _ _ _ typing_diverge) (by simp)) ctx𝕄.hole
+        . simp
+        . apply head.binary₁
+        -- head if else
+        apply stepn.multi _ _ _ _ (stepn.refl _)
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
+        . simp; apply typing.regular _ _ _ _ _ typing_diverge
+        . simp; apply head.ifz₁_then
+      have HE : ctx𝔼 (fun X => .ifz₁ (.binary₁ .sub X (.lit n₂)) diverge (.lit 0)) :=
+        by
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.ifz₁ _ _ (typing.regular _ _ _ _ _ typing_diverge) (by simp))
+        apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.binaryl₁ _ _ (by simp))
+        apply ctx𝔼.hole
+      have HτE : ObsCtxℂ ⦰ .nat (fun X => .ifz₁ (.binary₁ .sub X (.lit n₂)) diverge (.lit 0)) ⦰ .nat :=
+        by
+        have HτC := ObsCtxℂ.hole ⦰ .nat
+        have HτB := ObsCtx𝔹.ifz₁ _ _ _ _ typing_diverge (typing.lit _ _ 0)
+        have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔹.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₂)
+        apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+      --
+      --
+      -- E⟦n₁⟧⇓
+      -- ⦰ ⊧ n₁ ≤𝑐𝑖𝑢 n₂ : ℕ
+      -- ——————————————————
+      -- E⟦n₂⟧⇓
+      have Htermination := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists .lit 0)
+      --
+      --
+      -- E⟦n₂⟧⇓
+      -- E⟦n₂⟧ ⇝* diverge
+      -- ——————————————————
+      -- diverge⇓
+      rw [← termination.under_stepn]
+      apply Htermination
+      apply Hstep₂
   case arrow τ𝕒 τ𝕓 φ IH𝕒 IH𝕓 =>
     have ⟨Hτ₁, Hτ₂, Hciu_value⟩ := Hciu
     cases φ <;> try simp at Hsem_value
@@ -209,7 +344,7 @@ lemma ciu_approx_respects_log_approx_value :
       --
       -- λx.e₁ @ argv₁ ⇝* v₁
       -- E⟦v₁⟧⇓
-      -- —————————————
+      -- ————————————————————
       -- E⟦λx.e₁ @ argv₁⟧⇓
       have Htermination₁ : termination E⟦.app₁ (.lam e₁) argv₁⟧ :=
         by

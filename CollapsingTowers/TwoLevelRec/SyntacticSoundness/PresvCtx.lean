@@ -1,4 +1,3 @@
-import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 lemma preservation.under_ctx𝔹 :

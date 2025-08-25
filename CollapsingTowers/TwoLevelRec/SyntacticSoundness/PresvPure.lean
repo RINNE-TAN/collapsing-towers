@@ -157,7 +157,7 @@ theorem preservation.pure.head :
     case lam𝕔 Hwbt Hτ Hclosed =>
       apply typing.reflect
       apply typing.lam
-      . apply typing_reification.under_code _ _ _ _ Hτ
+      . apply typing_reification_code _ _ _ _ Hτ
       . apply Hwbt
       . apply Hclosed
   case lets𝕔 b e =>
@@ -168,7 +168,7 @@ theorem preservation.pure.head :
       rw [← Effect.union_pure ⊥]
       apply typing.lets
       . apply Hτb
-      . apply typing_reification.under_code _ _ _ _ Hτe
+      . apply typing_reification_code _ _ _ _ Hτe
       . apply Hwbt
       . apply Hclosed
   case run =>
@@ -179,7 +179,7 @@ theorem preservation.pure.head :
       apply typing.weakening
       apply typing.escape
       apply typing.shrinking; simp
-      apply typing_reification.under_code _ _ _ _ Hτ
+      apply typing_reification_code _ _ _ _ Hτ
       apply Hclosed
   case fix₁ Hvalue =>
     exists φ₀; simp
@@ -227,8 +227,8 @@ theorem preservation.pure.head :
         rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
         apply typing.ifz₁
         . apply typing.fvar; apply HBinds; apply Hwbt
-        . apply typing_reification.under_code _ _ _ _ Hτ₁
-        . apply typing_reification.under_code _ _ _ _ Hτ₂
+        . apply typing_reification_code _ _ _ _ Hτ₁
+        . apply typing_reification_code _ _ _ _ Hτ₂
 
 theorem preservation.pure :
   ∀ Γ M e₀ e₁ τ φ₀,

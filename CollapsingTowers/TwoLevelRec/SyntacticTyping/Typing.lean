@@ -1,5 +1,6 @@
 import CollapsingTowers.TwoLevelRec.Syntax.Defs
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Env
+import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 
 mutual
   inductive typing : TEnv → Stage → Expr → Ty → Effect → Prop where
@@ -266,7 +267,7 @@ lemma typing.dynamic_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → 
     apply IH₁; apply HEq𝕊
     apply IH₂; apply HEq𝕊
 
-lemma typing_reification.under_code :
+lemma typing_reification_code :
   ∀ Γ e τ φ,
     typing_reification Γ (.code e) (.rep τ) φ →
     typing Γ 𝟚 e τ ⊥ :=
@@ -280,3 +281,17 @@ lemma typing_reification.under_code :
     cases Hτ
     case code_fragment Hwbt Hbinds =>
       apply typing.fvar; apply Hbinds; apply Hwbt
+
+lemma typing_diverge : typing ⦰ 𝟚 diverge .nat ⊥ :=
+  by
+  have Hf : typing ⦰ 𝟚 F (.arrow (.arrow .nat .nat ⊥) (.arrow .nat .nat ⊥) ⊥) ⊥ :=
+    by
+    rw [F]
+    apply typing.lam
+    apply typing.lam; rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.app₁
+    repeat constructor
+  rw [diverge, ← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+  apply typing.app₁
+  apply typing.fix₁; simp; rfl; apply Hf
+  repeat constructor
