@@ -122,11 +122,82 @@ theorem ctx_approx_impl_ciu_approx :
 
 lemma ciu_approx_respects_log_approx_value :
   ∀ k v₀ v₁ v₂ τ,
+    value v₀ → value v₁ → value v₂ →
     log_approx_value k v₀ v₁ τ →
     ciu_approx ⦰ v₁ v₂ τ →
     log_approx_value k v₀ v₂ τ :=
   by
-  admit
+  intros k v₀ v₁ v₂ τ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value Hciu
+  induction τ generalizing k v₀ v₁ v₂
+  case nat =>
+    have ⟨Hτ₁, Hτ₂, Hciu_value⟩ := Hciu
+    cases Hvalue₀ <;> try simp at Hsem_value
+    case lit n₀ =>
+    cases Hvalue₁ <;> try contradiction
+    case lit n₁ =>
+    cases Hvalue₂ <;> try contradiction
+    case lit n₂ =>
+    by_cases HEq : n₀ = n₂
+    . simp [HEq]
+    . exfalso
+      admit
+  case arrow τ𝕒 τ𝕓 φ IH𝕒 IH𝕓 =>
+    have ⟨Hτ₁, Hτ₂, Hciu_value⟩ := Hciu
+    cases φ <;> try simp at Hsem_value
+    cases Hvalue₀ <;> try simp at Hsem_value
+    case lam e₀ _ =>
+    cases Hvalue₁ <;> try contradiction
+    case lam e₁ _ =>
+    cases Hvalue₂ <;> try contradiction
+    case lam e₂ _ =>
+    simp only [log_approx_value]
+    constructor; simp only [log_approx_value] at Hsem_value; apply Hsem_value.left
+    constructor; apply Hτ₂
+    intros j Hindexj argv₀ argv₁ Hsem_value_arg
+    have ⟨HvalueArg₀, HvalueArg₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_arg
+    have ⟨HτArg₀, HτArg₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value_arg
+    simp only [log_approx_expr]
+    intros i Hindexi v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- (λx.e₀, λx.e₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k}
+    -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{j}
+    -- —————————————————————————————————————————
+    -- (λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{j}
+    have Hsem_expr := log_approx_value.apply j _ _ _ _ _ _ (log_approx_value.antimono _ _ _ _ _ Hsem_value (by omega)) Hsem_value_arg
+    simp only [log_approx_expr] at Hsem_expr
+    --
+    --
+    -- λx.e₀ @ argv₀ ⇝ ⟦i⟧ v₀
+    -- (λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{j}
+    -- —————————————————————————————————————————
+    -- λx.e₁ @ argv₁ ⇝* v₁
+    -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{j - i}
+    have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i Hindexi v₀ Hvalue₀ Hstep₀
+    have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
+    have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
+    --
+    --
+    -- ⦰ ⊢ (X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕓
+    -- ⦰ ⊧ λx.e₁ ≤𝑐𝑖𝑢 λx.e₂ : τ𝕒 → τ𝕓
+    -- λx.e₁ @ argv₁ ⇝* v₁
+    -- ———————————————————————————————————
+    -- λx.e₂ @ argv₁ ⇝* v₂
+    have HE : ctx𝔼 (fun X => .app₁ X argv₁) := ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁)) ctx𝔼.hole
+    have HτE : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (fun X => .app₁ X argv₁) ⦰ τ𝕓 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ (ObsCtxℂ.hole _ _) (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
+    have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists v₁)
+    exists v₂; constructor
+    . apply Hstep₂
+    . apply IH𝕓 _ _ _ _ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value
+      constructor; apply Hτv₁
+      constructor; admit
+      intros γ Hγ E τ𝕖 HE HτE Htermination₁
+      cases γ <;> cases Hγ
+      rw [← termination.under_stepn]
+      apply Hciu_value _ typing.subst.nil _ _ HE
+      all_goals admit
+  case fragment => simp at Hsem_value
+  case rep => simp at Hsem_value
 
 -- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
 -- ——————————————————
@@ -186,7 +257,7 @@ theorem ciu_approx_impl_log_approx :
     apply Hτv₂
   exists v₂; constructor
   . apply Hstep₂
-  . apply ciu_approx_respects_log_approx_value; apply Hsem_value
+  . apply ciu_approx_respects_log_approx_value _ _ _ _ _ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value
     constructor; apply Hτv₁
     constructor; apply Hτv₂
     intros γ Hγ E τ𝕖 HE HτE Htermination₁
