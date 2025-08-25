@@ -142,7 +142,6 @@ theorem ciu_approx_impl_log_approx :
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
   have ⟨Hγ₀, Hγ₁⟩ := log_approx_env.syntactic.typing _ _ _ _ HsemΓ
-  have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
   simp only [log_approx_expr]
   intros j Hj v₀ Hvalue₀ Hstep₀
   --
@@ -154,6 +153,8 @@ theorem ciu_approx_impl_log_approx :
   -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
   have ⟨_, _, He₀⟩ := log_approx.fundamental _ _ _ Hτ₀
   have Hsem_expr := He₀ _ _ _ HsemΓ
+  have ⟨HSγ₀τ₀, HSγ₁τ₀⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₀ HsemΓ
+  have ⟨HSγ₀τ₁, HSγ₁τ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₁ Hτ₁ HsemΓ
   rw [log_approx_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr _ Hj _ Hvalue₀ Hstep₀
   have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
@@ -173,13 +174,13 @@ theorem ciu_approx_impl_log_approx :
   -- ⦰ ⊢ v₂ : τ
   have Hτv₂ : typing ⦰ 𝟚 v₂ τ ⊥ :=
     by
-    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ HSτ₁
-    have HG := typing.dynamic_impl_grounded _ _ _ _ HSτ₁
+    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ HSγ₁τ₁
+    have HG := typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₁
     have HG := grounded.under_stepn _ _ Hstep₂ HG
     rw [← (grounded_iff_erase_identity _).mp HG, ← (grounded_ty_iff_erase_identity _).mp Hwbt]
-    have HSτ₁ := typing.escape _ _ _ HSτ₁
-    have HSτ₁ := typing_reification.pure _ _ _ HSτ₁
-    have ⟨φ, Hτv₂, Hφ⟩ := preservation.stepn _ _ _ _ Hstep₂ HSτ₁
+    have HSγ₁τ₁ := typing.escape _ _ _ HSγ₁τ₁
+    have HSγ₁τ₁ := typing_reification.pure _ _ _ HSγ₁τ₁
+    have ⟨φ, Hτv₂, Hφ⟩ := preservation.stepn _ _ _ _ Hstep₂ HSγ₁τ₁
     cases φ <;> simp at Hφ
     have Hτv₂ := typing_reification.erase.safety _ _ _ _ Hτv₂
     apply Hτv₂
@@ -189,7 +190,7 @@ theorem ciu_approx_impl_log_approx :
     constructor; apply Hτv₁
     constructor; apply Hτv₂
     intros γ Hγ E τ𝕖 HE HτE Htermination₁
-    cases γ <;> try simp at Hγ
+    cases γ <;> cases Hγ
     --
     --
     -- γ₁(e₀) ⇝* v₁
@@ -198,7 +199,9 @@ theorem ciu_approx_impl_log_approx :
     -- E⟦γ₁(e₀)⟧⇓
     have Htermination₁ : termination E⟦msubst γ₁ e₀⟧ :=
       by
-      admit
+      rw [termination.under_stepn]
+      apply Htermination₁
+      apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE (typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₀) Hstep₁
     --
     --
     -- E⟦γ₁(e₀)⟧⇓
@@ -212,7 +215,9 @@ theorem ciu_approx_impl_log_approx :
     -- γ₁(e₁) ⇝* v₂
     -- —————————————
     -- E⟦v₂⟧⇓
-    all_goals admit
+    rw [← termination.under_stepn]
+    apply Htermination₂
+    apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE (typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₁) Hstep₂
 
 -- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
 -- ——————————————————
