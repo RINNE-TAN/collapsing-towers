@@ -24,9 +24,9 @@ lemma log_approx_value.trans
     cases v₂ <;> try simp at Hsem_value₁
     case lam e₂ =>
     cases φ <;> simp only [log_approx_value] at Hsem_value₀ Hsem_value₁ <;> try contradiction
-    simp only [log_approx_value]
     have ⟨Hτ₀, Hτ₁, Hsem_expr₀⟩ := Hsem_value₀
     have ⟨Hτ₁, Hτ₂, _⟩ := Hsem_value₁ 0
+    simp only [log_approx_value]
     constructor; apply Hτ₀
     constructor; apply Hτ₂
     intros j Hindexj argv₀ argv₁ Hsem_value_arg₀

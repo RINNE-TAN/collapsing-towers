@@ -1,3 +1,4 @@
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.LogicalRelation
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Compatibility
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Fundamental
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Transitivity
