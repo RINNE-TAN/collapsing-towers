@@ -401,6 +401,8 @@ theorem ciu_approx_impl_log_approx :
   constructor; apply Hτ₁
   intros k γ₀ γ₁ HsemΓ
   have ⟨Hγ₀, Hγ₁⟩ := log_approx_env.syntactic.typing _ _ _ _ HsemΓ
+  have ⟨HSγ₀τ₀, HSγ₁τ₀⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₀ HsemΓ
+  have ⟨HSγ₀τ₁, HSγ₁τ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₁ Hτ₁ HsemΓ
   simp only [log_approx_expr]
   intros j Hj v₀ Hvalue₀ Hstep₀
   --
@@ -410,12 +412,9 @@ theorem ciu_approx_impl_log_approx :
   -- ——————————————————————
   -- γ₁(e₀) ⇝* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
-  have ⟨_, _, He₀⟩ := log_approx.fundamental _ _ _ Hτ₀
-  have Hsem_expr := He₀ _ _ _ HsemΓ
-  have ⟨HSγ₀τ₀, HSγ₁τ₀⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₀ HsemΓ
-  have ⟨HSγ₀τ₁, HSγ₁τ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₁ Hτ₁ HsemΓ
-  rw [log_approx_expr] at Hsem_expr
-  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr _ Hj _ Hvalue₀ Hstep₀
+  have ⟨_, _, Hsem_expr⟩ := log_approx.fundamental _ _ _ Hτ₀
+  simp only [log_approx_expr] at Hsem_expr
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr _ _ _ HsemΓ _ Hj _ Hvalue₀ Hstep₀
   have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
   have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
   --

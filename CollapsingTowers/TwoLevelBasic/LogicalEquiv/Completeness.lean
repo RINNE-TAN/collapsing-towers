@@ -107,3 +107,35 @@ theorem ctx_equiv_impl_ciu_equiv :
       have HEq := stepn.value_impl_termination _ _ Hvalue Hstepl
       rw [HEq]
       apply Hstepr
+
+-- Γ ⊧ e₀ ≈𝑐𝑖𝑢 e₁ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+theorem ciu_equiv_impl_log_equiv :
+  ∀ Γ τ e₀ e₁,
+    ciu_equiv Γ e₀ e₁ τ →
+    log_equiv Γ e₀ e₁ τ :=
+  by
+  intros Γ τ e₀ e₁ Hciu
+  induction τ generalizing e₀ e₁
+  case nat =>
+    have ⟨Hτ₀, Hτ₁, Hciu⟩ := Hciu
+    constructor; apply Hτ₀
+    constructor; apply Hτ₁
+    intros γ₀ γ₁ HsemΓ
+    have ⟨Hγ₀, Hγ₁⟩ := log_equiv_env.syntactic.typing _ _ _ HsemΓ
+    have ⟨_, _, Hsem_expr⟩ := log_equiv.fundamental _ _ _ Hτ₀
+    simp only [log_equiv_expr] at Hsem_expr
+    have ⟨v₀, v₁, Hstep₀, Hstep₁, Hsem_value⟩ := Hsem_expr _ _ HsemΓ
+    have ⟨Hvalue₀, Hvalue₁⟩ := log_equiv_value.syntactic.value _ _ _ Hsem_value
+    have Hstep₂ := (Hciu _ Hγ₁ _ ctx𝔼.hole (ObsCtxℂ.hole _ _) _ Hvalue₁).mp Hstep₁
+    simp only [log_equiv_expr]
+    exists v₀, v₁
+  case arrow τ𝕒 τ𝕓 φ IH𝕒 IH𝕓 =>
+    admit
+  case fragment =>
+    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hciu.left
+    simp at Hwbt
+  case rep =>
+    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hciu.left
+    simp at Hwbt
