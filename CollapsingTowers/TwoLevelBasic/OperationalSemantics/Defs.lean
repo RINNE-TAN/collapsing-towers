@@ -1,6 +1,0 @@
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Value
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.EvalCtx
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.SmallStep
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Congruence
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Deterministic
-import CollapsingTowers.TwoLevelBasic.OperationalSemantics.Confluence
