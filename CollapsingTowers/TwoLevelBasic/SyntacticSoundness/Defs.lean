@@ -1,0 +1,8 @@
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvSubst
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvMaping
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvCtx
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvPure
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvReflect
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.Preservation
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.Progress
+import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.Soundness
