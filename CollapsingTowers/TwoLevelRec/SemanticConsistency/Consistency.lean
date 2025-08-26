@@ -101,8 +101,7 @@ theorem consistency.stepn :
 -- ∅ ⊢ ‖e₀‖ ≈ e₁ : τ
 theorem consistency.stepn.rep :
   ∀ e₀ v τ φ,
-    (e₀ ⇝* v) →
-    value v →
+    (e₀ ⇝* v) → value v →
     typing_reification ⦰ e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧
