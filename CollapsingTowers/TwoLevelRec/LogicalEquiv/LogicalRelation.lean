@@ -31,9 +31,9 @@ decreasing_by all_goals apply Prod.Lex.left; simp; omega
 -- 𝓔⟦τ⟧ₖ ≜ {(e₀, e₁) | ∀ j < k, v₀. e₀ ⇝ⱼ v₀ → ∃ v₁, e₁ ⇝* v₁ ∧ (v₀, v₁) ∈ 𝓥⟦τ⟧ₖ₋ⱼ}
 @[simp]
 def log_approx_expr (k : ℕ) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
-    ∀ j, j < k →
-      ∀ v₀, value v₀ → (e₀ ⇝ ⟦j⟧ v₀) →
-      ∃ v₁, (e₁ ⇝* v₁) ∧ log_approx_value (k - j) v₀ v₁ τ
+  ∀ j, j < k →
+    ∀ v₀, value v₀ → (e₀ ⇝ ⟦j⟧ v₀) →
+    ∃ v₁, (e₁ ⇝* v₁) ∧ log_approx_value (k - j) v₀ v₁ τ
 
 termination_by (τ, k + 1)
 decreasing_by apply Prod.Lex.right; omega
@@ -41,20 +41,18 @@ end
 
 inductive typing.subst : Subst → TEnv → Prop where
   | nil : typing.subst [] ⦰
-  | cons :
-    ∀ v γ τ Γ,
-      value v →
-      typing ⦰ 𝟚 v τ ⊥ →
-      typing.subst γ Γ →
-      typing.subst (v :: γ) ((τ, 𝟚) :: Γ)
+  | cons : ∀ v γ τ Γ,
+    value v →
+    typing ⦰ 𝟚 v τ ⊥ →
+    typing.subst γ Γ →
+    typing.subst (v :: γ) ((τ, 𝟚) :: Γ)
 
 inductive log_approx_env : ℕ → Subst → Subst → TEnv → Prop where
   | nil : ∀ k, log_approx_env k [] [] ⦰
-  | cons :
-    ∀ k v₀ γ₀ v₁ γ₁ τ Γ,
-      log_approx_value k v₀ v₁ τ →
-      log_approx_env k γ₀ γ₁ Γ →
-      log_approx_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟚) :: Γ)
+  | cons : ∀ k v₀ γ₀ v₁ γ₁ τ Γ,
+    log_approx_value k v₀ v₁ τ →
+    log_approx_env k γ₀ γ₁ Γ →
+    log_approx_env k (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟚) :: Γ)
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
