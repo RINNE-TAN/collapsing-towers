@@ -78,7 +78,7 @@ theorem ctx_approx_impl_ciu_approx :
     --
     -- E⟦(x ↦ v, γ)e₀⟧⇓
     -- ————————————————
-    -- E⟦λx.e₀ @ v⟧⇓
+    -- E⟦λx.γ(e₀) @ v⟧⇓
     have Htermination₀ : termination (E (msubst γ (({0 ↤ List.length Γ}e₀).lam.app₁ v))) :=
       by
       have ⟨v₀, Hvalue₀, Hstep₀⟩ := Htermination₀
@@ -94,7 +94,7 @@ theorem ctx_approx_impl_ciu_approx :
           apply Hvalue; apply typing.closed_at_env _ _ _ _ _ Hτv
     --
     --
-    -- E⟦λx.e₁ @ v⟧⇓
+    -- E⟦λx.γ(e₁) @ v⟧⇓
     -- ————————————————
     -- E⟦(x ↦ v, γ)e₁⟧⇓
     have ⟨v₁, Hvalue₁, Hstep₁⟩ := IH _ _ Hctx _ _ HE HCE Htermination₀
