@@ -33,19 +33,19 @@ theorem ctx_approx_impl_ciu_approx :
   case nil =>
     intros E τ𝕖 HE
     apply Hctx.right.right
-  case cons v γ τ𝕧 Γ Hvalue Hτv Hτγ IH =>
+  case cons argv γ τ𝕒 Γ HvalueArg Hτv Hτγ IH =>
     intros E τ𝕖 HE HCE Htermination₀
     have HEq := typing.subst.length _ _ Hτγ
     have HsemΓ := log_approx_env.refl 0 _ _ Hτγ
     have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
     have ⟨Hτe₀, Hτe₁, _⟩ := Hctx
-    have HEqSubst₀ : msubst γ (subst (List.length Γ) v e₀) = opening 0 (msubst γ v) (msubst γ {0 ↤ List.length Γ}e₀) :=
+    have HEqSubst₀ : msubst γ (subst (List.length Γ) argv e₀) = opening 0 (msubst γ argv) (msubst γ {0 ↤ List.length Γ}e₀) :=
       by
       rw [← comm.msubst_opening_value, ← intro.subst, identity.opening_closing]
       apply typing.regular _ _ _ _ _ Hτe₀
       rw [← closed.under_closing]; apply typing.closed_at_env _ _ _ _ _ Hτe₀
       apply Hmwf₀
-    have HEqSubst₁ : msubst γ (subst (List.length Γ) v e₁) = opening 0 (msubst γ v) (msubst γ {0 ↤ List.length Γ}e₁) :=
+    have HEqSubst₁ : msubst γ (subst (List.length Γ) argv e₁) = opening 0 (msubst γ argv) (msubst γ {0 ↤ List.length Γ}e₁) :=
       by
       rw [← comm.msubst_opening_value, ← intro.subst, identity.opening_closing]
       apply typing.regular _ _ _ _ _ Hτe₁
@@ -53,19 +53,19 @@ theorem ctx_approx_impl_ciu_approx :
       apply Hmwf₁
     --
     --
-    -- (x ↦ τ𝕧, Γ) ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
+    -- (x ↦ τ𝕒, Γ) ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ
     -- ————————————————————————————————
-    -- Γ ⊧ λx.e₀ @ v ≤𝑐𝑡𝑥 λx.e₁ @ v : τ
-    have Hctx : ctx_approx Γ (.app₁ (.lam {0 ↤ Γ.length}e₀) v) (.app₁ (.lam {0 ↤ Γ.length}e₁) v) τ :=
+    -- Γ ⊧ λx.e₀ @ argv ≤𝑐𝑡𝑥 λx.e₁ @ argv : τ
+    have Hctx : ctx_approx Γ (.app₁ (.lam {0 ↤ Γ.length}e₀) argv) (.app₁ (.lam {0 ↤ Γ.length}e₁) argv) τ :=
       by
       apply ctx_approx.congruence_under_ObsCtxℂ _ _ _ _ _ _ _ Hctx
       have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτv
       have Hτv := typing.weakening _ Γ _ _ _ _ Hτv
       simp at Hτv
       have HτC := ObsCtxℂ.hole Γ τ
-      have HτB := ObsCtx𝔹.appl₁ Γ v τ𝕧 τ Hτv
+      have HτB := ObsCtx𝔹.appl₁ Γ argv τ𝕒 τ Hτv
       have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
-      have HτB := ObsCtx𝔹.lam Γ τ𝕧 τ Hwbt
+      have HτB := ObsCtx𝔹.lam Γ τ𝕒 τ Hwbt
       apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
     have ⟨Hτ₀, Hτ₁, _⟩ := Hctx
     have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
@@ -76,10 +76,10 @@ theorem ctx_approx_impl_ciu_approx :
     simp at Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
     --
     --
-    -- E⟦(x ↦ v, γ)e₀⟧⇓
-    -- ————————————————
-    -- E⟦λx.γ(e₀) @ v⟧⇓
-    have Htermination₀ : termination (E (msubst γ (({0 ↤ List.length Γ}e₀).lam.app₁ v))) :=
+    -- E⟦(x ↦ argv, γ)e₀⟧⇓
+    -- ———————————————————
+    -- E⟦λx.γ(e₀) @ argv⟧⇓
+    have Htermination₀ : termination E⟦msubst γ (({0 ↤ List.length Γ}e₀).lam.app₁ argv)⟧ :=
       by
       have ⟨v₀, Hvalue₀, Hstep₀⟩ := Htermination₀
       exists v₀
@@ -91,12 +91,12 @@ theorem ctx_approx_impl_ciu_approx :
         . simp [Hlc₀]
         . simp [HEq, HEqSubst₀]
           apply head.app₁; rw [identity.msubst]
-          apply Hvalue; apply typing.closed_at_env _ _ _ _ _ Hτv
+          apply HvalueArg; apply typing.closed_at_env _ _ _ _ _ Hτv
     --
     --
-    -- E⟦λx.γ(e₁) @ v⟧⇓
-    -- ————————————————
-    -- E⟦(x ↦ v, γ)e₁⟧⇓
+    -- E⟦λx.γ(e₁) @ argv⟧⇓
+    -- ———————————————————
+    -- E⟦(x ↦ argv, γ)e₁⟧⇓
     have ⟨v₁, Hvalue₁, Hstep₁⟩ := IH _ _ Hctx _ _ HE HCE Htermination₀
     exists v₁
     constructor
@@ -105,7 +105,7 @@ theorem ctx_approx_impl_ciu_approx :
       have ⟨_, _, v𝕖, _, Hvalue𝕖, Hstep𝕖₁, HstepE₁⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ HE Hvalue₁ (typing.dynamic_impl_grounded _ _ _ _ HSτE₁) Hstep₁
       simp at Hstep𝕖₁
       have HvalueFun : value (msubst γ {0 ↤ List.length Γ}e₁).lam := value.lam _ Hlc₁.left
-      have HvalueArg : value (msubst γ v) := by rw [identity.msubst _ _ (typing.closed_at_env _ _ _ _ _ Hτv)]; apply Hvalue
+      have HvalueArg : value (msubst γ argv) := by rw [identity.msubst _ _ (typing.closed_at_env _ _ _ _ _ Hτv)]; apply HvalueArg
       have ⟨_, _, Hstep𝕖₁⟩ := stepn_indexed.refine.app₁.eliminator _ _ _ _ HvalueFun HvalueArg Hvalue𝕖 Hstep𝕖₁
       have Hstep𝕖₁ := stepn_indexed_impl_stepn _ _ _ Hstep𝕖₁
       have HstepE₁ := stepn_indexed_impl_stepn _ _ _ HstepE₁
