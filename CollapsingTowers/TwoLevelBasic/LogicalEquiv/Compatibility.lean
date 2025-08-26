@@ -218,3 +218,108 @@ lemma compatibility.app₁ :
     -- head
     apply Hstep₁
   . apply Hsem_value
+
+-- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- —————————————————————————————————————————————————
+-- Γ ⊧ lets x = b₀ in e₀ ≈𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
+lemma compatibility.lets :
+  ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
+    wbt 𝟚 τ𝕒 →
+    closed_at e₀ Γ.length →
+    closed_at e₁ Γ.length →
+    log_equiv Γ b₀ b₁ τ𝕒 →
+    log_equiv ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    log_equiv Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
+  by
+  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ Hb He
+  have ⟨Hτb₀, Hτb₁, Hb⟩ := Hb
+  have ⟨Hτe₀, Hτe₁, He⟩ := He
+  have Hτ₀ : typing Γ 𝟚 (.lets b₀ e₀) τ𝕓 ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]; apply typing.lets
+    apply Hτb₀; apply Hτe₀; apply Hwbt; apply Hclosed₀
+  have Hτ₁ : typing Γ 𝟚 (.lets b₁ e₁) τ𝕓 ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]; apply typing.lets
+    apply Hτb₁; apply Hτe₁; apply Hwbt; apply Hclosed₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros γ₀ γ₁ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.mwf _ _ _ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ HsemΓ
+  have ⟨HSτ₀, HSτ₁⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
+  have ⟨HSτb₀, HSτb₁⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ Hτb₀ Hτb₁ HsemΓ
+  have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ HSτ₀
+  have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ HSτ₁
+  simp at HSτ₀ HSτ₁ Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
+  --
+  --
+  -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+  -- ———————————————————
+  -- γ₀(b₀) ⇝* bv₀
+  -- γ₁(b₁) ⇝* bv₁
+  -- (bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
+  simp only [log_equiv_expr] at Hb
+  have ⟨bv₀, bv₁, HstepBind₀, HstepBind₁, Hsem_value_bind⟩ := Hb _ _ HsemΓ
+  have ⟨HvalueBind₀, HvalueBind₁⟩ := log_equiv_value.syntactic.value _ _ _ Hsem_value_bind
+  have ⟨HτBind₀, HτBind₁⟩ := log_equiv_value.syntactic.typing _ _ _ Hsem_value_bind
+  have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
+  have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
+  --
+  --
+  -- ((x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
+  -- ———————————————————————————————————————————————————
+  -- (x ↦ bv₀, γ₀)(e₀) ⇝* v₀
+  -- (x ↦ bv₁, γ₁)(e₁) ⇝* v₁
+  -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
+  have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ Hsem_value_bind HsemΓ
+  simp only [log_equiv_expr] at He
+  have ⟨v₀, v₁, Hstep₀, Hstep₁, Hsem_value⟩ := He _ _ HsemΓ
+  simp only [log_equiv_expr]
+  exists v₀, v₁
+  constructor
+  -- γ₀(b₀) ⇝* bv₀
+  -- (x ↦ bv₀, γ₀)(e₀) ⇝* v₀
+  -- ——————————————————————————
+  -- lets x = γ₀(b₀) in γ₀(e₀) ⇝* v₀
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ Hlc₀.right) (typing.dynamic_impl_grounded _ _ _ _ HSτb₀) HstepBind₀
+    -- head
+    have HEqSubst₀ : opening 0 bv₀ (msubst γ₀ e₀) = msubst (bv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ _ _ Hmwf₀]
+      rw [comm.msubst_opening _ _ _ _ _ Hmwf₀]
+      rw [HEq₀, intro.subst]
+      apply closed.inc; apply Hclosed₀.right; omega
+      omega; omega; apply HclosedBind₀
+    rw [← HEqSubst₀] at Hstep₀
+    apply stepn.multi _ _ _ _ Hstep₀
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    constructor; apply HlcBind₀; apply Hlc₀.right
+    apply head.lets; apply HvalueBind₀
+  constructor
+  -- γ₁(b₁) ⇝* bv₁
+  -- (x ↦ bv₁, γ₁)(e₁) ⇝* v₁
+  -- ——————————————————————————
+  -- lets x = γ₁(b₁) in γ₁(e₁) ⇝* v₁
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ Hlc₁.right) (typing.dynamic_impl_grounded _ _ _ _ HSτb₁) HstepBind₁
+    -- head
+    have HEqSubst₁ : opening 0 bv₁ (msubst γ₁ e₁) = msubst (bv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ _ _ Hmwf₁]
+      rw [comm.msubst_opening _ _ _ _ _ Hmwf₁]
+      rw [HEq₁, intro.subst]
+      apply closed.inc; apply Hclosed₁.right; omega
+      omega; omega; apply HclosedBind₁
+    rw [← HEqSubst₁] at Hstep₁
+    apply stepn.multi _ _ _ _ Hstep₁
+    apply step_lvl.pure _ _ _ ctx𝕄.hole
+    constructor; apply HlcBind₁; apply Hlc₁.right
+    apply head.lets; apply HvalueBind₁
+  . apply Hsem_value
