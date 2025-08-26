@@ -23,7 +23,8 @@ lemma compatibility.fvar :
 
 -- Γ ⊧ n ≤𝑙𝑜𝑔 n : ℕ
 lemma compatibility.lit :
-  ∀ Γ n, log_approx Γ (.lit n) (.lit n) .nat :=
+  ∀ Γ n,
+    log_approx Γ (.lit n) (.lit n) .nat :=
   by
   intros _ n
   constructor; apply typing.lit
@@ -110,9 +111,8 @@ lemma compatibility.lam :
     by
     apply log_approx_env.cons; apply Hsem_value_arg
     apply log_approx_env.antimono; apply HsemΓ; omega
-  have Hsem_expr := He _ _ _ HsemΓ
-  rw [log_approx_expr] at Hsem_expr
-  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i (by omega) _ Hvalue₀ Hstep₀
+  simp only [log_approx_expr] at He
+  have ⟨v₁, Hstep₁, Hsem_value⟩ := He _ _ _ HsemΓ i (by omega) _ Hvalue₀ Hstep₀
   --
   --
   -- (x ↦ argv₁, γ₁)(e₁) ⇝* v₁
@@ -164,7 +164,7 @@ lemma compatibility.app₁ :
   have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
   simp at HSτ₀ HSτ₁
   have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
-  rw [log_approx_expr]
+  simp only [log_approx_expr]
   intros j Hindex v₀ Hvalue₀ Hstep₀
   --
   --
@@ -227,8 +227,7 @@ lemma compatibility.app₁ :
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appl₁ _ _)
     apply typing.dynamic_impl_grounded _ _ _ _ HSτFun₁; apply HstepFun₁
-    apply lc.under_msubst; apply Hmwf₁
-    apply typing.regular; apply HτArg₁
+    apply typing.regular _ _ _ _ _ HSτArg₁
     -- right
     apply stepn.trans
     apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.appr₁ _ HvalueFun₁)

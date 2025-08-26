@@ -1,1 +1,2 @@
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.LogicalRelation
+import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Compatibility
