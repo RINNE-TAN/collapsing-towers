@@ -34,7 +34,7 @@ theorem ctx_approx_impl_ciu_approx :
     intros E τ𝕖 HE
     apply Hctx.right.right
   case cons argv γ τ𝕒 Γ HvalueArg Hτv Hτγ IH =>
-    intros E τ𝕖 HE HCE Htermination₀
+    intros E τ𝕖 HE HτE Htermination₀
     have HEq := typing.subst.length _ _ Hτγ
     have HsemΓ := log_approx_env.refl 0 _ _ Hτγ
     have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
@@ -69,8 +69,8 @@ theorem ctx_approx_impl_ciu_approx :
       apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
     have ⟨Hτ₀, Hτ₁, _⟩ := Hctx
     have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
-    have HSτE₀ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₀ HCE
-    have HSτE₁ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₁ HCE
+    have HSτE₀ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₀ HτE
+    have HSτE₁ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₁ HτE
     have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ HSτ₀
     have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ HSτ₁
     simp at Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
@@ -97,7 +97,7 @@ theorem ctx_approx_impl_ciu_approx :
     -- E⟦λx.γ(e₁) @ argv⟧⇓
     -- ———————————————————
     -- E⟦(x ↦ argv, γ)e₁⟧⇓
-    have ⟨v₁, Hvalue₁, Hstep₁⟩ := IH _ _ Hctx _ _ HE HCE Htermination₀
+    have ⟨v₁, Hvalue₁, Hstep₁⟩ := IH _ _ Hctx _ _ HE HτE Htermination₀
     exists v₁
     constructor
     . apply Hvalue₁
