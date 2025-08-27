@@ -223,4 +223,74 @@ theorem ciu_equiv_impl_log_equiv :
     log_equiv Γ e₀ e₁ τ :=
   by
   intros Γ τ e₀ e₁ Hciu
-  admit
+  have ⟨Hτ₀, Hτ₁, Hciu⟩ := Hciu
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros γ₀ γ₁ HsemΓ
+  have ⟨Hγ₀, Hγ₁⟩ := log_equiv_env.syntactic.typing _ _ _ HsemΓ
+  have ⟨HSγ₀τ₀, HSγ₁τ₀⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ Hτ₀ Hτ₀ HsemΓ
+  have ⟨HSγ₀τ₁, HSγ₁τ₁⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ Hτ₁ Hτ₁ HsemΓ
+  --
+  --
+  have ⟨_, _, Hsem_expr⟩ := log_equiv.fundamental _ _ _ Hτ₀
+  simp only [log_equiv_expr] at Hsem_expr
+  have ⟨v₀, v₁, Hstep₀, Hstep₁, Hsem_value₀⟩ := Hsem_expr _ _ HsemΓ
+  have ⟨Hvalue₀, Hvalue₁⟩ := log_equiv_value.syntactic.value _ _ _ Hsem_value₀
+  have ⟨Hτv₀, Hτv₁⟩ := log_equiv_value.syntactic.typing _ _ _ Hsem_value₀
+  --
+  --
+  have ⟨_, _, Hsem_expr⟩ := log_equiv.fundamental _ _ _ Hτ₁
+  simp only [log_equiv_expr] at Hsem_expr
+  have ⟨_, v₂, _, Hstep₂, Hsem_value₁⟩ := Hsem_expr _ _ HsemΓ
+  have ⟨_, Hvalue₂⟩ := log_equiv_value.syntactic.value _ _ _ Hsem_value₁
+  have ⟨_, Hτv₂⟩ := log_equiv_value.syntactic.typing _ _ _ Hsem_value₁
+  --
+  --
+  simp only [log_equiv_expr]
+  exists v₀, v₂
+  constructor; apply Hstep₀
+  constructor; apply Hstep₂
+  apply ciu_equiv_respects_log_equiv_value _ _ _ _ Hvalue₀ Hvalue₁ Hvalue₂ Hsem_value₀
+  constructor; apply Hτv₁
+  constructor; apply Hτv₂
+  intros γ Hγ E HE HτE v Hvalue
+  cases γ <;> cases Hγ
+  have HstepHead₁ : (E⟦msubst γ₁ e₀⟧ ⇝* E⟦v₁⟧) :=
+    by
+    apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
+    apply typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₀
+    apply Hstep₁
+  have HstepHead₂ : (E⟦msubst γ₁ e₁⟧ ⇝* E⟦v₂⟧) :=
+    by
+    apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
+    apply typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₁
+    apply Hstep₂
+  have Hciu := Hciu _ Hγ₁ _ HE HτE _ Hvalue
+  constructor
+  . intros Hstep₁
+    have Hstep₁ := stepn.trans _ _ _ HstepHead₁ Hstep₁
+    have Hstep₂ := Hciu.mp Hstep₁
+    have ⟨r, Hstepl, Hstepr⟩ := stepn.church_rosser _ _ _ Hstep₂ HstepHead₂
+    have HEq := stepn.value_impl_termination _ _ Hvalue Hstepl
+    rw [HEq]
+    apply Hstepr
+  . intros Hstep₂
+    have Hstep₂ := stepn.trans _ _ _ HstepHead₂ Hstep₂
+    have Hstep₁ := Hciu.mpr Hstep₂
+    have ⟨r, Hstepl, Hstepr⟩ := stepn.church_rosser _ _ _ Hstep₁ HstepHead₁
+    have HEq := stepn.value_impl_termination _ _ Hvalue Hstepl
+    rw [HEq]
+    apply Hstepr
+
+-- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+theorem log_equiv.completeness :
+  ∀ Γ τ e₀ e₁,
+    ctx_equiv Γ e₀ e₁ τ →
+    log_equiv Γ e₀ e₁ τ :=
+  by
+  intros Γ τ e₀ e₁ Hctx
+  apply ciu_equiv_impl_log_equiv
+  apply ctx_equiv_impl_ciu_equiv
+  apply Hctx
