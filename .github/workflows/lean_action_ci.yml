@@ -16,3 +16,4 @@ jobs:
         run: |
           lake build CollapsingTowers.TwoLevelBasic.Defs
           lake build CollapsingTowers.TwoLevelRec.Defs
+          lake build CollapsingTowers.TwoLevelMut.Defs

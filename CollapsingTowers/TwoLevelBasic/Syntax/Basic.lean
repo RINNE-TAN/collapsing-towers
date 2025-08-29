@@ -1,4 +1,4 @@
-import Mathlib.Order.Basic
+import Mathlib.Data.Nat.Basic
 
 inductive Expr : Type where
   | bvar (i : ℕ)
