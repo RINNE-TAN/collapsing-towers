@@ -102,7 +102,7 @@ theorem log_approx.soundness :
   intros Γ τ e₀ e₁ Hsem
   constructor; apply Hsem.left
   constructor; apply Hsem.right.left
-  generalize HEqΔ : [] = Δ
+  generalize HEqΔ : ⦰ = Δ
   intros C τ𝕔 HC Htermination
   induction HC generalizing e₀ e₁
   case hole =>

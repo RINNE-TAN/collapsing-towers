@@ -295,19 +295,19 @@ lemma ciu_approx_respects_log_approx_value :
     intros i Hindexi v₀ Hvalue₀ Hstep₀
     --
     --
-    -- (λx.e₀, λx.e₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧{k}
-    -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧{j}
+    -- (k, λx.e₀, λx.e₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
+    -- (j, argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧
     -- —————————————————————————————————————————
-    -- (λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{j}
+    -- (j, λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
     have Hsem_expr := log_approx_value.apply j _ _ _ _ _ _ (log_approx_value.antimono _ _ _ _ _ Hsem_value (by omega)) Hsem_value_arg
     simp only [log_approx_expr] at Hsem_expr
     --
     --
     -- λx.e₀ @ argv₀ ⇝ ⟦i⟧ v₀
-    -- (λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧{j}
+    -- (j, λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
     -- —————————————————————————————————————————
     -- λx.e₁ @ argv₁ ⇝* v₁
-    -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧{j - i}
+    -- (j - i, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
     have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i Hindexi v₀ Hvalue₀ Hstep₀
     have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
     have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
@@ -411,7 +411,7 @@ theorem ciu_approx_impl_log_approx :
   -- Γ ⊢ e₀ : τ
   -- ——————————————————————
   -- γ₁(e₀) ⇝* v₁
-  -- (v₀, v₁) ∈ 𝓥⟦τ⟧{k - j}
+  -- (k - j, v₀, v₁) ∈ 𝓥⟦τ⟧
   have ⟨_, _, Hsem_expr⟩ := log_approx.fundamental _ _ _ Hτ₀
   simp only [log_approx_expr] at Hsem_expr
   have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr _ _ _ HsemΓ _ Hj _ Hvalue₀ Hstep₀
