@@ -1,9 +1,11 @@
-import CollapsingTowers.TwoLevelRec.Syntax.Defs
+import CollapsingTowers.TwoLevelMut.Syntax.Defs
 
 inductive value : Expr → Prop where
   | lam : ∀ e, lc (.lam e) → value (.lam e)
   | lit : ∀ n, value (.lit n)
   | code : ∀ e, lc e → value (.code e)
+  | unit : value .unit
+  | loc : ∀ l, value (.loc l)
 
 lemma lc.value : ∀ e, value e → lc e := by
   intro e Hvalue
@@ -11,6 +13,8 @@ lemma lc.value : ∀ e, value e → lc e := by
   | lam _ Hclosed => apply Hclosed
   | lit => simp
   | code _ Hclosed => apply Hclosed
+  | unit => simp
+  | loc => simp
 
 instance lc_at.decidable (e : Expr) (i : Nat) : Decidable (lc_at e i) :=
   match e with
@@ -29,16 +33,6 @@ instance lc_at.decidable (e : Expr) (i : Nat) : Decidable (lc_at e i) :=
     | isFalse Hf, _ => isFalse (λ H => Hf H.left)
     | _, isFalse Harg => isFalse (λ H => Harg H.right)
   | .lit _ => isTrue (by simp)
-  | .binary₁ _ l r =>
-    match lc_at.decidable l i, lc_at.decidable r i with
-    | isTrue Hl, isTrue Hr => isTrue ⟨Hl, Hr⟩
-    | isFalse Hr, _ => isFalse (λ H => Hr H.left)
-    | _, isFalse Hr => isFalse (λ H => Hr H.right)
-  | .binary₂ _ l r =>
-    match lc_at.decidable l i, lc_at.decidable r i with
-    | isTrue Hl, isTrue Hr => isTrue ⟨Hl, Hr⟩
-    | isFalse Hr, _ => isFalse (λ H => Hr H.left)
-    | _, isFalse Hr => isFalse (λ H => Hr H.right)
   | .run e => lc_at.decidable e i
   | .code e => lc_at.decidable e i
   | .reflect e => lc_at.decidable e i
@@ -53,20 +47,22 @@ instance lc_at.decidable (e : Expr) (i : Nat) : Decidable (lc_at e i) :=
     | isTrue Hb, isTrue He => isTrue ⟨Hb, He⟩
     | isFalse Hb, _ => isFalse (λ H => Hb H.left)
     | _, isFalse He => isFalse (λ H => He H.right)
-  | .fix₁ e => lc_at.decidable e i
-  | .fix₂ e => lc_at.decidable e i
-  | .ifz₁ c l r =>
-    match lc_at.decidable c i, lc_at.decidable l i, lc_at.decidable r i with
-    | isTrue Hc, isTrue Hl, isTrue Hr => isTrue ⟨Hc, Hl, Hr⟩
-    | isFalse Hc, _, _ => isFalse (λ H => Hc H.left)
-    | _, isFalse Hr, _ => isFalse (λ H => Hr H.right.left)
-    | _, _, isFalse Hr => isFalse (λ H => Hr H.right.right)
-  | .ifz₂ c l r =>
-    match lc_at.decidable c i, lc_at.decidable l i, lc_at.decidable r i with
-    | isTrue Hc, isTrue Hl, isTrue Hr => isTrue ⟨Hc, Hl, Hr⟩
-    | isFalse Hc, _, _ => isFalse (λ H => Hc H.left)
-    | _, isFalse Hr, _ => isFalse (λ H => Hr H.right.left)
-    | _, _, isFalse Hr => isFalse (λ H => Hr H.right.right)
+  | .unit => isTrue (by simp)
+  | .loc _ => isTrue (by simp)
+  | .alloc₁ e => lc_at.decidable e i
+  | .alloc₂ e => lc_at.decidable e i
+  | .load₁ e => lc_at.decidable e i
+  | .load₂ e => lc_at.decidable e i
+  | .store₁ l r =>
+    match lc_at.decidable l i, lc_at.decidable r i with
+    | isTrue Hl, isTrue Hr => isTrue ⟨Hl, Hr⟩
+    | isFalse Hl, _ => isFalse (λ H => Hl H.left)
+    | _, isFalse Hr => isFalse (λ H => Hr H.right)
+  | .store₂ l r =>
+    match lc_at.decidable l i, lc_at.decidable r i with
+    | isTrue Hl, isTrue Hr => isTrue ⟨Hl, Hr⟩
+    | isFalse Hl, _ => isFalse (λ H => Hl H.left)
+    | _, isFalse r => isFalse (λ H => r H.right)
 
 instance value.decidable (e : Expr) : Decidable (value e) :=
   match e with
@@ -84,14 +80,16 @@ instance value.decidable (e : Expr) : Decidable (value e) :=
   | .lift _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .app₁ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .app₂ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .binary₁ _ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .binary₂ _ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .run _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .reflect _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .lam𝕔 _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .lets _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
   | .lets𝕔 _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .fix₁ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .fix₂ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .ifz₁ _ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
-  | .ifz₂ _ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .unit => isTrue (by apply value.unit)
+  | .loc _ => isTrue (by apply value.loc)
+  | .alloc₁ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .alloc₂ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .load₁ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .load₂ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .store₁ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)
+  | .store₂ _ _ => isFalse (by intros Hvalue; nomatch Hvalue)

@@ -24,6 +24,44 @@ lemma getr_exists_iff_index_lt_length : ∀ {α : Type} (l : List α) i, i < l.l
         have _ := IH H; omega
 
 @[simp]
+def setr {α : Type} (x : ℕ) (a : α) (l : List α) : Option (List α) :=
+  match l with
+  | [] => none
+  | head :: tails =>
+    if tails.length == x then some (a :: tails)
+    else do
+      let tails ← setr x a tails
+      (head :: tails)
+
+lemma setr_exists_iff_index_lt_length : ∀ {α : Type} (l₀ : List α) i a, i < l₀.length ↔ ∃ l₁, setr i a l₀ = some l₁ :=
+  by
+  intro α l₀ i a; constructor
+  . intro H; induction l₀
+    case nil => nomatch H
+    case cons head tails IH =>
+      simp; by_cases HEq : tails.length = i
+      . simp [HEq]
+      . simp [if_neg HEq]
+        have ⟨l₁, Hpatch⟩ : ∃ l₁, setr i a tails = some l₁ :=
+          by apply IH; simp at H; omega
+        exists head :: l₁; rw [Hpatch]; simp
+  . intro H; induction l₀
+    case nil => nomatch H
+    case cons head tails IH =>
+      simp at H; by_cases HEq : tails.length = i
+      . subst HEq; simp
+      . simp [if_neg HEq] at H; simp
+        have _ : i < tails.length :=
+          by
+          apply IH
+          have ⟨l₁, Hpatch⟩ := H
+          generalize HEq : setr i a tails = tailRes
+          cases tailRes
+          case none => rw [HEq] at Hpatch; nomatch Hpatch
+          case some l₁ => exists l₁
+        omega
+
+@[simp]
 def binds {α : Type} (x : ℕ) (a : α) (l : List α) :=
   getr x l = some a
 
@@ -77,3 +115,7 @@ lemma binds.shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) a 
     . repeat rw [if_pos HEq]; simp
     . repeat rw [if_neg HEq]
       apply IHtails
+
+@[simp]
+def patch {α : Type} (x : ℕ) (a : α) (l₀ : List α) (l₁ : List α) :=
+  setr x a l₀ = some l₁

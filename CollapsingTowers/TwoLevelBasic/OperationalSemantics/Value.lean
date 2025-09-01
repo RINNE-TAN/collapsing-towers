@@ -9,7 +9,7 @@ lemma lc.value : ∀ e, value e → lc e := by
   intro e Hvalue
   cases Hvalue with
   | lam _ Hclosed => apply Hclosed
-  | lit => constructor
+  | lit => simp
   | code _ Hclosed => apply Hclosed
 
 instance lc_at.decidable (e : Expr) (i : Nat) : Decidable (lc_at e i) :=
