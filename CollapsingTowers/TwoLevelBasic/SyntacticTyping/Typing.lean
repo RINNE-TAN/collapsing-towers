@@ -103,14 +103,14 @@ lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → clo
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length)
   <;> try simp
   <;> (intros; try assumption)
-  case fvar Hbinds _ =>
+  case fvar HBinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply Hbinds
+    constructor; constructor; apply HBinds
   case app₁ IHf IHarg => simp [IHf, IHarg]
   case app₂ IHf IHarg => simp [IHf, IHarg]
-  case code_fragment Hbinds _ =>
+  case code_fragment HBinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply Hbinds
+    constructor; constructor; apply HBinds
   case lets Hclosed IHb _ =>
     constructor; apply IHb; apply Hclosed
   case lets𝕔 Hclosed IHb _ =>
@@ -145,9 +145,9 @@ lemma typing.dynamic_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 
   <;> intros
   <;> (try assumption)
   <;> (try contradiction)
-  case fvar x _ Hbinds Hwbt HEq𝕊 =>
+  case fvar Hwbt HEq𝕊 =>
     constructor; apply Hwbt; rfl
-  case lam Hwbt₀ Hclose IH HEq𝕊 =>
+  case lam Hwbt₀ _ IH HEq𝕊 =>
     have ⟨Hwbt₁, Hφ₀⟩ := IH HEq𝕊
     rw [← HEq𝕊]
     rw [← HEq𝕊] at Hwbt₀ Hwbt₁
@@ -169,7 +169,7 @@ lemma typing.dynamic_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 
     constructor
     . simp
     . rfl
-  case lets Hwbt Hclose IHb IHe HEq𝕊 =>
+  case lets IHb IHe HEq𝕊 =>
     have ⟨Hwbt₀, Hφ₀⟩ := IHb HEq𝕊
     have ⟨Hwbt₁, Hφ₁⟩ := IHe HEq𝕊
     constructor
@@ -213,5 +213,5 @@ lemma typing_reification_code :
     case code_rep Hτ => apply Hτ
   case reify Hτ =>
     cases Hτ
-    case code_fragment Hwbt Hbinds =>
-      apply typing.fvar; apply Hbinds; apply Hwbt
+    case code_fragment Hwbt HBinds =>
+      apply typing.fvar; apply HBinds; apply Hwbt
