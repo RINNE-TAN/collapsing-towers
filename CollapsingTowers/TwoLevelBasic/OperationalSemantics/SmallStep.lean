@@ -22,12 +22,6 @@ inductive stepn : Expr → Expr → Prop
 
 notation:max e₀ " ⇝* " e₁  => stepn e₀ e₁
 
-inductive stepn_indexed : ℕ → Expr → Expr → Prop
-  | refl : ∀ e, stepn_indexed 0 e e
-  | multi : ∀ k e₀ e₁ e₂, (e₀ ⇝ e₁) → stepn_indexed k e₁ e₂ → stepn_indexed (k + 1) e₀ e₂
-
-notation:max e₀ " ⇝ " "⟦" k "⟧ " e₁  => stepn_indexed k e₀ e₁
-
 lemma stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇝* e₁) → (e₁ ⇝* e₂) → (e₀ ⇝* e₂) :=
   by
   intros e₀ e₁ e₂ Hstep₀ Hstep₁
@@ -36,37 +30,6 @@ lemma stepn.trans : ∀ e₀ e₁ e₂, (e₀ ⇝* e₁) → (e₁ ⇝* e₂) �
   case multi H _ IH =>
     apply stepn.multi
     apply H; apply IH; apply Hstep₁
-
-lemma stepn_indexed.trans : ∀ i j e₀ e₁ e₂, (e₀ ⇝ ⟦i⟧ e₁) → (e₁ ⇝ ⟦j⟧ e₂) → (e₀ ⇝ ⟦i + j⟧ e₂) :=
-  by
-  intros i j e₀ e₁ e₂ Hstep₀ Hstep₁
-  induction Hstep₀
-  case refl => simp; apply Hstep₁
-  case multi k _ _ _ H _ IH =>
-    have HEq : k + 1 + j = k + j + 1 := by omega
-    rw [HEq]
-    apply stepn_indexed.multi
-    apply H; apply IH; apply Hstep₁
-
-lemma stepn_indexed_impl_stepn : ∀ k e₀ e₁, (e₀ ⇝ ⟦k⟧ e₁) → (e₀ ⇝* e₁) :=
-  by
-  intros k e₀ e₁ Hstepn
-  induction Hstepn
-  case refl => apply stepn.refl
-  case multi H _ IH =>
-    apply stepn.multi
-    apply H; apply IH
-
-lemma stepn_impl_stepn_indexed : ∀ e₀ e₁, (e₀ ⇝* e₁) → ∃ k, (e₀ ⇝ ⟦k⟧ e₁) :=
-  by
-  intros e₀ e₁ Hstepn
-  induction Hstepn
-  case refl => exists 0; apply stepn_indexed.refl
-  case multi H _ IH =>
-    have ⟨k, IH⟩ := IH
-    exists k + 1
-    apply stepn_indexed.multi
-    apply H; apply IH
 
 lemma head.fv_shrink : ∀ e₀ e₁, head e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
@@ -94,13 +57,6 @@ lemma lc.under_step : ∀ e₀ e₁, (e₀ ⇝ e₁) → lc e₀ :=
 lemma lc.under_stepn : ∀ e₀ e₁, (e₀ ⇝* e₁) → lc e₁ → lc e₀ :=
   by
   intros e₀ e₁ Hstepn Hlc
-  induction Hstepn
-  case refl => apply Hlc
-  case multi H _ IH => apply lc.under_step; apply H
-
-lemma lc.under_stepn_indexed : ∀ e₀ e₁ k, (e₀ ⇝ ⟦k⟧ e₁) → lc e₁ → lc e₀ :=
-  by
-  intros e₀ e₁ k Hstepn Hlc
   induction Hstepn
   case refl => apply Hlc
   case multi H _ IH => apply lc.under_step; apply H

@@ -54,18 +54,6 @@ lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → g
     apply IH; apply grounded.under_step
     apply H; apply HG
 
-lemma stepn_indexed_grounded.congruence_under_ctx𝔹 : ∀ k B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ ⟦k⟧ e₁) → (B⟦e₀⟧ ⇝ ⟦k⟧ B⟦e₁⟧) :=
-  by
-  intros k B e₀ e₁ HB HG Hstepn
-  induction Hstepn
-  case refl => apply stepn_indexed.refl
-  case multi H _ IH =>
-    apply stepn_indexed.multi
-    apply step_grounded.congruence_under_ctx𝔹
-    apply HB; apply HG; apply H
-    apply IH; apply grounded.under_step
-    apply H; apply HG
-
 lemma step.congruence_under_ctx𝔹 : ∀ lvl B e₀ e₁, ctx𝔹 B → step_lvl lvl e₀ e₁ → ∃ e₂, step_lvl lvl B⟦e₀⟧ e₂ :=
   by
   intros lvl B e₀ e₁ HB Hstep
