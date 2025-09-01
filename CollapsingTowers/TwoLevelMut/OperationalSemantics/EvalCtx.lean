@@ -1,5 +1,5 @@
-import CollapsingTowers.TwoLevelRec.Syntax.Defs
-import CollapsingTowers.TwoLevelRec.OperationalSemantics.Value
+import CollapsingTowers.TwoLevelMut.Syntax.Defs
+import CollapsingTowers.TwoLevelMut.OperationalSemantics.Value
 
 abbrev Ctx :=
   Expr → Expr
@@ -15,23 +15,21 @@ inductive ctx𝔹 : Ctx → Prop where
   | appr₁ : ∀ v, value v → ctx𝔹 (fun X => .app₁ v X)
   | appl₂ : ∀ arg, lc arg → ctx𝔹 (fun X => .app₂ X arg)
   | appr₂ : ∀ v, value v → ctx𝔹 (fun X => .app₂ v X)
-  | binaryl₁ : ∀ op r, lc r → ctx𝔹 (fun X => .binary₁ op X r)
-  | binaryr₁ : ∀ op v, value v → ctx𝔹 (fun X => .binary₁ op v X)
-  | binaryl₂ : ∀ op r, lc r → ctx𝔹 (fun X => .binary₂ op X r)
-  | binaryr₂ : ∀ op v, value v → ctx𝔹 (fun X => .binary₂ op v X)
   | lift : ctx𝔹 (fun X => .lift X)
   | lets : ∀ e, lc_at e 1 → ctx𝔹 (fun X => .lets X e)
-  | fix₁ : ctx𝔹 (fun X => .fix₁ X)
-  | fix₂ : ctx𝔹 (fun X => .fix₂ X)
-  | ifz₁ : ∀ l r, lc l → lc r → ctx𝔹 (fun X => .ifz₁ X l r)
-  | ifz₂ : ∀ l r, lc l → lc r → ctx𝔹 (fun X => .ifz₂ X l r)
+  | load₁ : ctx𝔹 (fun X => .load₁ X)
+  | load₂ : ctx𝔹 (fun X => .load₂ X)
+  | alloc₁ : ctx𝔹 (fun X => .alloc₁ X)
+  | alloc₂ : ctx𝔹 (fun X => .alloc₂ X)
+  | storel₁ : ∀ r, lc r → ctx𝔹 (fun X => .store₁ X r)
+  | storer₁ : ∀ v, value v → ctx𝔹 (fun X => .store₁ v X)
+  | storel₂ : ∀ r, lc r → ctx𝔹 (fun X => .store₂ X r)
+  | storer₂ : ∀ v, value v → ctx𝔹 (fun X => .store₂ v X)
 
 inductive ctxℝ : ℕ → ℕ → Ctx → Prop where
   | lam𝕔 : ctxℝ 1 lvl (fun X => .lam𝕔 ({0 ↤ lvl} X))
   | lets𝕔 : ∀ b, lc b → ctxℝ 1 lvl (fun X => .lets𝕔 b ({0 ↤ lvl} X))
   | run : ctxℝ 0 lvl (fun X => .run X)
-  | ifzl₂ : ∀ v r, value v → lc r → ctxℝ 0 lvl (fun X => .ifz₂ v X r)
-  | ifzr₂ : ∀ v₀ v₁, value v₀ → value v₁ → ctxℝ 0 lvl (fun X => .ifz₂ v₀ v₁ X)
 
 inductive ctx𝕄 : ℕ → Ctx → Prop where
   | hole : ctx𝕄 lvl id
@@ -55,28 +53,22 @@ lemma lc.under_ctx𝔹 : ∀ B e i, ctx𝔹 B → lc_at e i → lc_at B⟦e⟧ i
   by
   intros _ _ _ HB Hlc
   induction HB with
-  | lift| fix₁| fix₂ => apply Hlc
+  | lift| alloc₁| alloc₂| load₁| load₂ => apply Hlc
   | appl₁ _ IHlc
   | appl₂ _ IHlc
-  | binaryl₁ _ _ IHlc
-  | binaryl₂ _ _ IHlc
-  | lets _ IHlc =>
+  | lets _ IHlc
+  | storel₁ _ IHlc
+  | storel₂ _ IHlc =>
     constructor
     apply Hlc
     apply lc.inc; apply IHlc; omega
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
-  | binaryr₁ _ _ Hvalue
-  | binaryr₂ _ _ Hvalue =>
+  | storer₁ _ Hvalue
+  | storer₂ _ Hvalue =>
     constructor
     apply lc.inc; apply lc.value; apply Hvalue; omega
     apply Hlc
-  | ifz₁ _ _ IHlc₀ IHlc₁
-  | ifz₂ _ _ IHlc₀ IHlc₁ =>
-    constructor
-    apply Hlc; constructor
-    apply lc.inc; apply IHlc₀; omega
-    apply lc.inc; apply IHlc₁; omega
 
 lemma lc.under_ctxℝ : ∀ R e i intro lvl, ctxℝ intro lvl R → lc_at e i → lc_at R⟦e⟧ i :=
   by
@@ -91,16 +83,6 @@ lemma lc.under_ctxℝ : ∀ R e i intro lvl, ctxℝ intro lvl R → lc_at e i �
     apply lc.under_closing; omega
     apply lc.inc; apply Hlc; omega
   | run =>
-    apply Hlc
-  | ifzl₂ _ _ Hvalue IHlc =>
-    constructor
-    apply lc.inc; apply lc.value; apply Hvalue; omega; constructor
-    apply Hlc
-    apply lc.inc; apply IHlc; omega
-  | ifzr₂ _ _ Hvalue₀ Hvalue₁ =>
-    constructor
-    apply lc.inc; apply lc.value; apply Hvalue₀; omega; constructor
-    apply lc.inc; apply lc.value; apply Hvalue₁; omega
     apply Hlc
 
 lemma lc.under_ctx𝕄 : ∀ M e i lvl, ctx𝕄 lvl M → lc_at e i → lc_at M⟦e⟧ i :=
@@ -143,9 +125,9 @@ lemma closed.decompose_ctx𝔹 : ∀ B e x, ctx𝔹 B → closed_at B⟦e⟧ x �
   by
   intros B e x HB Hclosed
   cases HB with
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets| ifz₁| ifz₂ => apply Hclosed.left
-  | appr₁| appr₂| binaryr₁| binaryr₂ => apply Hclosed.right
-  | lift| fix₁| fix₂ => apply Hclosed
+  | appl₁| appl₂| lets| storel₁| storel₂ => apply Hclosed.left
+  | appr₁| appr₂| storer₁| storer₂ => apply Hclosed.right
+  | lift| alloc₁| alloc₂| load₁| load₂ => apply Hclosed
 
 lemma closed.decompose_ctx𝔼 : ∀ E e₀ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₀ x :=
   by
@@ -160,11 +142,11 @@ lemma closed.under_ctx𝔹 : ∀ B e₀ e₁ x, ctx𝔹 B → closed_at B⟦e₀
   by
   intros _ _ _ _ HB Hclosed₀ Hclosed₁
   cases HB with
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets| ifz₁| ifz₂ =>
+  | appl₁| appl₂| lets| storel₁| storel₂ =>
     constructor; apply Hclosed₁; apply Hclosed₀.right
-  | appr₁| appr₂| binaryr₁| binaryr₂ =>
+  | appr₁| appr₂| storer₁| storer₂ =>
     constructor; apply Hclosed₀.left; apply Hclosed₁
-  | lift| fix₁| fix₂ => apply Hclosed₁
+  | lift| alloc₁| alloc₂| load₁| load₂ => apply Hclosed₁
 
 lemma closed.under_ctx𝔼 : ∀ E e₀ e₁ x, ctx𝔼 E → closed_at E⟦e₀⟧ x → closed_at e₁ x → closed_at E⟦e₁⟧ x :=
   by
@@ -183,17 +165,13 @@ lemma fv.under_ctx𝔹 :
   by
   intros B e₀ e₁ HB Hsubst
   cases HB with
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets =>
+  | appl₁| appl₂| lets| storel₁| storel₂ =>
     apply Set.union_subset_union
     apply Hsubst; rfl
-  | appr₁| appr₂| binaryr₁| binaryr₂ =>
+  | appr₁| appr₂| storer₁| storer₂ =>
     apply Set.union_subset_union
     rfl; apply Hsubst
-  | lift| fix₁| fix₂ => apply Hsubst
-  | ifz₁| ifz₂ =>
-    apply Set.union_subset_union
-    apply Set.union_subset_union
-    apply Hsubst; rfl; rfl
+  | lift| alloc₁| alloc₂| load₁| load₂ => apply Hsubst
 
 lemma fv.under_ctxℝ :
   ∀ intro lvl R e₀ e₁,
@@ -214,16 +192,6 @@ lemma fv.under_ctxℝ :
     apply Set.diff_subset_diff_left
     apply Hsubst
   | run => apply Hsubst
-  | ifzl₂ =>
-    simp; constructor
-    simp [Set.union_assoc]
-    apply Set.subset_union_of_subset_left
-    apply Set.subset_union_of_subset_right
-    apply Hsubst
-  | ifzr₂ =>
-    simp
-    apply Set.subset_union_of_subset_right
-    apply Hsubst
 
 lemma fv.under_ctx𝕄 :
   ∀ lvl M e₀ e₁,
@@ -269,7 +237,7 @@ lemma fv.under_ctxℚ :
 lemma fv.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → fv e ⊆ fv B⟦e⟧ :=
   by
   intros _ _ HB
-  cases HB <;> simp [Set.union_assoc]
+  cases HB <;> simp
 
 lemma fv.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → fv e ⊆ fv E⟦e⟧ :=
   by
@@ -286,27 +254,20 @@ lemma opening.under_ctx𝔹 : ∀ B e i x, ctx𝔹 B → opening i x B⟦e⟧ = 
   cases HB with
   | appl₁ _ IH
   | appl₂ _ IH
-  | binaryl₁ _ _ IH
-  | binaryl₂ _ _ IH
-  | lets _ IH =>
+  | lets _ IH
+  | storel₁ _ IH
+  | storel₂ _ IH =>
     simp
     apply identity.opening
     apply lc.inc; apply IH; omega
   | appr₁ _ Hvalue
   | appr₂ _ Hvalue
-  | binaryr₁ _ _ Hvalue
-  | binaryr₂ _ _ Hvalue =>
+  | storer₁ _ Hvalue
+  | storer₂ _ Hvalue =>
     simp
     apply identity.opening
     apply lc.inc; apply lc.value; apply Hvalue; omega
-  | lift| fix₁| fix₂ => simp
-  | ifz₁ _ _ IH₀ IH₁
-  | ifz₂ _ _ IH₀ IH₁ =>
-    simp; constructor
-    apply identity.opening
-    apply lc.inc; apply IH₀; omega
-    apply identity.opening
-    apply lc.inc; apply IH₁; omega
+  | lift| alloc₁| alloc₂| load₁| load₂ => simp
 
 lemma opening.under_ctx𝔼 : ∀ E e i x, ctx𝔼 E → opening i x E⟦e⟧ = E⟦opening i x e⟧ :=
   by
@@ -344,15 +305,11 @@ lemma subst.under_ctx𝔹 : ∀ B e₀ e₁ v x, ctx𝔹 B → closed_at B⟦e�
   by
   intros _ _ _ _ _ HB Hclosed
   cases HB with
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets =>
+  | appl₁| appl₂| lets| storel₁| storel₂ =>
     simp; apply identity.subst; apply Hclosed.right
-  | appr₁| appr₂| binaryr₁| binaryr₂ =>
+  | appr₁| appr₂| storer₁| storer₂ =>
     simp; apply identity.subst; apply Hclosed.left
-  | lift| fix₁| fix₂ => simp
-  | ifz₁| ifz₂ =>
-    simp; constructor
-    apply identity.subst; apply Hclosed.right.left
-    apply identity.subst; apply Hclosed.right.right
+  | lift| alloc₁| alloc₂| load₁| load₂ => simp
 
 lemma subst.under_ctx𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e₀⟧ x → subst x v E⟦e₁⟧ = E⟦subst x v e₁⟧ :=
   by
@@ -368,10 +325,10 @@ lemma grounded.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → 
   by
   intros B e HB HG
   cases HB with
-  | appl₁| binaryl₁| lets| ifz₁ => apply HG.left
-  | appr₁| binaryr₁ => apply HG.right
-  | fix₁ => apply HG
-  | appl₂| appr₂| binaryl₂| binaryr₂| lift| fix₂| ifz₂ => nomatch HG
+  | load₁| alloc₁ => apply HG
+  | appl₁| lets| storel₁ => apply HG.left
+  | appr₁| storer₁ => apply HG.right
+  | appl₂| appr₂| lift| alloc₂| load₂| storel₂| storer₂ => nomatch HG
 
 lemma grounded.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → ¬grounded R⟦e⟧ :=
   by
@@ -400,12 +357,12 @@ lemma grounded.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded B⟦e₀�
   by
   intros B e₀ e₁ HB HG₀ HG₁
   cases HB with
-  | appl₁| binaryl₁| lets| ifz₁ =>
+  | load₁| alloc₁ => apply HG₁
+  | appl₁| lets| storel₁ =>
     constructor; apply HG₁; apply HG₀.right
-  | appr₁| binaryr₁ =>
+  | appr₁| storer₁ =>
     constructor; apply HG₀.left; apply HG₁
-  | fix₁ => apply HG₁
-  | appl₂| appr₂| binaryl₂| binaryr₂| lift| fix₂| ifz₂ =>
+  | appl₂| appr₂| lift| alloc₂| load₂| storel₂| storer₂ =>
     nomatch HG₀
 
 lemma grounded.under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded E⟦e₀⟧ → grounded e₁ → grounded E⟦e₁⟧ :=

@@ -307,16 +307,16 @@ lemma subst.under_ctx𝔼 : ∀ E e₀ e₁ v x, ctx𝔼 E → closed_at E⟦e�
 
 lemma grounded.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → grounded B⟦e⟧ → grounded e :=
   by
-  intros B e HB He
+  intros B e HB HG
   cases HB with
-  | appl₁| lets => apply He.left
-  | appr₁ => apply He.right
-  | appl₂| appr₂| lift => nomatch He
+  | appl₁| lets => apply HG.left
+  | appr₁ => apply HG.right
+  | appl₂| appr₂| lift => nomatch HG
 
 lemma grounded.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → ¬grounded R⟦e⟧ :=
   by
-  intros intro lvl R e HR He
-  cases HR <;> nomatch He
+  intros intro lvl R e HR HG
+  cases HR <;> nomatch HG
 
 lemma grounded.decompose_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → grounded M⟦e⟧ → grounded e :=
   by
