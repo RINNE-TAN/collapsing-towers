@@ -18,14 +18,14 @@ inductive head_pure : Expr → Expr → Prop where
   | store₂ : ∀ l r, head_pure (.app₂ (.code l) (.code r)) (.reflect (.store₁ l r))
 
 inductive head_mutable : (Store × Expr) → (Store × Expr) → Prop where
-  | alloc₁ : ∀ σ v, value v → head_mutable ⟨σ, .alloc₁ v⟩ ⟨v :: σ, .loc (σ.length)⟩
-  | load₁ : ∀ σ l e, binds l e σ → head_mutable ⟨σ, .load₁ (.loc l)⟩ ⟨σ, e⟩
-  | store₁ : ∀ σ₀ σ₁ l v, value v → patch l v σ₀ σ₁ → head_mutable ⟨σ₀, .store₁ (.loc l) v⟩ ⟨σ₁, .unit⟩
+  | alloc₁ : ∀ ω v, value v → head_mutable ⟨ω, .alloc₁ v⟩ ⟨v :: ω, .loc (ω.length)⟩
+  | load₁ : ∀ ω l e, binds l e ω → head_mutable ⟨ω, .load₁ (.loc l)⟩ ⟨ω, e⟩
+  | store₁ : ∀ ω₀ ω₁ l v, value v → patch l v ω₀ ω₁ → head_mutable ⟨ω₀, .store₁ (.loc l) v⟩ ⟨ω₁, .unit⟩
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
-  | pure : ∀ M e₀ e₁ σ, ctx𝕄 lvl M → lc e₀ → head_pure e₀ e₁ → step_lvl lvl ⟨σ, M⟦e₀⟧⟩ ⟨σ, M⟦e₁⟧⟩
-  | mutable : ∀ M σ₀ σ₁ e₀ e₁, ctx𝕄 lvl M → lc e₀ → head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → step_lvl lvl ⟨σ₀, M⟦e₀⟧⟩ ⟨σ₁, M⟦e₁⟧⟩
-  | reflect : ∀ P E b σ, ctxℙ lvl P → ctx𝔼 E → lc b → step_lvl lvl ⟨σ, P⟦E⟦.reflect b⟧⟧⟩ ⟨σ, P⟦.lets𝕔 b E⟦.code (.bvar 0)⟧⟧⟩
+  | pure : ∀ M e₀ e₁ ω, ctx𝕄 lvl M → lc e₀ → head_pure e₀ e₁ → step_lvl lvl ⟨ω, M⟦e₀⟧⟩ ⟨ω, M⟦e₁⟧⟩
+  | mutable : ∀ M ω₀ ω₁ e₀ e₁, ctx𝕄 lvl M → lc e₀ → head_mutable ⟨ω₀, e₀⟩ ⟨ω₁, e₁⟩ → step_lvl lvl ⟨ω₀, M⟦e₀⟧⟩ ⟨ω₁, M⟦e₁⟧⟩
+  | reflect : ∀ P E b ω, ctxℙ lvl P → ctx𝔼 E → lc b → step_lvl lvl ⟨ω, P⟦E⟦.reflect b⟧⟧⟩ ⟨ω, P⟦.lets𝕔 b E⟦.code (.bvar 0)⟧⟧⟩
 
 notation:max st₀ " ⇝ " st₁  => step_lvl 0 st₀ st₁
 
