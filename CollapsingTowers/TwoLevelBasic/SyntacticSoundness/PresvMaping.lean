@@ -89,7 +89,7 @@ lemma preservation.maping.strengthened :
     . have HEq : (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ).length = (Δ ++ (τ𝕔, 𝟙) :: Φ).length := by simp
       rw [HEq, ← comm.subst_opening]
       apply IH (_ :: Δ) rfl
-      apply typing.weakening.singleton _ _ _ _ _ _ _ Hτv
+      apply typing.weakening.singleton _ _ _ _ _ _ Hτv
       simp; omega
       apply typing.regular _ _ _ _ _ Hτv
     . apply Hwbt
@@ -103,7 +103,7 @@ lemma preservation.maping.strengthened :
     . have HEq : (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ).length = (Δ ++ (τ𝕔, 𝟙) :: Φ).length := by simp
       rw [HEq, ← comm.subst_opening]
       apply IH (_ :: Δ) rfl
-      apply typing.weakening.singleton _ _ _ _ _ _ _ Hτv
+      apply typing.weakening.singleton _ _ _ _ _ _ Hτv
       simp; omega
       apply typing.regular _ _ _ _ _ Hτv
     . apply Hwbt
@@ -139,7 +139,7 @@ lemma preservation.maping.strengthened :
     . have HEq : (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ).length = (Δ ++ (τ𝕔, 𝟙) :: Φ).length := by simp
       rw [HEq, ← comm.subst_opening]
       apply IHe (_ :: Δ) rfl
-      apply typing.weakening.singleton _ _ _ _ _ _ _ Hτv
+      apply typing.weakening.singleton _ _ _ _ _ _ Hτv
       simp; omega
       apply typing.regular _ _ _ _ _ Hτv
     . apply Hwbt
@@ -154,7 +154,7 @@ lemma preservation.maping.strengthened :
     . have HEq : (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ).length = (Δ ++ (τ𝕔, 𝟙) :: Φ).length := by simp
       rw [HEq, ← comm.subst_opening]
       apply IHe (_ :: Δ) rfl
-      apply typing.weakening.singleton _ _ _ _ _ _ _ Hτv
+      apply typing.weakening.singleton _ _ _ _ _ _ Hτv
       simp; omega
       apply typing.regular _ _ _ _ _ Hτv
     . apply Hwbt

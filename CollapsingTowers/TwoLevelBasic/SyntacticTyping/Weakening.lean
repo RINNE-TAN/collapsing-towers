@@ -139,9 +139,9 @@ theorem typing.weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → ty
   apply Hτ; rfl
   apply typing.closed_at_env; apply Hτ
 
-theorem typing.weakening.singleton : ∀ Γ 𝕊₀ 𝕊₁ e τ𝕒 τ𝕓 φ, typing Γ 𝕊₁ e τ𝕓 φ -> typing ((τ𝕒, 𝕊₀) :: Γ) 𝕊₁ e τ𝕓 φ :=
+theorem typing.weakening.singleton : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ -> typing (Δ :: Γ) 𝕊 e τ φ :=
   by
-  intros Γ 𝕊₀ 𝕊₁ e τ𝕒 τ𝕓 φ
+  intros Γ Δ 𝕊 e τ φ
   rw [← List.singleton_append]
   apply typing.weakening
 
