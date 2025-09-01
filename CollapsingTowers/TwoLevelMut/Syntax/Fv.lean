@@ -1,5 +1,5 @@
 import Mathlib.Data.Set.Insert
-import CollapsingTowers.TwoLevelBasic.Syntax.Transform
+import CollapsingTowers.TwoLevelMut.Syntax.Transform
 
 @[simp]
 def fv : Expr → Set ℕ
@@ -16,6 +16,14 @@ def fv : Expr → Set ℕ
   | .lam𝕔 e => fv e
   | .lets b e => fv b ∪ fv e
   | .lets𝕔 b e => fv b ∪ fv e
+  | .unit => ∅
+  | .loc _ => ∅
+  | .alloc₁ e => fv e
+  | .alloc₂ e => fv e
+  | .load₁ e => fv e
+  | .load₂ e => fv e
+  | .store₁ l r => fv l ∪ fv r
+  | .store₂ l r => fv l ∪ fv r
 
 lemma fv.under_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
   by
@@ -26,18 +34,24 @@ lemma fv.under_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
     . rw [if_pos HEq]
     . rw [if_neg HEq]; simp
   | fvar z => simp
-  | lit => simp
+  | lit| unit| loc => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | alloc₁ _ IH
+  | alloc₂ _ IH
+  | load₁ _ IH
+  | load₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
-  | lets𝕔 _ _ IH₀ IH₁ =>
+  | lets𝕔 _ _ IH₀ IH₁
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; constructor
     . apply Set.Subset.trans; apply IH₀
       apply Set.union_subset_union; rfl; simp
@@ -56,18 +70,24 @@ lemma fv.under_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
     . simp [if_neg HEq]
       rw [Set.diff_singleton_eq_self]
       simp; apply HEq
-  | lit => simp
+  | lit| unit| loc => simp
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | alloc₁ _ IH
+  | alloc₂ _ IH
+  | load₁ _ IH
+  | load₂ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
-  | lets𝕔 _ _ IH₀ IH₁ =>
+  | lets𝕔 _ _ IH₀ IH₁
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
     rw [Set.union_diff_distrib]
 
@@ -80,17 +100,24 @@ lemma fv.under_codify : ∀ e i, fv e = fv (codify i e) :=
     . simp [if_pos HEq]
     . simp [if_neg HEq]
   | fvar => rfl
-  | lit => rfl
+  | lit| unit| loc => rfl
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH => apply IH
+  | run _ IH
+  | alloc₁ _ IH
+  | alloc₂ _ IH
+  | load₁ _ IH
+  | load₂ _ IH =>
+    apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
-  | lets𝕔 _ _ IH₀ IH₁ =>
+  | lets𝕔 _ _ IH₀ IH₁
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
 
 lemma not_in_fv.under_opening :
@@ -122,18 +149,25 @@ lemma not_in_fv.under_subst :
       apply HIn
     . simp [if_neg HEq] at HIn
       contradiction
-  | lit => nomatch HIn
+  | lit| unit| loc =>
+    nomatch HIn
   | lam _ IH
   | lift _ IH
   | lam𝕔 _ IH
   | code _ IH
   | reflect _ IH
-  | run _ IH =>
+  | run _ IH
+  | alloc₁ _ IH
+  | alloc₂ _ IH
+  | load₁ _ IH
+  | load₂ _ IH =>
     apply IH; apply HIn
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
-  | lets𝕔 _ _ IH₀ IH₁ =>
+  | lets𝕔 _ _ IH₀ IH₁
+  | store₁ _ _ IH₀ IH₁
+  | store₂ _ _ IH₀ IH₁ =>
     simp at HIn
     cases HIn
     case inl HIn =>

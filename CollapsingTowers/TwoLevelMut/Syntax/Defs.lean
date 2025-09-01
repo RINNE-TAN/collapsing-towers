@@ -1,1 +1,8 @@
 import CollapsingTowers.TwoLevelMut.Syntax.Basic
+import CollapsingTowers.TwoLevelMut.Syntax.Transform
+import CollapsingTowers.TwoLevelMut.Syntax.Fv
+import CollapsingTowers.TwoLevelMut.Syntax.LocallyNameless
+import CollapsingTowers.TwoLevelMut.Syntax.Grounded
+import CollapsingTowers.TwoLevelMut.Syntax.Identity
+import CollapsingTowers.TwoLevelMut.Syntax.Commutativity
+import CollapsingTowers.TwoLevelMut.Syntax.Intro
