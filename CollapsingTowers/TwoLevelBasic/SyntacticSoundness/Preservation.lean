@@ -9,8 +9,7 @@ theorem preservation.strengthened :
       typing_reification Γ e₁ τ φ₁ ∧
       φ₁ ≤ φ₀ :=
   by
-  intro Γ e₀ e₁ τ φ₀
-  intro Hstep Hτ
+  intro Γ e₀ e₁ τ φ₀ Hstep Hτ
   cases Hstep
   case pure HM Hlc Hhead =>
     cases Hτ

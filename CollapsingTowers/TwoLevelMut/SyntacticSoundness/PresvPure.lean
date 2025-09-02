@@ -1,5 +1,6 @@
 import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvSubst
 import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvMaping
+import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvCtx
 
 lemma typing.escape.strengthened :
   ∀ σ Γ e τ φ,
@@ -191,3 +192,113 @@ theorem preservation.pure.head :
           apply typing.store₁
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
+
+theorem preservation.pure :
+  ∀ σ Γ M e₀ e₁ τ φ₀,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    head_pure e₀ e₁ →
+    typing σ Γ 𝟙 M⟦e₀⟧ τ φ₀ →
+    ∃ φ₁,
+      typing σ Γ 𝟙 M⟦e₁⟧ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros σ Γ M e₀ e₁ τ φ₀ HM Hlc Hhead Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing Γ τ φ₀
+  case hole => apply preservation.pure.head _ _ _ _ _ _ Hhead Hτ
+  case cons𝔹 B M HB HM IH =>
+    have ⟨τ𝕖, φ₁, φ₂, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ _ HB Hτ
+    rw [HEqφ]
+    have ⟨φ₃, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqlvl
+    have Hτ := IHτB σ ⦰ _ _ (by omega) Hτ
+    exists φ₃ ∪ φ₂; constructor
+    . apply Hτ
+    . cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp at HLeφ <;> simp
+  case consℝ R M HR HM IH =>
+    rw [← HEqlvl] at HR IH
+    have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
+    have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_pure.fv_shrink _ _ Hhead)
+    cases HR
+    case lam𝕔 =>
+      cases Hτ
+      case lam𝕔 Hwbt HX Hclosed =>
+        rw [identity.opening_closing _ _ _ Hlc] at HX
+        cases HX
+        case pure HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH (_ :: Γ) _ _ HX (by simp)
+          cases φₓ <;> simp at Hφ
+          exists ⊤; constructor
+          . apply typing.lam𝕔
+            . apply typing_reification.pure
+              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
+              apply HX
+            . apply Hwbt
+            . rw [← closed.under_closing]
+              apply typing.closed_at_env _ _ _ _ _ _ HX
+          . simp
+        case reify HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH (_ :: Γ) _ _ HX (by simp)
+          exists ⊤; constructor
+          . apply typing.lam𝕔
+            . apply typing_reification.reify
+              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
+              apply HX
+            . apply Hwbt
+            . rw [← closed.under_closing]
+              apply typing.closed_at_env _ _ _ _ _ _ HX
+          . simp
+    case lets𝕔 =>
+      cases Hτ
+      case lets𝕔 Hwbt Hb HX Hclosed =>
+        rw [identity.opening_closing _ _ _ Hlc] at HX
+        cases HX
+        case pure HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH (_ :: Γ) _ _ HX (by simp)
+          cases φₓ <;> simp at Hφ
+          exists ⊥; constructor
+          . apply typing.lets𝕔
+            . apply Hb
+            . apply typing_reification.pure
+              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
+              apply HX
+            . apply Hwbt
+            . rw [← closed.under_closing]
+              apply typing.closed_at_env _ _ _ _ _ _ HX
+          . simp
+        case reify HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH (_ :: Γ) _ _ HX (by simp)
+          exists ⊥; constructor
+          . apply typing.lets𝕔
+            . apply Hb
+            . apply typing_reification.reify
+              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
+              apply HX
+            . apply Hwbt
+            . rw [← closed.under_closing]
+              apply typing.closed_at_env _ _ _ _ _ _ HX
+          . simp
+    case run =>
+      cases Hτ
+      case run Hclosed HX =>
+        cases HX
+        case pure HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX rfl
+          cases φₓ <;> simp at Hφ
+          exists ⊥; constructor
+          . apply typing.run
+            . apply typing_reification.pure _ _ _ _ HX
+            . rw [closed_iff_fv_empty] at Hclosed
+              simp [Hclosed] at Hfv
+              rw [closed_iff_fv_empty, Hfv]
+          . simp
+        case reify HX =>
+          have ⟨φₓ, HX, Hφ⟩ := IH _ _ _ HX rfl
+          exists ⊥; constructor
+          . apply typing.run
+            . apply typing_reification.reify _ _ _ _ _ HX
+            . rw [closed_iff_fv_empty] at Hclosed
+              simp [Hclosed] at Hfv
+              rw [closed_iff_fv_empty, Hfv]
+          . simp
