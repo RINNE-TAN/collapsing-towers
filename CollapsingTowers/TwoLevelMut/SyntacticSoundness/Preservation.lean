@@ -1,5 +1,6 @@
 import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvPure
 import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvMut
+import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvReflect
 
 theorem preservation.strengthened :
   ∀ Γ σ₀ σ₁ e₀ e₁ τ φ₀,
@@ -39,4 +40,21 @@ theorem preservation.strengthened :
       . apply Hok₁
       . exists φ₀; exact ⟨typing_reification.reify _ _ _ _ _ Hτ, (by simp)⟩
   case reflect P E e HP HE Hlc =>
-    admit
+    cases HP
+    case hole =>
+      have Hτ := preservation.reflect.head _ _ _ _ _ _ HE Hτ
+      constructor
+      . apply Hok₀
+      . exists ⊥
+    case consℚ HQ =>
+      cases Hτ
+      case pure Hτ =>
+        have Hτ := preservation.reflect _ _ _ _ _ _ _ HQ HE Hlc Hτ
+        constructor
+        . apply Hok₀
+        . exists ⊥; exact ⟨typing_reification.pure _ _ _ _ Hτ, rfl⟩
+      case reify Hτ =>
+        have Hτ := preservation.reflect _ _ _ _ _ _ _ HQ HE Hlc Hτ
+        constructor
+        . apply Hok₀
+        . exists φ₀; exact ⟨typing_reification.reify _ _ _ _ _ Hτ, (by simp)⟩
