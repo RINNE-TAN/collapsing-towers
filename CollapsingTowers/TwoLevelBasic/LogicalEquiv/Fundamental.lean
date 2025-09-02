@@ -18,10 +18,10 @@ theorem log_equiv.fundamental :
     (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> intros
   <;> (try contradiction)
-  case fvar HBinds Hwbt HEq𝕊 _ =>
-    rw [← HEq𝕊] at HBinds Hwbt
+  case fvar Hbinds Hwbt HEq𝕊 _ =>
+    rw [← HEq𝕊] at Hbinds Hwbt
     apply compatibility.fvar
-    . apply HBinds
+    . apply Hbinds
     . apply Hwbt
   case lam H Hwbt Hclosed IH HEq𝕊 _ =>
     rw [← HEq𝕊] at H IH Hwbt

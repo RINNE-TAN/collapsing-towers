@@ -6,7 +6,7 @@ lemma fvar.shrinking :
     binds x (τ, 𝕊) (Ψ ++ Φ :: Δ) →
     binds (if Δ.length < x then x - 1 else x) (τ, 𝕊) (Ψ ++ Δ) :=
   by
-  intros Ψ Δ Φ 𝕊 x τ HNe HBinds
+  intros Ψ Δ Φ 𝕊 x τ HNe Hbinds
   cases Hx : compare Δ.length x with
   | lt =>
     rw [compare_lt_iff_lt] at Hx
@@ -17,7 +17,7 @@ lemma fvar.shrinking :
     apply binds.shrinkr
     have HEq : x - (Φ :: Δ).length + (Φ :: Δ).length = x := by simp; omega
     rw [HEq]
-    apply HBinds
+    apply Hbinds
   | eq =>
     rw [compare_eq_iff_eq] at Hx; omega
   | gt =>
@@ -25,7 +25,7 @@ lemma fvar.shrinking :
     rw [if_neg (Nat.not_lt_of_gt Hx)]
     apply binds.extend
     apply binds.shrink _ (Ψ ++ [Φ]); omega
-    simp; apply HBinds
+    simp; apply Hbinds
 
 lemma typing.shrinking.strengthened :
   ∀ σ Γ Ψ Δ Φ 𝕊 e τ φ,
@@ -49,19 +49,19 @@ lemma typing.shrinking.strengthened :
           Δ.length ∉ fv e →
           typing_reification σ (Ψ ++ Δ) (shiftr Δ.length e) τ φ)
   <;> intros
-  case fvar HBinds Hwbt Ψ HEqΓ HclosedΔ =>
-    rw [HEqΓ] at HBinds
+  case fvar Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
+    rw [HEqΓ] at Hbinds
     simp only [shiftr, ← apply_ite]
     apply typing.fvar
     . apply fvar.shrinking
-      apply HclosedΔ; apply HBinds
+      apply HclosedΔ; apply Hbinds
     . apply Hwbt
-  case code_fragment HBinds Hwbt Ψ HEqΓ HclosedΔ =>
-    rw [HEqΓ] at HBinds
+  case code_fragment Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
+    rw [HEqΓ] at Hbinds
     simp only [shiftr, ← apply_ite]
     apply typing.code_fragment
     . apply fvar.shrinking
-      apply HclosedΔ; apply HBinds
+      apply HclosedΔ; apply Hbinds
     . apply Hwbt
   case lam Hwbt Hclosed IH Ψ HEqΓ HclosedΔ =>
     simp [HEqΓ] at Hclosed

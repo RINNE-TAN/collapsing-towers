@@ -132,16 +132,16 @@ lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → clo
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length)
   <;> try simp
   <;> (intros; try assumption)
-  case fvar HBinds _ =>
+  case fvar Hbinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply HBinds
+    constructor; constructor; apply Hbinds
   case app₁ IHf IHarg => simp [IHf, IHarg]
   case app₂ IHf IHarg => simp [IHf, IHarg]
   case binary₁ IHl IHr => simp [IHl, IHr]
   case binary₂ IHl IHr => simp [IHl, IHr]
-  case code_fragment HBinds _ =>
+  case code_fragment Hbinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply HBinds
+    constructor; constructor; apply Hbinds
   case lets Hclosed IHb _ =>
     constructor; apply IHb; apply Hclosed
   case lets𝕔 Hclosed IHb _ =>
@@ -279,8 +279,8 @@ lemma typing_reification_code :
     case code_rep Hτ => apply Hτ
   case reify Hτ =>
     cases Hτ
-    case code_fragment Hwbt HBinds =>
-      apply typing.fvar; apply HBinds; apply Hwbt
+    case code_fragment Hwbt Hbinds =>
+      apply typing.fvar; apply Hbinds; apply Hwbt
 
 lemma typing_diverge : typing ⦰ 𝟚 diverge .nat ⊥ :=
   by

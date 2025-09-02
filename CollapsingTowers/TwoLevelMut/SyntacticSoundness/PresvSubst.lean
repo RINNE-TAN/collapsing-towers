@@ -22,21 +22,21 @@ lemma preservation.subst.strengthened :
           typing σ Φ 𝟙 v τ𝕒 ⊥ →
           typing_reification σ (Δ ++ Φ) (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
   <;> intros
-  case fvar 𝕊 x _ HBinds Hwbt Δ HEqΓ Hτv =>
-    rw [HEqΓ] at HBinds
+  case fvar 𝕊 x _ Hbinds Hwbt Δ HEqΓ Hτv =>
+    rw [HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
       rw [compare_lt_iff_lt] at Hx
       simp [if_neg (Nat.ne_of_lt Hx), ← apply_ite]
       apply typing.fvar
       . apply fvar.shrinking
-        omega; apply HBinds
+        omega; apply Hbinds
       . apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
-      have HBinds := binds.shrink _ _ _ _ (by simp; omega) HBinds
-      simp [if_pos Hx]; simp [← Hx] at HBinds
-      rw [identity.shiftr]; simp [← HBinds]
+      have Hbinds := binds.shrink _ _ _ _ (by simp; omega) Hbinds
+      simp [if_pos Hx]; simp [← Hx] at Hbinds
+      rw [identity.shiftr]; simp [← Hbinds]
       apply typing.weakening; apply Hτv
       apply closed.inc; apply typing.closed_at_env _ _ _ _ _ _ Hτv; omega
     | gt =>
@@ -44,28 +44,28 @@ lemma preservation.subst.strengthened :
       simp [if_neg (Nat.ne_of_gt Hx), ← apply_ite]
       apply typing.fvar
       . apply fvar.shrinking
-        omega; apply HBinds
+        omega; apply Hbinds
       . apply Hwbt
-  case code_fragment x _ HBinds Hwbt Δ HEqΓ Hτv =>
-    rw [HEqΓ] at HBinds
+  case code_fragment x _ Hbinds Hwbt Δ HEqΓ Hτv =>
+    rw [HEqΓ] at Hbinds
     cases Hx : compare Φ.length x with
     | lt =>
       rw [compare_lt_iff_lt] at Hx
       simp [if_neg (Nat.ne_of_lt Hx), ← apply_ite]
       apply typing.code_fragment
       . apply fvar.shrinking
-        omega; apply HBinds
+        omega; apply Hbinds
       . apply Hwbt
     | eq =>
       rw [compare_eq_iff_eq] at Hx
-      have HBinds := binds.shrink _ _ _ _ (by simp; omega) HBinds
-      simp [← Hx] at HBinds
+      have Hbinds := binds.shrink _ _ _ _ (by simp; omega) Hbinds
+      simp [← Hx] at Hbinds
     | gt =>
       rw [compare_gt_iff_gt] at Hx
       simp [if_neg (Nat.ne_of_gt Hx), ← apply_ite]
       apply typing.code_fragment
       . apply fvar.shrinking
-        omega; apply HBinds
+        omega; apply Hbinds
       . apply Hwbt
   case lam Hwbt Hclosed IH Δ HEqΓ Hτv =>
     simp [HEqΓ] at Hclosed

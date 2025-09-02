@@ -5,7 +5,7 @@ lemma fvar.weakening :
     binds x (τ, 𝕊) (Ψ ++ Φ) →
     binds (if Φ.length ≤ x then x + Δ.length else x) (τ, 𝕊) (Ψ ++ Δ ++ Φ) :=
   by
-  intros Ψ Δ Φ 𝕊 x τ HBinds
+  intros Ψ Δ Φ 𝕊 x τ Hbinds
   by_cases HLe : Φ.length <= x
   . rw [if_pos HLe]
     have HEq : x + Δ.length = x - Φ.length + Δ.length + Φ.length := by omega
@@ -15,11 +15,11 @@ lemma fvar.weakening :
     apply binds.shrinkr
     have HEq : x - Φ.length + Φ.length = x := by omega
     rw [HEq]
-    apply HBinds
+    apply Hbinds
   . rw [if_neg HLe]
     apply binds.extend
     apply binds.shrink; omega
-    apply HBinds
+    apply Hbinds
 
 theorem typing.weakening.strengthened :
     ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
@@ -40,19 +40,19 @@ theorem typing.weakening.strengthened :
           Γ = Ψ ++ Φ →
           typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ)
   <;> intros
-  case fvar HBinds Hwbt Ψ HEqΓ =>
-    rw [HEqΓ] at HBinds
+  case fvar Hbinds Hwbt Ψ HEqΓ =>
+    rw [HEqΓ] at Hbinds
     simp only [shiftl, ← apply_ite]
     apply typing.fvar
     . apply fvar.weakening
-      apply HBinds
+      apply Hbinds
     . apply Hwbt
-  case code_fragment HBinds Hwbt Ψ HEqΓ =>
-    rw [HEqΓ] at HBinds
+  case code_fragment Hbinds Hwbt Ψ HEqΓ =>
+    rw [HEqΓ] at Hbinds
     simp only [shiftl, ← apply_ite]
     apply typing.code_fragment
     . apply fvar.weakening
-      apply HBinds
+      apply Hbinds
     . apply Hwbt
   case lam Hwbt Hclosed IH Ψ HEqΓ =>
     rw [HEqΓ] at Hclosed IH

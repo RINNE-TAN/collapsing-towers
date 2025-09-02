@@ -15,10 +15,10 @@ lemma typing.escape.strengthened :
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing (escape_env Γ) 𝟙 e τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> (intros; try contradiction)
-  case fvar x _ HBinds Hwbt HEq𝕊 =>
+  case fvar x _ Hbinds Hwbt HEq𝕊 =>
     rw [← HEq𝕊] at Hwbt
     apply typing.fvar
-    . apply escape_env.binds _ _ _ _ HBinds
+    . apply escape_env.binds _ _ _ _ Hbinds
     . apply wbt.escape _ Hwbt
   case lam Hwbt Hclosed IH HEq𝕊 =>
     rw [← HEq𝕊] at Hwbt
@@ -200,11 +200,11 @@ theorem preservation.pure.head :
     cases Hτ
     case fix₂ Hτ =>
       cases Hτ
-      case code_fragment Hwbt HBinds =>
+      case code_fragment Hwbt Hbinds =>
         apply typing.reflect
         apply typing.fix₁
         . simp; rfl
-        . apply typing.fvar; apply HBinds; apply Hwbt
+        . apply typing.fvar; apply Hbinds; apply Hwbt
   case ifz₁_then =>
     cases Hτ
     case ifz₁ φ₀ φ₁ φ₂ Hτc Hτl Hτr =>
@@ -222,11 +222,11 @@ theorem preservation.pure.head :
     cases Hτ
     case ifz₂ Hτ₀ Hτ₁ Hτ₂ =>
       cases Hτ₀
-      case code_fragment Hwbt HBinds =>
+      case code_fragment Hwbt Hbinds =>
         apply typing.reflect
         rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
         apply typing.ifz₁
-        . apply typing.fvar; apply HBinds; apply Hwbt
+        . apply typing.fvar; apply Hbinds; apply Hwbt
         . apply typing_reification_code _ _ _ _ Hτ₁
         . apply typing_reification_code _ _ _ _ Hτ₂
 

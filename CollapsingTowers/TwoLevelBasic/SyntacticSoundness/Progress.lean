@@ -30,7 +30,7 @@ theorem progress.strengthened :
     (fun Γ e₀ τ φ (H : typing_reification Γ e₀ τ φ) =>
       dyn_env Γ → (∃ e₁, step_lvl Γ.length e₀ e₁) ∨ value e₀)
   <;> intros
-  case fvar x _ HBinds Hwbt HDyn HEq𝕊 => simp [HDyn _ _ _ HBinds] at HEq𝕊
+  case fvar x _ Hbinds Hwbt HDyn HEq𝕊 => simp [HDyn _ _ _ Hbinds] at HEq𝕊
   case lam H Hwbt Hclosed IH HDyn HEq𝕊 => right; apply value.lam; simp; rw [← lc.under_opening]; apply typing.regular _ _ _ _ _ H
   case lit => right; apply value.lit
   case code_fragment => right; apply value.code; simp

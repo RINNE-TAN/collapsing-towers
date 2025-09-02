@@ -15,7 +15,7 @@ inductive head_pure : Expr → Expr → Prop where
   | run : ∀ e, head_pure (.run (.code e)) e
   | load₂ : ∀ e, head_pure (.load₂ (.code e)) (.reflect (.load₁ e))
   | alloc₂ : ∀ e, head_pure (.alloc₂ (.code e)) (.reflect (.alloc₁ e))
-  | store₂ : ∀ l r, head_pure (.app₂ (.code l) (.code r)) (.reflect (.store₁ l r))
+  | store₂ : ∀ l r, head_pure (.store₂ (.code l) (.code r)) (.reflect (.store₁ l r))
 
 inductive head_mutable : (Store × Expr) → (Store × Expr) → Prop where
   | alloc₁ : ∀ σ v, value v → head_mutable ⟨σ, .alloc₁ v⟩ ⟨v :: σ, .loc (σ.length)⟩

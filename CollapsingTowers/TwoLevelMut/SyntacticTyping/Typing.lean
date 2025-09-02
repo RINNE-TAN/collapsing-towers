@@ -69,18 +69,18 @@ mutual
     | loc : ∀ σ Γ l,
       l < σ.length →
       typing σ Γ 𝟙 (.loc l) (.ref .nat) ⊥
-    | load₁ : ∀ σ Γ 𝕊 e φ,
-      typing σ Γ 𝕊 e (.ref .nat) φ →
-      typing σ Γ 𝕊 (.load₁ e) .nat φ
-    | load₂ : ∀ σ Γ e φ,
-      typing σ Γ 𝟙 e (.fragment (.ref .nat)) φ →
-      typing σ Γ 𝟙 (.load₂ e) (.fragment .nat) ⊤
     | alloc₁ : ∀ σ Γ 𝕊 e φ,
       typing σ Γ 𝕊 e .nat φ →
       typing σ Γ 𝕊 (.alloc₁ e) (.ref .nat) φ
     | alloc₂ : ∀ σ Γ e φ,
       typing σ Γ 𝟙 e (.fragment .nat) φ →
       typing σ Γ 𝟙 (.alloc₂ e) (.fragment (.ref .nat)) ⊤
+    | load₁ : ∀ σ Γ 𝕊 e φ,
+      typing σ Γ 𝕊 e (.ref .nat) φ →
+      typing σ Γ 𝕊 (.load₁ e) .nat φ
+    | load₂ : ∀ σ Γ e φ,
+      typing σ Γ 𝟙 e (.fragment (.ref .nat)) φ →
+      typing σ Γ 𝟙 (.load₂ e) (.fragment .nat) ⊤
     | store₁ : ∀ σ Γ 𝕊 l r φ₀ φ₁,
       typing σ Γ 𝕊 l (.ref .nat) φ₀ →
       typing σ Γ 𝕊 r .nat φ₁ →
@@ -134,14 +134,14 @@ lemma typing.closed_at_env : ∀ σ Γ 𝕊 e τ φ, typing σ Γ 𝕊 e τ φ �
       (fun Γ e τ φ (H : typing_reification σ Γ e τ φ) => closed_at e Γ.length)
   <;> try simp
   <;> (intros; try assumption)
-  case fvar HBinds _ =>
+  case fvar Hbinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply HBinds
+    constructor; constructor; apply Hbinds
   case app₁ IHf IHarg => simp [IHf, IHarg]
   case app₂ IHf IHarg => simp [IHf, IHarg]
-  case code_fragment HBinds _ =>
+  case code_fragment Hbinds _ =>
     simp [getr_exists_iff_index_lt_length]
-    constructor; constructor; apply HBinds
+    constructor; constructor; apply Hbinds
   case lets Hclosed IHb _ =>
     constructor; apply IHb; apply Hclosed
   case lets𝕔 Hclosed IHb _ =>
@@ -178,7 +178,7 @@ lemma typing.dynamic_impl_pure : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ �
   <;> intros
   <;> (try assumption)
   <;> (try contradiction)
-  case fvar x _ HBinds Hwbt HEq𝕊 =>
+  case fvar x _ Hbinds Hwbt HEq𝕊 =>
     constructor; apply Hwbt; rfl
   case lam Hwbt₀ Hclose IH HEq𝕊 =>
     have ⟨Hwbt₁, Hφ₀⟩ := IH HEq𝕊
@@ -276,9 +276,9 @@ lemma typing.dynamic_impl_loc_free : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ �
     (fun Γ e τ φ (H : typing_reification σ Γ e τ φ) => true)
   <;> intros
   <;> (try contradiction)
-  case fvar HBinds Hwbt HEq𝕊 =>
+  case fvar Hbinds Hwbt HEq𝕊 =>
     apply typing.fvar
-    apply HBinds; apply Hwbt
+    apply Hbinds; apply Hwbt
   case lam Hwbt Hclosed IH HEq𝕊 =>
     apply typing.lam
     . apply IH; apply HEq𝕊
@@ -322,5 +322,5 @@ lemma typing_reification_code :
     case code_rep Hτ => apply Hτ
   case reify Hτ =>
     cases Hτ
-    case code_fragment Hwbt HBinds =>
-      apply typing.fvar; apply HBinds; apply Hwbt
+    case code_fragment Hwbt Hbinds =>
+      apply typing.fvar; apply Hbinds; apply Hwbt

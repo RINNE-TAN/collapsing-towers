@@ -15,10 +15,10 @@ lemma typing.escape.strengthened :
       (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing (escape_env Γ) 𝟙 e τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> (intros; try contradiction)
-  case fvar x _ HBinds Hwbt HEq𝕊 =>
+  case fvar x _ Hbinds Hwbt HEq𝕊 =>
     rw [← HEq𝕊] at Hwbt
     apply typing.fvar
-    . apply escape_env.binds _ _ _ _ HBinds
+    . apply escape_env.binds _ _ _ _ Hbinds
     . apply wbt.escape _ Hwbt
   case lam Hwbt Hclosed IH HEq𝕊 =>
     rw [← HEq𝕊] at Hwbt

@@ -72,9 +72,9 @@ lemma consistency.erase_ctx𝔼 :
       cases Hτ
       case app₂ Hf HX =>
         cases Hf
-        case code_fragment x _ HBinds =>
-          have HBinds := erase_env.binds _ _ _ _ HBinds
-          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ HBinds
+        case code_fragment x _ Hbinds =>
+          have Hbinds := erase_env.binds _ _ _ _ Hbinds
+          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ Hbinds
           have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
           have ⟨IH₀, IH₁⟩ := IH _ _ HX
           have ⟨E₀, HE₀, IH₀⟩ := IH₀
@@ -137,9 +137,9 @@ lemma consistency.erase_ctx𝔼 :
       cases Hτ
       case binary₂ Hl HX =>
         cases Hl
-        case code_fragment x _ HBinds =>
-          have HBinds := erase_env.binds _ _ _ _ HBinds
-          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ HBinds
+        case code_fragment x _ Hbinds =>
+          have Hbinds := erase_env.binds _ _ _ _ Hbinds
+          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ Hbinds
           have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
           have ⟨IH₀, IH₁⟩ := IH _ _ HX
           have ⟨E₀, HE₀, IH₀⟩ := IH₀
