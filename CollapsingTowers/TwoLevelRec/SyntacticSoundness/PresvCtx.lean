@@ -1,15 +1,15 @@
 import CollapsingTowers.TwoLevelRec.SyntacticTyping.Defs
 
 lemma preservation.under_ctx𝔹 :
-  ∀ Γ B e τ φ,
+  ∀ Γ B e₀ τ φ,
     ctx𝔹 B →
-    typing Γ 𝟙 B⟦e⟧ τ φ →
-    ∃ τ𝕖 φ𝕖 φ𝔹,
-      φ = φ𝕖 ∪ φ𝔹 ∧
-      typing Γ 𝟙 e τ𝕖 φ𝕖 ∧
-      ∀ Δ e φ,
-        typing (Δ ++ Γ) 𝟙 e τ𝕖 φ →
-        typing (Δ ++ Γ) 𝟙 B⟦e⟧ τ (φ ∪ φ𝔹) :=
+    typing Γ 𝟙 B⟦e₀⟧ τ φ →
+    ∃ τ𝕖 φ₀ φ𝔹,
+      φ = φ₀ ∪ φ𝔹 ∧
+      typing Γ 𝟙 e₀ τ𝕖 φ₀ ∧
+      ∀ Δ e₁ φ₁,
+        typing (Δ ++ Γ) 𝟙 e₁ τ𝕖 φ₁ →
+        typing (Δ ++ Γ) 𝟙 B⟦e₁⟧ τ (φ₁ ∪ φ𝔹) :=
   by
   intros Γ B e τ φ HB Hτ
   cases HB
@@ -148,117 +148,94 @@ lemma preservation.under_ctx𝔹 :
       apply typing.ifz₂; apply HX; apply typing_reification.weakening _ _ _ _ _ Hl; apply typing_reification.weakening _ _ _ _ _ Hr
 
 lemma preservation.under_ctxℝ :
-  ∀ intro Γ R e₀ e₁ τ φ,
+  ∀ intro Γ R e₀ τ φ,
     ctxℝ intro Γ.length R →
     lc e₀ →
-    fv e₁ ⊆ fv e₀ →
-    (∀ Δ τ φ,
-      Δ.length = Γ.length + intro →
-      typing Δ 𝟙 e₀ τ φ →
-      typing Δ 𝟙 e₁ τ φ
-    ) →
     typing Γ 𝟙 R⟦e₀⟧ τ φ →
-    typing Γ 𝟙 R⟦e₁⟧ τ φ :=
+    ∃ Δ τ𝕖 φ₀,
+      Δ.length = Γ.length + intro ∧
+      typing_reification Δ e₀ τ𝕖 φ₀ ∧
+      ∀ e₁ φ₁,
+        fv e₁ ⊆ fv e₀ →
+        typing_reification Δ e₁ τ𝕖 φ₁ →
+        typing Γ 𝟙 R⟦e₁⟧ τ φ :=
   by
-  intros intro Γ R e₀ e₁ τ φ HR Hlc Hfv IH Hτ
+  intros intro Γ R e₀ τ φ HR Hlc Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
-    case lam𝕔 Hwbt HX Hclosed =>
+    case lam𝕔 τ𝕒 τ𝕓 φ₀ Hwbt HX Hclosed =>
       rw [identity.opening_closing _ _ _ Hlc] at HX
-      cases HX
-      case pure HX =>
-        have HX := IH (_ :: Γ) _ _ (by simp) HX
-        apply typing.lam𝕔
-        . apply typing_reification.pure
-          rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ HX)]
-          apply HX
-        . apply Hwbt
-        . rw [← closed.under_closing]
-          apply typing.closed_at_env _ _ _ _ _ HX
-      case reify HX =>
-        have HX := IH (_ :: Γ) _ _ (by simp) HX
-        apply typing.lam𝕔
-        . apply typing_reification.reify
-          rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ HX)]
-          apply HX
-        . apply Hwbt
-        . rw [← closed.under_closing]
-          apply typing.closed_at_env _ _ _ _ _ HX
+      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀
+      constructor; simp
+      constructor; apply HX
+      intros e₁ φ₁ Hfv HX
+      apply typing.lam𝕔
+      . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ HX)]
+        apply HX
+      . apply Hwbt
+      . rw [← closed.under_closing]
+        apply typing_reification.closed_at_env _ _ _ _ HX
   case lets𝕔 =>
     cases Hτ
-    case lets𝕔 Hwbt Hb HX Hclosed =>
+    case lets𝕔 τ𝕒 τ𝕓 φ₀ Hwbt Hb HX Hclosed =>
       rw [identity.opening_closing _ _ _ Hlc] at HX
-      cases HX
-      case pure HX =>
-        have HX := IH (_ :: Γ) _ _ (by simp) HX
-        apply typing.lets𝕔
-        . apply Hb
-        . apply typing_reification.pure
-          rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ HX)]
-          apply HX
-        . apply Hwbt
-        . rw [← closed.under_closing]
-          apply typing.closed_at_env _ _ _ _ _ HX
-      case reify HX =>
-        have HX := IH (_ :: Γ) _ _ (by simp) HX
-        apply typing.lets𝕔
-        . apply Hb
-        . apply typing_reification.reify
-          rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ HX)]
-          apply HX
-        . apply Hwbt
-        . rw [← closed.under_closing]
-          apply typing.closed_at_env _ _ _ _ _ HX
+      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀
+      constructor; simp
+      constructor; apply HX
+      intros e₁ φ₁ Hfv HX
+      apply typing.lets𝕔
+      . apply Hb
+      . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ HX)]
+        apply HX
+      . apply Hwbt
+      . rw [← closed.under_closing]
+        apply typing_reification.closed_at_env _ _ _ _ HX
   case run =>
     cases Hτ
-    case run Hclosed HX =>
-      cases HX
-      case pure HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.run
-        . apply typing_reification.pure _ _ _ HX
-        . rw [closed_iff_fv_empty] at Hclosed
-          simp [Hclosed] at Hfv
-          rw [closed_iff_fv_empty, Hfv]
-      case reify HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.run
-        . apply typing_reification.reify _ _ _ _ HX
-        . rw [closed_iff_fv_empty] at Hclosed
-          simp [Hclosed] at Hfv
-          rw [closed_iff_fv_empty, Hfv]
+    case run φ₀ Hclosed HX =>
+      exists Γ, .rep τ, φ₀
+      constructor; simp
+      constructor; apply HX
+      intros e₁ φ₁ Hfv HX
+      apply typing.run
+      . apply HX
+      . rw [closed_iff_fv_empty] at Hclosed
+        simp [Hclosed] at Hfv
+        rw [closed_iff_fv_empty, Hfv]
   case ifzl₂ =>
     cases Hτ
-    case ifz₂ Hc HX Hr =>
-      cases HX
-      case pure HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.ifz₂; apply Hc; apply typing_reification.pure _ _ _ HX; apply Hr
-      case reify HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.ifz₂; apply Hc; apply typing_reification.reify _ _ _ _ HX; apply Hr
+    case ifz₂ τ φ₀ φ₁ φ₂ Hc HX Hr =>
+      exists Γ, .rep τ, φ₁
+      constructor; simp
+      constructor; apply HX
+      intros e₁ φ₁ Hfv HX
+      apply typing.ifz₂
+      . apply Hc
+      . apply HX
+      . apply Hr
   case ifzr₂ =>
     cases Hτ
-    case ifz₂ Hc Hl HX =>
-      cases HX
-      case pure HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.ifz₂; apply Hc; apply Hl; apply typing_reification.pure _ _ _ HX
-      case reify HX =>
-        have HX := IH _ _ _ (by simp) HX
-        apply typing.ifz₂; apply Hc; apply Hl; apply typing_reification.reify _ _ _ _ HX
+    case ifz₂ τ φ₀ φ₁ φ₂ Hc Hl HX =>
+      exists Γ, .rep τ, φ₂
+      constructor; simp
+      constructor; apply HX
+      intros e₁ φ₁ Hfv HX
+      apply typing.ifz₂
+      . apply Hc
+      . apply Hl
+      . apply HX
 
 lemma preservation.under_ctx𝔼 :
-  ∀ Γ E e τ φ,
+  ∀ Γ E e₀ τ φ₀,
     ctx𝔼 E →
-    typing Γ 𝟙 E⟦e⟧ τ φ →
-    ∃ τ𝕖 φ𝕖 φ𝔹,
-      φ = φ𝕖 ∪ φ𝔹 ∧
-      typing Γ 𝟙 e τ𝕖 φ𝕖 ∧
-      ∀ Δ e φ,
-        typing (Δ ++ Γ) 𝟙 e τ𝕖 φ →
-        typing (Δ ++ Γ) 𝟙 E⟦e⟧ τ (φ ∪ φ𝔹) :=
+    typing Γ 𝟙 E⟦e₀⟧ τ φ₀ →
+    ∃ τ𝕖 φ𝕖 φ𝔼,
+      φ₀ = φ𝕖 ∪ φ𝔼 ∧
+      typing Γ 𝟙 e₀ τ𝕖 φ𝕖 ∧
+      ∀ Δ e₁ φ₁,
+        typing (Δ ++ Γ) 𝟙 e₁ τ𝕖 φ₁ →
+        typing (Δ ++ Γ) 𝟙 E⟦e₁⟧ τ (φ₁ ∪ φ𝔼) :=
   by
   intros Γ E e τ φ HE Hτ
   induction HE generalizing τ φ

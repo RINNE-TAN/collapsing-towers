@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelBasic.SyntacticSoundness.PresvCtx
 
-lemma preservation.reflect.head :
+theorem preservation.reflect.head :
   ∀ Γ E e τ φ,
     ctx𝔼 E →
     typing_reification Γ E⟦.reflect e⟧ τ φ →
@@ -28,7 +28,7 @@ lemma preservation.reflect.head :
         apply typing.closed_at_env _ _ _ _ _ Hτ
         simp
 
-lemma preservation.reflect :
+theorem preservation.reflect :
   ∀ Γ Q E e τ φ,
     ctxℚ Γ.length Q →
     ctx𝔼 E →
