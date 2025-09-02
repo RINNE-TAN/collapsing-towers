@@ -20,15 +20,160 @@ lemma preservation.under_ctx𝔹 :
       exists τ𝕒.arrow τ φ₀, φ₁, (φ₀ ∪ φ₂)
       constructor; cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> simp
       constructor; apply HX
-      intros σ₁ Δ e₁ φ₁ Hσ HX
-      have HEqφ : φ₁ ∪ (φ₀ ∪ φ₂) = φ₀ ∪ φ₁ ∪ φ₂ := by cases φ₀ <;> cases φ₂ <;> simp
+      intros σ₁ Δ e₁ φ Hσ HX
+      have HEqφ : φ ∪ (φ₀ ∪ φ₂) = φ₀ ∪ φ ∪ φ₂ := by cases φ₀ <;> cases φ₂ <;> simp
       rw [HEqφ]
       apply typing.app₁
       . apply HX
-      . apply typing.weakening
-        apply typing.weakening.store
-        apply Hσ; apply Harg
-  all_goals admit
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Harg
+  case appr₁ =>
+    cases Hτ
+    case app₁ τ𝕒 φ₀ φ₁ φ₂ HX Hf =>
+      exists τ𝕒, φ₂, (φ₀ ∪ φ₁)
+      constructor; cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX
+      have HEqφ : φ ∪ (φ₀ ∪ φ₁) = φ₀ ∪ φ₁ ∪ φ := by cases φ₀ <;> cases φ₁ <;> simp
+      rw [HEqφ]
+      apply typing.app₁
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hf
+      . apply HX
+  case appl₂ =>
+    cases Hτ
+    case app₂ τ𝕒 τ𝕓 φ₀ φ₁ HX Harg =>
+      exists .fragment (.arrow τ𝕒 τ𝕓 ⊥), φ₀, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.app₂
+      . apply HX
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Harg
+  case appr₂ =>
+    cases Hτ
+    case app₂ τ𝕒 τ𝕓 φ₀ φ₁ Hf HX =>
+      exists .fragment τ𝕒, φ₁, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.app₂
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hf
+      . apply HX
+  case lift =>
+    cases Hτ
+    case lift_lam τ𝕒 τ𝕓 φ₀ φ₁ HX =>
+      exists .arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀, φ₁, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.lift_lam; apply HX
+    case lift_lit φ₀ HX =>
+      exists .nat, φ₀, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.lift_lit; apply HX
+  case lets e Hlc =>
+    cases Hτ
+    case lets τ𝕒 φ₀ φ₁ Hwbt HX Hclosed He =>
+      exists τ𝕒, φ₀, φ₁
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX
+      apply typing.lets
+      . apply HX
+      . have HEq : ({0 ↦ (Δ ++ Γ).length}e) = (shiftl Γ.length Δ.length {0 ↦ Γ.length}e) :=
+          by simp [comm.shiftl_opening, identity.shiftl _ _ _ Hclosed, Nat.add_comm]
+        rw [HEq]
+        apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening.strengthened _ _ [(τ𝕒, 𝟙)] _ _ _ _ _ _ He (by simp)
+      . apply Hwbt
+      . apply closed.inc; apply Hclosed; simp
+  case alloc₁ =>
+    cases Hτ
+    case alloc₁ HX =>
+      exists .nat, φ, ⊥
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.alloc₁
+      apply HX
+  case alloc₂ =>
+    cases Hτ
+    case alloc₂ φ HX =>
+      exists .fragment .nat, φ, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.alloc₂
+      apply HX
+  case load₁ =>
+    cases Hτ
+    case load₁ HX =>
+      exists .ref .nat, φ, ⊥
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.load₁
+      apply HX
+  case load₂ =>
+    cases Hτ
+    case load₂ φ HX =>
+      exists .fragment (.ref .nat), φ, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.load₂
+      apply HX
+  case storel₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ HX Hr =>
+      exists .ref .nat, φ₀, φ₁
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX
+      apply typing.store₁
+      . apply HX
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hr
+  case storer₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ Hl HX =>
+      exists .nat, φ₁, φ₀
+      constructor; cases φ₀ <;> cases φ₁ <;> simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX
+      have HEqφ : φ ∪ φ₀ = φ₀ ∪ φ := by cases φ₀ <;> simp
+      rw [HEqφ]
+      apply typing.store₁
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hl
+      . apply HX
+  case storel₂ =>
+    cases Hτ
+    case store₂ φ₀ φ₁ HX Hr =>
+      exists .fragment (.ref .nat), φ₀, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.store₂
+      . apply HX
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hr
+  case storer₂ =>
+    cases Hτ
+    case store₂ φ₀ φ₁ Hl HX =>
+      exists .fragment .nat, φ₁, ⊤
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ Hσ HX; simp
+      apply typing.store₂
+      . apply typing.weakening.store _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ Hl
+      . apply HX
 
 lemma preservation.under_ctxℝ :
   ∀ σ₀ intro Γ R e₀ τ φ,

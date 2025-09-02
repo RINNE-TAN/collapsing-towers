@@ -58,3 +58,47 @@ theorem preservation.strengthened :
         constructor
         . apply Hok₀
         . exists φ₀; exact ⟨typing_reification.reify _ _ _ _ _ Hτ, (by simp)⟩
+
+theorem preservation :
+  ∀ σ₀ σ₁ e₀ e₁ τ φ₀,
+    (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) →
+    ok σ₀ →
+    typing_reification σ₀ ⦰ e₀ τ φ₀ →
+    ok σ₁ ∧
+    ∃ φ₁,
+      typing_reification σ₁ ⦰ e₁ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ τ φ₀ Hstep
+  apply preservation.strengthened
+  apply Hstep
+
+theorem preservation.stepn :
+  ∀ σ₀ σ₁ e₀ e₁ τ φ₀,
+    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) →
+    ok σ₀ →
+    typing_reification σ₀ ⦰ e₀ τ φ₀ →
+    ok σ₁ ∧
+    ∃ φ₁,
+      typing_reification σ₁ ⦰ e₁ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intro σ₀ σ₂ e₀ e₂ τ φ₀ Hstepn Hok₀ Hτ₀
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₂
+  rw [HEq₀, HEq₁] at Hstepn
+  induction Hstepn generalizing φ₀ σ₀ e₀
+  case refl =>
+    simp [← HEq₀] at HEq₁
+    rw [HEq₁.left, HEq₁.right]
+    constructor; apply Hok₀
+    exists φ₀
+  case multi st₀ st₁ st₂ Hstep Hstepn IH =>
+    rcases st₁ with ⟨σ₁, e₁⟩
+    rw [← HEq₀] at Hstep
+    have ⟨Hok₁, φ₁, Hτ₁, HLeφ₁⟩ := preservation _ _ _ _ _ _ Hstep Hok₀ Hτ₀
+    have ⟨Hok₂, φ₂, Hτ₂, HLeφ₂⟩ := IH _ _ _ Hok₁ Hτ₁ rfl HEq₁
+    constructor; apply Hok₂
+    exists φ₂
+    constructor; apply Hτ₂
+    apply le_trans HLeφ₂ HLeφ₁
