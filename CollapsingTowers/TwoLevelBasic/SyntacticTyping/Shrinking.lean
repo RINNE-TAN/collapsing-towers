@@ -49,14 +49,14 @@ lemma typing.shrinking.strengthened :
           Δ.length ∉ fv e →
           typing_reification (Ψ ++ Δ) (shiftr Δ.length e) τ φ)
   <;> intros
-  case fvar x _ HBinds Hwbt Ψ HEqΓ HclosedΔ =>
+  case fvar HBinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at HBinds
     simp only [shiftr, ← apply_ite]
     apply typing.fvar
     . apply fvar.shrinking
       apply HclosedΔ; apply HBinds
     . apply Hwbt
-  case code_fragment x _ HBinds Hwbt Ψ HEqΓ HclosedΔ =>
+  case code_fragment HBinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at HBinds
     simp only [shiftr, ← apply_ite]
     apply typing.code_fragment
@@ -100,7 +100,8 @@ lemma typing.shrinking.strengthened :
     simp at HclosedΔ; apply typing.app₂
     . apply IHf; apply HEqΓ; apply HclosedΔ.left
     . apply IHarg; apply HEqΓ; apply HclosedΔ.right
-  case lit => apply typing.lit
+  case lit =>
+    apply typing.lit
   case lift_lit IH Ψ HEqΓ HclosedΔ =>
     apply typing.lift_lit
     apply IH; apply HEqΓ; apply HclosedΔ
