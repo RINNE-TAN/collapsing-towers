@@ -119,3 +119,24 @@ lemma binds.shrinkr : ∀ {α : Type} Γ Δ x (a : α), binds (x + Δ.length) a 
 @[simp]
 def patch {α : Type} (x : ℕ) (a : α) (l₀ : List α) (l₁ : List α) :=
   setr x a l₀ = some l₁
+
+lemma patch.length :
+  ∀ {α : Type} x (a : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    l₀.length = l₁.length :=
+  by
+  intro _ x a l₀ l₁ Hpatch
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEq : tails₀.length = x
+    . simp [if_pos HEq] at Hpatch
+      rw [← Hpatch]; rfl
+    . simp [if_neg HEq] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₁ =>
+        simp [HEq] at Hpatch; simp [← Hpatch]
+        apply IHtails; apply HEq

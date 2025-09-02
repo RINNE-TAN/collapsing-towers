@@ -2,10 +2,6 @@ import CollapsingTowers.TwoLevelMut.Syntax.Defs
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Env
 import CollapsingTowers.TwoLevelMut.OperationalSemantics.Defs
 
-inductive ok : Store → Prop
-  | nil : ok []
-  | cons : ∀ n σ, ok σ → ok (.lit n :: σ)
-
 mutual
   inductive typing : Store → TEnv → Stage → Expr → Ty → Effect → Prop where
     | fvar : ∀ σ Γ 𝕊 x τ,

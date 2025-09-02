@@ -1,8 +1,5 @@
 import CollapsingTowers.TwoLevelMut.OperationalSemantics.EvalCtx
-import CollapsingTowers.TwoLevelMut.Utils.Defs
-
-abbrev Store :=
-  List Expr
+import CollapsingTowers.TwoLevelMut.OperationalSemantics.Store
 
 inductive head_pure : Expr → Expr → Prop where
   | lets : ∀ e v, value v → head_pure (.lets v e) (opening 0 v e)
@@ -55,3 +52,21 @@ lemma head_pure.fv_shrink : ∀ e₀ e₁, head_pure e₀ e₁ → fv e₁ ⊆ f
     apply fv.under_opening
   case lift_lam =>
     simp [← fv.under_codify]
+
+lemma head_mutable.fv_shrink : ∀ σ₀ σ₁ e₀ e₁, ok σ₀ → head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → fv e₁ ⊆ fv e₀ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hok Hmut
+  cases Hmut
+  case alloc₁ => simp
+  case load₁ Hbinds =>
+    have ⟨n, HEq⟩ := ok.binds _ _ _ Hok Hbinds
+    simp [← HEq]
+  case store₁ => simp
+
+lemma head_mutable.store_grow : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → σ₀.length ≤ σ₁.length :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hmut
+  cases Hmut
+  case alloc₁ => simp
+  case load₁ => simp
+  case store₁ Hpatch => simp [patch.length _ _ _ _ Hpatch]
