@@ -4,11 +4,11 @@ import CollapsingTowers.TwoLevelMut.Utils.Defs
 abbrev TEnv :=
   List (Ty × Stage)
 
-notation:max "⦰ᵀ" => ([] : TEnv)
+notation:max "⦰" => ([] : TEnv)
 
 @[simp]
 def erase_env : TEnv → TEnv
-  | ⦰ᵀ => ⦰ᵀ
+  | ⦰ => ⦰
   | (τ, _) :: Γ => (erase_ty τ, 𝟚) :: erase_env Γ
 
 lemma erase_env.length : ∀ Γ, Γ.length = (erase_env Γ).length :=
@@ -33,7 +33,7 @@ lemma erase_env.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (era
 
 @[simp]
 def escape_env : TEnv → TEnv
-  | ⦰ᵀ => ⦰ᵀ
+  | ⦰ => ⦰
   | (τ, _) :: tails => (τ, 𝟙) :: escape_env tails
 
 lemma escape_env.length : ∀ Γ, Γ.length = (escape_env Γ).length :=
@@ -57,8 +57,3 @@ lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ
       intros; assumption
     . simp [if_neg HEq, ← escape_env.length]
       apply IH
-
-abbrev HEnv :=
-  List Ty
-
-notation:max "⦰ᴴ" => ([] : HEnv)

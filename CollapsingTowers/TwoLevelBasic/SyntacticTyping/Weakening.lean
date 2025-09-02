@@ -40,14 +40,14 @@ theorem typing.weakening.strengthened :
           Γ = Ψ ++ Φ →
           typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ)
   <;> intros
-  case fvar x _ HBinds Hwbt Ψ HEqΓ =>
+  case fvar HBinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at HBinds
     simp only [shiftl, ← apply_ite]
     apply typing.fvar
     . apply fvar.weakening
       apply HBinds
     . apply Hwbt
-  case code_fragment x _ HBinds Hwbt Ψ HEqΓ =>
+  case code_fragment HBinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at HBinds
     simp only [shiftl, ← apply_ite]
     apply typing.code_fragment
@@ -130,7 +130,10 @@ theorem typing.weakening.strengthened :
     apply IH; apply HEqΓ
   apply Hτ
 
-theorem typing.weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → typing (Δ ++ Γ) 𝕊 e τ φ :=
+theorem typing.weakening :
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
+    typing (Δ ++ Γ) 𝕊 e τ φ :=
   by
   intros Γ Δ 𝕊 e τ φ Hτ
   rw [← List.nil_append Δ]
@@ -139,13 +142,19 @@ theorem typing.weakening : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → ty
   apply Hτ; rfl
   apply typing.closed_at_env; apply Hτ
 
-theorem typing.weakening.singleton : ∀ Γ Δ 𝕊 e τ φ, typing Γ 𝕊 e τ φ -> typing (Δ :: Γ) 𝕊 e τ φ :=
+theorem typing.weakening.singleton :
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
+    typing (Δ :: Γ) 𝕊 e τ φ :=
   by
   intros Γ Δ 𝕊 e τ φ
   rw [← List.singleton_append]
   apply typing.weakening
 
-theorem typing_reification.weakening : ∀ Γ Δ e τ φ, typing_reification Γ e τ φ → typing_reification (Δ ++ Γ) e τ φ :=
+theorem typing_reification.weakening :
+  ∀ Γ Δ e τ φ,
+    typing_reification Γ e τ φ →
+    typing_reification (Δ ++ Γ) e τ φ :=
   by
   intros Γ Δ e τ φ Hτ
   cases Hτ
