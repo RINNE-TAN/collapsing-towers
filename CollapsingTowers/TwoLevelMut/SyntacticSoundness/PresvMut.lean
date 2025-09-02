@@ -48,14 +48,14 @@ theorem preservation.mutable :
   intros σ₀ σ₁ Γ M e₀ e₁ τ φ HM Hlc Hmut Hok₀ Hτ
   generalize HEqlvl : Γ.length = lvl
   rw [HEqlvl] at HM
-  have HLe := head_mutable.store_grow _ _ _ _ Hmut
+  have Hσ := head_mutable.store_grow _ _ _ _ Hmut
   induction HM generalizing Γ τ φ
   case hole => apply preservation.mutable.head _ _ _ _ _ _ _ Hmut Hok₀ Hτ
   case cons𝔹 B M HB HM IH =>
     have ⟨τ𝕖, φ₁, φ₂, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ _ HB Hτ
     rw [HEqφ]
     have ⟨Hok₁, Hτ⟩ := IH _ _ _ Hτ HEqlvl
-    have Hτ := IHτB _ ⦰ _ _ HLe Hτ
+    have Hτ := IHτB _ ⦰ _ _ Hσ Hτ
     constructor
     . apply Hok₁
     . apply Hτ
@@ -63,82 +63,17 @@ theorem preservation.mutable :
     rw [← HEqlvl] at HR IH
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_mutable.fv_shrink _ _ _ _ Hok₀ Hmut)
-    cases HR
-    case lam𝕔 =>
-      cases Hτ
-      case lam𝕔 Hwbt HX Hclosed =>
-        rw [identity.opening_closing _ _ _ Hlc] at HX
-        cases HX
-        case pure HX =>
-          have ⟨Hok₁, HX⟩ := IH (_ :: Γ) _ _ HX (by simp)
-          constructor
-          . apply Hok₁
-          . apply typing.lam𝕔
-            . apply typing_reification.pure
-              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
-              apply HX
-            . apply Hwbt
-            . rw [← closed.under_closing]
-              apply typing.closed_at_env _ _ _ _ _ _ HX
-        case reify HX =>
-          have ⟨Hok₁, HX⟩ := IH (_ :: Γ) _ _ HX (by simp)
-          constructor
-          . apply Hok₁
-          . apply typing.lam𝕔
-            . apply typing_reification.reify
-              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
-              apply HX
-            . apply Hwbt
-            . rw [← closed.under_closing]
-              apply typing.closed_at_env _ _ _ _ _ _ HX
-    case lets𝕔 =>
-      cases Hτ
-      case lets𝕔 Hwbt Hb HX Hclosed =>
-        rw [identity.opening_closing _ _ _ Hlc] at HX
-        cases HX
-        case pure HX =>
-          have ⟨Hok₁, HX⟩ := IH (_ :: Γ) _ _ HX (by simp)
-          constructor
-          . apply Hok₁
-          . apply typing.lets𝕔
-            . apply typing.weakening.store _ _ _ _ _ _ _ HLe Hb
-            . apply typing_reification.pure
-              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
-              apply HX
-            . apply Hwbt
-            . rw [← closed.under_closing]
-              apply typing.closed_at_env _ _ _ _ _ _ HX
-        case reify HX =>
-          have ⟨Hok₁, HX⟩ := IH (_ :: Γ) _ _ HX (by simp)
-          constructor
-          . apply Hok₁
-          . apply typing.lets𝕔
-            . apply typing.weakening.store _ _ _ _ _ _ _ HLe Hb
-            . apply typing_reification.reify
-              rw [identity.opening_closing _ _ _ (typing.regular _ _ _ _ _ _ HX)]
-              apply HX
-            . apply Hwbt
-            . rw [← closed.under_closing]
-              apply typing.closed_at_env _ _ _ _ _ _ HX
-    case run =>
-      cases Hτ
-      case run Hclosed HX =>
-        cases HX
-        case pure HX =>
-          have ⟨Hok₁, HX⟩ := IH _ _ _ HX rfl
-          constructor
-          . apply Hok₁
-          . apply typing.run
-            . apply typing_reification.pure _ _ _ _ HX
-            . rw [closed_iff_fv_empty] at Hclosed
-              simp [Hclosed] at Hfv
-              rw [closed_iff_fv_empty, Hfv]
-        case reify HX =>
-          have ⟨Hok₁, HX⟩ := IH _ _ _ HX rfl
-          constructor
-          . apply Hok₁
-          . apply typing.run
-            . apply typing_reification.reify _ _ _ _ _ HX
-            . rw [closed_iff_fv_empty] at Hclosed
-              simp [Hclosed] at Hfv
-              rw [closed_iff_fv_empty, Hfv]
+    have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ _ HR Hlc Hτ
+    cases Hτ
+    case pure Hτ =>
+      have ⟨Hok₁, Hτ⟩ := IH _ _ _ Hτ HEqΓ
+      have Hτ := IHτR σ₁ _ _ Hσ Hfv (typing_reification.pure _ _ _ _ Hτ)
+      constructor
+      . apply Hok₁
+      . apply Hτ
+    case reify Hτ =>
+      have ⟨Hok₁, Hτ⟩ := IH _ _ _ Hτ HEqΓ
+      have Hτ := IHτR σ₁ _ _ Hσ Hfv (typing_reification.reify _ _ _ _ _ Hτ)
+      constructor
+      . apply Hok₁
+      . apply Hτ
