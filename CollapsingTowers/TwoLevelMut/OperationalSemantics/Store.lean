@@ -4,8 +4,10 @@ import CollapsingTowers.TwoLevelMut.Syntax.Defs
 abbrev Store :=
   List Expr
 
+notation:max "ϵ" => ([] : Store)
+
 inductive ok : Store → Prop
-  | nil : ok []
+  | nil : ok ϵ
   | cons : ∀ n σ, ok σ → ok (.lit n :: σ)
 
 lemma ok.binds : ∀ σ l v, ok σ → binds l v σ → ∃ n, .lit n = v :=

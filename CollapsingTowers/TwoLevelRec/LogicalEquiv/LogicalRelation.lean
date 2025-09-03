@@ -1,5 +1,4 @@
 import CollapsingTowers.TwoLevelRec.SyntacticSoundness.Defs
-import CollapsingTowers.TwoLevelRec.OperationalSemantics.Defs
 
 mutual
 @[simp]

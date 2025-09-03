@@ -16,11 +16,11 @@ inductive Expr : Type where
   | lets𝕔 (b : Expr) (e : Expr)
   | unit
   | loc (l : ℕ)
-  | load₁ (e : Expr)
   | alloc₁ (e : Expr)
+  | load₁ (e : Expr)
   | store₁ (l : Expr) (r : Expr)
-  | load₂ (e : Expr)
   | alloc₂ (e : Expr)
+  | load₂ (e : Expr)
   | store₂ (l : Expr) (r : Expr)
 
 -- log_equiv_value
@@ -31,7 +31,7 @@ inductive Expr : Type where
 --
 -- 𝓥⟦τ𝕒 → τ𝕓⟧ ≜ {
 --   (𝓦₀, λx.e₀, λx.e₁) |
---   ∀ 𝓦₀ ⊑ 𝓦₁, (𝓦₁, v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. (𝓦₁, λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧
+--   ∀ (𝓦₁ ⊒ 𝓦₀), (𝓦₁, v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. (𝓦₁, λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧
 -- }
 --
 --
@@ -50,8 +50,7 @@ inductive Expr : Type where
 -- 𝓔⟦τ⟧ ≜ {
 --   (𝓦₀, e₀, e₁) |
 --   ∀ (σ₀, σ₁) : 𝓦₀.
---   ∃ σ₂, σ₃, v₀, v₁, 𝓦₁.
---   𝓦₀ ⊑ 𝓦₁ ∧
+--   ∃ σ₂, σ₃, v₀, v₁, (𝓦₁ ⊒ 𝓦₀).
 --   ⟨σ₀, e₀⟩ ⇝* ⟨σ₂, v₀⟩ ∧
 --   ⟨σ₁, e₁⟩ ⇝* ⟨σ₃, v₁⟩ ∧
 --   (σ₂, σ₃) : 𝓦₁ ∧

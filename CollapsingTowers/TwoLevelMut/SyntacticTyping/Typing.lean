@@ -262,13 +262,13 @@ lemma typing.dynamic_impl_grounded : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ �
     apply IH₀; apply HEq𝕊
     apply IH₁; apply HEq𝕊
 
-lemma typing.dynamic_impl_loc_free : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ → typing [] Γ 𝟚 e τ φ :=
+lemma typing.dynamic_impl_loc_free : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ → typing ϵ Γ 𝟚 e τ φ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
   intros σ Γ e τ φ Hτ
   revert HEq𝕊
   apply @typing.rec σ
-    (fun Γ 𝕊 e τ φ (H : typing σ Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing [] Γ 𝕊 e τ φ)
+    (fun Γ 𝕊 e τ φ (H : typing σ Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing ϵ Γ 𝕊 e τ φ)
     (fun Γ e τ φ (H : typing_reification σ Γ e τ φ) => true)
   <;> intros
   <;> (try contradiction)
