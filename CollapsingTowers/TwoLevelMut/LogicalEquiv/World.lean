@@ -18,7 +18,7 @@ def World.ext (𝓦 : World) (l₀ l₁ : ℕ) : World :=
 
 @[simp]
 def World.future (𝓦₀ 𝓦₁ : World) : Prop :=
-  ∀ x y, 𝓦₁ x y → 𝓦₀ x y
+  ∀ x y, 𝓦₀ x y → 𝓦₁ x y
 
 notation:max 𝓦₁ " ⊒ " 𝓦₀  => World.future 𝓦₀ 𝓦₁
 
@@ -28,10 +28,10 @@ lemma World.future.refl : ∀ 𝓦, 𝓦 ⊒ 𝓦 := by simp
 @[simp]
 lemma World.future.trans :
   ∀ 𝓦₀ 𝓦₁ 𝓦₂,
-    (𝓦₀ ⊒ 𝓦₁) →
-    (𝓦₁ ⊒ 𝓦₂) →
-    (𝓦₀ ⊒ 𝓦₂) :=
+    (𝓦₂ ⊒ 𝓦₁) →
+    (𝓦₁ ⊒ 𝓦₀) →
+    (𝓦₂ ⊒ 𝓦₀) :=
   by
-  intros 𝓦₀ 𝓦₁ 𝓦₂ Hfuture₀ Hfuture₁ x y Hrel₀
+  intros 𝓦₀ 𝓦₁ 𝓦₂ Hfuture₁ Hfuture₀ x y Hrel₀
   apply Hfuture₁; apply Hfuture₀
   apply Hrel₀

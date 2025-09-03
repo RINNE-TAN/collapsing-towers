@@ -98,22 +98,6 @@ lemma log_approx_value.antimono :
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
 
-lemma log_approx_expr.antimono :
-  ∀ k₀ k₁ e₀ e₁ τ,
-    log_approx_expr k₀ e₀ e₁ τ →
-    k₁ ≤ k₀ →
-    log_approx_expr k₁ e₀ e₁ τ :=
-  by
-  intros k₀ k₁ e₀ e₁ τ Hsem_expr HLe
-  simp only [log_approx_expr]
-  simp only [log_approx_expr] at Hsem_expr
-  intros j Hindex v₀ Hvalue₀ Hstep₀
-  have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr j (by omega) v₀ Hvalue₀ Hstep₀
-  exists v₁
-  constructor; apply Hstep₁
-  apply log_approx_value.antimono
-  apply Hsem_value; omega
-
 lemma log_approx_env.antimono :
   ∀ k₀ k₁ γ₀ γ₁ Γ,
     log_approx_env k₀ γ₀ γ₁ Γ →
