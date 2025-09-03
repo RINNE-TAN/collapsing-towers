@@ -29,7 +29,7 @@ decreasing_by all_goals apply Prod.Lex.left; simp; omega
 
 -- 𝓔⟦τ⟧ ≜ {(k, e₀, e₁) | ∀ j < k, v₀. e₀ ⇝ⱼ v₀ → ∃ v₁, e₁ ⇝* v₁ ∧ (k - j, v₀, v₁) ∈ 𝓥⟦τ⟧}
 @[simp]
-def log_approx_expr (k : ℕ) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_approx_expr (k : ℕ) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   ∀ j, j < k →
     ∀ v₀, value v₀ → (e₀ ⇝ ⟦j⟧ v₀) →
     ∃ v₁, (e₁ ⇝* v₁) ∧ log_approx_value (k - j) v₀ v₁ τ
@@ -58,7 +58,7 @@ inductive log_approx_env : ℕ → Subst → Subst → TEnv → Prop where
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ k ≥ 0, (k, γ₀, γ₁) ∈ 𝓖⟦Γ⟧. (k, γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧
 @[simp]
-def log_approx (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_approx (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   typing Γ 𝟚 e₀ τ ⊥ ∧
   typing Γ 𝟚 e₁ τ ⊥ ∧
   ∀ k γ₀ γ₁,
@@ -67,7 +67,7 @@ def log_approx (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
 
 -- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑙𝑜𝑔 e₀ : τ
 @[simp]
-def log_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   log_approx Γ e₀ e₁ τ ∧ log_approx Γ e₁ e₀ τ
 
 lemma log_approx_value.antimono :

@@ -25,7 +25,7 @@ def log_equiv_value : Expr → Expr → Ty → Prop
 
 -- 𝓔⟦τ⟧ₖ ≜ {(e₀, e₁) | ∃ v₀ v₁. e₀ ⇾* v₀ ∧ e₁ ⇾* v₁ ∧ (v₀, v₁) ∈ 𝓥⟦τ⟧}
 @[simp]
-def log_equiv_expr (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_equiv_expr (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   ∃ v₀ v₁,
     (e₀ ⇝* v₀) ∧ (e₁ ⇝* v₁) ∧ log_equiv_value v₀ v₁ τ
 end
@@ -50,7 +50,7 @@ inductive log_equiv_env : Subst → Subst → TEnv → Prop where
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (γ₀, γ₁) ∈ 𝓖⟦Γ⟧. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧
 @[simp]
-def log_equiv (Γ : TEnv) (e₀ : Expr) (e₁ : Expr) (τ : Ty) : Prop :=
+def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   typing Γ 𝟚 e₀ τ ⊥ ∧
   typing Γ 𝟚 e₁ τ ⊥ ∧
   ∀ γ₀ γ₁,
