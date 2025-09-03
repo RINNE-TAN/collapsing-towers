@@ -291,7 +291,7 @@ lemma comm.subst_subst : ∀ x y v₀ v₁ e, x ≠ y → closed v₀ → closed
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp [IH₀, IH₁, IH₂]
 
-lemma comm.msubst_subst : ∀ x γ v e, x ≥ γ.length → closed v →  mwf γ → subst x v (msubst γ e) = msubst γ (subst x v e) :=
+lemma comm.msubst_subst : ∀ x γ v e, x ≥ γ.length → closed v → mwf γ → subst x v (msubst γ e) = msubst γ (subst x v e) :=
   by
   intro x γ v e HGe Hclose Hγ
   induction γ generalizing e

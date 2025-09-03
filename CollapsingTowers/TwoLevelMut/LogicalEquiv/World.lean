@@ -9,15 +9,29 @@ abbrev World :=
   ℕ → ℕ → Prop
 
 @[simp]
-def World.future (𝓦₀ 𝓦₁ : World) : Prop :=
-  ∀ x y, 𝓦₁ x y → 𝓦₀ x y
-
-notation:max 𝓦₁ " ⊒ " 𝓦₀  => World.future 𝓦₀ 𝓦₁
-
-@[simp]
 def World.empty : World :=
   fun _ _ => false
 
 @[simp]
 def World.ext (𝓦 : World) (l₀ l₁ : ℕ) : World :=
   fun x y => (x = l₀ ∧ y = l₁) ∨ 𝓦 l₀ l₁
+
+@[simp]
+def World.future (𝓦₀ 𝓦₁ : World) : Prop :=
+  ∀ x y, 𝓦₁ x y → 𝓦₀ x y
+
+notation:max 𝓦₁ " ⊒ " 𝓦₀  => World.future 𝓦₀ 𝓦₁
+
+@[simp]
+lemma World.future.refl : ∀ 𝓦, 𝓦 ⊒ 𝓦 := by simp
+
+@[simp]
+lemma World.future.trans :
+  ∀ 𝓦₀ 𝓦₁ 𝓦₂,
+    (𝓦₀ ⊒ 𝓦₁) →
+    (𝓦₁ ⊒ 𝓦₂) →
+    (𝓦₀ ⊒ 𝓦₂) :=
+  by
+  intros 𝓦₀ 𝓦₁ 𝓦₂ Hfuture₀ Hfuture₁ x y Hrel₀
+  apply Hfuture₁; apply Hfuture₀
+  apply Hrel₀
