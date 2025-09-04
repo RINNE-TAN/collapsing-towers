@@ -228,8 +228,11 @@ lemma compatibility.app₁ :
   --
   -- (𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
   -- ——————————————————————————————————————
+  -- 𝓦₃ ⊒ 𝓦₂
   -- ⟨σ₄, fv₀ @ argv₀⟩ ⇝* ⟨σ₆, v₀⟩
   -- ⟨σ₅, fv₁ @ argv₁⟩ ⇝* ⟨σ₇, v₁⟩
+  -- (σ₆, σ₇) : 𝓦₃
+  -- (𝓦₃, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   simp only [log_equiv_expr] at Hsem_expr
   have ⟨𝓦₃, σ₆, σ₇, v₀, v₁, Hfuture₂, Hstep₀, Hstep₁, Hsem_store, Hsem_value⟩ := Hsem_expr _ _ Hsem_store
   exists 𝓦₃, σ₆, σ₇, v₀, v₁
@@ -279,6 +282,135 @@ lemma compatibility.app₁ :
     . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτArg₁)
     -- head
     apply Hstep₁
+  constructor
+  . apply Hsem_store
+  . apply Hsem_value
+
+-- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- —————————————————————————————————————————————————
+-- Γ ⊧ lets x = b₀ in e₀ ≈𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
+lemma compatibility.lets :
+  ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
+    wbt 𝟚 τ𝕒 →
+    closed_at e₀ Γ.length →
+    closed_at e₁ Γ.length →
+    log_equiv Γ b₀ b₁ τ𝕒 →
+    log_equiv ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    log_equiv Γ (.lets b₀ e₀) (.lets b₁ e₁) τ𝕓 :=
+  by
+  intros Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ Hb He
+  have ⟨Hτb₀, Hτb₁, Hb⟩ := Hb
+  have ⟨Hτe₀, Hτe₁, He⟩ := He
+  have Hτ₀ : typing ϵ Γ 𝟚 (.lets b₀ e₀) τ𝕓 ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]; apply typing.lets
+    apply Hτb₀; apply Hτe₀; apply Hwbt; apply Hclosed₀
+  have Hτ₁ : typing ϵ Γ 𝟚 (.lets b₁ e₁) τ𝕓 ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]; apply typing.lets
+    apply Hτb₁; apply Hτe₁; apply Hwbt; apply Hclosed₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ _ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.syntactic.mwf _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
+  simp only [log_equiv_expr]
+  intros σ₀ σ₁ Hsem_store
+  --
+  --
+  -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+  -- ——————————————————————————
+  -- 𝓦₁ ⊒ 𝓦₀
+  -- ⟨σ₀, γ₀(b₀)⟩ ⇝* ⟨σ₂, bv₀⟩
+  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨σ₃, bv₁⟩
+  -- (σ₂, σ₃) : 𝓦₁
+  -- (𝓦₁, bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
+  simp only [log_equiv_expr] at Hb
+  have ⟨𝓦₁, σ₂, σ₃, bv₀, bv₁, Hfuture₀, HstepBind₀, HstepBind₁, Hsem_store, Hsem_value_bind⟩ := Hb _ _ _ HsemΓ _ _ Hsem_store
+  have ⟨HwfBind₀, HwfBind₁⟩ := log_equiv_value.syntactic.wf _ _ _ _ Hsem_value_bind
+  have ⟨HvalueBind₀, HvalueBind₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_bind
+  --
+  --
+  -- (𝓦₁, (x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
+  -- ———————————————————————————————————————————————————
+  -- 𝓦₂ ⊒ 𝓦₁
+  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- (σ₄, σ₅) : 𝓦₂
+  -- (𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
+  have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ _ Hsem_value_bind (log_equiv_env.antimono _ _ _ _ _ HsemΓ Hfuture₀)
+  simp only [log_equiv_expr] at He
+  have ⟨𝓦₂, σ₄, σ₅, v₀, v₁, Hfuture₁, Hstep₀, Hstep₁, Hsem_store, Hsem_value⟩ := He _ _ _ HsemΓ _ _ Hsem_store
+  exists 𝓦₂, σ₄, σ₅, v₀, v₁
+  constructor
+  . apply World.future.trans _ _ _ Hfuture₁
+    apply Hfuture₀
+  constructor
+  --
+  --
+  -- ⟨σ₀, γ₀(b₀)⟩ ⇝* ⟨σ₂, bv₀⟩
+  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ————————————————————————————————————————————
+  -- ⟨σ₀, lets x = γ₀(b₀) in γ₀(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.lets _ _) _ HstepBind₀
+    . apply lc.under_msubst _ _ _ Hmwf₀
+      rw [← lc.under_opening]
+      apply typing.regular _ _ _ _ _ _ Hτe₀
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ Hτb₀)
+    -- head
+    have HEqSubst₀ : opening 0 bv₀ (msubst γ₀ e₀) = msubst (bv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₀]
+      rw [comm.msubst_opening _ _ _ _ (by omega) Hmwf₀]
+      rw [HEq₀, intro.subst]
+      apply closed.inc; apply closed.under_msubst _ _ Hmwf₀; simp [HEq₀, Hclosed₀]; omega
+      apply HwfBind₀.right
+    rw [← HEqSubst₀] at Hstep₀
+    apply stepn.multi _ _ _ _ Hstep₀
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . constructor
+      . apply HwfBind₀.left
+      . apply lc.under_msubst _ _ _ Hmwf₀
+        rw [← lc.under_opening]
+        apply typing.regular _ _ _ _ _ _ Hτe₀
+    . apply head_pure.lets; apply HvalueBind₀
+  constructor
+  --
+  --
+  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨σ₃, bv₁⟩
+  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ————————————————————————————————————————————
+  -- ⟨σ₁, lets x = γ₁(b₁) in γ₁(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.lets _ _) _ HstepBind₁
+    . apply lc.under_msubst _ _ _ Hmwf₁
+      rw [← lc.under_opening]
+      apply typing.regular _ _ _ _ _ _ Hτe₁
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ Hτb₁)
+    -- head
+    have HEqSubst₁ : opening 0 bv₁ (msubst γ₁ e₁) = msubst (bv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₁]
+      rw [comm.msubst_opening _ _ _ _ (by omega) Hmwf₁]
+      rw [HEq₁, intro.subst]
+      apply closed.inc; apply closed.under_msubst _ _ Hmwf₁; simp [HEq₁, Hclosed₁]; omega
+      apply HwfBind₁.right
+    rw [← HEqSubst₁] at Hstep₁
+    apply stepn.multi _ _ _ _ Hstep₁
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . constructor
+      . apply HwfBind₁.left
+      . apply lc.under_msubst _ _ _ Hmwf₁
+        rw [← lc.under_opening]
+        apply typing.regular _ _ _ _ _ _ Hτe₁
+    . apply head_pure.lets; apply HvalueBind₁
   constructor
   . apply Hsem_store
   . apply Hsem_value
