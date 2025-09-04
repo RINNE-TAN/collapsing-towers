@@ -1,12 +1,13 @@
 import Mathlib.Data.Nat.Basic
 
-@[simp]
-def bijection {α β} (r : α → β → Prop): Prop :=
-  (∀ x y z, r x y → r x z → y = z) ∧
-  (∀ x y z, r x z → r y z → x = y)
-
 abbrev World :=
   ℕ → ℕ → Prop
+
+@[simp]
+def World.dom (𝓦 : World) : Set ℕ := {x | ∃ y, 𝓦 x y}
+
+@[simp]
+def World.range (𝓦 : World) : Set ℕ := {y | ∃ x, 𝓦 x y}
 
 @[simp]
 def World.empty : World :=
@@ -41,3 +42,48 @@ lemma World.future.trans :
   intros 𝓦₀ 𝓦₁ 𝓦₂ Hfuture₁ Hfuture₀ x y Hrel₀
   apply Hfuture₁; apply Hfuture₀
   apply Hrel₀
+
+@[simp]
+def PartialBijection {α β} (r : α → β → Prop): Prop :=
+  (∀ x y z, r x y → r x z → y = z) ∧
+  (∀ x y z, r x z → r y z → x = y)
+
+lemma PartialBijection.ext :
+  ∀ 𝓦 l₀ l₁,
+    PartialBijection 𝓦 →
+    l₀ ∉ World.dom 𝓦 →
+    l₁ ∉ World.range 𝓦 →
+    PartialBijection (World.ext 𝓦 l₀ l₁) :=
+  by
+  intros 𝓦 l₀ l₁ Hpb Hdom Hrange
+  constructor
+  . intros x y z Hrel₀ Hrel₁
+    match Hrel₀, Hrel₁ with
+    | .inl HEq₀, .inl HEq₁ =>
+      omega
+    | .inl HEq₀, .inr Hrel₁ =>
+      exfalso; apply Hdom
+      rw [HEq₀.left] at Hrel₁
+      constructor; apply Hrel₁
+    | .inr Hrel₀, .inl HEq₁ =>
+      exfalso; apply Hdom
+      rw [HEq₁.left] at Hrel₀
+      constructor; apply Hrel₀
+    | .inr Hrel₀, .inr Hrel₁ =>
+      apply Hpb.left
+      apply Hrel₀; apply Hrel₁
+  . intros x y z Hrel₀ Hrel₁
+    match Hrel₀, Hrel₁ with
+    | .inl HEq₀, .inl HEq₁ =>
+      omega
+    | .inl HEq₀, .inr Hrel₁ =>
+      exfalso; apply Hrange
+      rw [HEq₀.right] at Hrel₁
+      constructor; apply Hrel₁
+    | .inr Hrel₀, .inl HEq₁ =>
+      exfalso; apply Hrange
+      rw [HEq₁.right] at Hrel₀
+      constructor; apply Hrel₀
+    | .inr Hrel₀, .inr Hrel₁ =>
+      apply Hpb.right
+      apply Hrel₀; apply Hrel₁

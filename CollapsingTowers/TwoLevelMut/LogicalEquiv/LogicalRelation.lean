@@ -4,7 +4,7 @@ import CollapsingTowers.TwoLevelMut.LogicalEquiv.World
 -- (σ₀, σ₁) : 𝓦 ≜ ∀ 𝓦(l₀, l₁). σ₀(l₁) = σ₀(l₁)
 @[simp]
 def log_equiv_store (𝓦 : World) (σ₀ σ₁ : Store) : Prop :=
-  bijection 𝓦 ∧ (
+  PartialBijection 𝓦 ∧ (
   ∀ l₀ l₁,
     𝓦 l₀ l₁ →
     ∃ n,
@@ -88,10 +88,28 @@ lemma log_equiv_store.ext :
     log_equiv_store (World.ext 𝓦 σ₀.length σ₁.length) (.lit n :: σ₀) (.lit n :: σ₁) :=
   by
   intros 𝓦 σ₀ σ₁ n Hsem_store
-  have ⟨H𝓦, Hsem_store⟩ := Hsem_store
+  have ⟨Hpb, Hsem_store⟩ := Hsem_store
   constructor
-  . admit
-  . admit
+  . apply PartialBijection.ext
+    . apply Hpb
+    . intros Hdom
+      rcases Hdom with ⟨l₁, Hrel⟩
+      have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store _ _ Hrel
+      have _ := (getr_exists_iff_index_lt_length σ₀ σ₀.length).mpr (by exists .lit n)
+      omega
+    . intros Hrange
+      rcases Hrange with ⟨l₀, Hrel⟩
+      have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store _ _ Hrel
+      have _ := (getr_exists_iff_index_lt_length σ₁ σ₁.length).mpr (by exists .lit n)
+      omega
+  . intros l₀ l₁ Hrel
+    cases Hrel
+    case inl HEq => simp [HEq]
+    case inr Hrel =>
+      have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store _ _ Hrel
+      exists n; constructor
+      . apply binds.extend _ [_] _ _ Hbinds₀
+      . apply binds.extend _ [_] _ _ Hbinds₁
 
 lemma log_equiv_value.antimono :
   ∀ 𝓦₀ 𝓦₁ v₀ v₁ τ,

@@ -194,6 +194,7 @@ lemma compatibility.alloc₁ :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
   simp only [log_equiv_expr]
   intros σ₀ σ₁ Hsem_store
   --
@@ -216,9 +217,37 @@ lemma compatibility.alloc₁ :
   constructor
   . apply World.future.trans _ _ _ (World.future.ext _ _ _) Hfuture₀
   constructor
-  . admit
+  --
+  --
+  -- ⟨σ₀, γ₀(n₀)⟩ ⇝* ⟨σ₂, nv₀⟩
+  -- —————————————————————————————————————————————————
+  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⇝* ⟨nv₀ :: σ₂, loc σ₂.length⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.alloc₁ _ HstepNat₀
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτNat₀)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.alloc₁
   constructor
-  . admit
+  --
+  --
+  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨σ₃, nv₁⟩
+  -- —————————————————————————————————————————————————
+  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⇝* ⟨nv₁ :: σ₃, loc σ₃.length⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.alloc₁ _ HstepNat₁
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτNat₁)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.alloc₁
   constructor
   . rw [Hsem_value_nat]
     apply log_equiv_store.ext _ _ _ _ Hsem_store
