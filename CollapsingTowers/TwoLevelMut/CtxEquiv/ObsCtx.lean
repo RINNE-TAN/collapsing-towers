@@ -157,5 +157,5 @@ def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
     ∀ C, ObsCtxℂ Γ τ C ⦰ .nat →
     ∃ σ₀ σ₁ v,
       value v ∧
-      (⟨ϵ, C⟦e₀⟧⟩ ⇝ ⟨σ₀, v⟩) ∧
-      (⟨ϵ, C⟦e₁⟧⟩ ⇝ ⟨σ₁, v⟩)
+      (⟨ϵ, C⟦e₀⟧⟩ ⇝* ⟨σ₀, v⟩) ∧
+      (⟨ϵ, C⟦e₁⟧⟩ ⇝* ⟨σ₁, v⟩)

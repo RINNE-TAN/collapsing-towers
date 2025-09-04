@@ -9,7 +9,7 @@ lemma log_approx.congruence_under_ObsCtx𝔹 :
   by
   intros Δ Γ τδ τγ B e₀ e₁ HX HB
   have ⟨Hτ₀, Hτ₁, Hsem_expr⟩ := HX
-  induction HB generalizing e₀ e₁
+  cases HB
   case lam Hwbt =>
     apply compatibility.lam
     . apply Hwbt
@@ -35,7 +35,7 @@ lemma log_approx.congruence_under_ObsCtx𝔹 :
     apply compatibility.binary₁
     . apply log_approx.fundamental _ _ _ Hl
     . apply HX
-  case letsl τ𝕒 τ𝕓 Hclosed He =>
+  case letsl Hclosed He =>
     apply compatibility.lets
     . have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτ₀
       apply Hwbt
