@@ -56,6 +56,116 @@ lemma compatibility.unit :
   constructor; apply Hsem_store
   simp
 
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- ——————————————————————————————
+-- Γ ⊧ λx.e₀ ≈𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
+lemma compatibility.lam :
+  ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
+    wbt 𝟚 τ𝕒 →
+    closed_at e₀ Γ.length →
+    closed_at e₁ Γ.length →
+    log_equiv ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e₀) ({0 ↦ Γ.length} e₁) τ𝕓 →
+    log_equiv Γ (.lam e₀) (.lam e₁) (.arrow τ𝕒 τ𝕓 ⊥) :=
+  by
+  intros Γ e₀ e₁ τ𝕒 τ𝕓 Hwbt Hclosed₀ Hclosed₁ He
+  have ⟨Hτ₀, Hτ₁, He⟩ := He
+  have Hτ₀ : typing ϵ Γ 𝟚 (.lam e₀) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ := by apply typing.lam; apply Hτ₀; apply Hwbt; apply Hclosed₀
+  have Hτ₁ : typing ϵ Γ 𝟚 (.lam e₁) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ := by apply typing.lam; apply Hτ₁; apply Hwbt; apply Hclosed₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_equiv_env.length _ _ _ _ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.syntactic.mwf _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
+  simp only [log_equiv_expr]
+  intros σ₀ σ₁ Hsem_store
+  exists 𝓦₀, σ₀, σ₁, msubst γ₀ (.lam e₀), msubst γ₁ (.lam e₁)
+  constructor; apply World.future.refl
+  constructor; simp; apply stepn.refl
+  constructor; simp; apply stepn.refl
+  constructor; apply Hsem_store
+  have Hwfe₀ : wf (.lam (msubst γ₀ e₀)) :=
+    by
+    constructor
+    . apply lc.under_msubst _ _ _ Hmwf₀
+      apply typing.regular _ _ _ _ _ _ Hτ₀
+    . apply closed.under_msubst _ _ Hmwf₀
+      simp [HEq₀, Hclosed₀]
+  have Hwfe₁ : wf (.lam (msubst γ₁ e₁)) :=
+    by
+    constructor
+    . apply lc.under_msubst _ _ _ Hmwf₁
+      apply typing.regular _ _ _ _ _ _ Hτ₁
+    . apply closed.under_msubst _ _ Hmwf₁
+      simp [HEq₁, Hclosed₁]
+  have HG₀ : grounded (.lam (msubst γ₀ e₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ _ Hτ₀
+  have HG₁ : grounded (.lam (msubst γ₁ e₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ _ Hτ₁
+  simp only [msubst.lam, log_equiv_value]
+  constructor; apply Hwfe₀
+  constructor; apply HG₀
+  constructor; apply Hwfe₁
+  constructor; apply HG₁
+  intros 𝓦₁ argv₀ argv₁ Hfuture₀ Hsem_value_arg
+  have ⟨HwfArg₀, HwfArg₁⟩ := log_equiv_value.syntactic.wf _ _ _ _ Hsem_value_arg
+  have ⟨HvalueArg₀, HvalueArg₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_arg
+  simp only [log_equiv_expr]
+  intros σ₂ σ₃ Hsem_store
+  --
+  --
+  -- (𝓦₁, (x ↦ argv₀, γ₀)(e₀), (x ↦ argv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
+  -- ————————————————————————————————————————————————————————
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- (σ₄, σ₅) : 𝓦₂
+  -- (𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
+  have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ _ Hsem_value_arg (log_equiv_env.antimono _ _ _ _ _ HsemΓ Hfuture₀)
+  simp only [log_equiv_expr] at He
+  have ⟨𝓦₂, σ₄, σ₅, v₀, v₁, Hfuture₁, Hstep₀, Hstep₁, Hsem_store, Hsem_value⟩ := He _ _ _ HsemΓ _ _ Hsem_store
+  exists 𝓦₂, σ₄, σ₅, v₀, v₁
+  constructor
+  . apply Hfuture₁
+  constructor
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ——————————————————————————————————————
+  -- ⟨σ₂, λx.e₀ @ argv₀⟩ ⇝* ⟨σ₄, v₀⟩
+  . have HEqSubst₀ : opening 0 argv₀ (msubst γ₀ e₀) = msubst (argv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₀]
+      rw [comm.msubst_opening _ _ _ _ (by omega) Hmwf₀]
+      rw [HEq₀, intro.subst]
+      apply closed.inc; apply Hwfe₀.right; omega
+      apply HwfArg₀.right
+    rw [← HEqSubst₀] at Hstep₀
+    apply stepn.multi _ _ _ _ Hstep₀
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . constructor; apply Hwfe₀.left; apply HwfArg₀.left
+    . apply head_pure.app₁; apply HvalueArg₀
+  constructor
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ——————————————————————————————————————
+  -- ⟨σ₃, λx.e₁ @ argv₁⟩ ⇝* ⟨σ₅, v₁⟩
+  . have HEqSubst₁ : opening 0 argv₁ (msubst γ₁ e₁) = msubst (argv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
+      by
+      rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₁]
+      rw [comm.msubst_opening _ _ _ _ (by omega) Hmwf₁]
+      rw [HEq₁, intro.subst]
+      apply closed.inc; apply Hwfe₁.right; omega
+      apply HwfArg₁.right
+    rw [← HEqSubst₁] at Hstep₁
+    apply stepn.multi _ _ _ _ Hstep₁
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . constructor; apply Hwfe₁.left; apply HwfArg₁.left
+    . apply head_pure.app₁; apply HvalueArg₁
+  constructor
+  . apply Hsem_store
+  . apply Hsem_value
+
 -- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
 -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
 -- —————————————————————————————————
