@@ -181,15 +181,13 @@ lemma compatibility.alloc₁ :
     log_equiv Γ n₀ n₁ .nat →
     log_equiv Γ (.alloc₁ n₀) (.alloc₁ n₁) (.ref .nat) :=
   by
-  intros Γ n₀ n₁ He
-  have ⟨HτNat₀, HτNat₁, He⟩ := He
+  intros Γ n₀ n₁ Hn
+  have ⟨HτNat₀, HτNat₁, Hn⟩ := Hn
   have Hτ₀ : typing ϵ Γ 𝟚 (.alloc₁ n₀) (.ref .nat) ⊥ :=
     by
-    rw [← Effect.union_pure ⊥]
     apply typing.alloc₁; apply HτNat₀
   have Hτ₁ : typing ϵ Γ 𝟚 (.alloc₁ n₁) (.ref .nat) ⊥ :=
     by
-    rw [← Effect.union_pure ⊥]
     apply typing.alloc₁; apply HτNat₁
   constructor; apply Hτ₀
   constructor; apply Hτ₁
@@ -200,14 +198,14 @@ lemma compatibility.alloc₁ :
   --
   --
   -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
-  -- ————————————————————————————
+  -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(n₀)⟩ ⇝* ⟨σ₂, nv₀⟩
   -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨σ₃, nv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- nv₀ = nv₁
-  simp only [log_equiv_expr] at He
-  have ⟨𝓦₁, σ₂, σ₃, nv₀, nv₁, Hfuture₀, HstepNat₀, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := He _ _ _ HsemΓ _ _ Hsem_store
+  simp only [log_equiv_expr] at Hn
+  have ⟨𝓦₁, σ₂, σ₃, nv₀, nv₁, Hfuture₀, HstepNat₀, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := Hn _ _ _ HsemΓ _ _ Hsem_store
   have ⟨HvalueNat₀, HvalueNat₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_nat
   cases HvalueNat₀ <;> try simp at Hsem_value_nat
   case lit nv₀ =>
@@ -252,3 +250,110 @@ lemma compatibility.alloc₁ :
   . rw [Hsem_value_nat]
     apply log_equiv_store.ext _ _ _ _ Hsem_store
   . simp
+
+-- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
+-- ————————————————————————
+-- Γ ⊧ !l₀ ≈𝑙𝑜𝑔 !l₁ : ref ℕ
+lemma compatibility.load₁ :
+  ∀ Γ l₀ l₁,
+    log_equiv Γ l₀ l₁ (.ref .nat) →
+    log_equiv Γ (.load₁ l₀) (.load₁ l₁) .nat :=
+  by
+  intros Γ l₀ l₁ Hl
+  have ⟨HτLoc₀, HτLoc₁, Hl⟩ := Hl
+  have Hτ₀ : typing ϵ Γ 𝟚 (.load₁ l₀) .nat ⊥ :=
+    by
+    apply typing.load₁; apply HτLoc₀
+  have Hτ₁ : typing ϵ Γ 𝟚 (.load₁ l₁) .nat ⊥ :=
+    by
+    apply typing.load₁; apply HτLoc₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
+  simp only [log_equiv_expr]
+  intros σ₀ σ₁ Hsem_store
+  --
+  --
+  -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ℕ
+  -- ——————————————————————————
+  -- 𝓦₁ ⊒ 𝓦₀
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- (σ₂, σ₃) : 𝓦₁
+  -- 𝓦₁ lv₀ lv₁
+  simp only [log_equiv_expr] at Hl
+  have ⟨𝓦₁, σ₂, σ₃, lv₀, lv₁, Hfuture₀, HstepLoc₀, HstepLoc₁, Hsem_store, Hsem_value_loc⟩ := Hl _ _ _ HsemΓ _ _ Hsem_store
+  have ⟨HvalueLoc₀, HvalueLoc₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_loc
+  cases HvalueLoc₀ <;> try simp at Hsem_value_loc
+  case loc lv₀ =>
+  cases HvalueLoc₁ <;> try simp at Hsem_value_loc
+  case loc lv₁ =>
+  have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store.right _ _ Hsem_value_loc
+  exists 𝓦₁, σ₂, σ₃, .lit n, .lit n
+  constructor
+  . apply Hfuture₀
+  constructor
+  --
+  --
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
+  -- ———————————————————————————————
+  -- ⟨σ₀, !γ₀(l₀)⟩ ⇝* ⟨σ₂, σ₂(lv₀)⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.load₁ _ HstepLoc₀
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτLoc₀)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.load₁; apply Hbinds₀
+  constructor
+  --
+  --
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- ———————————————————————————————
+  -- ⟨σ₁, !γ₁(l₁)⟩ ⇝* ⟨σ₃, σ₃(lv₁)⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.load₁ _ HstepLoc₁
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτLoc₁)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.load₁; apply Hbinds₁
+  constructor
+  . apply Hsem_store
+  . simp
+
+-- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
+-- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+-- —————————————————————————————————————
+-- Γ ⊧ (l₁ := n₀) ≈𝑙𝑜𝑔 (l₁ := n₁) : unit
+lemma compatibility.store₁ :
+  ∀ Γ l₀ l₁ n₀ n₁,
+    log_equiv Γ l₀ l₁ (.ref .nat) →
+    log_equiv Γ n₀ n₁ .nat →
+    log_equiv Γ (.store₁ l₀ n₀) (.store₁ l₁ n₁) .unit :=
+  by
+  intros Γ l₀ l₁ n₀ n₁ Hl Hn
+  have ⟨HτLoc₀, HτLoc₁, Hl⟩ := Hl
+  have ⟨HτNat₀, HτNat₁, Hn⟩ := Hn
+  have Hτ₀ : typing ϵ Γ 𝟚 (.store₁ l₀ n₀) .unit ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁; apply HτLoc₀; apply HτNat₀
+  have Hτ₁ : typing ϵ Γ 𝟚 (.store₁ l₁ n₁) .unit ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁; apply HτLoc₁; apply HτNat₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
+  simp only [log_equiv_expr]
+  intros σ₀ σ₁ Hsem_store
+  admit
