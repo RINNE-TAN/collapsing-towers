@@ -140,3 +140,25 @@ lemma patch.length :
       | some tails₁ =>
         simp [HEq] at Hpatch; simp [← Hpatch]
         apply IHtails; apply HEq
+
+lemma patch.binds_eq :
+  ∀ {α : Type} x (a : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    binds x a l₁ :=
+  by
+  intros _ x a l₀ l₁ Hpatch
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEqx : tails₀.length = x
+    . simp [if_pos HEqx] at Hpatch
+      rw [← Hpatch, ← HEqx]; simp
+    . simp [if_neg HEqx] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₁ =>
+        simp [HEq] at Hpatch; simp [← Hpatch]
+        rw [← (patch.length _ _ _ _ HEq), if_neg HEqx]
+        apply IHtails; apply HEq

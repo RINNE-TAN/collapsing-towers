@@ -82,7 +82,7 @@ def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
     log_equiv_env 𝓦 γ₀ γ₁ Γ →
     log_equiv_expr 𝓦 (msubst γ₀ e₀) (msubst γ₁ e₁) τ
 
-lemma log_equiv_store.ext :
+lemma log_equiv_store.alloc :
   ∀ 𝓦 σ₀ σ₁ n,
     log_equiv_store 𝓦 σ₀ σ₁ →
     log_equiv_store (World.ext 𝓦 σ₀.length σ₁.length) (.lit n :: σ₀) (.lit n :: σ₁) :=
@@ -110,6 +110,31 @@ lemma log_equiv_store.ext :
       exists n; constructor
       . apply binds.extend _ [_] _ _ Hbinds₀
       . apply binds.extend _ [_] _ _ Hbinds₁
+
+lemma log_equiv_store.store :
+  ∀ 𝓦 l₀ l₁ σ₀ σ₁ σ₂ σ₃ n,
+    log_equiv_store 𝓦 σ₀ σ₁ →
+    𝓦 l₀ l₁ →
+    patch l₀ (.lit n) σ₀ σ₂ →
+    patch l₁ (.lit n) σ₁ σ₃ →
+    log_equiv_store 𝓦 σ₂ σ₃ :=
+  by
+  intros 𝓦 l₀ l₁ σ₀ σ₁ σ₂ σ₃ n Hsem_store Hrel₀ Hpatch₀ Hpatch₁
+  have ⟨Hpb, Hsem_store⟩ := Hsem_store
+  constructor
+  . apply Hpb
+  . intros l₂ l₃ Hrel₁
+    cases (PartialBijection.eq_or_disjoint _ _ _ _ _ Hpb Hrel₀ Hrel₁)
+    case inl HEq =>
+      simp [← HEq]
+      exists n; constructor
+      . apply patch.binds_eq _ _ _ _ Hpatch₀
+      . apply patch.binds_eq _ _ _ _ Hpatch₁
+    case inr HNe =>
+      have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store _ _ Hrel₁
+      exists n; constructor
+      . admit
+      . admit
 
 lemma log_equiv_value.antimono :
   ∀ 𝓦₀ 𝓦₁ v₀ v₁ τ,

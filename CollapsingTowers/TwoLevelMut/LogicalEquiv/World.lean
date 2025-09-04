@@ -87,3 +87,24 @@ lemma PartialBijection.ext :
     | .inr Hrel₀, .inr Hrel₁ =>
       apply Hpb.right
       apply Hrel₀; apply Hrel₁
+
+lemma PartialBijection.eq_or_disjoint :
+  ∀ (𝓦 : World) x y a b,
+    PartialBijection 𝓦 →
+    𝓦 x y →
+    𝓦 a b →
+    (x = a ∧ y = b) ∨
+    (x ≠ a ∧ y ≠ b):=
+  by
+  intros 𝓦 x y a b Hpb Hrel₀ Hrel₁
+  by_cases HEqx : x = a
+  . simp [HEqx]
+    simp [← HEqx] at Hrel₁
+    apply Hpb.left _ _ _ Hrel₀ Hrel₁
+  . simp [HEqx]
+    by_cases HEqy : y = b
+    . simp [HEqy]
+      apply HEqx
+      simp [← HEqy] at Hrel₁
+      apply Hpb.right _ _ _ Hrel₀ Hrel₁
+    . simp [HEqy]

@@ -248,7 +248,7 @@ lemma compatibility.alloc₁ :
     . apply head_mutable.alloc₁
   constructor
   . rw [Hsem_value_nat]
-    apply log_equiv_store.ext _ _ _ _ Hsem_store
+    apply log_equiv_store.alloc _ _ _ _ Hsem_store
   . simp
 
 -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
@@ -353,7 +353,107 @@ lemma compatibility.store₁ :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.syntactic.mwf _ _ _ _ HsemΓ
   have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
   simp only [log_equiv_expr]
   intros σ₀ σ₁ Hsem_store
-  admit
+  --
+  --
+  -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ℕ
+  -- ——————————————————————————
+  -- 𝓦₁ ⊒ 𝓦₀
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- (σ₂, σ₃) : 𝓦₁
+  -- 𝓦₁ lv₀ lv₁
+  simp only [log_equiv_expr] at Hl
+  have ⟨𝓦₁, σ₂, σ₃, lv₀, lv₁, Hfuture₀, HstepLoc₀, HstepLoc₁, Hsem_store, Hsem_value_loc⟩ := Hl _ _ _ HsemΓ _ _ Hsem_store
+  have ⟨HvalueLoc₀, HvalueLoc₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_loc
+  cases HvalueLoc₀ <;> try simp at Hsem_value_loc
+  case loc lv₀ =>
+  cases HvalueLoc₁ <;> try simp at Hsem_value_loc
+  case loc lv₁ =>
+  --
+  --
+  -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+  -- ——————————————————————————
+  -- 𝓦₂ ⊒ 𝓦₁
+  -- ⟨σ₂, γ₀(n₀)⟩ ⇝* ⟨σ₄, nv₀⟩
+  -- ⟨σ₃, γ₁(n₁)⟩ ⇝* ⟨σ₅, nv₁⟩
+  -- (σ₄, σ₅) : 𝓦₂
+  -- nv₀ = nv₁
+  simp only [log_equiv_expr] at Hn
+  have ⟨𝓦₂, σ₄, σ₅, nv₀, nv₁, Hfuture₁, HstepNat₀, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := Hn _ _ _ (log_equiv_env.antimono _ _ _ _ _ HsemΓ Hfuture₀) _ _ Hsem_store
+  have ⟨HvalueNat₀, HvalueNat₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_nat
+  cases HvalueNat₀ <;> try simp at Hsem_value_nat
+  case lit nv₀ =>
+  cases HvalueNat₁ <;> try simp at Hsem_value_nat
+  case lit nv₁ =>
+  have Hsem_value_loc := Hfuture₁ _ _ Hsem_value_loc
+  have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store.right _ _ Hsem_value_loc
+  have ⟨σ₆, Hpatch₀⟩ : ∃ σ₆, patch lv₀ (.lit nv₀) σ₄ σ₆ :=
+    by
+    simp [← setr_exists_iff_index_lt_length, getr_exists_iff_index_lt_length]
+    exists .lit n
+  have ⟨σ₇, Hpatch₁⟩ : ∃ σ₇, patch lv₁ (.lit nv₁) σ₅ σ₇ :=
+    by
+    simp [← setr_exists_iff_index_lt_length, getr_exists_iff_index_lt_length]
+    exists .lit n
+  exists 𝓦₂, σ₆, σ₇, .unit, .unit
+  constructor
+  . apply World.future.trans _ _ _ Hfuture₁
+    apply Hfuture₀
+  constructor
+  --
+  --
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
+  -- ⟨σ₂, γ₀(n₀)⟩ ⇝* ⟨σ₄, nv₀⟩
+  -- ——————————————————————————————————————————————
+  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⇝* ⟨(lv₀ ↦ nv₀)σ₄, ()⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storel₁ _ _) _ HstepLoc₀
+    . apply lc.under_msubst _ _ _ Hmwf₀ (typing.regular _ _ _ _ _ _ HτNat₀)
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτLoc₀)
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storer₁ _ _) _ HstepNat₀
+    . apply value.loc
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτNat₀)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.store₁; apply Hpatch₀
+  constructor
+  --
+  --
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- ⟨σ₃, γ₁(n₁)⟩ ⇝* ⟨σ₅, nv₁⟩
+  -- ——————————————————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⇝* ⟨(lv₁ ↦ nv₁)σ₅, ()⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storel₁ _ _) _ HstepLoc₁
+    . apply lc.under_msubst _ _ _ Hmwf₁ (typing.regular _ _ _ _ _ _ HτNat₁)
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτLoc₁)
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storer₁ _ _) _ HstepNat₁
+    . apply value.loc
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτNat₁)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.store₁; apply Hpatch₁
+  constructor
+  . apply log_equiv_store.store
+    . apply Hsem_store
+    . apply Hsem_value_loc
+    . apply Hpatch₀
+    . simp [Hsem_value_nat]
+      apply Hpatch₁
+  . simp
