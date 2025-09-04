@@ -133,8 +133,8 @@ lemma log_equiv_store.store :
     case inr HNe =>
       have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store _ _ Hrel₁
       exists n; constructor
-      . admit
-      . admit
+      . apply patch.binds_disjoint _ _ _ _ _ _ Hpatch₀ HNe.left Hbinds₀
+      . apply patch.binds_disjoint _ _ _ _ _ _ Hpatch₁ HNe.right Hbinds₁
 
 lemma log_equiv_value.antimono :
   ∀ 𝓦₀ 𝓦₁ v₀ v₁ τ,

@@ -162,3 +162,43 @@ lemma patch.binds_eq :
         simp [HEq] at Hpatch; simp [← Hpatch]
         rw [← (patch.length _ _ _ _ HEq), if_neg HEqx]
         apply IHtails; apply HEq
+
+lemma patch.binds_disjoint :
+  ∀ {α : Type} x y (a b : α) l₀ l₁,
+    patch x a l₀ l₁ →
+    x ≠ y →
+    binds y b l₀ →
+    binds y b l₁ :=
+  by
+  intros _ x y a b l₀ l₁ Hpatch HNe Hbinds
+  induction l₀ generalizing l₁ with
+  | nil => nomatch Hpatch
+  | cons head₀ tails₀ IHtails =>
+    simp at Hpatch
+    by_cases HEqx : tails₀.length = x
+    . simp [if_pos HEqx] at Hpatch
+      simp [HEqx, if_neg HNe] at Hbinds
+      cases l₁ with
+      | nil => nomatch Hpatch
+      | cons head₁ tails₁ =>
+        simp at Hpatch
+        simp [← Hpatch, HEqx, if_neg HNe]
+        apply Hbinds
+    . simp [if_neg HEqx] at Hpatch
+      generalize HEq : setr x a tails₀ = tailRes
+      cases tailRes with
+      | none => simp [HEq] at Hpatch
+      | some tails₀ =>
+        simp [HEq] at Hpatch
+        cases l₁ with
+        | nil => nomatch Hpatch
+        | cons head₁ tails₁ =>
+          rw [← Hpatch]
+          by_cases HEqy : tails₀.length = y
+          . simp [if_pos HEqy]
+            simp [patch.length _ _ _ _ HEq, if_pos HEqy] at Hbinds
+            apply Hbinds
+          . simp [if_neg HEqy]
+            apply IHtails; apply HEq
+            simp [patch.length _ _ _ _ HEq, if_neg HEqy] at Hbinds
+            apply Hbinds
