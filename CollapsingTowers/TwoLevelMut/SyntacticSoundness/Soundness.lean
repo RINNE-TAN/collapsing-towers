@@ -14,8 +14,8 @@ theorem soundness :
   by
   intros σ₀ σ₁ e₀ e₁ τ φ₀ Hok₀ Hτ₀ Hstepn
   simp; intro HNorm
-  have ⟨_, φ₁, Hτ₁, HφLe₁⟩ := preservation.stepn _ _ _ _ _ _ Hstepn Hok₀ Hτ₀
-  match progress _ _ _ _ Hτ₁ with
+  have ⟨Hok₁, φ₁, Hτ₁, HφLe₁⟩ := preservation.stepn _ _ _ _ _ _ Hstepn Hok₀ Hτ₀
+  match progress _ _ _ _ Hok₁ Hτ₁ with
   | .inl Hstep =>
     have ⟨_, _, Hstep⟩ := Hstep
     exfalso; apply HNorm _ _ Hstep

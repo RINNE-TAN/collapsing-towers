@@ -19,11 +19,12 @@ lemma dyn_env.extend :
 
 theorem progress.strengthened :
   ∀ σ₀ Γ e₀ τ φ,
+    ok σ₀ →
     typing_reification σ₀ Γ e₀ τ φ →
     dyn_env Γ →
     (∃ σ₁ e₁, step_lvl Γ.length ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩) ∨ value e₀ :=
   by
-  intros σ₀ Γ e₀ τ φ Hτ
+  intros σ₀ Γ e₀ τ φ Hok Hτ
   apply @typing_reification.rec σ₀
     (fun Γ 𝕊 e₀ τ φ (H : typing σ₀ Γ 𝕊 e₀ τ φ) =>
       dyn_env Γ → 𝕊 = 𝟙 → (∃ σ₁ e₁, step_lvl Γ.length ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩) ∨ value e₀)
@@ -180,10 +181,12 @@ theorem progress.strengthened :
       have ⟨σ₁, _, Hstep⟩ := Hstep; exists σ₁
       apply step.congruence_under_ctx𝔹 _ _ _ _ _ _ ctx𝔹.alloc₁ Hstep
     | .inr Hvalue =>
-      exists e :: σ₀, .loc (σ₀.length)
-      apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
-      . apply typing.regular _ _ _ _ _ _ H
-      . apply head_mutable.alloc₁; apply Hvalue
+      cases Hvalue <;> try contradiction
+      case lit n =>
+        exists .lit n :: σ₀, .loc (σ₀.length)
+        apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+        . apply typing.regular _ _ _ _ _ _ H
+        . apply head_mutable.alloc₁
   case alloc₂ e _ H IH HDyn HEq𝕊 =>
     left
     match IH HDyn HEq𝕊 with
@@ -209,7 +212,9 @@ theorem progress.strengthened :
       cases H
       case loc Hloc =>
         have ⟨v, Hbinds⟩ := (getr_exists_iff_index_lt_length _ _).mp Hloc
-        exists σ₀, v
+        have ⟨n, HEq⟩ := ok.binds _ _ _ Hok Hbinds
+        rw [← HEq] at Hbinds
+        exists σ₀, .lit n
         apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
         . simp
         . apply head_mutable.load₁; apply Hbinds
@@ -240,13 +245,15 @@ theorem progress.strengthened :
     | .inr Hvalue₀, .inr Hvalue₁ =>
       cases Hvalue₀ <;> try contradiction
       case loc l =>
+      cases Hvalue₁ <;> try contradiction
+      case lit n =>
       cases H₀
       case loc Hloc =>
-        have ⟨σ₁, Hpatch⟩ := (setr_exists_iff_index_lt_length _ _ r).mp Hloc
+        have ⟨σ₁, Hpatch⟩ := (setr_exists_iff_index_lt_length _ _ (.lit n)).mp Hloc
         exists σ₁, .unit
         apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
-        . simp; apply lc.value _ Hvalue₁
-        . apply head_mutable.store₁; apply Hvalue₁; apply Hpatch
+        . simp
+        . apply head_mutable.store₁; apply Hpatch
   case store₂ l r _ _ H₀ H₁ IH₀ IH₁ HDyn HEq𝕊 =>
     left
     match IH₀ HDyn HEq𝕊, IH₁ HDyn HEq𝕊 with
@@ -273,8 +280,9 @@ theorem progress.strengthened :
 
 theorem progress :
   ∀ σ₀ e₀ τ φ,
+    ok σ₀ →
     typing_reification σ₀ ⦰ e₀ τ φ →
     (∃ σ₁ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩)) ∨ value e₀ :=
   by
-  intros _ _ _ _ Hτ
-  apply progress.strengthened _ ⦰ _ _ _ Hτ (by simp)
+  intros _ _ _ _ Hok Hτ
+  apply progress.strengthened _ ⦰ _ _ _ Hok Hτ (by simp)

@@ -132,7 +132,11 @@ lemma compatibility.app₁ :
   -- ⟨σ₄, fv₀ @ argv₀⟩ ⇝* ⟨σ₆, v₀⟩
   -- ————————————————————————————————————
   -- ⟨σ₀, γ₀(f₀) @ γ₀(arg₀)⟩ ⇝* ⟨σ₆, v₀⟩
-  . admit
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ _)
+    all_goals admit
   constructor
   . admit
   constructor

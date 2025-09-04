@@ -226,6 +226,45 @@ lemma log_equiv_value.syntactic.wf :
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
 
+lemma log_equiv_value.syntactic.grounded :
+  ∀ k v₀ v₁ τ,
+    log_equiv_value k v₀ v₁ τ →
+    grounded v₀ ∧ grounded v₁ :=
+  by
+  intros 𝓦 v₀ v₁ τ Hsem_value
+  cases τ
+  case nat =>
+    cases v₀ <;> try simp at Hsem_value
+    case lit n₀ =>
+    cases v₁ <;> try simp at Hsem_value
+    case lit n₁ =>
+    simp
+  case arrow τ𝕒 τ𝕓 φ =>
+    cases v₀ <;> try simp at Hsem_value
+    case lam e₀ =>
+    cases v₁ <;> try simp at Hsem_value
+    case lam e₁ =>
+    cases φ <;> simp only [log_equiv_value] at Hsem_value <;> try contradiction
+    have ⟨Hwf₀, HG₀, Hwf₁, HG₁, Hsem_value⟩ := Hsem_value
+    constructor
+    apply HG₀
+    apply HG₁
+  case unit =>
+    cases v₀ <;> try simp at Hsem_value
+    case unit =>
+    cases v₁ <;> try simp at Hsem_value
+    case unit =>
+    simp
+  case ref τ =>
+    cases v₀ <;> try simp at Hsem_value
+    case loc l₀ =>
+    cases v₁ <;> try simp at Hsem_value
+    case loc l₁ =>
+    cases τ <;> simp only [log_equiv_value] at Hsem_value <;> try contradiction
+    simp
+  case fragment => simp at Hsem_value
+  case rep => simp at Hsem_value
+
 lemma log_equiv_value.apply :
   ∀ 𝓦 f₀ arg₀ f₁ arg₁ τ𝕒 τ𝕓,
     log_equiv_value 𝓦 f₀ f₁ (.arrow τ𝕒 τ𝕓 ⊥) →

@@ -15,9 +15,9 @@ inductive head_pure : Expr → Expr → Prop where
   | store₂ : ∀ l r, head_pure (.store₂ (.code l) (.code r)) (.reflect (.store₁ l r))
 
 inductive head_mutable : (Store × Expr) → (Store × Expr) → Prop where
-  | alloc₁ : ∀ σ v, value v → head_mutable ⟨σ, .alloc₁ v⟩ ⟨v :: σ, .loc (σ.length)⟩
-  | load₁ : ∀ σ l e, binds l e σ → head_mutable ⟨σ, .load₁ (.loc l)⟩ ⟨σ, e⟩
-  | store₁ : ∀ σ₀ σ₁ l v, value v → patch l v σ₀ σ₁ → head_mutable ⟨σ₀, .store₁ (.loc l) v⟩ ⟨σ₁, .unit⟩
+  | alloc₁ : ∀ σ n, head_mutable ⟨σ, .alloc₁ (.lit n)⟩ ⟨.lit n :: σ, .loc (σ.length)⟩
+  | load₁ : ∀ σ l n, binds l (.lit n) σ → head_mutable ⟨σ, .load₁ (.loc l)⟩ ⟨σ, .lit n⟩
+  | store₁ : ∀ σ₀ σ₁ l n, patch l (.lit n) σ₀ σ₁ → head_mutable ⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⟨σ₁, .unit⟩
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
   | pure : ∀ M e₀ e₁ σ, ctx𝕄 lvl M → lc e₀ → head_pure e₀ e₁ → step_lvl lvl ⟨σ, M⟦e₀⟧⟩ ⟨σ, M⟦e₁⟧⟩
@@ -53,15 +53,10 @@ lemma head_pure.fv_shrink : ∀ e₀ e₁, head_pure e₀ e₁ → fv e₁ ⊆ f
   case lift_lam =>
     simp [← fv.under_codify]
 
-lemma head_mutable.fv_shrink : ∀ σ₀ σ₁ e₀ e₁, ok σ₀ → head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → fv e₁ ⊆ fv e₀ :=
+lemma head_mutable.fv_shrink : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → fv e₁ ⊆ fv e₀ :=
   by
-  intros σ₀ σ₁ e₀ e₁ Hok Hmut
-  cases Hmut
-  case alloc₁ => simp
-  case load₁ Hbinds =>
-    have ⟨n, HEq⟩ := ok.binds _ _ _ Hok Hbinds
-    simp [← HEq]
-  case store₁ => simp
+  intros σ₀ σ₁ e₀ e₁ Hmut
+  cases Hmut <;> simp
 
 lemma head_mutable.store_grow : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → σ₀.length ≤ σ₁.length :=
   by
@@ -70,3 +65,37 @@ lemma head_mutable.store_grow : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀
   case alloc₁ => simp
   case load₁ => simp
   case store₁ Hpatch => simp [patch.length _ _ _ _ Hpatch]
+
+lemma grounded.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → grounded e₀ → grounded e₁ :=
+  by
+  intros e₀ e₁ Hhead HG
+  cases Hhead <;> simp at *
+  case lets =>
+    apply grounded.under_opening_value
+    apply HG.left; apply HG.right
+  case app₁ =>
+    apply grounded.under_opening_value
+    apply HG.right; apply HG.left
+
+lemma grounded.under_head_mutable : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → grounded e₀ → grounded e₁ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hmut HG
+  cases Hmut <;> simp
+
+lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hstep HG
+  cases Hstep
+  case pure HM _ Hhead =>
+    apply grounded.under_ctx𝕄; apply HM; apply HG
+    apply grounded.under_head_pure; apply Hhead
+    apply grounded.decompose_ctx𝕄; apply HM; apply HG
+  case mutable HM _ Hmut =>
+    apply grounded.under_ctx𝕄; apply HM; apply HG
+    apply grounded.under_head_mutable; apply Hmut
+    apply grounded.decompose_ctx𝕄; apply HM; apply HG
+  case reflect M E _ HP HE _ =>
+    have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
+    have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.decompose_ctx𝔼 _ _ HE HG
+    simp at HG

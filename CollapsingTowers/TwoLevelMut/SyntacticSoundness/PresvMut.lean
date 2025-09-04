@@ -10,11 +10,9 @@ theorem preservation.mutable.head :
   by
   intros σ₀ σ₁ Γ e₀ e₁ τ φ Hmut Hok₀ Hτ
   cases Hmut
-  case alloc₁ v Hvalue =>
+  case alloc₁ n =>
     cases Hτ
     case alloc₁ Hτe =>
-    cases Hvalue <;> try contradiction
-    case lit n =>
       constructor
       . apply ok.cons _ _ Hok₀
       . cases Hτe; apply typing.loc; simp
@@ -26,11 +24,9 @@ theorem preservation.mutable.head :
     . have ⟨n, HEq⟩ := ok.binds _ _ _ Hok₀ Hbinds
       rw [← HEq]
       cases Hτe; apply typing.lit
-  case store₁ l v Hvalue Hpatch =>
+  case store₁ l n Hpatch =>
     cases Hτ
     case store₁ Hτl Hτr =>
-    cases Hvalue <;> try contradiction
-    case lit n =>
       constructor
       . apply ok.patch _ _ _ _ Hpatch Hok₀
       . cases Hτl; cases Hτr; apply typing.unit
@@ -62,7 +58,7 @@ theorem preservation.mutable :
   case consℝ R M HR HM IH =>
     rw [← HEqlvl] at HR IH
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
-    have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_mutable.fv_shrink _ _ _ _ Hok₀ Hmut)
+    have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_mutable.fv_shrink _ _ _ _ Hmut)
     have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     case pure Hτ =>
