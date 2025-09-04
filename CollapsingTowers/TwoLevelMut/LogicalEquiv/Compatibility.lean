@@ -80,6 +80,8 @@ lemma compatibility.app₁ :
   constructor; apply Hτ₀
   constructor; apply Hτ₁
   intros 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.syntactic.mwf _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_equiv_env.syntactic.mgrounded _ _ _ _ HsemΓ
   simp only [log_equiv_expr]
   intros σ₀ σ₁ Hsem_store
   --
@@ -93,6 +95,7 @@ lemma compatibility.app₁ :
   -- (𝓦₁, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
   simp only [log_equiv_expr] at Hf
   have ⟨𝓦₁, σ₂, σ₃, fv₀, fv₁, Hfuture₀, HstepFun₀, HstepFun₁, Hsem_store, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ _ _ Hsem_store
+  have ⟨HvalueFun₀, HvalueFun₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_fun
   --
   --
   -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
@@ -135,10 +138,37 @@ lemma compatibility.app₁ :
   . simp
     -- left
     apply stepn.trans
-    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ _)
-    all_goals admit
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ _) _ HstepFun₀
+    . apply lc.under_msubst _ _ _ Hmwf₀ (typing.regular _ _ _ _ _ _ HτArg₀)
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτFun₀)
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appr₁ _ _) _ HstepArg₀
+    . apply HvalueFun₀
+    . apply grounded.under_msubst _ _ HmG₀ (typing.dynamic_impl_grounded _ _ _ _ _ HτArg₀)
+    -- head
+    apply Hstep₀
   constructor
-  . admit
+  --
+  --
+  -- ⟨σ₁, γ₀(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- ⟨σ₃, γ₁(arg₁)⟩ ⇝* ⟨σ₅, argv₁⟩
+  -- ⟨σ₅, fv₁ @ argv₁⟩ ⇝* ⟨σ₇, v₁⟩
+  -- ————————————————————————————————————
+  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⇝* ⟨σ₇, v₁⟩
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ _) _ HstepFun₁
+    . apply lc.under_msubst _ _ _ Hmwf₁ (typing.regular _ _ _ _ _ _ HτArg₁)
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτFun₁)
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appr₁ _ _) _ HstepArg₁
+    . apply HvalueFun₁
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ _ HτArg₁)
+    -- head
+    apply Hstep₁
   constructor
   . apply Hsem_store
   . apply Hsem_value

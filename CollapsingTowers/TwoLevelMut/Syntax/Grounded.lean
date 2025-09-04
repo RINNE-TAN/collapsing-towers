@@ -25,6 +25,11 @@ def grounded (e : Expr) : Prop :=
   | .store₁ l r => grounded l ∧ grounded r
   | .store₂ _ _ => false
 
+@[simp]
+def mgrounded : Subst → Prop
+  | [] => true
+  | v :: γ => grounded v ∧ mgrounded γ
+
 lemma grounded.under_erase : ∀ e, grounded ‖e‖ :=
   by
   intros e
@@ -132,6 +137,16 @@ lemma grounded.under_subst : ∀ e v x, grounded v → grounded e → grounded (
     simp; intros Hv H₀ H₁; constructor
     apply IH₀; apply Hv; apply H₀
     apply IH₁; apply Hv; apply H₁
+
+lemma grounded.under_msubst : ∀ γ e, mgrounded γ → grounded e → grounded (msubst γ e) :=
+  by
+  intros γ e HmG HG
+  induction γ generalizing e
+  case nil => apply HG
+  case cons IH =>
+    apply IH; apply HmG.right
+    apply grounded.under_subst; apply HmG.left
+    apply HG
 
 lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → grounded (opening i v e) :=
   by

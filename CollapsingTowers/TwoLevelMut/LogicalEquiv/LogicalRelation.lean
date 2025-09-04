@@ -313,3 +313,33 @@ lemma log_equiv_env.binds_log_equiv_value :
     . simp [if_neg HEqx]
       simp [if_neg HEqx] at Hbinds
       apply IH; apply Hbinds
+
+lemma log_equiv_env.syntactic.mwf :
+  ∀ 𝓦 γ₀ γ₁ Γ,
+    log_equiv_env 𝓦 γ₀ γ₁ Γ →
+    mwf γ₀ ∧ mwf γ₁ :=
+  by
+  intros 𝓦 γ₀ γ₁ Γ HsemΓ
+  induction HsemΓ
+  case nil => simp
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
+    have ⟨IH₀, IH₁⟩ := IH
+    have ⟨H₀, H₁⟩ := log_equiv_value.syntactic.wf _ _ _ _ Hsem_value
+    constructor
+    . exact ⟨H₀, IH₀⟩
+    . exact ⟨H₁, IH₁⟩
+
+lemma log_equiv_env.syntactic.mgrounded :
+  ∀ 𝓦 γ₀ γ₁ Γ,
+    log_equiv_env 𝓦 γ₀ γ₁ Γ →
+    mgrounded γ₀ ∧ mgrounded γ₁ :=
+  by
+  intros 𝓦 γ₀ γ₁ Γ HsemΓ
+  induction HsemΓ
+  case nil => simp
+  case cons v₀ γ₀ v₁ γ₁ τ Γ Hsem_value HsemΓ IH =>
+    have ⟨IH₀, IH₁⟩ := IH
+    have ⟨H₀, H₁⟩ := log_equiv_value.syntactic.grounded _ _ _ _ Hsem_value
+    constructor
+    . exact ⟨H₀, IH₀⟩
+    . exact ⟨H₁, IH₁⟩
