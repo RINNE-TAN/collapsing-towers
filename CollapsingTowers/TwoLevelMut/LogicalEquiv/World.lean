@@ -14,7 +14,7 @@ def World.empty : World :=
 
 @[simp]
 def World.ext (𝓦 : World) (l₀ l₁ : ℕ) : World :=
-  fun x y => (x = l₀ ∧ y = l₁) ∨ 𝓦 l₀ l₁
+  fun x y => (x = l₀ ∧ y = l₁) ∨ 𝓦 x y
 
 @[simp]
 def World.future (𝓦₀ 𝓦₁ : World) : Prop :=
@@ -24,6 +24,12 @@ notation:max 𝓦₁ " ⊒ " 𝓦₀  => World.future 𝓦₀ 𝓦₁
 
 @[simp]
 lemma World.future.refl : ∀ 𝓦, 𝓦 ⊒ 𝓦 := by simp
+
+@[simp]
+lemma World.future.ext : ∀ 𝓦 l₀ l₁, (World.ext 𝓦 l₀ l₁) ⊒ 𝓦 :=
+  by
+  intros 𝓦 l₀ l₁ x y Hrel
+  right; apply Hrel
 
 @[simp]
 lemma World.future.trans :

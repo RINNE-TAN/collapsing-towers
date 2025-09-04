@@ -172,3 +172,54 @@ lemma compatibility.app₁ :
   constructor
   . apply Hsem_store
   . apply Hsem_value
+
+-- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+-- ——————————————————————————————————
+-- Γ ⊧ alloc n₀ ≈𝑙𝑜𝑔 alloc n₁ : ref ℕ
+lemma compatibility.alloc₁ :
+  ∀ Γ n₀ n₁,
+    log_equiv Γ n₀ n₁ .nat →
+    log_equiv Γ (.alloc₁ n₀) (.alloc₁ n₁) (.ref .nat) :=
+  by
+  intros Γ n₀ n₁ He
+  have ⟨HτNat₀, HτNat₁, He⟩ := He
+  have Hτ₀ : typing ϵ Γ 𝟚 (.alloc₁ n₀) (.ref .nat) ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.alloc₁; apply HτNat₀
+  have Hτ₁ : typing ϵ Γ 𝟚 (.alloc₁ n₁) (.ref .nat) ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.alloc₁; apply HτNat₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros 𝓦₀ γ₀ γ₁ HsemΓ
+  simp only [log_equiv_expr]
+  intros σ₀ σ₁ Hsem_store
+  --
+  --
+  -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+  -- ————————————————————————————
+  -- 𝓦₁ ⊒ 𝓦₀
+  -- ⟨σ₀, γ₀(n₀)⟩ ⇝* ⟨σ₂, nv₀⟩
+  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨σ₃, nv₁⟩
+  -- (σ₂, σ₃) : 𝓦₁
+  -- nv₀ = nv₁
+  simp only [log_equiv_expr] at He
+  have ⟨𝓦₁, σ₂, σ₃, nv₀, nv₁, Hfuture₀, HstepNat₀, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := He _ _ _ HsemΓ _ _ Hsem_store
+  have ⟨HvalueNat₀, HvalueNat₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_nat
+  cases HvalueNat₀ <;> try simp at Hsem_value_nat
+  case lit nv₀ =>
+  cases HvalueNat₁ <;> try simp at Hsem_value_nat
+  case lit nv₁ =>
+  exists World.ext 𝓦₁ σ₂.length σ₃.length, (.lit nv₀) :: σ₂, (.lit nv₁) :: σ₃, .loc σ₂.length, .loc σ₃.length
+  constructor
+  . apply World.future.trans _ _ _ (World.future.ext _ _ _) Hfuture₀
+  constructor
+  . admit
+  constructor
+  . admit
+  constructor
+  . rw [Hsem_value_nat]
+    apply log_equiv_store.ext _ _ _ _ Hsem_store
+  . simp

@@ -82,6 +82,17 @@ def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
     log_equiv_env 𝓦 γ₀ γ₁ Γ →
     log_equiv_expr 𝓦 (msubst γ₀ e₀) (msubst γ₁ e₁) τ
 
+lemma log_equiv_store.ext :
+  ∀ 𝓦 σ₀ σ₁ n,
+    log_equiv_store 𝓦 σ₀ σ₁ →
+    log_equiv_store (World.ext 𝓦 σ₀.length σ₁.length) (.lit n :: σ₀) (.lit n :: σ₁) :=
+  by
+  intros 𝓦 σ₀ σ₁ n Hsem_store
+  have ⟨H𝓦, Hsem_store⟩ := Hsem_store
+  constructor
+  . admit
+  . admit
+
 lemma log_equiv_value.antimono :
   ∀ 𝓦₀ 𝓦₁ v₀ v₁ τ,
     log_equiv_value 𝓦₀ v₀ v₁ τ →
