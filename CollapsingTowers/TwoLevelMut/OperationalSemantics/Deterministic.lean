@@ -124,6 +124,24 @@ lemma deterministic.head_pure :
   intros e l r Hstepl Hstepr
   cases Hstepl <;> cases Hstepr <;> rfl
 
+theorem deterministic.head_mutable :
+  ∀ σ σl σr e l r,
+    head_mutable ⟨σ, e⟩ ⟨σl, l⟩ →
+    head_mutable ⟨σ, e⟩ ⟨σr, r⟩ →
+    σl = σr ∧ l = r :=
+  by
+  intros σ σl σr e l r Hmutl Hmutr
+  cases Hmutl <;> cases Hmutr
+  case alloc₁.alloc₁ => simp
+  case load₁.load₁ l n₀ Hbinds₀ n₁ Hbinds₁ =>
+    simp at Hbinds₀ Hbinds₁
+    simp [Hbinds₀] at Hbinds₁
+    simp [Hbinds₁]
+  case store₁.store₁ l n Hpatch₀ Hpatch₁ =>
+    simp at Hpatch₀ Hpatch₁
+    simp [Hpatch₀] at Hpatch₁
+    simp [Hpatch₁]
+
 lemma deterministic.under_ctx𝔹 :
   ∀ e₀ e₁ B₀ B₁,
     ctx𝔹 B₀ →
@@ -550,7 +568,9 @@ theorem deterministic :
     case mutable Mr er₀ er₁ HMr Hlcr Hmutr =>
       have Hstepabler := head_mutable_impl_head_stepable _ _ _ _ Hlcr Hmutr
       have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
-      admit
+      rw [HEqe] at Hmutl
+      have ⟨HEqσ, HEqe⟩ := deterministic.head_mutable _ _ _ _ _ _ Hmutl Hmutr
+      simp [HEqσ, HEqM, HEqe]
     case reflect Pr Er br HPr HEr Hlcr =>
       exfalso
       have HMr : ctx𝕄 0 (Pr ∘ Er) :=
