@@ -4,3 +4,4 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Env
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Typing
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Weakening
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Shrinking
+import CollapsingTowers.TwoLevelMut.SyntacticTyping.EraseSafety

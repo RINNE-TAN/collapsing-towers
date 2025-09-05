@@ -1,4 +1,5 @@
 import CollapsingTowers.TwoLevelBasic.OperationalSemantics.SmallStep
+
 @[pp_using_anonymous_constructor]
 structure HeadStepable (e : Expr) where
   mk ::

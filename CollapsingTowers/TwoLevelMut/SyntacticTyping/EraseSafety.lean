@@ -1,18 +1,18 @@
-import CollapsingTowers.TwoLevelBasic.SyntacticTyping.Typing
+import CollapsingTowers.TwoLevelMut.SyntacticTyping.Typing
 
 -- Γ ⊢ e : τ
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
 theorem typing.erase.safety :
   ∀ Γ 𝕊 e τ φ,
-    typing Γ 𝕊 e τ φ →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+    typing ϵ Γ 𝕊 e τ φ →
+    typing ϵ (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
   intros Γ 𝕊 e τ φ Hτ
   apply
-    @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+    @typing.rec ϵ
+      (fun Γ 𝕊 e τ φ (H : typing ϵ Γ 𝕊 e τ φ) => typing ϵ (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ e τ φ (H : typing_reification ϵ Γ e τ φ) => typing ϵ (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar
@@ -70,14 +70,30 @@ theorem typing.erase.safety :
     . rw [← erase_env.length, ← closed.under_erase]
       apply Hclosed
   case run IH => apply IH
+  case unit => apply typing.unit
+  case loc => contradiction
+  case alloc₁ IH => apply typing.alloc₁; apply IH
+  case alloc₂ IH => apply typing.alloc₁; apply IH
+  case load₁ IH => apply typing.load₁; apply IH
+  case load₂ IH => apply typing.load₁; apply IH
+  case store₁ IHl IHr =>
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁
+    . apply IHl
+    . apply IHr
+  case store₂ IHl IHr =>
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁
+    . apply IHl
+    . apply IHr
   case pure IH => apply IH
   case reify IH => apply IH
   apply Hτ
 
 theorem typing_reification.erase.safety :
   ∀ Γ e τ φ,
-    typing_reification Γ e τ φ →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+    typing_reification ϵ Γ e τ φ →
+    typing ϵ (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
   intros Γ e τ φ Hτ
   cases Hτ
