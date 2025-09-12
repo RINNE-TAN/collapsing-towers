@@ -57,6 +57,7 @@ l ↦ 17
 ```
 
 The input and output programs are not contextual equivalent after erasure:
+
 ```ocaml
 let x = alloc 13 in
 let f = (

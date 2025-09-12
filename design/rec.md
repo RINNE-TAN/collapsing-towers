@@ -1,10 +1,15 @@
 # Recursion
+
 Our requirement is to have a calculus that can generate second-stage code containing recursion. This way, when discussing the logical equivalence of the generated code, using step indexing becomes meaningful. Generally, there are three ways to implement recursion：
+
 1. fold/unfold
 2. Z Combinator
 3. Y Combinator
+
 ## fold/unfold
+
 ## Z Combinator
+
 **Typing Rules**:
 
 $$
@@ -15,7 +20,7 @@ $$
 }
 $$
 
-**Semantic**
+**Semantic**:
 
 $$
 (\text{rec} \ f(x).e) v \mapsto [v / x][\text{rec} \ f(x).e / f] e
@@ -37,7 +42,7 @@ $$
 }
 $$
 
-and 
+and
 
 $$
 \frac{
@@ -48,6 +53,7 @@ $$
 $$
 
 This is contrary to the typing rule of `rec`.
+
 ## Y Combinator
 
 **Typing Rules**:
@@ -60,7 +66,7 @@ $$
 }
 $$
 
-**Semantic**
+**Semantic**:
 
 $$
 \text{fix}(\lambda f. e) \mapsto [\text{fix}(\lambda f. e) / f] e
