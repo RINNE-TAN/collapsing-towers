@@ -1,9 +1,0 @@
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvSubst
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvMaping
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvCtx
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvPure
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvMut
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.PresvReflect
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.Preservation
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.Progress
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.Soundness

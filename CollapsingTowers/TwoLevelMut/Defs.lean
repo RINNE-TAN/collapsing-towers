@@ -2,6 +2,3 @@ import CollapsingTowers.TwoLevelMut.Utils.Defs
 import CollapsingTowers.TwoLevelMut.Syntax.Defs
 import CollapsingTowers.TwoLevelMut.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Defs
-import CollapsingTowers.TwoLevelMut.SyntacticSoundness.Defs
-import CollapsingTowers.TwoLevelMut.CtxEquiv.Defs
-import CollapsingTowers.TwoLevelMut.LogicalEquiv.Defs
