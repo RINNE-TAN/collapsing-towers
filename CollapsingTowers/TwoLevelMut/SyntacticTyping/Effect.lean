@@ -10,15 +10,26 @@ notation:max "𝟚" => Stage.dynamic
 
 inductive Effect : Type where
   | reify
-  | mutation (𝕊 : Stage)
+  | mutate (𝕊 : Stage)
 
 @[simp]
 def erase_effect : Effect → Effect
   | .reify => .reify
-  | .mutation _ => .mutation 𝟚
+  | .mutate _ => .mutate 𝟚
+
+@[simp]
+def wbt_effect : Stage → Effect → Prop
+  | 𝟙, _ => true
+  | 𝟚, (.mutate 𝟚) => true
+  | 𝟚, _ => false
 
 abbrev Effects :=
   Set Effect
 
 @[simp]
-def erase_effects (φ : Effects) : Effects := Set.image erase_effect φ \ { .reify }
+def erase_effects (φ : Effects) : Effects :=
+  { erase_effect β | β ∈ φ } \ { .reify }
+
+@[simp]
+def wbt_effects (𝕊 : Stage) (φ : Effects) : Prop :=
+  ∀ β ∈ φ, wbt_effect 𝕊 β
