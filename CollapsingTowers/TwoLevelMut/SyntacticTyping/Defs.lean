@@ -1,1 +1,3 @@
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Effect
+import CollapsingTowers.TwoLevelMut.SyntacticTyping.Ty
+import CollapsingTowers.TwoLevelMut.SyntacticTyping.Env
