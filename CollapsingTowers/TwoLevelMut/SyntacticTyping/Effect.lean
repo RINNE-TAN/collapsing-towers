@@ -18,6 +18,11 @@ def erase_effect : Effect → Effect
   | .mutate _ => .mutate 𝟚
 
 @[simp]
+def escape_effect : Effect → Effect
+  | .reify => .reify
+  | .mutate _ => .mutate 𝟙
+
+@[simp]
 def wbt_effect : Stage → Effect → Prop
   | 𝟙, _ => true
   | 𝟚, (.mutate 𝟚) => true
@@ -29,6 +34,10 @@ abbrev Effects :=
 @[simp]
 def erase_effects (φ : Effects) : Effects :=
   { erase_effect β | β ∈ φ } \ { .reify }
+
+@[simp]
+def escape_effects (φ : Effects) : Effects :=
+  { escape_effect β | β ∈ φ }
 
 @[simp]
 def wbt_effects (𝕊 : Stage) (φ : Effects) : Prop :=
