@@ -25,7 +25,6 @@ theorem typing.erase.safety :
     . apply grounded_ty.under_erase
     . rw [← erase_env.length, ← closed.under_erase]
       apply Hclosed
-  case lift_lam IH => admit
   case app₁ IHf IHarg => admit
   case app₂ IHf IHarg => admit
   all_goals admit
