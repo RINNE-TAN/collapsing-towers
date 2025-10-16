@@ -28,6 +28,9 @@ def wbt_effect : Stage → Effect → Prop
   | 𝟚, (.mutate 𝟚) => true
   | 𝟚, _ => false
 
+lemma grounded_effect.under_erase : ∀ β, β ≠ .reify → wbt_effect 𝟚 (erase_effect β) :=
+  by intros β; cases β <;> simp
+
 abbrev Effects :=
   Set Effect
 
@@ -42,3 +45,12 @@ def escape_effects (φ : Effects) : Effects :=
 @[simp]
 def wbt_effects (𝕊 : Stage) (φ : Effects) : Prop :=
   ∀ β ∈ φ, wbt_effect 𝕊 β
+
+lemma grounded_effects.under_erase : ∀ φ, wbt_effects 𝟚 (erase_effects φ) :=
+  by
+  intros φ β₀ Hβ₀
+  have ⟨Hmutate, Hreify⟩ := Hβ₀
+  have ⟨β₁, _, HEqβ⟩ := Hmutate
+  rw [← HEqβ]; apply grounded_effect.under_erase
+  intros Hβ₁; apply Hreify
+  simp [Hβ₁] at HEqβ; simp [HEqβ]; rfl

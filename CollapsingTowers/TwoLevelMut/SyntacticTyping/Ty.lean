@@ -1,20 +1,20 @@
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Effect
 
 inductive Ty : Type where
-  | unit
   | nat
   | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effects)
   | fragment (τ : Ty)
   | rep (τ : Ty)
+  | unit
   | ref (τ : Ty)
 
 @[simp]
 def erase_ty : Ty → Ty
-  | .unit => .unit
   | .nat => .nat
   | .arrow τa τb φ => .arrow (erase_ty τa) (erase_ty τb) (erase_effects φ)
   | .fragment τ => erase_ty τ
   | .rep τ => erase_ty τ
+  | .unit => .unit
   | .ref τ => .ref (erase_ty τ)
 
 @[simp]
@@ -30,3 +30,16 @@ def wbt : Stage → Ty → Prop
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false
+
+lemma grounded_ty.under_erase : ∀ τ, wbt 𝟚 (erase_ty τ) :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH₀ IH₁ =>
+    constructor; apply grounded_effects.under_erase
+    constructor; apply IH₀; apply IH₁
+  case fragment IH => apply IH
+  case rep IH => apply IH
+  case unit => simp
+  case ref IH => apply IH
