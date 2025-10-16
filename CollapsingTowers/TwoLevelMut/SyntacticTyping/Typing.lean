@@ -74,13 +74,13 @@ mutual
       typing σ Γ 𝕊 (.alloc₁ e) (.ref .nat) (φ ∪ { .mutate 𝕊 })
     | alloc₂ : ∀ σ Γ e φ,
       typing σ Γ 𝟙 e (.fragment .nat) φ →
-      typing σ Γ 𝟙 (.alloc₂ e) (.fragment (.ref .nat)) (φ ∪ { .mutate 𝟚, .reify })
+      typing σ Γ 𝟙 (.alloc₂ e) (.fragment (.ref .nat)) (φ ∪ { .mutate 𝟚 } ∪ { .reify })
     | load₁ : ∀ σ Γ 𝕊 e φ,
       typing σ Γ 𝕊 e (.ref .nat) φ →
       typing σ Γ 𝕊 (.load₁ e) .nat (φ ∪ { .mutate 𝕊 })
     | load₂ : ∀ σ Γ e φ,
       typing σ Γ 𝟙 e (.fragment (.ref .nat)) φ →
-      typing σ Γ 𝟙 (.load₂ e) (.fragment .nat) (φ ∪ { .mutate 𝟚, .reify })
+      typing σ Γ 𝟙 (.load₂ e) (.fragment .nat) (φ ∪ { .mutate 𝟚 } ∪ { .reify })
     | store₁ : ∀ σ Γ 𝕊 l r φ₀ φ₁,
       typing σ Γ 𝕊 l (.ref .nat) φ₀ →
       typing σ Γ 𝕊 r .nat φ₁ →
@@ -88,7 +88,7 @@ mutual
     | store₂ : ∀ σ Γ l r φ₀ φ₁,
       typing σ Γ 𝟙 l (.fragment (.ref .nat)) φ₀ →
       typing σ Γ 𝟙 r (.fragment .nat) φ₁ →
-      typing σ Γ 𝟙 (.store₂ l r) (.fragment .unit) (φ₀ ∪ φ₁ ∪ { .mutate 𝟚, .reify })
+      typing σ Γ 𝟙 (.store₂ l r) (.fragment .unit) (φ₀ ∪ φ₁ ∪ { .mutate 𝟚 } ∪ { .reify })
 
   inductive typing_reification : Store → TEnv → Expr → Ty → Effects → Prop
     | pure : ∀ σ Γ e τ φ,
@@ -197,10 +197,14 @@ lemma typing.dynamic_impl_wbt : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ →
     have ⟨Hwbt₁, Hφ₁⟩ := IHf HEq𝕊
     have ⟨Hwbt₂, Hφ₂⟩ := IHarg HEq𝕊
     rw [← HEq𝕊]
-    rw [← HEq𝕊] at Hwbt₁ Hwbt₂
+    rw [← HEq𝕊] at Hwbt₁ Hwbt₂ Hφ₁ Hφ₂
     constructor
     . apply Hwbt₁.right.right
-    . admit
+    . simp only [wbt_effects.union]
+      constructor; constructor
+      . apply Hwbt₁.left
+      . apply Hφ₁
+      . apply Hφ₂
   case lit HEq𝕊 =>
     rw [← HEq𝕊]
     constructor
@@ -211,7 +215,10 @@ lemma typing.dynamic_impl_wbt : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ →
     have ⟨Hwbt₁, Hφ₁⟩ := IHe HEq𝕊
     constructor
     . apply Hwbt₁
-    . admit
+    . simp only [wbt_effects.union]
+      constructor
+      . apply Hφ₀
+      . apply Hφ₁
   case unit HEq𝕊 =>
     rw [← HEq𝕊]
     constructor
@@ -220,22 +227,35 @@ lemma typing.dynamic_impl_wbt : ∀ σ Γ e τ φ, typing σ Γ 𝟚 e τ φ →
   case load₁ IH HEq𝕊 =>
     have ⟨Hwbt, Hφ⟩ := IH HEq𝕊
     rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hφ
     constructor
     . simp
-    . admit
+    . simp only [wbt_effects.union]
+      constructor
+      . apply Hφ
+      . simp
   case alloc₁ IH HEq𝕊 =>
     have ⟨Hwbt, Hφ⟩ := IH HEq𝕊
     rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hφ
     constructor
     . simp
-    . admit
+    . simp only [wbt_effects.union]
+      constructor
+      . apply Hφ
+      . simp
   case store₁ IHl IHr HEq𝕊 =>
     have ⟨Hwbt₀, Hφ₀⟩ := IHl HEq𝕊
     have ⟨Hwbt₁, Hφ₁⟩ := IHr HEq𝕊
     rw [← HEq𝕊]
+    rw [← HEq𝕊] at Hφ₀ Hφ₁
     constructor
     . simp
-    . admit
+    . simp only [wbt_effects.union]
+      constructor; constructor
+      . apply Hφ₀
+      . apply Hφ₁
+      . simp
   case pure => simp
   case reify => simp
 
