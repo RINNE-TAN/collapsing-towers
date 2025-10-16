@@ -80,9 +80,15 @@ theorem typing.erase.safety :
     simp [-erase_effects]
     rw [← Set.empty_union (erase_effects _)]
     apply typing.lets
-    all_goals admit
+    . simp at IHb; apply IHb
+    . rw [← erase_env.length, ← comm.erase_opening]
+      apply IHe
+    . apply grounded_ty.under_erase
+    . rw [← erase_env.length, ← closed.under_erase]
+      apply Hclose
   case run IH =>
-    admit
+    simp only [erase_effects.diff_reify, erase_effects.escape]
+    apply IH
   case unit =>
     simp
     apply typing.unit

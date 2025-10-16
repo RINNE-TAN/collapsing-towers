@@ -75,6 +75,14 @@ def erase_effects.diff_reify : ∀ φ, erase_effects (φ \ { .reify }) = erase_e
   by simp
 
 @[simp]
+lemma erase_effects.escape : ∀ φ, erase_effects (escape_effects φ) = erase_effects φ :=
+  by
+  intros φ
+  simp only [erase_effects, escape_effects]
+  repeat rw [← Set.image]
+  admit
+
+@[simp]
 def wbt_effects.union : ∀ 𝕊 φ₀ φ₁, wbt_effects 𝕊 (φ₀ ∪ φ₁) ↔ (wbt_effects 𝕊 φ₀ ∧ wbt_effects 𝕊 φ₁) :=
   by
   intros 𝕊 φ₀ φ₁
