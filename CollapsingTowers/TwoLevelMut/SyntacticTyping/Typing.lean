@@ -43,6 +43,7 @@ mutual
       typing_reification σ ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
+      wbt_effects 𝟚 (φ \ { .reify }) →
       typing σ Γ 𝟙 (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 (φ \ { .reify }))) { .reify }
     | lets : ∀ σ Γ 𝕊 b e τ𝕒 τ𝕓 φ₀ φ₁,
       typing σ Γ 𝕊 b τ𝕒 φ₀ →
