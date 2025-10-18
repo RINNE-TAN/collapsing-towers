@@ -30,3 +30,17 @@ def wbt : Stage → Ty → Prop
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false
+
+lemma grounded_ty.under_erase : ∀ τ, wbt 𝟚 (erase_ty τ) :=
+  by
+  intros τ
+  induction τ
+  case nat => simp
+  case arrow IH₀ IH₁ =>
+    constructor; rfl
+    constructor; apply grounded_meffects.under_erase
+    constructor; apply IH₀; apply IH₁
+  case fragment IH => apply IH
+  case rep IH => apply IH
+  case unit => simp
+  case ref IH => apply IH

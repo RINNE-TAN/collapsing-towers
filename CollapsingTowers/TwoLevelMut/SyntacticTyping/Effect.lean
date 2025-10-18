@@ -1,4 +1,5 @@
 import Mathlib.Order.Basic
+import Mathlib.Data.Set.Image
 
 -- reification effect
 inductive REffects : Type where
@@ -109,3 +110,54 @@ def escape_meffect : MEffect → MEffect
 @[simp]
 def escape_meffects (ω : MEffects) : MEffects :=
   { escape_meffect β | β ∈ ω }
+
+lemma grounded_meffect.under_erase : ∀ β, wbt_meffect 𝟚 (erase_meffect β) :=
+  by
+  intros β
+  cases β <;> simp
+
+lemma grounded_meffects.under_erase : ∀ ω, wbt_meffects 𝟚 (erase_meffects ω) :=
+  by
+  intros ω β₀ Hβ₀
+  have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
+  rw [← HEqβ]
+  apply grounded_meffect.under_erase
+
+@[simp]
+lemma erase_meffects.init : ∀ 𝕊, erase_meffects { .init 𝕊 } = { .init 𝟚 } :=
+  by simp
+
+@[simp]
+lemma erase_meffects.read : ∀ 𝕊, erase_meffects { .read 𝕊 } = { .read 𝟚 } :=
+  by simp
+
+@[simp]
+lemma erase_meffects.write : ∀ 𝕊, erase_meffects { .write 𝕊 } = { .write 𝟚 } :=
+  by simp
+
+@[simp]
+lemma erase_meffects.empty : erase_meffects ∅ = ∅ :=
+  by simp
+
+@[simp]
+lemma erase_meffects.union : ∀ ω₀ ω₁, erase_meffects (ω₀ ∪ ω₁) = erase_meffects ω₀ ∪ erase_meffects ω₁ :=
+  by
+  intros ω₀ ω₁
+  simp only [erase_meffects]
+  repeat rw [← Set.image]
+  rw [← Set.image_union]
+
+@[simp]
+lemma erase_meffect.cancel_escape : ∀ β, (erase_meffect ∘ escape_meffect) β = erase_meffect β :=
+  by
+  intros β
+  cases β <;> simp
+
+@[simp]
+lemma erase_meffects.cancel_escape : ∀ ω, erase_meffects (escape_meffects ω) = erase_meffects ω :=
+  by
+  intros ω
+  simp only [erase_meffects, escape_meffects]
+  repeat rw [← Set.image]
+  rw [← Set.image_comp]
+  rw [funext erase_meffect.cancel_escape]

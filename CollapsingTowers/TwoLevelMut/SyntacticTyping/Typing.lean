@@ -35,7 +35,7 @@ mutual
       typing σ Γ 𝟙 (.code (.fvar x)) (.fragment τ) ⊥ ∅
     | code_rep : ∀ σ Γ e τ ω,
       typing σ Γ 𝟚 e τ ⊥ ω →
-      typing σ Γ 𝟙 (.code e) (.rep τ) ⊥ (escape_meffects ω)
+      typing σ Γ 𝟙 (.code e) (.rep τ) ⊥ ω
     | reflect : ∀ σ Γ e τ ω,
       typing σ Γ 𝟚 e τ ⊥ ω →
       typing σ Γ 𝟙 (.reflect e) (.fragment τ) ⊤ ω
@@ -59,7 +59,7 @@ mutual
     | run : ∀ σ Γ e τ φ ω,
       typing_reification σ Γ e (.rep τ) φ ω →
       closed e →
-      typing σ Γ 𝟙 (.run e) τ ⊥ (erase_meffects ω)
+      typing σ Γ 𝟙 (.run e) τ ⊥ (escape_meffects ω)
     | unit : ∀ σ Γ 𝕊,
       typing σ Γ 𝕊 .unit .unit ⊥ ∅
     | lift_unit : ∀ σ Γ e φ ω,
@@ -78,8 +78,8 @@ mutual
       typing σ Γ 𝕊 e (.ref .nat) φ ω →
       typing σ Γ 𝕊 (.load₁ e) .nat φ (ω ∪ { .read 𝕊 })
     | load₂ : ∀ σ Γ e φ ω,
-      typing σ Γ 𝟙 e (.fragment .nat) φ ω →
-      typing σ Γ 𝟙 (.load₂ e) (.fragment (.ref .nat)) ⊤ (ω ∪ { .read 𝟚 })
+      typing σ Γ 𝟙 e (.fragment (.ref .nat)) φ ω →
+      typing σ Γ 𝟙 (.load₂ e) (.fragment .nat) ⊤ (ω ∪ { .read 𝟚 })
     | store₁ : ∀ σ Γ 𝕊 l r φ₀ φ₁ ω₀ ω₁,
       typing σ Γ 𝕊 l (.ref .nat) φ₀ ω₀ →
       typing σ Γ 𝕊 r .nat φ₁ ω₁ →
