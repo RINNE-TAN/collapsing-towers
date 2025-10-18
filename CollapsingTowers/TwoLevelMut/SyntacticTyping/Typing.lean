@@ -93,3 +93,75 @@ mutual
     | pure : ∀ σ Γ e τ ω, typing σ Γ 𝟙 e τ ⊥ ω → typing_reification σ Γ e τ ⊥ ω
     | reify : ∀ σ Γ e τ φ ω, typing σ Γ 𝟙 e (.fragment τ) φ ω → typing_reification σ Γ e (.rep τ) φ ω
 end
+
+lemma typing.regular : ∀ σ Γ 𝕊 e τ φ ω, typing σ Γ 𝕊 e τ φ ω → lc e :=
+  by
+  intros σ Γ 𝕊 e τ φ ω Hτ
+  apply
+    @typing.rec σ
+      (fun Γ 𝕊 e τ φ ω (H : typing σ Γ 𝕊 e τ φ ω) => lc e)
+      (fun Γ e τ φ ω (H : typing_reification σ Γ e τ φ ω) => lc e)
+  <;> try simp
+  <;> intros
+  case lam IH =>
+    rw [← lc.under_opening]; apply IH
+  case lam𝕔 IH =>
+    rw [← lc.under_opening]; apply IH
+  case app₁ IHf IHarg => simp [IHf, IHarg]
+  case app₂ IHf IHarg => simp [IHf, IHarg]
+  case lets IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  case lets𝕔 IHb IHe =>
+    constructor; apply IHb
+    rw [← lc.under_opening]; apply IHe
+  case store₁ IHl IHr => simp [IHl, IHr]
+  case store₂ IHl IHr => simp [IHl, IHr]
+  apply Hτ
+
+lemma typing_reification.regular : ∀ σ Γ e τ φ ω, typing_reification σ Γ e τ φ ω → lc e :=
+  by
+  intros σ Γ e τ φ ω Hτ
+  cases Hτ <;> (apply typing.regular; assumption)
+
+lemma typing.closed_at_env : ∀ σ Γ 𝕊 e τ φ ω, typing σ Γ 𝕊 e τ φ ω → closed_at e Γ.length :=
+  by
+  intros σ Γ 𝕊 e τ φ ω Hτ
+  apply
+    @typing.rec σ
+      (fun Γ 𝕊 e τ φ ω (H : typing σ Γ 𝕊 e τ φ ω) => closed_at e Γ.length)
+      (fun Γ e τ φ ω (H : typing_reification σ Γ e τ φ ω) => closed_at e Γ.length)
+  <;> try simp
+  <;> (intros; try assumption)
+  case fvar Hbinds _ =>
+    simp [getr_exists_iff_index_lt_length]
+    constructor; constructor; apply Hbinds
+  case app₁ IHf IHarg => simp [IHf, IHarg]
+  case app₂ IHf IHarg => simp [IHf, IHarg]
+  case code_fragment Hbinds _ =>
+    simp [getr_exists_iff_index_lt_length]
+    constructor; constructor; apply Hbinds
+  case lets Hclosed IHb _ =>
+    constructor; apply IHb; apply Hclosed
+  case lets𝕔 Hclosed IHb _ =>
+    constructor; apply IHb; apply Hclosed
+  case store₁ IHl IHr => simp [IHl, IHr]
+  case store₂ IHl IHr => simp [IHl, IHr]
+  apply Hτ
+
+lemma typing_reification.closed_at_env : ∀ σ Γ e τ φ ω, typing_reification σ Γ e τ φ ω → closed_at e Γ.length :=
+  by
+  intros σ Γ e τ φ ω Hτ
+  cases Hτ <;> (apply typing.closed_at_env; assumption)
+
+lemma typing.wf : ∀ σ Γ 𝕊 e τ φ ω, typing σ Γ 𝕊 e τ φ ω → wf_at e Γ.length :=
+  by
+  intros σ Γ 𝕊 e τ φ ω Hτ
+  constructor
+  apply typing.regular; apply Hτ
+  apply typing.closed_at_env; apply Hτ
+
+lemma typing_reification.wf : ∀ σ Γ e τ φ ω, typing_reification σ Γ e τ φ ω → wf_at e Γ.length :=
+  by
+  intros σ Γ e τ φ ω Hτ
+  cases Hτ <;> (apply typing.wf; assumption)
