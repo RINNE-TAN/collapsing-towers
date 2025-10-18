@@ -64,7 +64,7 @@ theorem typing.weakening.strengthened :
     . apply Hwbt
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
-  case lam𝕔 Hwbt Hclosed IH Ψ HEqΓ =>
+  case lam𝕔 Hwbt Hclosed Hω IH Ψ HEqΓ =>
     rw [HEqΓ] at Hclosed IH
     have HEq : (Ψ ++ Δ ++ Φ).length = (Ψ ++ Φ).length + Δ.length := by simp; omega
     apply typing.lam𝕔
@@ -74,6 +74,7 @@ theorem typing.weakening.strengthened :
     . apply Hwbt
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
+    . apply Hω
   case lift_lam Hω IH Ψ HEqΓ =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hω
@@ -236,11 +237,12 @@ theorem typing.weakening.store :
   case reflect IH =>
     apply typing.reflect
     apply IH
-  case lam𝕔 Hwbt Hclosed IH =>
+  case lam𝕔 Hwbt Hclosed Hω IH =>
     apply typing.lam𝕔
     . apply IH
     . apply Hwbt
     . apply Hclosed
+    . apply Hω
   case lets Hwbt Hclosed IHb IHe =>
     apply typing.lets
     . apply IHb

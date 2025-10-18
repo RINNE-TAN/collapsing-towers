@@ -45,7 +45,7 @@ theorem typing.erase.safety :
     . apply grounded_ty.under_erase
   case code_rep IH => apply IH
   case reflect IH => apply IH
-  case lam𝕔 Hclosed IH =>
+  case lam𝕔 Hclosed _ IH =>
     apply typing.lam
     . rw [← erase_env.length, ← comm.erase_opening]
       apply IH

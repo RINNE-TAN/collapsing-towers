@@ -79,7 +79,7 @@ lemma typing.shrinking.strengthened :
   case lift_lam Hω IH Ψ HEqΓ HclosedΔ =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply HclosedΔ; apply Hω
-  case lam𝕔 Hwbt Hclosed IH Ψ HEqΓ HclosedΔ =>
+  case lam𝕔 Hwbt Hclosed Hω IH Ψ HEqΓ HclosedΔ =>
     simp [HEqΓ] at Hclosed
     rw [HEqΓ] at IH
     apply typing.lam𝕔
@@ -92,6 +92,7 @@ lemma typing.shrinking.strengthened :
     . apply Hwbt
     . simp; apply closed.dec.under_shiftr
       apply Hclosed; apply HclosedΔ
+    . apply Hω
   case app₁ IHf IHarg Ψ HEqΓ HclosedΔ =>
     simp at HclosedΔ; apply typing.app₁
     . apply IHf; apply HEqΓ; apply HclosedΔ.left

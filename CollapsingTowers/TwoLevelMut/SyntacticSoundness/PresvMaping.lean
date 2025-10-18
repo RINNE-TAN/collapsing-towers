@@ -96,7 +96,7 @@ lemma preservation.maping.strengthened :
     . apply closed.under_subst
       . apply typing.closed_at_env _ _ _ _ _ _ _ Hτv
       . simp; apply Hclosed
-  case lam𝕔 Hwbt Hclosed IH Δ HEqΓ Hτv =>
+  case lam𝕔 Hwbt Hclosed Hω IH Δ HEqΓ Hτv =>
     simp [HEqΓ] at Hclosed
     rw [HEqΓ] at IH
     apply typing.lam𝕔
@@ -110,6 +110,7 @@ lemma preservation.maping.strengthened :
     . apply closed.under_subst
       . apply typing.closed_at_env _ _ _ _ _ _ _ Hτv
       . simp; apply Hclosed
+    . apply Hω
   case lift_lam Hω IH Δ HEqΓ Hτv =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hτv; apply Hω

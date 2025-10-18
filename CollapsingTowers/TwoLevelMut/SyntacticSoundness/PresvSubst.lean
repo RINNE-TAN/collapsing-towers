@@ -87,7 +87,7 @@ lemma preservation.subst.strengthened :
       . apply not_in_fv.under_subst
         apply closed_impl_not_in_fv
         apply typing.closed_at_env _ _ _ _ _ _ _ Hτv; omega
-  case lam𝕔 Hwbt Hclosed IH Δ HEqΓ Hτv =>
+  case lam𝕔 Hwbt Hclosed Hω IH Δ HEqΓ Hτv =>
     simp [HEqΓ] at Hclosed
     rw [HEqΓ] at IH
     apply typing.lam𝕔
@@ -107,6 +107,7 @@ lemma preservation.subst.strengthened :
       . apply not_in_fv.under_subst
         apply closed_impl_not_in_fv
         apply typing.closed_at_env _ _ _ _ _ _ _ Hτv; omega
+    . apply Hω
   case lift_lam Hω IH Δ HEqΓ Hτv =>
     apply typing.lift_lam
     apply IH; apply HEqΓ; apply Hτv; apply Hω
