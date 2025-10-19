@@ -71,7 +71,7 @@ theorem typing.erase.safety :
     . rw [← erase_env.length, ← closed.under_erase]
       apply Hclosed
   case run IH =>
-    rw [erase_meffects.cancel_escape]
+    rw [erase_meffects.cancel_escape, erase_ty.cancel_escape]
     apply IH
   case unit => apply typing.unit
   case lift_unit IH => apply IH

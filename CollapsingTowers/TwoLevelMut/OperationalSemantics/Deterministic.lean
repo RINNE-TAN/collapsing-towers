@@ -28,6 +28,7 @@ lemma head_pure_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head_pure e₀ e
     case app₂.appr₂ => apply value.code; apply Hlc.right
     case lift_lit.lift => apply value.lit
     case lift_lam.lift => apply value.lam; apply Hlc
+    case lift_unit.lift => apply value.unit
     case load₂.load₂ => apply value.code; apply Hlc
     case alloc₂.alloc₂ => apply value.code; apply Hlc
     case store₂.storel₂ => apply value.code; apply Hlc.left

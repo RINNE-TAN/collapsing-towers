@@ -161,3 +161,27 @@ lemma erase_meffects.cancel_escape : ∀ ω, erase_meffects (escape_meffects ω)
   repeat rw [← Set.image]
   rw [← Set.image_comp]
   rw [funext erase_meffect.cancel_escape]
+
+@[simp]
+lemma escape_meffects.empty : escape_meffects ∅ = ∅ :=
+  by simp
+
+@[simp]
+lemma escape_meffects.union : ∀ ω₀ ω₁, escape_meffects (ω₀ ∪ ω₁) = escape_meffects ω₀ ∪ escape_meffects ω₁ :=
+  by
+  intros ω₀ ω₁
+  simp only [escape_meffects]
+  repeat rw [← Set.image]
+  rw [← Set.image_union]
+
+@[simp]
+lemma escape_meffects.init : ∀ 𝕊, escape_meffects { .init 𝕊 } = { .init 𝟙 } :=
+  by simp
+
+@[simp]
+lemma escape_meffects.read : ∀ 𝕊, escape_meffects { .read 𝕊 } = { .read 𝟙 } :=
+  by simp
+
+@[simp]
+lemma escape_meffects.write : ∀ 𝕊, escape_meffects { .write 𝕊 } = { .write 𝟙 } :=
+  by simp

@@ -34,7 +34,7 @@ lemma erase_env.binds : ∀ x τ 𝕊 Γ, binds x (τ, 𝕊) Γ → binds x (era
 @[simp]
 def escape_env : TEnv → TEnv
   | ⦰ => ⦰
-  | (τ, _) :: tails => (τ, 𝟙) :: escape_env tails
+  | (τ, _) :: tails => ((escape_ty τ), 𝟙) :: escape_env tails
 
 lemma escape_env.length : ∀ Γ, Γ.length = (escape_env Γ).length :=
   by
@@ -45,7 +45,7 @@ lemma escape_env.length : ∀ Γ, Γ.length = (escape_env Γ).length :=
     have ⟨τ, 𝕊⟩ := head
     cases 𝕊 <;> (simp; apply IH)
 
-lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ, 𝟙) (escape_env Γ) :=
+lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x ((escape_ty τ), 𝟙) (escape_env Γ) :=
   by
   intros Γ x τ 𝕊
   induction Γ with
@@ -54,6 +54,6 @@ lemma escape_env.binds : ∀ Γ x τ 𝕊, binds x (τ, 𝕊) Γ → binds x (τ
     have ⟨τ, 𝕊⟩ := head
     by_cases HEq : tails.length = x
     . simp [if_pos HEq, ← escape_env.length]
-      intros; assumption
+      intros HEqτ; simp [HEqτ]
     . simp [if_neg HEq, ← escape_env.length]
       apply IH

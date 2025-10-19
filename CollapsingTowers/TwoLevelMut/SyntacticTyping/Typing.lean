@@ -60,7 +60,7 @@ mutual
     | run : ∀ σ Γ e τ φ ω,
       typing_reification σ Γ e (.rep τ) φ ω →
       closed e →
-      typing σ Γ 𝟙 (.run e) τ ⊥ (escape_meffects ω)
+      typing σ Γ 𝟙 (.run e) (escape_ty τ) ⊥ (escape_meffects ω)
     | unit : ∀ σ Γ 𝕊,
       typing σ Γ 𝕊 .unit .unit ⊥ ∅
     | lift_unit : ∀ σ Γ e φ ω,
@@ -166,3 +166,18 @@ lemma typing_reification.wf : ∀ σ Γ e τ φ ω, typing_reification σ Γ e �
   by
   intros σ Γ e τ φ ω Hτ
   cases Hτ <;> (apply typing.wf; assumption)
+
+lemma typing_reification_code :
+  ∀ σ Γ e τ φ ω,
+    typing_reification σ Γ (.code e) (.rep τ) φ ω →
+    typing σ Γ 𝟚 e τ ⊥ ω :=
+  by
+  intros σ Γ e τ φ ω Hτ
+  cases Hτ
+  case pure Hτ =>
+    cases Hτ
+    case code_rep Hτ => apply Hτ
+  case reify Hτ =>
+    cases Hτ
+    case code_fragment Hwbt Hbinds =>
+      apply typing.fvar; apply Hbinds; apply Hwbt
