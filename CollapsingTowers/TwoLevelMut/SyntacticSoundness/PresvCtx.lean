@@ -19,7 +19,7 @@ lemma preservation.under_ctx𝔹 :
   case appl₁ =>
     cases Hτ
     case app₁ τ𝕒 φ₀ φ₁ φ₂ ω₀ ω₁ ω₂ Harg HX =>
-      exists (.arrow τ𝕒 τ φ₀ ω₀), φ₁, (φ₀ ∪ φ₂), ω₁, (ω₀ ∪ ω₂)
+      exists .arrow τ𝕒 τ φ₀ ω₀, φ₁, φ₀ ∪ φ₂, ω₁, ω₀ ∪ ω₂
       constructor; cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> simp
       constructor; cc
       constructor; apply HX
@@ -34,7 +34,7 @@ lemma preservation.under_ctx𝔹 :
   case appr₁ =>
     cases Hτ
     case app₁ τ𝕒 φ₀ φ₁ φ₂ ω₀ ω₁ ω₂ HX Hf =>
-      exists τ𝕒, φ₂, (φ₀ ∪ φ₁), ω₂, (ω₀ ∪ ω₁)
+      exists τ𝕒, φ₂, φ₀ ∪ φ₁, ω₂, ω₀ ∪ ω₁
       constructor; cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> simp
       constructor; cc
       constructor; apply HX
@@ -49,7 +49,7 @@ lemma preservation.under_ctx𝔹 :
   case appl₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 φ₁ φ₂ ω₀ ω₁ ω₂ HX Harg =>
-      exists .fragment (.arrow τ𝕒 τ𝕓 ⊥ ω₀), φ₁, ⊤, ω₁, (ω₀ ∪ ω₂)
+      exists .fragment (.arrow τ𝕒 τ𝕓 ⊥ ω₀), φ₁, ⊤, ω₁, ω₀ ∪ ω₂
       constructor; simp
       constructor; cc
       constructor; apply HX
@@ -63,7 +63,7 @@ lemma preservation.under_ctx𝔹 :
   case appr₂ =>
     cases Hτ
     case app₂ τ𝕒 τ𝕓 φ₁ φ₂ ω₀ ω₁ ω₂ Hf HX =>
-      exists .fragment τ𝕒, φ₂, ⊤, ω₂, (ω₀ ∪ ω₁)
+      exists .fragment τ𝕒, φ₂, ⊤, ω₂, ω₀ ∪ ω₁
       constructor; simp
       constructor; cc
       constructor; apply HX
@@ -74,4 +74,140 @@ lemma preservation.under_ctx𝔹 :
       . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
         apply typing.weakening _ _ _ _ _ _ _ _ Hf
       . apply HX
-  all_goals admit
+  case lift =>
+    cases Hτ
+    case lift_lam τ𝕒 τ𝕓 φ₀ φ₁ ω₀ Hω HX =>
+      exists .arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀ ω₀, φ₁, ⊤, ω, ∅
+      constructor; simp
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp
+      apply typing.lift_lam; apply HX; apply Hω
+    case lift_lit φ₀ HX =>
+      exists .nat, φ₀, ⊤, ω, ∅
+      constructor; simp
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp
+      apply typing.lift_lit; apply HX
+    case lift_unit φ₀ HX =>
+      exists .unit, φ₀, ⊤, ω, ∅
+      constructor; simp
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp
+      apply typing.lift_unit; apply HX
+  case lets e Hlc =>
+    cases Hτ
+    case lets τ𝕒 φ₀ φ₁ ω₀ ω₁ Hwbt HX Hclosed He =>
+      exists τ𝕒, φ₀, φ₁, ω₀, ω₁
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX
+      apply typing.lets
+      . apply HX
+      . have HEq : ({0 ↦ (Δ ++ Γ).length}e) = (shiftl Γ.length Δ.length {0 ↦ Γ.length}e) :=
+          by simp [comm.shiftl_opening, identity.shiftl _ _ _ Hclosed, Nat.add_comm]
+        rw [HEq]
+        apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
+        apply typing.weakening.strengthened _ _ [(τ𝕒, 𝟙)] _ _ _ _ _ _ _ He (by simp)
+      . apply Hwbt
+      . apply closed.inc; apply Hclosed; simp
+  case alloc₁ =>
+    cases Hτ
+    case alloc₁ ω HX =>
+      exists .nat, φ, ⊥, ω, { .init 𝟙 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      apply typing.alloc₁
+      apply HX
+  case alloc₂ =>
+    cases Hτ
+    case alloc₂ φ ω HX =>
+      exists .fragment .nat, φ, ⊤, ω, { .init 𝟚 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      apply typing.alloc₂
+      apply HX
+  case load₁ =>
+    cases Hτ
+    case load₁ ω HX =>
+      exists .ref .nat, φ, ⊥, ω, { .read 𝟙 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      apply typing.load₁
+      apply HX
+  case load₂ =>
+    cases Hτ
+    case load₂ φ ω HX =>
+      exists .fragment (.ref .nat), φ, ⊤, ω, { .read 𝟚 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      apply typing.load₂
+      apply HX
+  case storel₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ ω₀ ω₁ HX Hr =>
+      exists .ref .nat, φ₀, φ₁, ω₀, ω₁ ∪ { .write 𝟙 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX
+      have HEqω : ω ∪ (ω₁ ∪ {.write 𝟙}) = ω ∪ ω₁ ∪ {.write 𝟙} := by cc
+      rw [HEqω]
+      apply typing.store₁
+      . apply HX
+      . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ _ Hr
+  case storer₁ =>
+    cases Hτ
+    case store₁ φ₀ φ₁ ω₀ ω₁ Hl HX =>
+      exists .nat, φ₁, φ₀, ω₁, ω₀ ∪ { .write 𝟙 }
+      constructor; cases φ₀ <;> cases φ₁ <;> simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX
+      have HEqφ : φ ∪ φ₀ = φ₀ ∪ φ := by cases φ₀ <;> simp
+      have HEqω : ω ∪ (ω₀ ∪ {.write 𝟙}) = ω₀ ∪ ω ∪ {.write 𝟙} := by cc
+      rw [HEqφ, HEqω]
+      apply typing.store₁
+      . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ _ Hl
+      . apply HX
+  case storel₂ =>
+    cases Hτ
+    case store₂ φ₀ φ₁ ω₀ ω₁ HX Hr =>
+      exists .fragment (.ref .nat), φ₀, ⊤, ω₀, ω₁ ∪ { .write 𝟚 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      have HEqω : ω ∪ (ω₁ ∪ {.write 𝟚}) = ω ∪ ω₁ ∪ {.write 𝟚} := by cc
+      rw [HEqω]
+      apply typing.store₂
+      . apply HX
+      . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ _ Hr
+  case storer₂ =>
+    cases Hτ
+    case store₂ φ₀ φ₁ ω₀ ω₁ Hl HX =>
+      exists .fragment .nat, φ₁, ⊤, ω₁, ω₀ ∪ { .write 𝟚 }
+      constructor; simp
+      constructor; cc
+      constructor; apply HX
+      intros σ₁ Δ e₁ φ ω Hσ HX; simp [-Set.union_singleton]
+      have HEqω : ω ∪ (ω₀ ∪ {.write 𝟚}) = ω₀ ∪ ω ∪ {.write 𝟚} := by cc
+      rw [HEqω]
+      apply typing.store₂
+      . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
+        apply typing.weakening _ _ _ _ _ _ _ _ Hl
+      . apply HX
