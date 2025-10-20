@@ -79,7 +79,10 @@ abbrev MEffects :=
 -- wbt
 @[simp]
 def wbt_meffect : Stage → MEffect → Prop
-  | 𝟙, _ => true
+  | 𝟙, .init 𝟙 => true
+  | 𝟙, .read 𝟙 => true
+  | 𝟙, .write 𝟙 => true
+  | 𝟙, _ => false
   | 𝟚, .init 𝟚 => true
   | 𝟚, .read 𝟚 => true
   | 𝟚, .write 𝟚 => true

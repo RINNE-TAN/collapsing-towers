@@ -40,6 +40,10 @@ mutual
       typing σ Γ 𝟚 e τ ⊥ ω →
       typing σ Γ 𝟙 (.reflect e) (.fragment τ) ⊤ ω
     | lam𝕔 : ∀ σ Γ e τ𝕒 τ𝕓 φ ω,
+      -- Γ, x² ↦ τ𝕒 ⊢ᵣ e : <τ𝕓> ! ω
+      -- wbt_meffects 𝟚 ω
+      -- ——————————————————————————————
+      -- Γ ⊢ lam𝕔 x.e : <τ𝕒 →ω τ𝕓> ! ∅
       typing_reification σ ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ ω →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
@@ -58,6 +62,9 @@ mutual
       closed_at e Γ.length →
       typing σ Γ 𝟙 (.lets𝕔 b e) (.rep τ𝕓) ⊥ (ω₀ ∪ ω₁)
     | run : ∀ σ Γ e τ φ ω,
+      -- ⦰ ⊢ᵣ e : <τ> ! ω
+      -- ————————————————————
+      -- Γ ⊢ run e : τ⇊ ! ω⇊
       typing_reification σ Γ e (.rep τ) φ ω →
       closed e →
       typing σ Γ 𝟙 (.run e) (escape_ty τ) ⊥ (escape_meffects ω)

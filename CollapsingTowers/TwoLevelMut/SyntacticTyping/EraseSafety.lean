@@ -2,7 +2,7 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Typing
 
 -- Γ ⊢ e : τ ! ω
 -- —————————————————————
--- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖ ! ‖ω‖
+-- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖ ! ω⇈
 theorem typing.erase.safety :
   ∀ Γ 𝕊 e τ φ ω,
     typing ϵ Γ 𝕊 e τ φ ω →

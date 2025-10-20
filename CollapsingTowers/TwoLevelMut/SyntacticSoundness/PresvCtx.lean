@@ -211,3 +211,35 @@ lemma preservation.under_ctx𝔹 :
       . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ
         apply typing.weakening _ _ _ _ _ _ _ _ Hl
       . apply HX
+
+lemma preservation.under_ctxℝ :
+  ∀ σ₀ intro Γ R e₀ τ φ ω,
+    ctxℝ intro Γ.length R →
+    lc e₀ →
+    typing σ₀ Γ 𝟙 R⟦e₀⟧ τ φ ω →
+    ∃ Δ τ𝕖 φ₀ ω₀,
+    ∃ ωℝ : MEffects → MEffects,
+      Δ.length = Γ.length + intro ∧
+      ω = ωℝ ω₀ ∧
+      (∀ ω₀ ω₁, ω₁ ≤ ω₀ → ωℝ ω₁ ≤ ωℝ ω₀) ∧
+      typing_reification σ₀ Δ e₀ τ𝕖 φ₀ ω₀ ∧
+      ∀ σ₁ e₁ φ₁ ω₁,
+        σ₀.length ≤ σ₁.length →
+        fv e₁ ⊆ fv e₀ →
+        typing_reification σ₁ Δ e₁ τ𝕖 φ₁ ω₁ →
+        typing σ₁ Γ 𝟙 R⟦e₁⟧ τ φ (ωℝ ω₁) :=
+  by
+  intros σ₀ intro Γ R e₀ τ φ ω HR Hlc Hτ
+  cases HR
+  case lam𝕔 =>
+    cases Hτ
+    case lam𝕔 τ𝕒 τ𝕓 φ₀ ω₀ Hwbt Hω HX Hclosed =>
+      rw [identity.opening_closing _ _ _ Hlc] at HX
+      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀, ω₀, fun _ => ∅
+      constructor; simp
+      constructor; simp
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ e₁ φ₁ ω₁ Hσ Hfv HX
+      admit
+  all_goals admit
