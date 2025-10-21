@@ -69,19 +69,15 @@ theorem typing.escape :
   apply typing.escape.strengthened _ _ _ _ _ _ Hτ
 
 theorem preservation.pure.head :
-  ∀ σ Γ e₀ e₁ τ φ₀ ω₀,
+  ∀ σ Γ e₀ e₁ τ φ ω,
     head_pure e₀ e₁ →
-    typing σ Γ 𝟙 e₀ τ φ₀ ω₀ →
-    ∃ φ₁ ω₁,
-      typing σ Γ 𝟙 e₁ τ φ₁ ω₁ ∧
-      φ₁ ≤ φ₀ ∧
-      ω₁ ≤ ω₀ :=
+    typing σ Γ 𝟙 e₀ τ φ ω →
+    typing σ Γ 𝟙 e₁ τ φ ω :=
   by
-  intros σ Γ e₀ e₁ τ φ₀ ω₀ Hhead Hτ
+  intros σ Γ e₀ e₁ τ φ ω Hhead Hτ
   have Hlc := typing.regular _ _ _ _ _ _ _ Hτ
   cases Hhead
   case lets Hvalue =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lets φ₀ φ₁ ω₀ ω₁ _ Hτv Hclosed Hτe =>
       have Hpureφ : φ₀ = ⊥ := by cases Hvalue <;> cases Hτv <;> rfl
@@ -91,7 +87,6 @@ theorem preservation.pure.head :
       rw [← intro.subst _ _ _ _ Hclosed]
       apply preservation.subst _ _ _ _ _ _ _ _ _ Hτv Hτe
   case app₁ Hvalue =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case app₁ φ₀ φ₁ φ₂ ω₀ ω₁ ω₂ Hτv Hτf =>
       cases Hτf
@@ -103,7 +98,6 @@ theorem preservation.pure.head :
         rw [← intro.subst _ _ _ _ Hclosed]
         apply preservation.subst _ _ _ _ _ _ _ _ _ Hτv Hτe
   case app₂ =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case app₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -116,7 +110,6 @@ theorem preservation.pure.head :
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
   case lift_lit =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lift_lit Hτ =>
       cases Hτ
@@ -125,7 +118,6 @@ theorem preservation.pure.head :
     case lift_lam => contradiction
     case lift_unit => contradiction
   case lift_lam =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lift_lam Hτ =>
       cases Hτ
@@ -144,7 +136,6 @@ theorem preservation.pure.head :
     case lift_lit => contradiction
     case lift_unit => contradiction
   case lift_unit =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lift_unit Hτ =>
       cases Hτ
@@ -153,7 +144,6 @@ theorem preservation.pure.head :
     case lift_lit => contradiction
     case lift_lam => contradiction
   case lam𝕔 e =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lam𝕔 Hwbt _ Hτ Hclosed =>
       apply typing.reflect
@@ -162,7 +152,6 @@ theorem preservation.pure.head :
       . apply Hwbt
       . apply Hclosed
   case lets𝕔 b e =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case lets𝕔 Hwbt Hτb Hτe Hclosed =>
       apply typing.code_rep
@@ -173,7 +162,6 @@ theorem preservation.pure.head :
       . apply Hwbt
       . apply Hclosed
   case run =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case run Hclosed Hτ =>
       rw [← List.append_nil Γ]
@@ -183,7 +171,6 @@ theorem preservation.pure.head :
       apply typing_reification_code _ _ _ _ _ _ Hτ
       apply Hclosed
   case alloc₂ Hτ =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case alloc₂ Hτ =>
       cases Hτ
@@ -192,7 +179,6 @@ theorem preservation.pure.head :
         apply typing.alloc₁
         apply typing.fvar; apply Hbinds; apply Hwbt
   case load₂ Hτ =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case load₂ Hτ =>
       cases Hτ
@@ -201,7 +187,6 @@ theorem preservation.pure.head :
         apply typing.load₁
         apply typing.fvar; apply Hbinds; apply Hwbt
   case store₂ Hτ =>
-    exists φ₀, ω₀; simp
     cases Hτ
     case store₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -213,32 +198,3 @@ theorem preservation.pure.head :
           apply typing.store₁
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
-
-theorem preservation.pure :
-  ∀ σ Γ M e₀ e₁ τ φ₀ ω₀,
-    ctx𝕄 Γ.length M →
-    lc e₀ →
-    head_pure e₀ e₁ →
-    typing σ Γ 𝟙 M⟦e₀⟧ τ φ₀ ω₀ →
-    ∃ φ₁ ω₁,
-      typing σ Γ 𝟙 M⟦e₁⟧ τ φ₁ ω₁ ∧
-      φ₁ ≤ φ₀ ∧
-      ω₁ ≤ ω₀ :=
-  by
-  intros σ Γ M e₀ e₁ τ φ₀ ω₀ HM Hlc Hhead Hτ
-  generalize HEqlvl : Γ.length = lvl
-  rw [HEqlvl] at HM
-  induction HM generalizing Γ τ φ₀ ω₀
-  case hole => apply preservation.pure.head _ _ _ _ _ _ _ Hhead Hτ
-  case cons𝔹 B M HB HM IH =>
-    have ⟨τ𝕖, φ₁, φ₂, ω₁, ω₂, HEqφ, HEqω, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ _ _ HB Hτ
-    rw [HEqφ, HEqω]
-    have ⟨φ₃, ω₃, Hτ, HLeφ, HLeω⟩ := IH _ _ _ _ Hτ HEqlvl
-    have Hτ := IHτB σ ⦰ _ _ _ (by omega) Hτ
-    exists φ₃ ∪ φ₂, ω₃ ∪ ω₂; constructor
-    . apply Hτ
-    . constructor
-      . cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp at HLeφ <;> simp
-      . apply Set.union_subset_union_left _ HLeω
-  case consℝ R M HR HM IH =>
-    admit
