@@ -198,3 +198,52 @@ theorem preservation.pure.head :
           apply typing.store₁
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
+
+theorem preservation.pure :
+  ∀ σ Γ M e₀ e₁ τ φ₀ ω₀,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    head_pure e₀ e₁ →
+    typing σ Γ 𝟙 M⟦e₀⟧ τ φ₀ ω₀ →
+    ∃ φ₁ ω₁,
+      typing σ Γ 𝟙 M⟦e₁⟧ τ φ₁ ω₁ ∧
+      φ₁ ≤ φ₀ ∧
+      ω₁ ≤ ω₀ ∧
+      stage_meffects 𝟙 (ω₀ \ ω₁) :=
+  by
+  intros σ Γ M e₀ e₁ τ φ₀ ω₀ HM Hlc Hhead Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing Γ τ φ₀ ω₀
+  case hole =>
+    exists φ₀, ω₀
+    constructor; apply preservation.pure.head _ _ _ _ _ _ _ Hhead Hτ
+    constructor; simp
+    constructor; simp
+    simp
+  case cons𝔹 B M HB HM IH =>
+    have ⟨τ𝕖, φ₁, φ₂, ω₁, ω₂, HEqφ, HEqω, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ _ _ HB Hτ
+    rw [HEqφ, HEqω]
+    have ⟨φ₃, ω₃, Hτ, HLeφ, HLeω, Hdiffω⟩ := IH _ _ _ _ Hτ HEqlvl
+    have Hτ := IHτB σ ⦰ _ _ _ (by omega) Hτ
+    exists φ₃ ∪ φ₂, ω₃ ∪ ω₂; constructor
+    . apply Hτ
+    . constructor; cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp at HLeφ <;> simp
+      constructor; apply Set.union_subset_union_left _ HLeω
+      apply stage_meffects.mono _ _ _ _ Hdiffω
+      apply Set.union_diff_union_cancel_right
+  case consℝ R M HR HM IH =>
+    rw [← HEqlvl] at HR IH
+    have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
+    have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_pure.fv_shrink _ _ Hhead)
+    have ⟨Δ, τ𝕖, φ₁, ω₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ _ _ HR Hlc Hτ
+    cases Hτ
+    case pure Hτ =>
+      have ⟨φ₂, ω₂, Hτ, HLeφ, HLeω, Hdiffω⟩ := IH _ _ _ _ Hτ HEqΓ
+      cases φ₂ <;> try contradiction
+      have ⟨ω₃, HLeω, Hdiffω, Hτ⟩ := IHτR σ _ _ _ (by simp) Hfv HLeω Hdiffω (typing_reification.pure _ _ _ _ _ Hτ)
+      exists φ₀, ω₃
+    case reify Hτ =>
+      have ⟨φ₂, ω₂, Hτ, HLeφ, HLeω, Hdiffω⟩ := IH _ _ _ _ Hτ HEqΓ
+      have ⟨ω₃, HLeω, Hdiffω, Hτ⟩ := IHτR σ _ _ _ (by simp) Hfv HLeω Hdiffω (typing_reification.reify _ _ _ _ _ _ Hτ)
+      exists φ₀, ω₃

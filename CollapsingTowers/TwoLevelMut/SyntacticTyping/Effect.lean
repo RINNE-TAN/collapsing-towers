@@ -78,7 +78,7 @@ abbrev MEffects :=
 
 -- wbt
 @[simp]
-def wbt_meffect : Stage → MEffect → Prop
+def stage_meffect : Stage → MEffect → Prop
   | 𝟙, .init 𝟙 => true
   | 𝟙, .read 𝟙 => true
   | 𝟙, .write 𝟙 => true
@@ -89,8 +89,8 @@ def wbt_meffect : Stage → MEffect → Prop
   | 𝟚, _ => false
 
 @[simp]
-def wbt_meffects (𝕊 : Stage) (ω : MEffects) : Prop :=
-  ∀ β ∈ ω, wbt_meffect 𝕊 β
+def stage_meffects (𝕊 : Stage) (ω : MEffects) : Prop :=
+  ∀ β ∈ ω, stage_meffect 𝕊 β
 
 -- erase
 @[simp]
@@ -114,18 +114,60 @@ def escape_meffect : MEffect → MEffect
 def escape_meffects (ω : MEffects) : MEffects :=
   { escape_meffect β | β ∈ ω }
 
-lemma grounded_meffect.under_erase : ∀ β, wbt_meffect 𝟚 (erase_meffect β) :=
+-- stage lemma
+lemma stage_meffect.under_erase : ∀ β, stage_meffect 𝟚 (erase_meffect β) :=
   by
   intros β
   cases β <;> simp
 
-lemma grounded_meffects.under_erase : ∀ ω, wbt_meffects 𝟚 (erase_meffects ω) :=
+lemma stage_meffects.under_erase : ∀ ω, stage_meffects 𝟚 (erase_meffects ω) :=
   by
   intros ω β₀ Hβ₀
   have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
   rw [← HEqβ]
-  apply grounded_meffect.under_erase
+  apply stage_meffect.under_erase
 
+lemma stage_meffect.under_escape : ∀ β, stage_meffect 𝟙 (escape_meffect β) :=
+  by
+  intros β
+  cases β <;> simp
+
+lemma stage_meffects.under_escape : ∀ ω, stage_meffects 𝟙 (escape_meffects ω) :=
+  by
+  intros ω β₀ Hβ₀
+  have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
+  rw [← HEqβ]
+  apply stage_meffect.under_escape
+
+lemma stage_meffects.mono : ∀ 𝕊 ω₀ ω₁, ω₁ ≤ ω₀ → stage_meffects 𝕊 ω₀ → stage_meffects 𝕊 ω₁ :=
+  by
+  intros 𝕊 ω₀ ω₁ HLeω Hω β₀ Hβ₀
+  apply Hω _ (Set.mem_of_subset_of_mem HLeω Hβ₀)
+
+lemma stage_meffects.disjoint : ∀ ω, stage_meffects 𝟙 ω → stage_meffects 𝟚 ω → ω = ∅ :=
+  by
+  intros ω Hω₁ Hω₂
+  apply Set.eq_empty_of_forall_notMem
+  intros β Hβ
+  have H₁ := Hω₁ _ Hβ
+  have H₂ := Hω₂ _ Hβ
+  cases β
+  all_goals next 𝕊 =>
+    cases 𝕊 <;> simp at H₁ H₂
+
+lemma stage_meffects.diff :
+  ∀ 𝕊 ω₀ ω₁,
+    stage_meffects 𝕊 ω₀ →
+    stage_meffects 𝕊 ω₁ →
+    stage_meffects 𝕊 (ω₀ \ ω₁) :=
+  by
+  intros 𝕊 ω₀ ω₁ Hω₀ Hω₁
+  intros β Hβ
+  apply Hω₀
+  apply Set.mem_of_subset_of_mem _ Hβ
+  apply Set.diff_subset
+
+-- erase lemma
 @[simp]
 lemma erase_meffects.init : ∀ 𝕊, erase_meffects { .init 𝕊 } = { .init 𝟚 } :=
   by simp
@@ -165,6 +207,7 @@ lemma erase_meffects.cancel_escape : ∀ ω, erase_meffects (escape_meffects ω)
   rw [← Set.image_comp]
   rw [funext erase_meffect.cancel_escape]
 
+-- escape lemma
 @[simp]
 lemma escape_meffects.empty : escape_meffects ∅ = ∅ :=
   by simp
@@ -188,3 +231,13 @@ lemma escape_meffects.read : ∀ 𝕊, escape_meffects { .read 𝕊 } = { .read 
 @[simp]
 lemma escape_meffects.write : ∀ 𝕊, escape_meffects { .write 𝕊 } = { .write 𝟙 } :=
   by simp
+
+lemma escape_meffects.mono : ∀ ω₀ ω₁, ω₀ ≤ ω₁ → escape_meffects ω₀ ≤ escape_meffects ω₁ :=
+  by
+  intros ω₀ ω₁ HLeω
+  intros β₀ Hβ₀
+  have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
+  exists β₁
+  constructor
+  . apply HLeω Hβ₁
+  . apply HEqβ

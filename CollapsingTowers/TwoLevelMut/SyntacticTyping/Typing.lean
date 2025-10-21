@@ -14,7 +14,7 @@ mutual
       typing σ Γ 𝕊 (.lam e) (.arrow τ𝕒 τ𝕓 φ ω) ⊥ ∅
     | lift_lam : ∀ σ Γ e τ𝕒 τ𝕓 φ₀ φ₁ ω₀ ω₁,
       typing σ Γ 𝟙 e (.arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀ ω₀) φ₁ ω₁ →
-      wbt_meffects 𝟚 ω₀ →
+      stage_meffects 𝟚 ω₀ →
       typing σ Γ 𝟙 (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥ ω₀)) ⊤ ω₁
     | app₁ : ∀ σ Γ 𝕊 f arg τ𝕒 τ𝕓 φ₀ φ₁ φ₂ ω₀ ω₁ ω₂,
       typing σ Γ 𝕊 f (.arrow τ𝕒 τ𝕓 φ₀ ω₀) φ₁ ω₁ →
@@ -47,7 +47,7 @@ mutual
       typing_reification σ ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ ω →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
-      wbt_meffects 𝟚 ω →
+      stage_meffects 𝟚 ω →
       typing σ Γ 𝟙 (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥ ω)) ⊤ ∅
     | lets : ∀ σ Γ 𝕊 b e τ𝕒 τ𝕓 φ₀ φ₁ ω₀ ω₁,
       typing σ Γ 𝕊 b τ𝕒 φ₀ ω₀ →

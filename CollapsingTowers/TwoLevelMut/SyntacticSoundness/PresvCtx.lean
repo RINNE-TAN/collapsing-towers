@@ -213,33 +213,87 @@ lemma preservation.under_ctx𝔹 :
       . apply HX
 
 lemma preservation.under_ctxℝ :
-  ∀ σ₀ intro Γ R e₀ τ φ ω,
+  ∀ σ₀ intro Γ R e₀ τ φ ωℝ₀,
     ctxℝ intro Γ.length R →
     lc e₀ →
-    typing σ₀ Γ 𝟙 R⟦e₀⟧ τ φ ω →
+    typing σ₀ Γ 𝟙 R⟦e₀⟧ τ φ ωℝ₀ →
     ∃ Δ τ𝕖 φ₀ ω₀,
-    ∃ ωℝ : MEffects → MEffects,
       Δ.length = Γ.length + intro ∧
-      ω = ωℝ ω₀ ∧
-      (∀ ω₀ ω₁, ω₁ ≤ ω₀ → ωℝ ω₁ ≤ ωℝ ω₀) ∧
       typing_reification σ₀ Δ e₀ τ𝕖 φ₀ ω₀ ∧
       ∀ σ₁ e₁ φ₁ ω₁,
         σ₀.length ≤ σ₁.length →
         fv e₁ ⊆ fv e₀ →
+        ω₁ ≤ ω₀ →
+        stage_meffects 𝟙 (ω₀ \ ω₁) →
         typing_reification σ₁ Δ e₁ τ𝕖 φ₁ ω₁ →
-        typing σ₁ Γ 𝟙 R⟦e₁⟧ τ φ (ωℝ ω₁) :=
+        ∃ ωℝ₁,
+          ωℝ₁ ≤ ωℝ₀ ∧
+          stage_meffects 𝟙 (ωℝ₀ \ ωℝ₁) ∧
+          typing σ₁ Γ 𝟙 R⟦e₁⟧ τ φ ωℝ₁ :=
   by
   intros σ₀ intro Γ R e₀ τ φ ω HR Hlc Hτ
   cases HR
   case lam𝕔 =>
     cases Hτ
-    case lam𝕔 τ𝕒 τ𝕓 φ₀ ω₀ Hwbt Hω HX Hclosed =>
+    case lam𝕔 τ𝕒 τ𝕓 φ₀ ωx₀ Hwbt Hω HX Hclosed =>
       rw [identity.opening_closing _ _ _ Hlc] at HX
-      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀, ω₀, fun _ => ∅
-      constructor; simp
-      constructor; simp
+      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀, ωx₀
       constructor; simp
       constructor; apply HX
-      intros σ₁ e₁ φ₁ ω₁ Hσ Hfv HX
-      admit
-  all_goals admit
+      intros σ₁ e₁ φ₁ ω₁ Hσ Hfv HLeω Hdiffω HX
+      exists ∅
+      constructor; simp
+      constructor; simp
+      have HEqω : ωx₀ = ω₁ :=
+        by
+        apply Set.eq_of_subset_of_subset
+        . rw [← Set.diff_eq_empty]
+          apply stage_meffects.disjoint _ Hdiffω
+          apply stage_meffects.mono _ _ _ (by simp) Hω
+        . apply HLeω
+      rw [← HEqω] at HX
+      apply typing.lam𝕔
+      . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ _ _ HX)]
+        apply HX
+      . apply Hwbt
+      . rw [← closed.under_closing]
+        apply typing_reification.closed_at_env _ _ _ _ _ _ HX
+      . apply Hω
+  case lets𝕔 =>
+    cases Hτ
+    case lets𝕔 τ𝕒 τ𝕓 φ₀ ωx₀ ωx₁ Hwbt Hb HX Hclosed =>
+      rw [identity.opening_closing _ _ _ Hlc] at HX
+      exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀, ωx₁
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ e₁ φ₁ ω₁ Hσ Hfv HLeω Hdiffω HX
+      exists ωx₀ ∪ ω₁
+      constructor; apply Set.union_subset_union_right _ HLeω
+      constructor
+      . apply stage_meffects.mono _ _ _ _ Hdiffω
+        apply Set.union_diff_union_cancel_left
+      apply typing.lets𝕔
+      . apply typing.weakening.store _ _ _ _ _ _ _ _ Hσ Hb
+      . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ _ _ HX)]
+        apply HX
+      . apply Hwbt
+      . rw [← closed.under_closing]
+        apply typing_reification.closed_at_env _ _ _ _ _ _ HX
+  case run =>
+    cases Hτ
+    case run τ φ₀ ωx₀ Hclosed HX =>
+      exists Γ, .rep τ, φ₀, ωx₀
+      constructor; simp
+      constructor; apply HX
+      intros σ₁ e₁ φ₁ ω₁ Hσ Hfv HLeω _ HX
+      exists escape_meffects ω₁
+      constructor; apply escape_meffects.mono _ _ HLeω
+      constructor
+      . apply stage_meffects.diff
+        apply stage_meffects.under_escape
+        apply stage_meffects.under_escape
+      apply typing.run
+      . apply HX
+      . rw [closed_iff_fv_empty] at Hclosed
+        simp [Hclosed] at Hfv
+        rw [closed_iff_fv_empty, Hfv]

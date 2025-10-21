@@ -35,7 +35,7 @@ def wbt : Stage → Ty → Prop
   | 𝟙, (.ref τ) => wbt 𝟙 τ
   | 𝟙, _ => false
   | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 φ ω) => φ = ⊥ ∧ wbt_meffects 𝟚 ω ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
+  | 𝟚, (.arrow τ𝕒 τ𝕓 φ ω) => φ = ⊥ ∧ stage_meffects 𝟚 ω ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false
@@ -61,7 +61,7 @@ lemma grounded_ty.under_erase : ∀ τ, wbt 𝟚 (erase_ty τ) :=
   case nat => simp
   case arrow IH₀ IH₁ =>
     constructor; rfl
-    constructor; apply grounded_meffects.under_erase
+    constructor; apply stage_meffects.under_erase
     simp [IH₀, IH₁]
   case fragment IH => simp [IH]
   case rep IH => simp [IH]
