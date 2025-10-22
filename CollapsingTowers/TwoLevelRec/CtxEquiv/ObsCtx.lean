@@ -98,8 +98,8 @@ lemma typing.congruence_under_ObsCtx𝔹 :
     ObsCtx𝔹 Δ τδ B Γ τγ →
     typing Γ 𝟚 B⟦X⟧ τγ ⊥ :=
   by
-  intros Δ Γ τδ τγ B X HX HC
-  induction HC generalizing X
+  intros Δ Γ τδ τγ B X HX HB
+  cases HB
   case lam Hwbt =>
     apply typing.lam
     . rw [identity.opening_closing]
