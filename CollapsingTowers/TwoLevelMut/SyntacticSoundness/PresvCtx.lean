@@ -297,3 +297,40 @@ lemma preservation.under_ctxℝ :
       . rw [closed_iff_fv_empty] at Hclosed
         simp [Hclosed] at Hfv
         rw [closed_iff_fv_empty, Hfv]
+
+lemma preservation.under_ctx𝔼  :
+  ∀ σ₀ Γ E e₀ τ φ ω,
+    ctx𝔼 E →
+    typing σ₀ Γ 𝟙 E⟦e₀⟧ τ φ ω →
+    ∃ τ𝕖 φ₀ φ𝔼 ω₀ ω𝔼,
+      φ = φ₀ ∪ φ𝔼 ∧
+      ω = ω₀ ∪ ω𝔼 ∧
+      typing σ₀ Γ 𝟙 e₀ τ𝕖 φ₀ ω₀ ∧
+      ∀ σ₁ Δ e₁ φ₁ ω₁,
+        σ₀.length ≤ σ₁.length →
+        typing σ₁ (Δ ++ Γ) 𝟙 e₁ τ𝕖 φ₁ ω₁ →
+        typing σ₁ (Δ ++ Γ) 𝟙 E⟦e₁⟧ τ (φ₁ ∪ φ𝔼) (ω₁ ∪ ω𝔼) :=
+  by
+  intros σ₀ Γ E e₀ τ φ₀ ω₀ HE Hτ
+  induction HE generalizing τ φ₀ ω₀
+  case hole =>
+    exists τ, φ₀, ⊥, ω₀, ∅
+    constructor; simp
+    constructor; simp
+    constructor; apply Hτ
+    intros σ₁ Δ e φ Hσ; simp
+  case cons𝔹 B E HB HE IH =>
+    have ⟨τ𝕖, φ₀, φ₁, ω₀, ω₁, HEqφ₀, HEqω₀, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ _ _ HB Hτ
+    have ⟨τ𝕖, φ₂, φ₃, ω₂, ω₃, HEqφ₁, HEqω₁, Hτ, IHτE⟩ := IH _ _ _ Hτ
+    rw [HEqφ₀, HEqφ₁, HEqω₀, HEqω₁]
+    exists τ𝕖, φ₂, φ₁ ∪ φ₃, ω₂, ω₁ ∪ ω₃
+    constructor; cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp
+    constructor; cc
+    constructor; apply Hτ
+    intros σ₁ Δ e φ ω Hσ Hτ
+    have Hτ := IHτE _ _ _ _ _ Hσ Hτ
+    have Hτ := IHτB _ _ _ _ _ Hσ Hτ
+    have HEqφ : φ ∪ (φ₁ ∪ φ₃) = φ ∪ φ₃ ∪ φ₁ := by cases φ₁ <;> cases φ₃ <;> simp
+    have HEqω : ω ∪ (ω₁ ∪ ω₃) = ω ∪ ω₃ ∪ ω₁ := by cc
+    rw [HEqφ, HEqω]
+    apply Hτ

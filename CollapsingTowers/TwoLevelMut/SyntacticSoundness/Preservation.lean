@@ -41,7 +41,24 @@ theorem preservation.strengthened :
       . apply Hok₁
       . exists φ₀, ω; exact ⟨typing_reification.reify _ _ _ _ _ _ Hτ, by simp, Hω⟩
   case reflect P E e HP HE Hlc =>
-    admit
+    cases HP
+    case hole =>
+      have Hτ := preservation.reflect.head _ _ _ _ _ _ _ HE Hτ
+      constructor
+      . apply Hok₀
+      . exists ⊥, ω₀
+    case consℚ HQ =>
+      cases Hτ
+      case pure Hτ =>
+        have ⟨ω₁, Hτ, Hω, _⟩ := preservation.reflect _ _ _ _ _ _ _ _ HQ HE Hlc Hτ
+        constructor
+        . apply Hok₀
+        . exists ⊥, ω₁; exact ⟨typing_reification.pure _ _ _ _ _ Hτ, rfl, Hω⟩
+      case reify Hτ =>
+        have ⟨ω₁, Hτ, Hω, _⟩ := preservation.reflect _ _ _ _ _ _ _ _ HQ HE Hlc Hτ
+        constructor
+        . apply Hok₀
+        . exists φ₀, ω₁; exact ⟨typing_reification.reify _ _ _ _ _ _ Hτ, by simp, Hω⟩
 
 theorem preservation :
   ∀ σ₀ σ₁ e₀ e₁ τ φ₀ ω₀,

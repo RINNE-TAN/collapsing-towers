@@ -167,6 +167,18 @@ lemma stage_meffects.diff :
   apply Set.mem_of_subset_of_mem _ Hβ
   apply Set.diff_subset
 
+lemma stage_meffects.union :
+  ∀ 𝕊 ω₀ ω₁,
+    stage_meffects 𝕊 ω₀ →
+    stage_meffects 𝕊 ω₁ →
+    stage_meffects 𝕊 (ω₀ ∪ ω₁) :=
+  by
+  intros 𝕊 ω₀ ω₁ Hω₀ Hω₁
+  intros β Hβ
+  cases Hβ
+  case inl Hβ₀ => apply Hω₀ _ Hβ₀
+  case inr Hβ₁ => apply Hω₁ _ Hβ₁
+
 -- erase lemma
 @[simp]
 lemma erase_meffects.init : ∀ 𝕊, erase_meffects { .init 𝕊 } = { .init 𝟚 } :=
