@@ -76,7 +76,6 @@ inductive MEffect : Type where
 abbrev MEffects :=
   Set MEffect
 
--- wbt
 @[simp]
 def stage_meffect : Stage → MEffect → Prop
   | 𝟙, .init 𝟙 => true
