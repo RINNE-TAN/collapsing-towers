@@ -1,3 +1,0 @@
-import CollapsingTowers.TwoLevelMut.LogicalEquiv.World
-import CollapsingTowers.TwoLevelMut.LogicalEquiv.LogicalRelation
-import CollapsingTowers.TwoLevelMut.LogicalEquiv.Compatibility
