@@ -1,8 +1,9 @@
+import CollapsingTowers.TwoLevelMut.SyntacticTyping.Meta
 import CollapsingTowers.TwoLevelMut.SyntacticTyping.Effect
 
 inductive Ty : Type where
   | nat
-  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : REffects) (ω : MEffects)
+  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Meta) (ω : Effects)
   | fragment (τ : Ty)
   | rep (τ : Ty)
   | unit
@@ -11,7 +12,7 @@ inductive Ty : Type where
 @[simp]
 def erase_ty : Ty → Ty
   | .nat => .nat
-  | .arrow τa τb _ ω => .arrow (erase_ty τa) (erase_ty τb) ⊥ (erase_meffects ω)
+  | .arrow τa τb _ ω => .arrow (erase_ty τa) (erase_ty τb) ⊥ (erase_effects ω)
   | .fragment τ => erase_ty τ
   | .rep τ => erase_ty τ
   | .unit => .unit
@@ -20,7 +21,7 @@ def erase_ty : Ty → Ty
 @[simp]
 def escape_ty : Ty → Ty
   | .nat => .nat
-  | .arrow τa τb φ ω => .arrow (escape_ty τa) (escape_ty τb) φ (escape_meffects ω)
+  | .arrow τa τb φ ω => .arrow (escape_ty τa) (escape_ty τb) φ (escape_effects ω)
   | .fragment τ => .fragment (escape_ty τ)
   | .rep τ => .rep (escape_ty τ)
   | .unit => .unit
@@ -35,7 +36,7 @@ def wbt : Stage → Ty → Prop
   | 𝟙, (.ref τ) => wbt 𝟙 τ
   | 𝟙, _ => false
   | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 φ ω) => φ = ⊥ ∧ stage_meffects 𝟚 ω ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
+  | 𝟚, (.arrow τ𝕒 τ𝕓 φ ω) => φ = ⊥ ∧ stage_effects 𝟚 ω ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false
@@ -61,7 +62,7 @@ lemma grounded_ty.under_erase : ∀ τ, wbt 𝟚 (erase_ty τ) :=
   case nat => simp
   case arrow IH₀ IH₁ =>
     constructor; rfl
-    constructor; apply stage_meffects.under_erase
+    constructor; apply stage_effects.under_erase
     simp [IH₀, IH₁]
   case fragment IH => simp [IH]
   case rep IH => simp [IH]
@@ -75,7 +76,7 @@ lemma erase_ty.cancel_escape : ∀ τ, erase_ty (escape_ty τ) = erase_ty τ :=
   induction τ
   case nat => simp
   case arrow IH₀ IH₁ =>
-    rw [escape_ty, erase_ty, erase_meffects.cancel_escape]
+    rw [escape_ty, erase_ty, erase_effects.cancel_escape]
     simp [IH₀, IH₁]
   case fragment IH => simp [IH]
   case rep IH => simp [IH]

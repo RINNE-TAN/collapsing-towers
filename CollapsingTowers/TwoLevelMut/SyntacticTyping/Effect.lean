@@ -1,63 +1,4 @@
-import Mathlib.Order.Basic
 import Mathlib.Data.Set.Image
-
--- reification effect
-inductive REffects : Type where
-  | pure
-  | reify
-
-notation:max "⊥" => REffects.pure
-
-notation:max "⊤" => REffects.reify
-
-@[simp]
-def REffects.union : REffects → REffects → REffects
-  | ⊥, ⊥ => ⊥
-  | ⊤, _ => ⊤
-  | _, ⊤ => ⊤
-
-@[simp]
-instance : Union REffects where union := REffects.union
-
-@[simp]
-lemma REffects.union_pure : forall φ : REffects, φ ∪ ⊥ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma REffects.pure_union : forall φ : REffects, ⊥ ∪ φ = φ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma REffects.union_reify : forall φ : REffects, φ ∪ ⊤ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-lemma REffects.reify_union : forall φ : REffects, ⊤ ∪ φ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
-
-@[simp]
-def REffects.le : REffects → REffects → Prop
-  | ⊥, _ => true
-  | ⊤, ⊤ => true
-  | _, _ => false
-
-@[simp]
-instance : LE REffects where le := REffects.le
-
-instance : Preorder REffects where
-  le_refl := by intro x; cases x <;> simp
-  le_trans := by intros x y z; cases x <;> cases y <;> cases z <;> simp
-  lt_iff_le_not_ge := by intros x y; cases x <;> cases y <;> simp
-
-instance : PartialOrder REffects where
-  le_antisymm := by
-    intros x y
-    cases x <;> cases y <;> simp
-    all_goals intro _ _; contradiction
 
 -- mutation effect
 inductive Stage : Type where
@@ -68,16 +9,16 @@ notation:max "𝟙" => Stage.static
 
 notation:max "𝟚" => Stage.dynamic
 
-inductive MEffect : Type where
+inductive Effect : Type where
   | init (𝕊 : Stage)
   | read (𝕊 : Stage)
   | write (𝕊 : Stage)
 
-abbrev MEffects :=
-  Set MEffect
+abbrev Effects :=
+  Set Effect
 
 @[simp]
-def stage_meffect : Stage → MEffect → Prop
+def stage_effect : Stage → Effect → Prop
   | 𝟙, .init 𝟙 => true
   | 𝟙, .read 𝟙 => true
   | 𝟙, .write 𝟙 => true
@@ -88,62 +29,62 @@ def stage_meffect : Stage → MEffect → Prop
   | 𝟚, _ => false
 
 @[simp]
-def stage_meffects (𝕊 : Stage) (ω : MEffects) : Prop :=
-  ∀ β ∈ ω, stage_meffect 𝕊 β
+def stage_effects (𝕊 : Stage) (ω : Effects) : Prop :=
+  ∀ β ∈ ω, stage_effect 𝕊 β
 
 -- erase
 @[simp]
-def erase_meffect : MEffect → MEffect
+def erase_effect : Effect → Effect
   | .init _ => .init 𝟚
   | .read _ => .read 𝟚
   | .write _ => .write 𝟚
 
 @[simp]
-def erase_meffects (ω : MEffects) : MEffects :=
-  { erase_meffect β | β ∈ ω }
+def erase_effects (ω : Effects) : Effects :=
+  { erase_effect β | β ∈ ω }
 
 -- escape
 @[simp]
-def escape_meffect : MEffect → MEffect
+def escape_effect : Effect → Effect
   | .init _ => .init 𝟙
   | .read _ => .read 𝟙
   | .write _ => .write 𝟙
 
 @[simp]
-def escape_meffects (ω : MEffects) : MEffects :=
-  { escape_meffect β | β ∈ ω }
+def escape_effects (ω : Effects) : Effects :=
+  { escape_effect β | β ∈ ω }
 
 -- stage lemma
-lemma stage_meffect.under_erase : ∀ β, stage_meffect 𝟚 (erase_meffect β) :=
+lemma stage_effect.under_erase : ∀ β, stage_effect 𝟚 (erase_effect β) :=
   by
   intros β
   cases β <;> simp
 
-lemma stage_meffects.under_erase : ∀ ω, stage_meffects 𝟚 (erase_meffects ω) :=
+lemma stage_effects.under_erase : ∀ ω, stage_effects 𝟚 (erase_effects ω) :=
   by
   intros ω β₀ Hβ₀
   have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
   rw [← HEqβ]
-  apply stage_meffect.under_erase
+  apply stage_effect.under_erase
 
-lemma stage_meffect.under_escape : ∀ β, stage_meffect 𝟙 (escape_meffect β) :=
+lemma stage_effect.under_escape : ∀ β, stage_effect 𝟙 (escape_effect β) :=
   by
   intros β
   cases β <;> simp
 
-lemma stage_meffects.under_escape : ∀ ω, stage_meffects 𝟙 (escape_meffects ω) :=
+lemma stage_effects.under_escape : ∀ ω, stage_effects 𝟙 (escape_effects ω) :=
   by
   intros ω β₀ Hβ₀
   have ⟨β₁, Hβ₁, HEqβ⟩ := Hβ₀
   rw [← HEqβ]
-  apply stage_meffect.under_escape
+  apply stage_effect.under_escape
 
-lemma stage_meffects.mono : ∀ 𝕊 ω₀ ω₁, ω₁ ≤ ω₀ → stage_meffects 𝕊 ω₀ → stage_meffects 𝕊 ω₁ :=
+lemma stage_effects.mono : ∀ 𝕊 ω₀ ω₁, ω₁ ≤ ω₀ → stage_effects 𝕊 ω₀ → stage_effects 𝕊 ω₁ :=
   by
   intros 𝕊 ω₀ ω₁ HLeω Hω β₀ Hβ₀
   apply Hω _ (Set.mem_of_subset_of_mem HLeω Hβ₀)
 
-lemma stage_meffects.disjoint : ∀ ω, stage_meffects 𝟙 ω → stage_meffects 𝟚 ω → ω = ∅ :=
+lemma stage_effects.disjoint : ∀ ω, stage_effects 𝟙 ω → stage_effects 𝟚 ω → ω = ∅ :=
   by
   intros ω Hω₁ Hω₂
   apply Set.eq_empty_of_forall_notMem
@@ -154,11 +95,11 @@ lemma stage_meffects.disjoint : ∀ ω, stage_meffects 𝟙 ω → stage_meffect
   all_goals next 𝕊 =>
     cases 𝕊 <;> simp at H₁ H₂
 
-lemma stage_meffects.diff :
+lemma stage_effects.diff :
   ∀ 𝕊 ω₀ ω₁,
-    stage_meffects 𝕊 ω₀ →
-    stage_meffects 𝕊 ω₁ →
-    stage_meffects 𝕊 (ω₀ \ ω₁) :=
+    stage_effects 𝕊 ω₀ →
+    stage_effects 𝕊 ω₁ →
+    stage_effects 𝕊 (ω₀ \ ω₁) :=
   by
   intros 𝕊 ω₀ ω₁ Hω₀ Hω₁
   intros β Hβ
@@ -166,11 +107,11 @@ lemma stage_meffects.diff :
   apply Set.mem_of_subset_of_mem _ Hβ
   apply Set.diff_subset
 
-lemma stage_meffects.union :
+lemma stage_effects.union :
   ∀ 𝕊 ω₀ ω₁,
-    stage_meffects 𝕊 ω₀ →
-    stage_meffects 𝕊 ω₁ →
-    stage_meffects 𝕊 (ω₀ ∪ ω₁) :=
+    stage_effects 𝕊 ω₀ →
+    stage_effects 𝕊 ω₁ →
+    stage_effects 𝕊 (ω₀ ∪ ω₁) :=
   by
   intros 𝕊 ω₀ ω₁ Hω₀ Hω₁
   intros β Hβ
@@ -180,70 +121,70 @@ lemma stage_meffects.union :
 
 -- erase lemma
 @[simp]
-lemma erase_meffects.init : ∀ 𝕊, erase_meffects { .init 𝕊 } = { .init 𝟚 } :=
+lemma erase_effects.init : ∀ 𝕊, erase_effects { .init 𝕊 } = { .init 𝟚 } :=
   by simp
 
 @[simp]
-lemma erase_meffects.read : ∀ 𝕊, erase_meffects { .read 𝕊 } = { .read 𝟚 } :=
+lemma erase_effects.read : ∀ 𝕊, erase_effects { .read 𝕊 } = { .read 𝟚 } :=
   by simp
 
 @[simp]
-lemma erase_meffects.write : ∀ 𝕊, erase_meffects { .write 𝕊 } = { .write 𝟚 } :=
+lemma erase_effects.write : ∀ 𝕊, erase_effects { .write 𝕊 } = { .write 𝟚 } :=
   by simp
 
 @[simp]
-lemma erase_meffects.empty : erase_meffects ∅ = ∅ :=
+lemma erase_effects.empty : erase_effects ∅ = ∅ :=
   by simp
 
 @[simp]
-lemma erase_meffects.union : ∀ ω₀ ω₁, erase_meffects (ω₀ ∪ ω₁) = erase_meffects ω₀ ∪ erase_meffects ω₁ :=
+lemma erase_effects.union : ∀ ω₀ ω₁, erase_effects (ω₀ ∪ ω₁) = erase_effects ω₀ ∪ erase_effects ω₁ :=
   by
   intros ω₀ ω₁
-  simp only [erase_meffects]
+  simp only [erase_effects]
   repeat rw [← Set.image]
   rw [← Set.image_union]
 
 @[simp]
-lemma erase_meffect.cancel_escape : ∀ β, (erase_meffect ∘ escape_meffect) β = erase_meffect β :=
+lemma erase_effect.cancel_escape : ∀ β, (erase_effect ∘ escape_effect) β = erase_effect β :=
   by
   intros β
   cases β <;> simp
 
 @[simp]
-lemma erase_meffects.cancel_escape : ∀ ω, erase_meffects (escape_meffects ω) = erase_meffects ω :=
+lemma erase_effects.cancel_escape : ∀ ω, erase_effects (escape_effects ω) = erase_effects ω :=
   by
   intros ω
-  simp only [erase_meffects, escape_meffects]
+  simp only [erase_effects, escape_effects]
   repeat rw [← Set.image]
   rw [← Set.image_comp]
-  rw [funext erase_meffect.cancel_escape]
+  rw [funext erase_effect.cancel_escape]
 
 -- escape lemma
 @[simp]
-lemma escape_meffects.empty : escape_meffects ∅ = ∅ :=
+lemma escape_effects.empty : escape_effects ∅ = ∅ :=
   by simp
 
 @[simp]
-lemma escape_meffects.union : ∀ ω₀ ω₁, escape_meffects (ω₀ ∪ ω₁) = escape_meffects ω₀ ∪ escape_meffects ω₁ :=
+lemma escape_effects.union : ∀ ω₀ ω₁, escape_effects (ω₀ ∪ ω₁) = escape_effects ω₀ ∪ escape_effects ω₁ :=
   by
   intros ω₀ ω₁
-  simp only [escape_meffects]
+  simp only [escape_effects]
   repeat rw [← Set.image]
   rw [← Set.image_union]
 
 @[simp]
-lemma escape_meffects.init : ∀ 𝕊, escape_meffects { .init 𝕊 } = { .init 𝟙 } :=
+lemma escape_effects.init : ∀ 𝕊, escape_effects { .init 𝕊 } = { .init 𝟙 } :=
   by simp
 
 @[simp]
-lemma escape_meffects.read : ∀ 𝕊, escape_meffects { .read 𝕊 } = { .read 𝟙 } :=
+lemma escape_effects.read : ∀ 𝕊, escape_effects { .read 𝕊 } = { .read 𝟙 } :=
   by simp
 
 @[simp]
-lemma escape_meffects.write : ∀ 𝕊, escape_meffects { .write 𝕊 } = { .write 𝟙 } :=
+lemma escape_effects.write : ∀ 𝕊, escape_effects { .write 𝕊 } = { .write 𝟙 } :=
   by simp
 
-lemma escape_meffects.mono : ∀ ω₀ ω₁, ω₀ ≤ ω₁ → escape_meffects ω₀ ≤ escape_meffects ω₁ :=
+lemma escape_effects.mono : ∀ ω₀ ω₁, ω₀ ≤ ω₁ → escape_effects ω₀ ≤ escape_effects ω₁ :=
   by
   intros ω₀ ω₁ HLeω
   intros β₀ Hβ₀
