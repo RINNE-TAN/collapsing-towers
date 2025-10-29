@@ -2,7 +2,7 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Effect
 
 inductive Ty : Type where
   | nat
-  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effect)
+  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effect) (ω : Effect)
   | fragment (τ : Ty)
   | rep (τ : Ty)
   | unit
@@ -11,7 +11,7 @@ inductive Ty : Type where
 @[simp]
 def erase_ty : Ty → Ty
   | .nat => .nat
-  | .arrow τa τb _ => .arrow (erase_ty τa) (erase_ty τb) ⊥
+  | .arrow τa τb _ ω => .arrow (erase_ty τa) (erase_ty τb) ⊥ ω
   | .fragment τ => erase_ty τ
   | .rep τ => erase_ty τ
   | .unit => .unit
@@ -28,13 +28,13 @@ notation:max "𝟚" => Stage.dynamic
 @[simp]
 def wbt : Stage → Ty → Prop
   | 𝟙, .nat => true
-  | 𝟙, (.arrow τ𝕒 τ𝕓 _) => wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
+  | 𝟙, (.arrow τ𝕒 τ𝕓 _ _) => wbt 𝟙 τ𝕒 ∧ wbt 𝟙 τ𝕓
   | 𝟙, (.fragment τ) => wbt 𝟚 τ
   | 𝟙, .unit => true
   | 𝟙, (.ref τ) => wbt 𝟙 τ
   | 𝟙, _ => false
   | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
+  | 𝟚, (.arrow τ𝕒 τ𝕓 φ _) => φ = ⊥ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false
