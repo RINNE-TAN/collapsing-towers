@@ -112,3 +112,8 @@ lemma immut.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → immut e₀ 
     apply immut.under_opening_value _ _ _ Himmut₁ Himmut₀
   case lift_lam =>
     simp [← immut.under_codify]
+
+lemma immut.under_head_mutable : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → ¬immut e₀ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hmut Himmut
+  cases Hmut <;> contradiction
