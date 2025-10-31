@@ -28,26 +28,26 @@ lemma fvar.shrinking :
     simp; apply Hbinds
 
 lemma typing.shrinking.strengthened :
-  ∀ Γ Ψ Δ Φ 𝕊 e τ φ ω,
-    typing Γ 𝕊 e τ φ ω →
+  ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
     Γ = Ψ ++ Φ :: Δ →
     Δ.length ∉ fv e →
-    typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ ω :=
+    typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ :=
   by
-  intros Γ Ψ Δ Φ 𝕊 e τ φ ω Hτ
+  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ
   revert Ψ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) =>
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ :: Δ →
           Δ.length ∉ fv e →
-          typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ ω)
-      (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) =>
+          typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ :: Δ →
           Δ.length ∉ fv e →
-          typing_reification (Ψ ++ Δ) (shiftr Δ.length e) τ φ ω)
+          typing_reification (Ψ ++ Δ) (shiftr Δ.length e) τ φ)
   <;> intros
   case fvar Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at Hbinds
@@ -139,9 +139,11 @@ lemma typing.shrinking.strengthened :
     . apply Hwbt
     . simp; apply closed.dec.under_shiftr
       apply Hclosed; apply HclosedΔ.right
-  case run Hclosed IH Ψ HEqΓ HclosedΔ =>
+  case run Himmut Hclosed IH Ψ HEqΓ HclosedΔ =>
     apply typing.run
     . apply IH; apply HEqΓ; apply HclosedΔ
+    . rw [identity.shiftr]; apply Himmut
+      apply closed.inc; apply Hclosed; omega
     . rw [identity.shiftr]; apply Hclosed
       apply closed.inc; apply Hclosed; omega
   case unit =>
@@ -178,28 +180,28 @@ lemma typing.shrinking.strengthened :
   apply Hτ
 
 theorem typing.shrinking.singleton :
-  ∀ Γ Φ 𝕊 e τ φ ω,
-    typing (Φ :: Γ) 𝕊 e τ φ ω →
+  ∀ Γ Φ 𝕊 e τ φ,
+    typing (Φ :: Γ) 𝕊 e τ φ →
     closed_at e Γ.length →
-    typing Γ 𝕊 e τ φ ω :=
+    typing Γ 𝕊 e τ φ :=
   by
-  intros Γ Φ 𝕊 e τ φ ω Hτ Hclosed
-  have H := typing.shrinking.strengthened (Φ :: Γ) ⦰ Γ Φ 𝕊 e τ φ ω
+  intros Γ Φ 𝕊 e τ φ Hτ Hclosed
+  have H := typing.shrinking.strengthened (Φ :: Γ) ⦰ Γ Φ 𝕊 e τ φ
   rw [identity.shiftr] at H
   apply H; apply Hτ; rfl
   apply closed_impl_not_in_fv; apply Hclosed; omega
   apply closed.inc; apply Hclosed; omega
 
 theorem typing.shrinking :
-  ∀ Γ Δ 𝕊 e τ φ ω,
-    typing (Δ ++ Γ) 𝕊 e τ φ ω →
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing (Δ ++ Γ) 𝕊 e τ φ →
     closed_at e Γ.length →
-    typing Γ 𝕊 e τ φ ω :=
+    typing Γ 𝕊 e τ φ :=
   by
-  intros Γ Δ 𝕊 e τ φ ω Hτ Hclosed
+  intros Γ Δ 𝕊 e τ φ Hτ Hclosed
   induction Δ
   case nil => apply Hτ
   case cons IH =>
     apply IH
-    apply typing.shrinking.singleton _ _ _ _ _ _ _ Hτ
+    apply typing.shrinking.singleton _ _ _ _ _ _ Hτ
     apply closed.inc; apply Hclosed; simp

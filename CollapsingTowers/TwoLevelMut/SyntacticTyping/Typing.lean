@@ -3,101 +3,101 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Env
 import CollapsingTowers.TwoLevelMut.OperationalSemantics.Defs
 
 mutual
-  inductive typing : TEnv → Stage → Expr → Ty → Effect → Bool → Prop where
+  inductive typing : TEnv → Stage → Expr → Ty → Effect → Prop where
     | fvar : ∀ Γ 𝕊 x τ,
       binds x (τ, 𝕊) Γ →
       wbt 𝕊 τ →
-      typing Γ 𝕊 (.fvar x) τ ⊥ ⊥
-    | lam : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ ω,
-      typing ((τ𝕒, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length} e) τ𝕓 φ ω →
+      typing Γ 𝕊 (.fvar x) τ ⊥
+    | lam : ∀ Γ 𝕊 e τ𝕒 τ𝕓 φ,
+      typing ((τ𝕒, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length} e) τ𝕓 φ →
       wbt 𝕊 τ𝕒 →
       closed_at e Γ.length →
-      typing Γ 𝕊 (.lam e) (.arrow τ𝕒 τ𝕓 φ) ⊥ ω
-    | lift_lam : ∀ Γ e τ𝕒 τ𝕓 φ₀ φ₁ ω,
-      typing Γ 𝟙 e (.arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀) φ₁ ω →
-      typing Γ 𝟙 (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) ⊤ ω
-    | app₁ : ∀ Γ 𝕊 f arg τ𝕒 τ𝕓 φ₀ φ₁ φ₂ ω₁ ω₂,
-      typing Γ 𝕊 f (.arrow τ𝕒 τ𝕓 φ₀) φ₁ ω₁ →
-      typing Γ 𝕊 arg τ𝕒 φ₂ ω₂ →
-      typing Γ 𝕊 (.app₁ f arg) τ𝕓 (φ₀ ∪ φ₁ ∪ φ₂) (ω₁ ∨ ω₂)
-    | app₂ : ∀ Γ f arg τ𝕒 τ𝕓 φ₁ φ₂ ω₁ ω₂,
-      typing Γ 𝟙 f (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) φ₁ ω₁ →
-      typing Γ 𝟙 arg (.fragment τ𝕒) φ₂ ω₂ →
-      typing Γ 𝟙 (.app₂ f arg) (.fragment τ𝕓) ⊤ (ω₁ ∨ ω₂)
+      typing Γ 𝕊 (.lam e) (.arrow τ𝕒 τ𝕓 φ) ⊥
+    | lift_lam : ∀ Γ e τ𝕒 τ𝕓 φ₀ φ₁,
+      typing Γ 𝟙 e (.arrow (.fragment τ𝕒) (.fragment τ𝕓) φ₀) φ₁ →
+      typing Γ 𝟙 (.lift e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) ⊤
+    | app₁ : ∀ Γ 𝕊 f arg τ𝕒 τ𝕓 φ₀ φ₁ φ₂,
+      typing Γ 𝕊 f (.arrow τ𝕒 τ𝕓 φ₀) φ₁ →
+      typing Γ 𝕊 arg τ𝕒 φ₂ →
+      typing Γ 𝕊 (.app₁ f arg) τ𝕓 (φ₀ ∪ φ₁ ∪ φ₂)
+    | app₂ : ∀ Γ f arg τ𝕒 τ𝕓 φ₁ φ₂,
+      typing Γ 𝟙 f (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) φ₁ →
+      typing Γ 𝟙 arg (.fragment τ𝕒) φ₂ →
+      typing Γ 𝟙 (.app₂ f arg) (.fragment τ𝕓) ⊤
     | lit : ∀ Γ 𝕊 n,
-      typing Γ 𝕊 (.lit n) .nat ⊥ ⊥
-    | lift_lit : ∀ Γ n φ ω,
-      typing Γ 𝟙 n .nat φ ω →
-      typing Γ 𝟙 (.lift n) (.fragment .nat) ⊤ ω
+      typing Γ 𝕊 (.lit n) .nat ⊥
+    | lift_lit : ∀ Γ n φ,
+      typing Γ 𝟙 n .nat φ →
+      typing Γ 𝟙 (.lift n) (.fragment .nat) ⊤
     | code_fragment : ∀ Γ x τ,
       binds x (τ, 𝟚) Γ →
       wbt 𝟚 τ →
-      typing Γ 𝟙 (.code (.fvar x)) (.fragment τ) ⊥ ⊥
-    | code_rep : ∀ Γ e τ ω,
-      typing Γ 𝟚 e τ ⊥ ω →
-      typing Γ 𝟙 (.code e) (.rep τ) ⊥ ω
-    | reflect : ∀ Γ e τ ω,
-      typing Γ 𝟚 e τ ⊥ ω →
-      typing Γ 𝟙 (.reflect e) (.fragment τ) ⊤ ω
-    | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓 φ ω,
-      typing_reification ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ ω →
+      typing Γ 𝟙 (.code (.fvar x)) (.fragment τ) ⊥
+    | code_rep : ∀ Γ e τ,
+      typing Γ 𝟚 e τ ⊥ →
+      typing Γ 𝟙 (.code e) (.rep τ) ⊥
+    | reflect : ∀ Γ e τ,
+      typing Γ 𝟚 e τ ⊥ →
+      typing Γ 𝟙 (.reflect e) (.fragment τ) ⊤
+    | lam𝕔 : ∀ Γ e τ𝕒 τ𝕓 φ,
+      typing_reification ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
-      typing Γ 𝟙 (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) ⊤ ω
-    | lets : ∀ Γ 𝕊 b e τ𝕒 τ𝕓 φ₀ φ₁ ω₀ ω₁,
-      typing Γ 𝕊 b τ𝕒 φ₀ ω₀ →
-      typing ((τ𝕒, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length} e) τ𝕓 φ₁ ω₁ →
+      typing Γ 𝟙 (.lam𝕔 e) (.fragment (.arrow τ𝕒 τ𝕓 ⊥)) ⊤
+    | lets : ∀ Γ 𝕊 b e τ𝕒 τ𝕓 φ₀ φ₁,
+      typing Γ 𝕊 b τ𝕒 φ₀ →
+      typing ((τ𝕒, 𝕊) :: Γ) 𝕊 ({0 ↦ Γ.length} e) τ𝕓 φ₁ →
       wbt 𝕊 τ𝕒 →
       closed_at e Γ.length →
-      typing Γ 𝕊 (.lets b e) τ𝕓 (φ₀ ∪ φ₁) (ω₀ ∨ ω₁)
-    | lets𝕔 : ∀ Γ b e τ𝕒 τ𝕓 φ₁ ω₀ ω₁,
-      typing Γ 𝟚 b τ𝕒 ⊥ ω₀ →
-      typing_reification ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ₁ ω₁ →
+      typing Γ 𝕊 (.lets b e) τ𝕓 (φ₀ ∪ φ₁)
+    | lets𝕔 : ∀ Γ b e τ𝕒 τ𝕓 φ₁,
+      typing Γ 𝟚 b τ𝕒 ⊥ →
+      typing_reification ((τ𝕒, 𝟚) :: Γ) ({0 ↦ Γ.length} e) (.rep τ𝕓) φ₁ →
       wbt 𝟚 τ𝕒 →
       closed_at e Γ.length →
-      typing Γ 𝟙 (.lets𝕔 b e) (.rep τ𝕓) ⊥ (ω₀ ∨ ω₁)
+      typing Γ 𝟙 (.lets𝕔 b e) (.rep τ𝕓) ⊥
     | run : ∀ Γ e τ φ,
-      typing_reification Γ e (.rep τ) φ ⊥ →
-      closed e →
-      typing Γ 𝟙 (.run e) τ ⊥ ⊥
+      typing_reification Γ e (.rep τ) φ →
+      immut e → closed e →
+      typing Γ 𝟙 (.run e) τ ⊥
     | unit : ∀ Γ 𝕊,
-      typing Γ 𝕊 .unit .unit ⊥ ⊥
-    | lift_unit : ∀ Γ e φ ω,
-      typing Γ 𝟙 e .unit φ ω →
-      typing Γ 𝟙 (.lift e) (.fragment .unit) ⊤ ω
-    | alloc₁ : ∀ Γ e φ ω,
-      typing Γ 𝟚 e .nat φ ω →
-      typing Γ 𝟚 (.alloc₁ e) (.ref .nat) φ ⊤
-    | alloc₂ : ∀ Γ e φ ω,
-      typing Γ 𝟙 e (.fragment .nat) φ ω →
-      typing Γ 𝟙 (.alloc₂ e) (.fragment (.ref .nat)) ⊤ ⊤
-    | load₁ : ∀ Γ e φ ω,
-      typing Γ 𝟚 e (.ref .nat) φ ω →
-      typing Γ 𝟚 (.load₁ e) .nat φ ⊤
-    | load₂ : ∀ Γ e φ ω,
-      typing Γ 𝟙 e (.fragment (.ref .nat)) φ ω →
-      typing Γ 𝟙 (.load₂ e) (.fragment .nat) ⊤ ⊤
-    | store₁ : ∀ Γ l r φ₀ φ₁ ω₀ ω₁,
-      typing Γ 𝟚 l (.ref .nat) φ₀ ω₀ →
-      typing Γ 𝟚 r .nat φ₁ ω₁ →
-      typing Γ 𝟚 (.store₁ l r) .unit (φ₀ ∪ φ₁) ⊤
-    | store₂ : ∀ Γ l r φ₀ φ₁ ω₀ ω₁,
-      typing Γ 𝟙 l (.fragment (.ref .nat)) φ₀ ω₀ →
-      typing Γ 𝟙 r (.fragment .nat) φ₁ ω₁ →
-      typing Γ 𝟙 (.store₂ l r) (.fragment .unit) ⊤ ⊤
+      typing Γ 𝕊 .unit .unit ⊥
+    | lift_unit : ∀ Γ e φ,
+      typing Γ 𝟙 e .unit φ →
+      typing Γ 𝟙 (.lift e) (.fragment .unit) ⊤
+    | alloc₁ : ∀ Γ e φ,
+      typing Γ 𝟚 e .nat φ →
+      typing Γ 𝟚 (.alloc₁ e) (.ref .nat) φ
+    | alloc₂ : ∀ Γ e φ,
+      typing Γ 𝟙 e (.fragment .nat) φ →
+      typing Γ 𝟙 (.alloc₂ e) (.fragment (.ref .nat)) ⊤
+    | load₁ : ∀ Γ e φ,
+      typing Γ 𝟚 e (.ref .nat) φ →
+      typing Γ 𝟚 (.load₁ e) .nat φ
+    | load₂ : ∀ Γ e φ,
+      typing Γ 𝟙 e (.fragment (.ref .nat)) φ →
+      typing Γ 𝟙 (.load₂ e) (.fragment .nat) ⊤
+    | store₁ : ∀ Γ l r φ₀ φ₁,
+      typing Γ 𝟚 l (.ref .nat) φ₀ →
+      typing Γ 𝟚 r .nat φ₁ →
+      typing Γ 𝟚 (.store₁ l r) .unit (φ₀ ∪ φ₁)
+    | store₂ : ∀ Γ l r φ₀ φ₁,
+      typing Γ 𝟙 l (.fragment (.ref .nat)) φ₀ →
+      typing Γ 𝟙 r (.fragment .nat) φ₁ →
+      typing Γ 𝟙 (.store₂ l r) (.fragment .unit) ⊤
 
-  inductive typing_reification : TEnv → Expr → Ty → Effect → Bool → Prop
-    | pure : ∀ Γ e τ ω, typing Γ 𝟙 e τ ⊥ ω → typing_reification Γ e τ ⊥ ω
-    | reify : ∀ Γ e τ φ ω, typing Γ 𝟙 e (.fragment τ) φ ω → typing_reification Γ e (.rep τ) φ ω
+  inductive typing_reification : TEnv → Expr → Ty → Effect → Prop
+    | pure : ∀ Γ e τ, typing Γ 𝟙 e τ ⊥ → typing_reification Γ e τ ⊥
+    | reify : ∀ Γ e τ φ, typing Γ 𝟙 e (.fragment τ) φ → typing_reification Γ e (.rep τ) φ
 end
 
-lemma typing.regular : ∀ Γ 𝕊 e τ φ ω, typing Γ 𝕊 e τ φ ω → lc e :=
+lemma typing.regular : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → lc e :=
   by
-  intros Γ 𝕊 e τ φ ω Hτ
+  intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) => lc e)
-      (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) => lc e)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => lc e)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => lc e)
   <;> try simp [-Bool.forall_bool]
   <;> intros
   case lam IH =>
@@ -116,18 +116,18 @@ lemma typing.regular : ∀ Γ 𝕊 e τ φ ω, typing Γ 𝕊 e τ φ ω → lc 
   case store₂ IHl IHr => simp [IHl, IHr]
   apply Hτ
 
-lemma typing_reification.regular : ∀ Γ e τ φ ω, typing_reification Γ e τ φ ω → lc e :=
+lemma typing_reification.regular : ∀ Γ e τ φ, typing_reification Γ e τ φ → lc e :=
   by
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   cases Hτ <;> (apply typing.regular; assumption)
 
-lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ ω, typing Γ 𝕊 e τ φ ω → closed_at e Γ.length :=
+lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → closed_at e Γ.length :=
   by
-  intros Γ 𝕊 e τ φ ω Hτ
+  intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) => closed_at e Γ.length)
-      (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) => closed_at e Γ.length)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => closed_at e Γ.length)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => closed_at e Γ.length)
   <;> try simp [-Bool.forall_bool]
   <;> (intros; try assumption)
   case fvar Hbinds _ =>
@@ -146,31 +146,31 @@ lemma typing.closed_at_env : ∀ Γ 𝕊 e τ φ ω, typing Γ 𝕊 e τ φ ω �
   case store₂ IHl IHr => simp [IHl, IHr]
   apply Hτ
 
-lemma typing_reification.closed_at_env : ∀ Γ e τ φ ω, typing_reification Γ e τ φ ω → closed_at e Γ.length :=
+lemma typing_reification.closed_at_env : ∀ Γ e τ φ, typing_reification Γ e τ φ → closed_at e Γ.length :=
   by
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   cases Hτ <;> (apply typing.closed_at_env; assumption)
 
-lemma typing.wf : ∀ Γ 𝕊 e τ φ ω, typing Γ 𝕊 e τ φ ω → wf_at e Γ.length :=
+lemma typing.wf : ∀ Γ 𝕊 e τ φ, typing Γ 𝕊 e τ φ → wf_at e Γ.length :=
   by
-  intros Γ 𝕊 e τ φ ω Hτ
+  intros Γ 𝕊 e τ φ Hτ
   constructor
   apply typing.regular; apply Hτ
   apply typing.closed_at_env; apply Hτ
 
-lemma typing_reification.wf : ∀ Γ e τ φ ω, typing_reification Γ e τ φ ω → wf_at e Γ.length :=
+lemma typing_reification.wf : ∀ Γ e τ φ, typing_reification Γ e τ φ → wf_at e Γ.length :=
   by
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   cases Hτ <;> (apply typing.wf; assumption)
 
-lemma typing.dynamic_impl_pure : ∀ Γ e τ φ ω, typing Γ 𝟚 e τ φ ω → wbt 𝟚 τ ∧ φ = ⊥ :=
+lemma typing.dynamic_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 𝟚 τ ∧ φ = ⊥ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   revert HEq𝕊
   apply @typing.rec
-    (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) => 𝟚 = 𝕊 → wbt 𝕊 τ ∧ φ = ⊥)
-    (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) => true)
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → wbt 𝕊 τ ∧ φ = ⊥)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> intros
   <;> (try assumption)
   <;> (try contradiction)
@@ -232,11 +232,11 @@ lemma typing.dynamic_impl_pure : ∀ Γ e τ φ ω, typing Γ 𝟚 e τ φ ω �
   case reify => simp
 
 lemma typing_reification_code :
-  ∀ Γ e τ φ ω,
-    typing_reification Γ (.code e) (.rep τ) φ ω →
-    typing Γ 𝟚 e τ ⊥ ω :=
+  ∀ Γ e τ φ,
+    typing_reification Γ (.code e) (.rep τ) φ →
+    typing Γ 𝟚 e τ ⊥ :=
   by
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   cases Hτ
   case pure Hτ =>
     cases Hτ

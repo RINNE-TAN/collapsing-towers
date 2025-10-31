@@ -168,3 +168,28 @@ lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → gr
     simp; intros Hv H₀ H₁; constructor
     apply IH₀; apply Hv; apply H₀
     apply IH₁; apply Hv; apply H₁
+
+@[simp]
+def immut (e : Expr) : Prop :=
+  match e with
+  | .bvar _ => true
+  | .fvar _ => true
+  | .lam e => immut e
+  | .lift e => immut e
+  | .app₁ f arg => immut f ∧ immut arg
+  | .app₂ f arg => immut f ∧ immut arg
+  | .lit _ => true
+  | .run e => immut e
+  | .code e => immut e
+  | .reflect e => immut e
+  | .lam𝕔 e => immut e
+  | .lets b e => immut b ∧ immut e
+  | .lets𝕔 b e => immut b ∧ immut e
+  | .unit => true
+  | .loc _ => true
+  | .alloc₁ _ => false
+  | .alloc₂ _ => false
+  | .load₁ _ => false
+  | .load₂ _ => false
+  | .store₁ _ _ => false
+  | .store₂ _ _ => false

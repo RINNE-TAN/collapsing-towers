@@ -4,15 +4,15 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Typing
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
 theorem typing.erase.safety :
-  ∀ Γ 𝕊 e τ φ ω,
-    typing Γ 𝕊 e τ φ ω →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ ω :=
+  ∀ Γ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
+    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
-  intros Γ 𝕊 e τ φ ω Hτ
+  intros Γ 𝕊 e τ φ Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ ω)
-      (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ ω)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar
@@ -91,11 +91,11 @@ theorem typing.erase.safety :
   apply Hτ
 
 theorem typing_reification.erase.safety :
-  ∀ Γ e τ φ ω,
-    typing_reification Γ e τ φ ω →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ ω :=
+  ∀ Γ e τ φ,
+    typing_reification Γ e τ φ →
+    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
-  intros Γ e τ φ ω Hτ
+  intros Γ e τ φ Hτ
   cases Hτ
   all_goals next Hτ =>
-    apply typing.erase.safety _ _ _ _ _ _ Hτ
+    apply typing.erase.safety _ _ _ _ _ Hτ

@@ -22,23 +22,23 @@ lemma fvar.weakening :
     apply Hbinds
 
 theorem typing.weakening.strengthened :
-    ∀ Γ Ψ Δ Φ 𝕊 e τ φ ω,
-      typing Γ 𝕊 e τ φ ω →
+    ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
+      typing Γ 𝕊 e τ φ →
       Γ = Ψ ++ Φ →
-      typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ ω :=
+      typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ :=
   by
-  intros Γ Ψ Δ Φ 𝕊 e τ φ ω Hτ HEqΓ
+  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ HEqΓ
   revert Ψ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ ω (H : typing Γ 𝕊 e τ φ ω) =>
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ ω)
-      (fun Γ e τ φ ω (H : typing_reification Γ e τ φ ω) =>
+          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ)
+      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ ω)
+          typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ)
   <;> intros
   case fvar Hbinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at Hbinds
@@ -117,9 +117,11 @@ theorem typing.weakening.strengthened :
     . apply Hwbt
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
-  case run Hclosed IH Ψ HEqΓ =>
+  case run Himmut Hclosed IH Ψ HEqΓ =>
     apply typing.run
     . apply IH; apply HEqΓ
+    . rw [identity.shiftl]; apply Himmut
+      apply closed.inc; apply Hclosed; omega
     . rw [identity.shiftl]; apply Hclosed
       apply closed.inc; apply Hclosed; omega
   case unit => apply typing.unit
@@ -155,11 +157,11 @@ theorem typing.weakening.strengthened :
   apply Hτ
 
 theorem typing.weakening :
-  ∀ Γ Δ 𝕊 e τ φ ω,
-    typing Γ 𝕊 e τ φ ω →
-    typing (Δ ++ Γ) 𝕊 e τ φ ω :=
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ →
+    typing (Δ ++ Γ) 𝕊 e τ φ :=
   by
-  intros Γ Δ 𝕊 e τ φ ω Hτ
+  intros Γ Δ 𝕊 e τ φ Hτ
   rw [← List.nil_append Δ]
   rw [← identity.shiftl _ e]
   apply typing.weakening.strengthened
@@ -167,21 +169,21 @@ theorem typing.weakening :
   apply typing.closed_at_env; apply Hτ
 
 theorem typing.weakening.singleton :
-  ∀ Γ Δ 𝕊 e τ φ ω,
-    typing Γ 𝕊 e τ φ ω ->
-    typing (Δ :: Γ) 𝕊 e τ φ ω :=
+  ∀ Γ Δ 𝕊 e τ φ,
+    typing Γ 𝕊 e τ φ ->
+    typing (Δ :: Γ) 𝕊 e τ φ :=
   by
   intros Γ Δ 𝕊 e τ
   rw [← List.singleton_append]
   apply typing.weakening
 
-theorem typing_reification.weakening : ∀ Γ Δ e τ φ ω, typing_reification Γ e τ φ ω → typing_reification (Δ ++ Γ) e τ φ ω :=
+theorem typing_reification.weakening : ∀ Γ Δ e τ φ, typing_reification Γ e τ φ → typing_reification (Δ ++ Γ) e τ φ :=
   by
-  intros Γ Δ e τ φ ω Hτ
+  intros Γ Δ e τ φ Hτ
   cases Hτ
   case pure Hτ =>
     apply typing_reification.pure
-    apply typing.weakening _ _ _ _ _ _ _ Hτ
+    apply typing.weakening _ _ _ _ _ _ Hτ
   case reify Hτ =>
     apply typing_reification.reify
-    apply typing.weakening _ _ _ _ _ _ _ Hτ
+    apply typing.weakening _ _ _ _ _ _ Hτ
