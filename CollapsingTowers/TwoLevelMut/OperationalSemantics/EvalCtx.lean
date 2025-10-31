@@ -464,3 +464,67 @@ lemma rewrite.ctxℙ_ctx𝕄 :
   case hole => apply ctx𝕄.hole
   case consℚ HQ =>
     apply rewrite.ctxℚ_ctx𝕄 _ _ HQ
+
+lemma immut.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → immut B⟦e⟧ → immut e :=
+  by
+  intros B e HB Himmut
+  cases HB with
+  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Himmut
+  | lift => apply Himmut
+  | appl₁| appl₂| lets => apply Himmut.left
+  | appr₁| appr₂ => apply Himmut.right
+
+lemma immut.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → immut R⟦e⟧ → immut e :=
+  by
+  intros intro lvl R e HR Himmut
+  cases HR with
+  | lam𝕔 => rw [immut.under_closing]; apply Himmut
+  | lets𝕔 => rw [immut.under_closing]; apply Himmut.right
+  | run => apply Himmut
+
+lemma immut.decompose_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → immut M⟦e⟧ → immut e :=
+  by
+  intros lvl M e HM HG
+  induction HM
+  case hole => apply HG
+  case cons𝔹 HB _ IH =>
+    apply IH; apply immut.decompose_ctx𝔹 _ _ HB HG
+  case consℝ HR _ IH =>
+    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR HG
+
+lemma immut.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → immut E⟦e⟧ → immut e :=
+  by
+  intros E e HE HG
+  induction HE
+  case hole => apply HG
+  case cons𝔹 HB _ IH =>
+    apply IH; apply immut.decompose_ctx𝔹 _ _ HB HG
+
+lemma immut.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → immut B⟦e₀⟧ → immut e₁ → immut B⟦e₁⟧ :=
+  by
+  intros B e₀ e₁ HB Himmut₀ Himmut₁
+  cases HB with
+  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Himmut₀
+  | lift => apply Himmut₁
+  | appl₁| appl₂| lets => constructor; apply Himmut₁; apply Himmut₀.right
+  | appr₁| appr₂ => constructor; apply Himmut₀.left; apply Himmut₁
+
+lemma immut.under_ctxℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → immut R⟦e₀⟧ → immut e₁ → immut R⟦e₁⟧ :=
+  by
+  intros intro lvl R e₀ e₁ HR Himmut₀ Himmut₁
+  cases HR with
+  | lam𝕔 => simp [← immut.under_closing]; apply Himmut₁
+  | lets𝕔 => simp [← immut.under_closing]; constructor; apply Himmut₀.left; apply Himmut₁
+  | run => apply Himmut₁
+
+lemma immut.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → immut M⟦e₀⟧ → immut e₁ → immut M⟦e₁⟧ :=
+  by
+  intros lvl M e₀ e₁ HM Himmut₀ Himmut₁
+  induction HM
+  case hole => apply Himmut₁
+  case cons𝔹 B M HB _ IH =>
+    apply immut.under_ctx𝔹 _ _ _ HB Himmut₀
+    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut₀
+  case consℝ HR _ IH =>
+    apply immut.under_ctxℝ _ _ _ _ _ HR Himmut₀
+    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR Himmut₀
