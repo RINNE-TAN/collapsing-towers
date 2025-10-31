@@ -231,6 +231,37 @@ lemma typing.dynamic_impl_pure : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → wbt 
   case pure => simp
   case reify => simp
 
+lemma typing.dynamic_impl_grounded : ∀ Γ e τ φ, typing Γ 𝟚 e τ φ → grounded e :=
+  by
+  generalize HEq𝕊 : 𝟚 = 𝕊
+  intros Γ e τ φ Hτ
+  revert HEq𝕊
+  apply @typing.rec
+    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → grounded e)
+    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+  <;> intros
+  <;> (try assumption)
+  <;> (try contradiction)
+  <;> simp
+  case lam IH HEq𝕊 =>
+    rw [grounded.under_opening]; apply IH; apply HEq𝕊
+  case app₁ IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    apply IH₁; apply HEq𝕊
+  case lets IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    rw [grounded.under_opening]; apply IH₁; apply HEq𝕊
+  case load₁ IH HEq𝕊 =>
+    apply IH; apply HEq𝕊
+  case alloc₁ IH HEq𝕊 =>
+    apply IH; apply HEq𝕊
+  case store₁ IH₀ IH₁ HEq𝕊 =>
+    constructor
+    apply IH₀; apply HEq𝕊
+    apply IH₁; apply HEq𝕊
+
 lemma typing_reification_code :
   ∀ Γ e τ φ,
     typing_reification Γ (.code e) (.rep τ) φ →
