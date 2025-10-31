@@ -193,3 +193,25 @@ def immut (e : Expr) : Prop :=
   | .load₂ _ => false
   | .store₁ _ _ => false
   | .store₂ _ _ => false
+
+lemma immut.under_opening : ∀ e i x, immut e ↔ immut ({i ↦ x} e) :=
+  by
+  intros e i x
+  induction e generalizing i with
+  | fvar| lit| unit| loc| alloc₁| alloc₂| load₁| load₂| store₁| store₂ => simp
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp; rw [IH₀, IH₁]

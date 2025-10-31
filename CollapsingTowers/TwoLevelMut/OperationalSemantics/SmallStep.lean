@@ -7,6 +7,7 @@ inductive head_pure : Expr → Expr → Prop where
   | app₂ : ∀ f arg, head_pure (.app₂ (.code f) (.code arg)) (.reflect (.app₁ f arg))
   | lift_lit : ∀ n, head_pure (.lift (.lit n)) (.reflect (.lit n))
   | lift_lam : ∀ e, head_pure (.lift (.lam e)) (.lam𝕔 (codify 0 e))
+  | lift_unit : head_pure (.lift .unit) (.reflect .unit)
   | lam𝕔 : ∀ e, head_pure (.lam𝕔 (.code e)) (.reflect (.lam e))
   | lets𝕔 : ∀ b e, head_pure (.lets𝕔 b (.code e)) (.code (.lets b e))
   | run : ∀ e, head_pure (.run (.code e)) e
