@@ -29,9 +29,9 @@ theorem preservation.mutable :
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_mutable.fv_shrink _ _ _ _ Hmut)
     have Himmut : immut M⟦e₀⟧ → immut M⟦e₁⟧ :=
       by
-      intros HimmutM₀; exfalso
+      intros HimmutM; exfalso
       apply immut.under_head_mutable _ _ _ _ Hmut
-      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM₀
+      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM
     have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     all_goals

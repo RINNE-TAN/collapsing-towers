@@ -228,10 +228,10 @@ theorem preservation.pure :
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
     have Himmut : immut M⟦e₀⟧ → immut M⟦e₁⟧ :=
       by
-      intros HimmutM₀
-      apply immut.under_ctx𝕄 _ _ _ _ HM HimmutM₀
+      intros HimmutM
+      apply immut.under_ctx𝕄 _ _ _ _ HM HimmutM
       apply immut.under_head_pure _ _ Hhead
-      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM₀
+      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_pure.fv_shrink _ _ Hhead)
     have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
