@@ -199,3 +199,48 @@ theorem preservation.pure.head :
           apply typing.store₁
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
+
+theorem preservation.pure :
+  ∀ Γ M e₀ e₁ τ φ₀,
+    ctx𝕄 Γ.length M →
+    lc e₀ →
+    head_pure e₀ e₁ →
+    typing Γ 𝟙 M⟦e₀⟧ τ φ₀ →
+    ∃ φ₁,
+      typing Γ 𝟙 M⟦e₁⟧ τ φ₁ ∧
+      φ₁ ≤ φ₀ :=
+  by
+  intros Γ M e₀ e₁ τ φ₀ HM Hlc Hhead Hτ
+  generalize HEqlvl : Γ.length = lvl
+  rw [HEqlvl] at HM
+  induction HM generalizing Γ τ φ₀
+  case hole => apply preservation.pure.head _ _ _ _ _ Hhead Hτ
+  case cons𝔹 B M HB HM IH =>
+    have ⟨τ𝕖, φ₁, φ₂, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
+    rw [HEqφ]
+    have ⟨φ₃, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqlvl
+    have Hτ := IHτB ⦰ _ _ Hτ
+    exists φ₃ ∪ φ₂; constructor
+    . apply Hτ
+    . cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp at HLeφ <;> simp
+  case consℝ R M HR HM IH =>
+    rw [← HEqlvl] at HR IH
+    have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
+    have Himmut : immut M⟦e₀⟧ → immut M⟦e₁⟧ :=
+      by
+      intros HimmutM₀
+      apply immut.under_ctx𝕄 _ _ _ _ HM HimmutM₀
+      apply immut.under_head_pure _ _ Hhead
+      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM₀
+    have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_pure.fv_shrink _ _ Hhead)
+    have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
+    cases Hτ
+    case pure Hτ =>
+      have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
+      cases φ₂ <;> try contradiction
+      have Hτ := IHτR _ _ Himmut Hfv (typing_reification.pure _ _ _ Hτ)
+      exists φ₀
+    case reify Hτ =>
+      have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
+      have Hτ := IHτR _ _ Himmut Hfv (typing_reification.reify _ _ _ _ Hτ)
+      exists φ₀

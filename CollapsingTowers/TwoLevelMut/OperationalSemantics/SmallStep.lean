@@ -100,3 +100,15 @@ lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ �
     have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
+
+lemma immut.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → immut e₀ → immut e₁ :=
+  by
+  intros e₀ e₁ Hhead
+  cases Hhead <;> simp
+  case lets =>
+    apply immut.under_opening_value
+  case app₁ =>
+    intros Himmut₀ Himmut₁
+    apply immut.under_opening_value _ _ _ Himmut₁ Himmut₀
+  case lift_lam =>
+    simp [← immut.under_codify]

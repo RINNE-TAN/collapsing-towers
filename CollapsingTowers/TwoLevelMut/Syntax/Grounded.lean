@@ -263,3 +263,25 @@ lemma immut.under_opening_value : ∀ e v i, immut v → immut e → immut (open
     constructor
     . apply IH₀; apply Himmut₁.left
     . apply IH₁; apply Himmut₁.right
+
+lemma immut.under_codify : ∀ e i, immut e ↔ immut (codify i e) :=
+  by
+  intros e i
+  induction e generalizing i with
+  | fvar| lit| unit| loc| alloc₁| alloc₂| load₁| load₂| store₁| store₂ => simp
+  | bvar j =>
+    by_cases HEq : j = i
+    . simp [if_pos HEq]
+    . simp [if_neg HEq]
+  | lam _ IH
+  | lift _ IH
+  | lam𝕔 _ IH
+  | code _ IH
+  | reflect _ IH
+  | run _ IH =>
+    apply IH
+  | app₁ _ _ IH₀ IH₁
+  | app₂ _ _ IH₀ IH₁
+  | lets _ _ IH₀ IH₁
+  | lets𝕔 _ _ IH₀ IH₁ =>
+    simp [← IH₀, ← IH₁]
