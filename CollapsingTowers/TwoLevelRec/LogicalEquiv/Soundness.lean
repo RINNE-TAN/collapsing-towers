@@ -118,3 +118,16 @@ theorem log_approx.soundness :
     apply IH
     apply log_approx.congruence_under_ObsCtx𝔹
     apply Hsem; apply HB; apply HEqΔ; apply Htermination
+
+-- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- ——————————————————
+-- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+theorem log_equiv.soundness :
+  ∀ Γ τ e₀ e₁,
+    log_equiv Γ e₀ e₁ τ →
+    ctx_equiv Γ e₀ e₁ τ :=
+  by
+  intros Γ τ e₀ e₁ Hsem
+  constructor
+  . apply log_approx.soundness _ _ _ _ Hsem.left
+  . apply log_approx.soundness _ _ _ _ Hsem.right

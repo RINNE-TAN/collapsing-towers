@@ -1,18 +1,18 @@
-import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisCtx
-import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisPure
-import CollapsingTowers.TwoLevelRec.SemanticConsistency.ConsisReflect
+import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisCtx
+import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisPure
+import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisReflect
 
 -- e₀ ⇝ e₁ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ——————————————————————————
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
 theorem consistency.strengthened :
-  ∀ Γ e₀ e₁ τ φ,
-    step_lvl Γ.length e₀ e₁ →
+  ∀ Γ σ₀ σ₁ e₀ e₁ τ φ,
+    step_lvl Γ.length ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ →
     typing Γ 𝟙 e₀ τ φ →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros Γ e₀ e₁ τ φ
+  intros Γ σ₀ σ₁ e₀ e₁ τ φ
   generalize HEqlvl : Γ.length = lvl
   intros Hstep Hτ
   cases Hstep
@@ -32,6 +32,9 @@ theorem consistency.strengthened :
       apply lc.under_ctx𝕄; apply HM; apply Hlc
       intros _ _ _ _; apply IH
       omega; apply Hτ
+  case mutable HM Hlc Hmut =>
+    exfalso; rw [← HEqlvl] at HM
+    apply preservation.mutable _ _ _ _ _ _ _ _ HM Hlc Hmut Hτ
   case reflect HP HE Hlc =>
     cases HP
     case hole =>
@@ -58,44 +61,47 @@ theorem consistency.strengthened :
         omega; apply Hτ
 
 theorem consistency :
-  ∀ e₀ e₁ τ φ,
-    (e₀ ⇝ e₁) →
+  ∀ σ₀ σ₁ e₀ e₁ τ φ,
+    (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros e₀ e₁ τ φ Hstep Hτ
+  intros σ₀ σ₁ e₀ e₁ τ φ Hstep Hτ
   cases Hτ
   all_goals next Hτ =>
     apply log_equiv.soundness
-    apply consistency.strengthened ⦰ _ _ _ _ Hstep Hτ
+    apply consistency.strengthened ⦰ _ _ _ _ _ _ Hstep Hτ
 
 -- e₀ ⇝* e₁
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
 -- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
 theorem consistency.stepn :
-  ∀ e₀ e₁ τ φ,
-    (e₀ ⇝* e₁) →
+  ∀ σ₀ σ₁ e₀ e₁ τ φ,
+    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros e₀ e₁ τ φ Hstepn Hτ₀
-  induction Hstepn generalizing φ
+  intro σ₀ σ₂ e₀ e₂ τ φ₀ Hstepn Hτ₀
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₂
+  rw [HEq₀, HEq₁] at Hstepn
+  induction Hstepn generalizing φ₀ σ₀ e₀
   case refl =>
+    simp [← HEq₀] at HEq₁
+    rw [HEq₁.right]
     cases Hτ₀
     all_goals next Hτ₀ =>
-      constructor
-      . apply log_approx.soundness
-        apply log_approx.fundamental
-        apply typing.erase.safety _ _ _ _ _ Hτ₀
-      . apply log_approx.soundness
-        apply log_approx.fundamental
-        apply typing.erase.safety _ _ _ _ _ Hτ₀
-  case multi Hstep Hstepn IH =>
-    have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
+      apply log_equiv.soundness
+      apply log_equiv.fundamental
+      apply typing.erase.safety _ _ _ _ _ Hτ₀
+  case multi st₀ st₁ st₂ Hstep Hstepn IH =>
+    rcases st₁ with ⟨σ₁, e₁⟩
+    rw [← HEq₀] at Hstep
+    have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ _ _ Hstep Hτ₀
     apply ctx_equiv.trans
-    . apply consistency _ _ _ _ Hstep Hτ₀
-    . apply IH; apply Hτ₁
+    . apply consistency _ _ _ _ _ _ Hstep Hτ₀
+    . apply IH; apply Hτ₁; rfl; apply HEq₁
 
 -- e₀ ⇝* v
 -- ∅ ⊢ e₀ : <τ>
@@ -103,15 +109,15 @@ theorem consistency.stepn :
 -- v = code e₁
 -- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 e₁ : τ
 theorem consistency.stepn.rep :
-  ∀ e₀ v τ φ,
-    (e₀ ⇝* v) → value v →
+  ∀ σ₀ σ₁ e₀ v τ φ,
+    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, v⟩) → value v →
     typing_reification ⦰ e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧
       ctx_equiv ⦰ ‖e₀‖ e₁ τ :=
   by
-  intros e₀ v τ φ Hstepn Hvalue Hτr₀
-  have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ Hstepn Hτr₀
+  intros σ₀ σ₁ e₀ v τ φ Hstepn Hvalue Hτr₀
+  have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ _ _ Hstepn Hτr₀
   cases Hvalue <;> try contradiction
   case code e₁ _ =>
   have Hτe₁ := typing_reification_code _ _ _ _ Hτr₁
@@ -120,4 +126,4 @@ theorem consistency.stepn.rep :
   exists e₁
   constructor; rfl
   rw [← (grounded_iff_erase_identity e₁).mp HGe₁, ← (grounded_ty_iff_erase_identity _).mp Hwbt]
-  apply consistency.stepn _ _ _ _ Hstepn Hτr₀
+  apply consistency.stepn _ _ _ _ _ _ Hstepn Hτr₀

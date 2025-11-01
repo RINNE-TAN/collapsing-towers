@@ -77,7 +77,9 @@ lemma consistency.lets :
   rw [← HEq] at Hstep₀
   --
   --
-  exists 𝓦₁, σ₂, σ₃, v₀, v₁, Hfuture₀
+  exists 𝓦₁, σ₂, σ₃, v₀, v₁
+  constructor
+  . apply Hfuture₀
   constructor
   . apply stepn.multi _ _ _ _ Hstep₀
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -140,7 +142,9 @@ lemma consistency.app₁ :
   rw [← HEq] at Hstep₀
   --
   --
-  exists 𝓦₁, σ₂, σ₃, v₀, v₁, Hfuture₀
+  exists 𝓦₁, σ₂, σ₃, v₀, v₁
+  constructor
+  . apply Hfuture₀
   constructor
   . apply stepn.multi _ _ _ _ Hstep₀
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole

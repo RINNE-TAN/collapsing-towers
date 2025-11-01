@@ -61,33 +61,35 @@ theorem consistency :
   ∀ e₀ e₁ τ φ,
     (e₀ ⇝ e₁) →
     typing_reification ⦰ e₀ τ φ →
-    log_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+    ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
   intros e₀ e₁ τ φ Hstep Hτ
   cases Hτ
   all_goals next Hτ =>
+    apply log_equiv.soundness
     apply consistency.strengthened ⦰ _ _ _ _ Hstep Hτ
 
 -- e₀ ⇝* e₁
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
--- ∅ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
+-- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
 theorem consistency.stepn :
   ∀ e₀ e₁ τ φ,
     (e₀ ⇝* e₁) →
     typing_reification ⦰ e₀ τ φ →
-    log_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+    ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
   intros e₀ e₁ τ φ Hstepn Hτ₀
   induction Hstepn generalizing φ
   case refl =>
     cases Hτ₀
     all_goals next Hτ₀ =>
+      apply log_equiv.soundness
       apply log_equiv.fundamental
       apply typing.erase.safety _ _ _ _ _ Hτ₀
   case multi Hstep Hstepn IH =>
     have ⟨_, Hτ₁, _⟩ := preservation _ _ _ _ Hstep Hτ₀
-    apply log_equiv.trans
+    apply ctx_equiv.trans
     . apply consistency _ _ _ _ Hstep Hτ₀
     . apply IH; apply Hτ₁
 
@@ -95,14 +97,14 @@ theorem consistency.stepn :
 -- ∅ ⊢ e₀ : <τ>
 -- ————————————————————
 -- v = code e₁
--- ∅ ⊢ ‖e₀‖ ≈𝑙𝑜𝑔 e₁ : τ
+-- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 e₁ : τ
 theorem consistency.stepn.rep :
   ∀ e₀ v τ φ,
     (e₀ ⇝* v) → value v →
     typing_reification ⦰ e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧
-      log_equiv ⦰ ‖e₀‖ e₁ τ :=
+      ctx_equiv ⦰ ‖e₀‖ e₁ τ :=
   by
   intros e₀ v τ φ Hstepn Hvalue Hτr₀
   have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ Hstepn Hτr₀
