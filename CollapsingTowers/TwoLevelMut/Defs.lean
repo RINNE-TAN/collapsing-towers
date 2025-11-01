@@ -5,3 +5,4 @@ import CollapsingTowers.TwoLevelMut.SyntacticTyping.Defs
 import CollapsingTowers.TwoLevelMut.SyntacticSoundness.Defs
 import CollapsingTowers.TwoLevelMut.CtxEquiv.Defs
 import CollapsingTowers.TwoLevelMut.LogicalEquiv.Defs
+import CollapsingTowers.TwoLevelMut.SemanticConsistency.Defs

@@ -245,6 +245,14 @@ lemma msubst.unit : ∀ γ, msubst γ .unit = .unit :=
   case cons IH => simp [IH]
 
 @[simp]
+lemma msubst.loc : ∀ γ l, msubst γ (.loc l) = .loc l :=
+  by
+  intros γ l
+  induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
 lemma msubst.alloc₁ : ∀ γ e, msubst γ (.alloc₁ e) = .alloc₁ (msubst γ e) :=
   by
   intros γ e
