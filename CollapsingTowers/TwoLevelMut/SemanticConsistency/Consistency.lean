@@ -2,9 +2,9 @@ import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisCtx
 import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisPure
 import CollapsingTowers.TwoLevelMut.SemanticConsistency.ConsisReflect
 
--- e₀ ⇝ e₁ (under Γ)
+-- ⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩ (under Γ)
 -- Γ ⊢ e₀ : τ
--- ——————————————————————————
+-- ——————————————————————————————
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
 theorem consistency.strengthened :
   ∀ Γ σ₀ σ₁ e₀ e₁ τ φ,
@@ -72,7 +72,7 @@ theorem consistency :
     apply log_equiv.soundness
     apply consistency.strengthened ⦰ _ _ _ _ _ _ Hstep Hτ
 
--- e₀ ⇝* e₁
+-- ⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
 -- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
@@ -103,7 +103,7 @@ theorem consistency.stepn :
     . apply consistency _ _ _ _ _ _ Hstep Hτ₀
     . apply IH; apply Hτ₁; rfl; apply HEq₁
 
--- e₀ ⇝* v
+-- ⟨σ₀, e₀⟩ ⇝* ⟨σ₁, v⟩
 -- ∅ ⊢ e₀ : <τ>
 -- ————————————————————
 -- v = code e₁
