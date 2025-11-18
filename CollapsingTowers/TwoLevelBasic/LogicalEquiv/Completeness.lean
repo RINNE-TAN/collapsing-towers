@@ -64,10 +64,10 @@ theorem ctx_equiv_impl_ciu_equiv :
       have Hτv := typing.weakening _ Γ _ _ _ _ Hτv
       simp at Hτv
       have HτC := ObsCtxℂ.hole Γ [] τ
-      have HτB := ObsCtx𝔹.appl₁ Γ argv τ𝕒 τ Hτv
-      have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
-      have HτB := ObsCtx𝔹.lam Γ τ𝕒 τ Hwbt
-      apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+      have HτB := ObsCtx𝔽.appl₁ Γ argv τ𝕒 τ Hτv
+      have HτC := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
+      have HτB := ObsCtx𝔽.lam Γ τ𝕒 τ Hwbt
+      apply ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
     have ⟨Hτ₀, Hτ₁, _⟩ := Hctx
     have ⟨HSτ₀, HSτ₁⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
     have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ HSτ₀
@@ -193,7 +193,7 @@ lemma ciu_equiv_respects_log_equiv_value :
     -- ——————————————————————————————————————————————
     -- ⦰ ⊢ (E ∘ fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : ℕ
     have HEApp : ctx𝔼 (E ∘ fun X => .app₁ X argv₁) := compose.ctx𝔼_ctx𝔹 _ _ HE (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
-    have HτEApp : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (E ∘ fun X => .app₁ X argv₁) ⦰ .nat := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτE (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
+    have HτEApp : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (E ∘ fun X => .app₁ X argv₁) ⦰ .nat := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτE (ObsCtx𝔽.appl₁ _ _ _ _ HτArg₁)
     have Hciu_value := Hciu_value _ typing.subst.nil _ HEApp HτEApp v Hvalue
     simp at Hciu_value
     constructor

@@ -1,15 +1,15 @@
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Fundamental
 import CollapsingTowers.TwoLevelBasic.CtxEquiv.Defs
 
-lemma log_equiv.congruence_under_ObsCtx𝔹 :
-  ∀ Δ Γ τδ τγ B e₀ e₁,
+lemma log_equiv.congruence_under_ObsCtx𝔽 :
+  ∀ Δ Γ τδ τγ F e₀ e₁,
     log_equiv Δ e₀ e₁ τδ →
-    ObsCtx𝔹 Δ τδ B Γ τγ →
-    log_equiv Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+    ObsCtx𝔽 Δ τδ F Γ τγ →
+    log_equiv Γ F⟦e₀⟧ F⟦e₁⟧ τγ :=
   by
-  intros Δ Γ τδ τγ B e₀ e₁ HX HB
+  intros Δ Γ τδ τγ F e₀ e₁ HX HF
   have ⟨Hτ₀, Hτ₁, Hsem_expr⟩ := HX
-  cases HB
+  cases HF
   case lam Hwbt =>
     apply compatibility.lam
     . apply Hwbt
@@ -65,10 +65,10 @@ lemma log_equiv.congruence_under_ObsCtxℂ :
     constructor; apply typing.weakening _ _ _ _ _ _ Hτ₁
     intros γ₀ γ₁ HsemΓ
     all_goals admit
-  case cons𝔹 HB IH =>
+  case cons𝔽 HF IH =>
     apply IH
-    apply log_equiv.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB
+    apply log_equiv.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF
 
 -- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
@@ -99,7 +99,7 @@ theorem log_equiv.soundness :
     . intro Hstep
       rw [← stepn.unique_normal_forms _ _ _ Hstep₁ Hstep (value.lit _), ← Hsem_value]
       apply Hstep₀; apply Hvalue
-  case cons𝔹 C B HC HB IH =>
+  case cons𝔽 C F HC HF IH =>
     apply IH
-    apply log_equiv.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB; apply HEqΔ; apply HEqτδ
+    apply log_equiv.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF; apply HEqΔ; apply HEqτδ
