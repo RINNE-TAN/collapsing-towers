@@ -59,7 +59,12 @@ lemma log_equiv.congruence_under_ObsCtxℂ :
   by
   intros Δ Γ τδ τγ C e₀ e₁ Hsem HC
   induction HC generalizing e₀ e₁
-  case hole => apply Hsem
+  case hole =>
+    have ⟨Hτ₀, Hτ₁, Hsem⟩ := Hsem
+    constructor; apply typing.weakening _ _ _ _ _ _ Hτ₀
+    constructor; apply typing.weakening _ _ _ _ _ _ Hτ₁
+    intros γ₀ γ₁ HsemΓ
+    all_goals admit
   case cons𝔹 HB IH =>
     apply IH
     apply log_equiv.congruence_under_ObsCtx𝔹
@@ -81,7 +86,8 @@ theorem log_equiv.soundness :
   intros C HC v Hvalue
   induction HC generalizing e₀ e₁
   case hole =>
-    rw [← HEqΔ, ← HEqτδ] at Hsem
+    simp at HEqΔ
+    rw [HEqΔ.right, ← HEqτδ] at Hsem
     have ⟨Hτ₀, Hτ₁, Hsem_expr⟩ := Hsem
     simp only [log_equiv_expr] at Hsem_expr
     have ⟨v₀, v₁, Hstep₀, Hstep₁, Hsem_value⟩ := Hsem_expr _ _ log_equiv_env.nil

@@ -63,7 +63,7 @@ theorem ctx_equiv_impl_ciu_equiv :
       have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτv
       have Hτv := typing.weakening _ Γ _ _ _ _ Hτv
       simp at Hτv
-      have HτC := ObsCtxℂ.hole Γ τ
+      have HτC := ObsCtxℂ.hole Γ [] τ
       have HτB := ObsCtx𝔹.appl₁ Γ argv τ𝕒 τ Hτv
       have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
       have HτB := ObsCtx𝔹.lam Γ τ𝕒 τ Hwbt
@@ -126,7 +126,7 @@ lemma ciu_equiv_respects_log_equiv_value :
     cases Hvalue₂ <;> try contradiction
     case lit n₂ =>
     simp at Hsem_value
-    have Hciu_value := Hciu_value _ typing.subst.nil _ ctx𝔼.hole (ObsCtxℂ.hole _ _) (.lit n₁) (value.lit _)
+    have Hciu_value := Hciu_value _ typing.subst.nil _ ctx𝔼.hole (ObsCtxℂ.hole [] [] _) (.lit n₁) (value.lit _)
     have Hstep₂ := Hciu_value.mp (stepn.refl _)
     have HEqv := stepn.value_impl_termination _ _ (value.lit _) Hstep₂
     simp at HEqv

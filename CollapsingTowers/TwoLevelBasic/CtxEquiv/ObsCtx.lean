@@ -41,7 +41,7 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
 
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ ≜ ∀ (Δ ⊢ X : τδ). Γ ⊢ C⟦X⟧ : τγ
 inductive ObsCtxℂ : TEnv → Ty → Ctx → TEnv → Ty → Prop where
-  | hole : ∀ Γ τ, ObsCtxℂ Γ τ id Γ τ
+  | hole : ∀ Γ Δ τ, ObsCtxℂ Γ τ id (Δ ++ Γ) τ
   | cons𝔹 :
     ∀ Ψ Δ Γ τψ τδ τγ C B,
       ObsCtxℂ Δ τδ C Γ τγ →
@@ -100,7 +100,7 @@ lemma typing.congruence_under_ObsCtxℂ :
   by
   intros Δ Γ τδ τγ C X HX HC
   induction HC generalizing X
-  case hole => apply HX
+  case hole => apply typing.weakening _ _ _ _ _ _ HX
   case cons𝔹 HB IH =>
     apply IH; apply typing.congruence_under_ObsCtx𝔹
     apply HX; apply HB
@@ -146,7 +146,13 @@ lemma ctx_equiv.congruence_under_ObsCtxℂ :
   by
   intros Δ Γ τδ τγ C e₀ e₁ Hctx HC
   induction HC generalizing e₀ e₁
-  case hole => apply Hctx
+  case hole =>
+    have ⟨Hτ₀, Hτ₁, Hctx⟩ := Hctx
+    constructor; apply typing.weakening _ _ _ _ _ _ Hτ₀
+    constructor; apply typing.weakening _ _ _ _ _ _ Hτ₁
+    intros C HC
+    apply Hctx
+    all_goals admit
   case cons𝔹 HB IH =>
     apply IH
     apply ctx_equiv.congruence_under_ObsCtx𝔹
