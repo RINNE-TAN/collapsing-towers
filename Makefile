@@ -7,4 +7,7 @@ rec:
 mut:
 	lake build CollapsingTowers.TwoLevelMut.Defs
 
-all: basic rec mut
+final:
+	lake build CollapsingTowers.TwoLevelFinal.Defs
+
+all: basic rec mut final
