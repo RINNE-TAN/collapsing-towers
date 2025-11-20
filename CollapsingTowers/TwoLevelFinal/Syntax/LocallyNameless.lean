@@ -11,6 +11,8 @@ def closed_at (e : Expr) (x : ℕ) : Prop :=
   | .lift e => closed_at e x
   | .app₁ f arg => closed_at f x ∧ closed_at arg x
   | .app₂ f arg => closed_at f x ∧ closed_at arg x
+  | .binary₁ _ l r => closed_at l x ∧ closed_at r x
+  | .binary₂ _ l r => closed_at l x ∧ closed_at r x
   | .lit _ => true
   | .run e => closed_at e x
   | .code e => closed_at e x
@@ -44,6 +46,8 @@ def lc_at (e : Expr) (i : ℕ) : Prop :=
   | .lift e => lc_at e i
   | .app₁ f arg => lc_at f i ∧ lc_at arg i
   | .app₂ f arg => lc_at f i ∧ lc_at arg i
+  | .binary₁ _ l r => lc_at l i ∧ lc_at r i
+  | .binary₂ _ l r => lc_at l i ∧ lc_at r i
   | .lit _ => true
   | .run e => lc_at e i
   | .code e => lc_at e i
@@ -86,6 +90,8 @@ lemma closed.inc : ∀ x y e, closed_at e x → x ≤ y → closed_at e y :=
   | fvar => simp at *; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -134,6 +140,8 @@ lemma closed.dec.not_in_fv : ∀ e x, closed_at e (x + 1) → x ∉ fv e → clo
     apply IH; apply Hclosed; apply HFv
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -164,6 +172,8 @@ lemma closed.dec.under_subst : ∀ x e v, closed_at v x → closed_at e (x + 1) 
     apply IH; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -212,6 +222,8 @@ lemma closed.under_closing : ∀ e x i, closed_at e (x + 1) ↔ closed_at ({i �
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -260,6 +272,8 @@ lemma closed.under_opening : ∀ e x i, closed_at e x → closed_at ({i ↦ x} e
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -285,6 +299,8 @@ lemma closed.under_shiftl : ∀ x y e n, closed_at e x → closed_at (shiftl y n
     . simp [if_neg HLe]; simp at Hclosed; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -329,6 +345,8 @@ lemma closed.under_subst : ∀ x e v y, closed_at v y → closed_at e y → clos
     apply IH; apply Hv; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -364,6 +382,8 @@ lemma closed.under_shiftr : ∀ x e, closed_at e x → closed_at (shiftr x e) x 
     . simp [if_neg Hxz]; simp at Hclosed; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -424,6 +444,8 @@ lemma closed.dec.under_shiftr :
       apply IH; apply HFv; apply Hclosed
     | app₁ _ _ IH₀ IH₁
     | app₂ _ _ IH₀ IH₁
+    | binary₁ _ _ _ IH₀ IH₁
+    | binary₂ _ _ _ IH₀ IH₁
     | store₁ _ _ IH₀ IH₁
     | store₂ _ _ IH₀ IH₁
     | lets _ _ IH₀ IH₁
@@ -458,6 +480,8 @@ lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -492,6 +516,8 @@ lemma closed.under_codify : ∀ e x i, closed_at e x ↔ closed_at (codify i e) 
     simp [IH (i + 1)]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     simp [IH₀ i, IH₁ i]
@@ -537,6 +563,8 @@ lemma closed_impl_not_in_fv :
     apply IH; apply Hclosed; apply HIn
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -580,6 +608,8 @@ lemma closed_iff_fv_empty : ∀ e, closed e ↔ fv e = ∅ :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -628,6 +658,8 @@ lemma lc.inc: ∀ e i j, lc_at e i → i ≤ j → lc_at e j :=
     apply IH; apply Hclosed; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -667,6 +699,8 @@ lemma lc.under_opening : ∀ i x e, lc_at ({i ↦ x} e) i ↔ lc_at e (i + 1) :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -714,6 +748,8 @@ lemma lc.under_closing : ∀ e x i j, j < i → lc_at e i → lc_at ({j ↤ x} e
     apply IH; omega
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
@@ -745,6 +781,8 @@ lemma lc.under_subst : ∀ x e v i, lc_at v i → lc_at e i → lc_at (subst x v
     apply Hv; omega; apply He
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁ =>
     constructor
@@ -803,6 +841,8 @@ lemma lc.under_erase : ∀ e i, lc_at e i ↔ lc_at ‖e‖ i :=
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁

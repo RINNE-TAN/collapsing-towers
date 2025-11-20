@@ -9,6 +9,8 @@ def grounded (e : Expr) : Prop :=
   | .lift _ => false
   | .app₁ f arg => grounded f ∧ grounded arg
   | .app₂ _ _ => false
+  | .binary₁ _ l r => grounded l ∧ grounded r
+  | .binary₂ _ _ _ => false
   | .lit _ => true
   | .run _ => false
   | .code _ => false
@@ -56,6 +58,8 @@ lemma grounded.under_erase : ∀ e, grounded ‖e‖ :=
   | app₂ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | store₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
@@ -91,13 +95,14 @@ lemma grounded_iff_erase_identity : ∀ e, grounded e ↔ ‖e‖ = e :=
   by
   intros e
   induction e with
-  | bvar| fvar| app₂| lit| lam𝕔| lets𝕔| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
+  | bvar| fvar| app₂| binary₂| lit| lam𝕔| lets𝕔| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
   | lam _ IH
   | alloc₁ _ IH
   | load₁ _ IH
   | fix₁ _ IH =>
     simp [IH]
   | app₁ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
@@ -112,7 +117,7 @@ lemma grounded.under_opening : ∀ e i x, grounded e ↔ grounded ({i ↦ x} e) 
   by
   intros e i x
   induction e generalizing i with
-  | fvar| app₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
+  | fvar| app₂| binary₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
   | bvar j =>
     by_cases HEq : j = i
     . simp [if_pos HEq]
@@ -123,6 +128,7 @@ lemma grounded.under_opening : ∀ e i x, grounded e ↔ grounded ({i ↦ x} e) 
   | fix₁ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
@@ -133,7 +139,7 @@ lemma grounded.under_subst : ∀ e v x, grounded v → grounded e → grounded (
   by
   intros e v x
   induction e with
-  | bvar| app₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
+  | bvar| app₂| binary₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
   | fvar y =>
     intros Hv
     by_cases HEq : x = y
@@ -145,6 +151,7 @@ lemma grounded.under_subst : ∀ e v x, grounded v → grounded e → grounded (
   | fix₁ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁ =>
     simp; intros Hv H₀ H₁; constructor
@@ -170,7 +177,7 @@ lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → gr
   by
   intros e v i
   induction e generalizing i with
-  | fvar| app₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
+  | fvar| app₂| binary₂| lit| lam𝕔| lets𝕔| lift| run| code| reflect| unit| loc| alloc₂| load₂| store₂| fix₂| ifz₂ => simp
   | bvar j =>
     simp; intros Hv
     by_cases HEq : j = i
@@ -182,6 +189,7 @@ lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → gr
   | fix₁ _ IH =>
     apply IH
   | app₁ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁ =>
     simp; intros Hv H₀ H₁; constructor
@@ -202,6 +210,8 @@ def immut (e : Expr) : Prop :=
   | .lift e => immut e
   | .app₁ f arg => immut f ∧ immut arg
   | .app₂ f arg => immut f ∧ immut arg
+  | .binary₁ _ l r => immut l ∧ immut r
+  | .binary₂ _ l r => immut l ∧ immut r
   | .lit _ => true
   | .run e => immut e
   | .code e => immut e
@@ -242,6 +252,8 @@ lemma immut.under_opening : ∀ e i x, immut e ↔ immut ({i ↦ x} e) :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
@@ -269,6 +281,8 @@ lemma immut.under_closing : ∀ e i x, immut e ↔ immut ({i ↤ x} e) :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp; rw [IH₀, IH₁]
@@ -298,6 +312,8 @@ lemma immut.under_opening_value : ∀ e v i, immut v → immut e → immut (open
     apply IH; apply Himmut₁
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     constructor
@@ -331,6 +347,8 @@ lemma immut.under_codify : ∀ e i, immut e ↔ immut (codify i e) :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp [← IH₀, ← IH₁]

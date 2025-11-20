@@ -1,5 +1,16 @@
 import Mathlib.Data.Nat.Basic
 
+inductive BinOp : Type where
+  | add
+  | mul
+  | sub
+
+@[simp]
+def eval : BinOp → ℕ → ℕ → ℕ
+  | .add => Nat.add
+  | .mul => Nat.mul
+  | .sub => Nat.sub
+
 inductive Expr : Type where
   | bvar (i : ℕ)
   | fvar (x : ℕ)
@@ -7,6 +18,8 @@ inductive Expr : Type where
   | app₁ (f : Expr) (arg : Expr)
   | app₂ (f : Expr) (arg : Expr)
   | lit (n : ℕ)
+  | binary₁ (op : BinOp) (l : Expr) (r : Expr)
+  | binary₂ (op : BinOp) (l : Expr) (r : Expr)
   | lift (e : Expr)
   | run (e : Expr)
   | code (e : Expr)

@@ -29,6 +29,8 @@ lemma comm.subst_opening : ∀ x y v e i, x ≠ y → lc v → subst x v ({i ↦
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -53,7 +55,9 @@ lemma comm.subst_opening_value :
     . simp [if_neg HEq]
   | lit| unit| loc => simp
   | app₁ _ _ IH₀ IH₁
-  | app₂ _ _ IH₀ IH₁ =>
+  | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁ =>
     simp; constructor
     apply IH₀; apply Hlc
     apply IH₁; apply Hlc
@@ -113,6 +117,8 @@ lemma comm.shiftl_opening : ∀ x y e n i, x ≤ y → (shiftl x n {i ↦ y} e) 
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -150,6 +156,8 @@ lemma comm.shiftr_opening : ∀ x y e i, x < y → shiftr x ({i ↦ y} e) = {i �
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -183,6 +191,8 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -216,6 +226,8 @@ lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -249,6 +261,8 @@ lemma comm.erase_opening_value : ∀ i v e, ‖opening i v e‖ = opening i ‖v
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -314,6 +328,8 @@ lemma comm.subst_subst : ∀ x y v₀ v₁ e, x ≠ y → closed v₀ → closed
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁

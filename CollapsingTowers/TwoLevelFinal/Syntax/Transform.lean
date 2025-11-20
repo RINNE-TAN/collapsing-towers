@@ -9,6 +9,8 @@ def opening (i : ℕ) (v : Expr) : Expr → Expr
   | .app₁ f arg => .app₁ (opening i v f) (opening i v arg)
   | .app₂ f arg => .app₂ (opening i v f) (opening i v arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (opening i v l) (opening i v r)
+  | .binary₂ op l r => .binary₂ op (opening i v l) (opening i v r)
   | .run e => .run (opening i v e)
   | .code e => .code (opening i v e)
   | .reflect e => .reflect (opening i v e)
@@ -39,6 +41,8 @@ def closing (i : ℕ) (x : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (closing i x f) (closing i x arg)
   | .app₂ f arg => .app₂ (closing i x f) (closing i x arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (closing i x l) (closing i x r)
+  | .binary₂ op l r => .binary₂ op (closing i x l) (closing i x r)
   | .run e => .run (closing i x e)
   | .code e => .code (closing i x e)
   | .reflect e => .reflect (closing i x e)
@@ -69,6 +73,8 @@ def subst (x : ℕ) (v : Expr) : Expr → Expr
   | .app₁ f arg => .app₁ (subst x v f) (subst x v arg)
   | .app₂ f arg => .app₂ (subst x v f) (subst x v arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (subst x v l) (subst x v r)
+  | .binary₂ op l r => .binary₂ op (subst x v l) (subst x v r)
   | .run e => .run (subst x v e)
   | .code e => .code (subst x v e)
   | .reflect e => .reflect (subst x v e)
@@ -98,6 +104,8 @@ def codify (i : ℕ) (e : Expr) : Expr :=
   | .app₁ f arg => .app₁ (codify i f) (codify i arg)
   | .app₂ f arg => .app₂ (codify i f) (codify i arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (codify i l) (codify i r)
+  | .binary₂ op l r => .binary₂ op (codify i l) (codify i r)
   | .run e => .run (codify i e)
   | .code e => .code (codify i e)
   | .reflect e => .reflect (codify i e)
@@ -126,6 +134,8 @@ def shiftl (x : ℕ) (n : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftl x n f) (shiftl x n arg)
   | .app₂ f arg => .app₂ (shiftl x n f) (shiftl x n arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (shiftl x n l) (shiftl x n r)
+  | .binary₂ op l r => .binary₂ op (shiftl x n l) (shiftl x n r)
   | .run e => .run (shiftl x n e)
   | .code e => .code (shiftl x n e)
   | .reflect e => .reflect (shiftl x n e)
@@ -154,6 +164,8 @@ def shiftr (x : ℕ) : Expr → Expr
   | .app₁ f arg => .app₁ (shiftr x f) (shiftr x arg)
   | .app₂ f arg => .app₂ (shiftr x f) (shiftr x arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (shiftr x l) (shiftr x r)
+  | .binary₂ op l r => .binary₂ op (shiftr x l) (shiftr x r)
   | .run e => .run (shiftr x e)
   | .code e => .code (shiftr x e)
   | .reflect e => .reflect (shiftr x e)
@@ -182,6 +194,8 @@ def erase : Expr → Expr
   | .app₁ f arg => .app₁ (erase f) (erase arg)
   | .app₂ f arg => .app₁ (erase f) (erase arg)
   | .lit n => .lit n
+  | .binary₁ op l r => .binary₁ op (erase l) (erase r)
+  | .binary₂ op l r => .binary₁ op (erase l) (erase r)
   | .run e => erase e
   | .code e => erase e
   | .reflect e => erase e
@@ -253,6 +267,14 @@ lemma msubst.lit : ∀ γ n, msubst γ (.lit n) = .lit n :=
   by
   intros γ n
   induction γ
+  case nil => rfl
+  case cons IH => simp [IH]
+
+@[simp]
+lemma msubst.binary₁ : ∀ γ op l r, msubst γ (.binary₁ op l r) = .binary₁ op (msubst γ l) (msubst γ r) :=
+  by
+  intros γ op l r
+  induction γ generalizing l r
   case nil => rfl
   case cons IH => simp [IH]
 

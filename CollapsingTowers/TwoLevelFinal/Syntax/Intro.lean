@@ -28,6 +28,8 @@ lemma intro.codify : ∀ x e i, closed_at e x → ({i ↤ x} subst x (.code (.fv
     simp; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -67,6 +69,8 @@ lemma intro.subst : ∀ x e v i, closed_at e x → subst x v (opening i (.fvar x
     simp; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁

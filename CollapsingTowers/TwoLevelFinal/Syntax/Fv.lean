@@ -10,6 +10,8 @@ def fv : Expr → Set ℕ
   | .app₁ f arg => fv f ∪ fv arg
   | .app₂ f arg => fv f ∪ fv arg
   | .lit _ => ∅
+  | .binary₁ _ l r => fv l ∪ fv r
+  | .binary₂ _ l r => fv l ∪ fv r
   | .run e => fv e
   | .code e => fv e
   | .reflect e => fv e
@@ -54,6 +56,8 @@ lemma fv.under_opening : ∀ i v e, fv (opening i v e) ⊆ fv v ∪ fv e :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -104,6 +108,8 @@ lemma fv.under_closing : ∀ i x e, fv (closing i x e) = fv e \ { x } :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -141,6 +147,8 @@ lemma fv.under_codify : ∀ e i, fv e = fv (codify i e) :=
     apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -196,6 +204,8 @@ lemma not_in_fv.under_subst :
     apply IH; apply HIn
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁

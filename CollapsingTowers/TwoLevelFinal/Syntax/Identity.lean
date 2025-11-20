@@ -21,6 +21,8 @@ lemma identity.opening : ∀ e v i, lc_at e i → (opening i v e) = e :=
     simp; apply IH; apply Hlc
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -61,6 +63,8 @@ lemma identity.opening_closing : ∀ i e x, lc_at e i → ({i ↦ x}{i ↤ x} e)
     simp; apply IH; apply Hlc
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -100,6 +104,8 @@ lemma identity.closing_opening : ∀ i e x, closed_at e x → ({i ↤ x}{i ↦ x
     simp; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -136,6 +142,8 @@ lemma identity.shiftl :
     simp; apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -172,6 +180,8 @@ lemma identity.shiftr :
     simp; apply IH
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -207,6 +217,8 @@ lemma identity.subst : ∀ x e v, closed_at e x → subst x v e = e :=
     simp; apply IH; apply Hclosed
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
@@ -256,6 +268,8 @@ lemma identity.erase_codify : ∀ i e, ‖codify i e‖ = ‖e‖ :=
     simp [IH]
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
+  | binary₁ _ _ _ IH₀ IH₁
+  | binary₂ _ _ _ IH₀ IH₁
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁
   | store₁ _ _ IH₀ IH₁
