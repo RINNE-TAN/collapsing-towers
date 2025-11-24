@@ -27,7 +27,15 @@ def log_approx_value : KripkeWorld → Expr → Expr → Ty → Prop
   --
   -- 𝓥⟦ℕ⟧ ≜ {(k, 𝓦, n, n) | n ∈ ℕ}
   | _, .lit n₀, .lit n₁, .nat => n₀ = n₁
-
+  --
+  --
+  | (k, 𝓦₀), .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 ⊥) =>
+    wf (.lam e₀) ∧ grounded (.lam e₀) ∧
+    wf (.lam e₁) ∧ grounded (.lam e₁) ∧
+    ∀ j 𝓦₁ v₀ v₁,
+      ((j, 𝓦₁) ⊇ (k, 𝓦₀)) →
+      log_approx_value (j, 𝓦₁) v₀ v₁ τ𝕒 →
+      log_approx_expr (j, 𝓦₁) (.app₁ (.lam e₀) v₀) (.app₁ (.lam e₁) v₁) τ𝕓
   --
   --
   -- 𝓥⟦unit⟧ ≜ {(k, 𝓦, (), ())}
