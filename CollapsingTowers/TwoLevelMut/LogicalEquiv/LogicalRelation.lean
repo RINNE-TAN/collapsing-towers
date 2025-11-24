@@ -3,7 +3,7 @@ import CollapsingTowers.TwoLevelMut.LogicalEquiv.World
 
 -- (σ₀, σ₁) : 𝓦 ≜ ∀ 𝓦(l₀, l₁). σ₀(l₁) = σ₀(l₁)
 @[simp]
-def log_equiv_store (𝓦 : World) (σ₀ σ₁ : Store) : Prop :=
+def log_well_store (𝓦 : World) (σ₀ σ₁ : Store) : Prop :=
   PartialBijection 𝓦 ∧ (
   ∀ l₀ l₁,
     𝓦 l₀ l₁ →
@@ -54,12 +54,12 @@ def log_equiv_value : World → Expr → Expr → Ty → Prop
 @[simp]
 def log_equiv_expr (𝓦₀ : World) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   ∀ σ₀ σ₁,
-    log_equiv_store 𝓦₀ σ₀ σ₁ →
+    log_well_store 𝓦₀ σ₀ σ₁ →
     ∃ 𝓦₁ σ₂ σ₃ v₀ v₁,
       (𝓦₁ ⊒ 𝓦₀) ∧
       (⟨σ₀, e₀⟩ ⇝* ⟨σ₂, v₀⟩) ∧
       (⟨σ₁, e₁⟩ ⇝* ⟨σ₃, v₁⟩) ∧
-      log_equiv_store 𝓦₁ σ₂ σ₃ ∧
+      log_well_store 𝓦₁ σ₂ σ₃ ∧
       log_equiv_value 𝓦₁ v₀ v₁ τ
 end
 
@@ -82,10 +82,10 @@ def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
     log_equiv_env 𝓦 γ₀ γ₁ Γ →
     log_equiv_expr 𝓦 (msubst γ₀ e₀) (msubst γ₁ e₁) τ
 
-lemma log_equiv_store.alloc :
+lemma log_well_store.alloc :
   ∀ 𝓦 σ₀ σ₁ n,
-    log_equiv_store 𝓦 σ₀ σ₁ →
-    log_equiv_store (World.ext 𝓦 σ₀.length σ₁.length) (.lit n :: σ₀) (.lit n :: σ₁) :=
+    log_well_store 𝓦 σ₀ σ₁ →
+    log_well_store (World.ext 𝓦 σ₀.length σ₁.length) (.lit n :: σ₀) (.lit n :: σ₁) :=
   by
   intros 𝓦 σ₀ σ₁ n Hsem_store
   have ⟨Hpb, Hsem_store⟩ := Hsem_store
@@ -111,13 +111,13 @@ lemma log_equiv_store.alloc :
       . apply binds.extend _ [_] _ _ Hbinds₀
       . apply binds.extend _ [_] _ _ Hbinds₁
 
-lemma log_equiv_store.store :
+lemma log_well_store.store :
   ∀ 𝓦 l₀ l₁ σ₀ σ₁ σ₂ σ₃ n,
-    log_equiv_store 𝓦 σ₀ σ₁ →
+    log_well_store 𝓦 σ₀ σ₁ →
     𝓦 l₀ l₁ →
     patch l₀ (.lit n) σ₀ σ₂ →
     patch l₁ (.lit n) σ₁ σ₃ →
-    log_equiv_store 𝓦 σ₂ σ₃ :=
+    log_well_store 𝓦 σ₂ σ₃ :=
   by
   intros 𝓦 l₀ l₁ σ₀ σ₁ σ₂ σ₃ n Hsem_store Hrel₀ Hpatch₀ Hpatch₁
   have ⟨Hpb, Hsem_store⟩ := Hsem_store

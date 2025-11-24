@@ -490,7 +490,7 @@ lemma compatibility.alloc₁ :
     . apply head_mutable.alloc₁
   constructor
   . rw [Hsem_value_nat]
-    apply log_equiv_store.alloc _ _ _ _ Hsem_store
+    apply log_well_store.alloc _ _ _ _ Hsem_store
   . simp
 
 -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
@@ -692,7 +692,7 @@ lemma compatibility.store₁ :
     . simp
     . apply head_mutable.store₁; apply Hpatch₁
   constructor
-  . apply log_equiv_store.store
+  . apply log_well_store.store
     . apply Hsem_store
     . apply Hsem_value_loc
     . apply Hpatch₀
