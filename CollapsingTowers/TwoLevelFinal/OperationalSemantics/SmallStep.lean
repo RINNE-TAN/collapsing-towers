@@ -41,6 +41,12 @@ inductive stepn : (Store × Expr) → (Store × Expr) → Prop
 
 notation:max st₀ " ⇝* " st₁  => stepn st₀ st₁
 
+inductive stepn_indexed : ℕ → (Store × Expr) → (Store × Expr) → Prop
+  | refl : ∀ st, stepn_indexed 0 st st
+  | multi : ∀ k st₀ st₁ st₂, (st₀ ⇝ st₁) → stepn_indexed k st₁ st₂ → stepn_indexed (k + 1) st₀ st₂
+
+notation:max st₀ " ⇝ " "⟦" k "⟧ " st₁  => stepn_indexed k st₀ st₁
+
 lemma stepn.trans : ∀ st₀ st₁ st₂, (st₀ ⇝* st₁) → (st₁ ⇝* st₂) → (st₀ ⇝* st₂) :=
   by
   intros st₀ st₁ st₂ Hstep₀ Hstep₁
@@ -49,6 +55,37 @@ lemma stepn.trans : ∀ st₀ st₁ st₂, (st₀ ⇝* st₁) → (st₁ ⇝* st
   case multi H _ IH =>
     apply stepn.multi
     apply H; apply IH; apply Hstep₁
+
+lemma stepn_indexed.trans : ∀ i j st₀ st₁ st₂, (st₀ ⇝ ⟦i⟧ st₁) → (st₁ ⇝ ⟦j⟧ st₂) → (st₀ ⇝ ⟦i + j⟧ st₂) :=
+  by
+  intros i j st₀ st₁ st₂ Hstep₀ Hstep₁
+  induction Hstep₀
+  case refl => simp; apply Hstep₁
+  case multi k _ _ _ H _ IH =>
+    have HEq : k + 1 + j = k + j + 1 := by omega
+    rw [HEq]
+    apply stepn_indexed.multi
+    apply H; apply IH; apply Hstep₁
+
+lemma stepn_indexed_impl_stepn : ∀ k st₀ st₁, (st₀ ⇝ ⟦k⟧ st₁) → (st₀ ⇝* st₁) :=
+  by
+  intros k st₀ st₁ Hstepn
+  induction Hstepn
+  case refl => apply stepn.refl
+  case multi H _ IH =>
+    apply stepn.multi
+    apply H; apply IH
+
+lemma stepn_impl_stepn_indexed : ∀ st₀ st₁, (st₀ ⇝* st₁) → ∃ k, (st₀ ⇝ ⟦k⟧ st₁) :=
+  by
+  intros st₀ st₁ Hstepn
+  induction Hstepn
+  case refl => exists 0; apply stepn_indexed.refl
+  case multi H _ IH =>
+    have ⟨k, IH⟩ := IH
+    exists k + 1
+    apply stepn_indexed.multi
+    apply H; apply IH
 
 lemma head_pure.fv_shrink : ∀ e₀ e₁, head_pure e₀ e₁ → fv e₁ ⊆ fv e₀ :=
   by
