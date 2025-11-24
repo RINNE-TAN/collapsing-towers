@@ -42,9 +42,6 @@ lemma log_approx_value.trans
   | .fragment _ => by simp
   | .rep _ => by simp
 
-termination_by (τ, k)
-decreasing_by apply Prod.Lex.left; simp; omega
-
 lemma log_approx_expr.trans :
   ∀ k e₀ e₁ e₂ τ,
     log_approx_expr k e₀ e₁ τ →
@@ -72,9 +69,6 @@ lemma log_approx_expr.trans :
     rw [stepn.unique_normal_forms _ _ _ Hstep₂ Hstep₃ Hvalue₂ Hvalue₃]
     apply log_approx_value.antimono
     apply Hsem_value₂; omega
-
-termination_by k _ _ _ τ => (τ, k + 1)
-decreasing_by apply Prod.Lex.right; omega
 end
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ

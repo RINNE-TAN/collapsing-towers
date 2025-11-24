@@ -41,9 +41,6 @@ lemma log_equiv_value.trans
   | .fragment _ => by simp
   | .rep _ => by simp
 
-termination_by (τ, 0)
-decreasing_by apply Prod.Lex.left; simp; omega
-
 lemma log_equiv_expr.trans :
   ∀ e₀ e₁ e₂ τ,
     log_equiv_expr e₀ e₁ τ →
@@ -63,9 +60,6 @@ lemma log_equiv_expr.trans :
   constructor; apply Hstep₃
   apply log_equiv_value.trans
   apply Hsem_value₀; apply Hsem_value₁
-
-termination_by _ _ _ τ => (τ, 1)
-decreasing_by apply Prod.Lex.right; omega
 end
 
 -- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ

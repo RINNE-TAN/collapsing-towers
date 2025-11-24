@@ -24,18 +24,12 @@ def log_approx_value : ℕ → Expr → Expr → Ty → Prop
         log_approx_expr j (.app₁ (.lam e₀) v₀) (.app₁ (.lam e₁) v₁) τ𝕓
   | _, _, _, _ => false
 
-termination_by k _ _ τ => (τ, k)
-decreasing_by all_goals apply Prod.Lex.left; simp; omega
-
 -- 𝓔⟦τ⟧ ≜ {(k, e₀, e₁) | ∀ j < k, v₀. e₀ ⇝ⱼ v₀ → ∃ v₁, e₁ ⇝* v₁ ∧ (k - j, v₀, v₁) ∈ 𝓥⟦τ⟧}
 @[simp]
 def log_approx_expr (k : ℕ) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   ∀ j, j < k →
     ∀ v₀, value v₀ → (e₀ ⇝ ⟦j⟧ v₀) →
     ∃ v₁, (e₁ ⇝* v₁) ∧ log_approx_value (k - j) v₀ v₁ τ
-
-termination_by (τ, k + 1)
-decreasing_by apply Prod.Lex.right; omega
 end
 
 inductive typing.subst : Subst → TEnv → Prop where
