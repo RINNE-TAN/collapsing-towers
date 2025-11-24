@@ -2,3 +2,6 @@ import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Effect
 import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Ty
 import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Env
 import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Typing
+import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Weakening
+import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Shrinking
+import CollapsingTowers.TwoLevelFinal.SyntacticTyping.EraseSafety
