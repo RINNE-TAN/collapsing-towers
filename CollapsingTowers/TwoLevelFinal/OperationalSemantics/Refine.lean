@@ -1,0 +1,2 @@
+import CollapsingTowers.TwoLevelFinal.OperationalSemantics.Confluence
+import CollapsingTowers.TwoLevelFinal.OperationalSemantics.Congruence

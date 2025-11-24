@@ -3,3 +3,4 @@ import CollapsingTowers.TwoLevelFinal.Syntax.Defs
 import CollapsingTowers.TwoLevelFinal.OperationalSemantics.Defs
 import CollapsingTowers.TwoLevelFinal.SyntacticTyping.Defs
 import CollapsingTowers.TwoLevelFinal.SyntacticSoundness.Defs
+import CollapsingTowers.TwoLevelFinal.CtxEquiv.Defs
