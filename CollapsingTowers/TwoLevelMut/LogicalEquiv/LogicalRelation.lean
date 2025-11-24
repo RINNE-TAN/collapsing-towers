@@ -242,8 +242,8 @@ lemma log_equiv_value.syntactic.value :
   case rep => simp at Hsem_value
 
 lemma log_equiv_value.syntactic.wf :
-  ∀ k v₀ v₁ τ,
-    log_equiv_value k v₀ v₁ τ →
+  ∀ 𝓦 v₀ v₁ τ,
+    log_equiv_value 𝓦 v₀ v₁ τ →
     wf v₀ ∧ wf v₁ :=
   by
   intros 𝓦 v₀ v₁ τ Hsem_value
@@ -281,8 +281,8 @@ lemma log_equiv_value.syntactic.wf :
   case rep => simp at Hsem_value
 
 lemma log_equiv_value.syntactic.grounded :
-  ∀ k v₀ v₁ τ,
-    log_equiv_value k v₀ v₁ τ →
+  ∀ 𝓦 v₀ v₁ τ,
+    log_equiv_value 𝓦 v₀ v₁ τ →
     grounded v₀ ∧ grounded v₁ :=
   by
   intros 𝓦 v₀ v₁ τ Hsem_value
