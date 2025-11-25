@@ -43,7 +43,7 @@ lemma compatibility.unit :
   ∀ Γ,
     log_equiv Γ .unit .unit .unit :=
   by
-  intros n
+  intros
   constructor; apply typing.unit
   constructor; apply typing.unit
   intros 𝓦 γ₀ γ₁ HsemΓ

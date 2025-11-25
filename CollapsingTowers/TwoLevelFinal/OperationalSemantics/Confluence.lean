@@ -40,6 +40,19 @@ lemma stepn.value_impl_termination :
     exfalso; apply step.value_impl_termination
     apply Hvalue; apply Hstep
 
+lemma stepn_indexed.value_impl_termination :
+  ∀ k σ₀ σ₁ v₀ v₁,
+    value v₀ →
+    (⟨σ₀, v₀⟩ ⇝ ⟦k⟧ ⟨σ₁, v₁⟩) →
+    σ₀ = σ₁ ∧ v₀ = v₁ ∧ k = 0 :=
+  by
+  intros k σ₀ σ₁ v₀ v₁ Hvalue Hstepn
+  cases Hstepn
+  case refl => simp
+  case multi Hstep _ =>
+    exfalso; apply step.value_impl_termination
+    apply Hvalue; apply Hstep
+
 theorem stepn.church_rosser :
   ∀ st stl str,
     (st ⇝* stl) →

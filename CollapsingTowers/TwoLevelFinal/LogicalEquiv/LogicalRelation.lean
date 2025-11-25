@@ -179,8 +179,8 @@ lemma log_approx_value.antimono :
     constructor; apply HG₁
     intros k₂ 𝓦₂ v₀ v₁ Hfuture₁
     apply Hsem_value
-    have ⟨Hk₀, Hfuture₀⟩ := Hfuture₀
-    have ⟨Hk₁, Hfuture₁⟩ := Hfuture₁
+    have ⟨Hindexk₀, Hfuture₀⟩ := Hfuture₀
+    have ⟨Hindexk₁, Hfuture₁⟩ := Hfuture₁
     constructor
     . omega
     . apply World.future.trans _ _ _ Hfuture₁
