@@ -112,6 +112,51 @@ lemma head_mutable.store_grow : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀
   case load₁ => simp
   case store₁ Hpatch => simp [patch.length _ _ _ _ Hpatch]
 
+lemma lc.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → lc e₀ :=
+  by
+  intros σ₀ σ₁ e₀ e₁ Hstep
+  cases Hstep
+  case pure HM Hlc Hhead =>
+    apply lc.under_ctx𝕄; apply HM; apply Hlc
+  case mutable HM Hlc Hhead =>
+    apply lc.under_ctx𝕄; apply HM; apply Hlc
+  case reflect HP HE Hlc =>
+    apply lc.under_ctxℙ; apply HP
+    apply lc.under_ctx𝔼; apply HE
+    apply Hlc
+
+lemma lc.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
+  by
+  intros σ₀ σ₂ e₀ e₂
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₂
+  intros Hstepn Hlc
+  induction Hstepn
+  case refl =>
+    simp [← HEq₀] at HEq₁
+    rw [← HEq₁.right]
+    apply Hlc
+  case multi H _ IH =>
+    apply lc.under_step
+    simp [← HEq₀] at H
+    apply H
+
+lemma lc.under_stepn_indexed : ∀ k σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟦k⟧ ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
+  by
+  intros k σ₀ σ₂ e₀ e₂
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₂
+  intros Hstepn Hlc
+  induction Hstepn
+  case refl =>
+    simp [← HEq₀] at HEq₁
+    rw [← HEq₁.right]
+    apply Hlc
+  case multi H _ IH =>
+    apply lc.under_step
+    simp [← HEq₀] at H
+    apply H
+
 lemma grounded.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → grounded e₀ → grounded e₁ :=
   by
   intros e₀ e₁ Hhead HG

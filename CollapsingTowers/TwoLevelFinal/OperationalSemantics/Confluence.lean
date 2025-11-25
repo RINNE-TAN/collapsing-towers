@@ -75,11 +75,44 @@ theorem stepn.church_rosser :
       . apply stepn.multi; apply IHstepl; apply IHstepln
     case multi str₀ IHstepr IHsteprn =>
       apply IH
-      rcases stl₀ with ⟨σl₀, l₀⟩
       rcases stl₁ with ⟨σl₁, l₁⟩
-      rcases str₀ with ⟨σr₀, r₀⟩
       simp [deterministic _ _ _ _ _ _ IHstepl IHstepr]
       apply IHsteprn
+
+theorem stepn_indexed.church_rosser :
+  ∀ il ir st stl str,
+    (st ⇝ ⟦il⟧ stl) →
+    (st ⇝ ⟦ir⟧ str) →
+    ∃ jl jr stv,
+      il + jl = ir + jr ∧
+      (stl ⇝ ⟦jl⟧ stv) ∧
+      (str ⇝ ⟦jr⟧ stv) :=
+  by
+  intros il ir st stl str Hstepl Hstepr
+  induction Hstepl generalizing ir str
+  case refl =>
+    exists ir, 0, str
+    constructor; omega
+    constructor; apply Hstepr
+    apply stepn_indexed.refl
+  case multi il stl₀ stl₁ stl₂ IHstepl IHstepln IH =>
+    cases Hstepr
+    case refl =>
+      exists 0, il + 1, stl₂
+      constructor; omega
+      constructor; apply stepn_indexed.refl
+      apply stepn_indexed.multi
+      apply IHstepl; apply IHstepln
+    case multi ir str₀ IHstepr IHsteprn =>
+      rcases stl₁ with ⟨σl₁, l₁⟩
+      have IHstepln : (⟨σl₁, l₁⟩ ⇝ ⟦ir⟧ str) :=
+        by
+        simp [deterministic _ _ _ _ _ _ IHstepl IHstepr]
+        apply IHsteprn
+      have ⟨jl, jr, v, IHEq, IHstep⟩ := IH _ _ IHstepln
+      exists jl, jr, v
+      constructor; omega
+      apply IHstep
 
 theorem stepn.unique_normal_forms :
   ∀ σ σ₀ σ₁ e v₀ v₁,

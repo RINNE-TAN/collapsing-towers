@@ -92,7 +92,7 @@ theorem stepn_indexed.church_rosser :
       apply stepn_indexed.multi
       apply IHstepl; apply IHstepln
     case multi ir re₀ IHstepr IHsteprn =>
-      have IHstepln : (le₁ ⇝ ⟦ir⟧r) :=
+      have IHstepln : (le₁ ⇝ ⟦ir⟧ r) :=
         by
         rw [deterministic _ _ _ IHstepl IHstepr]
         apply IHsteprn

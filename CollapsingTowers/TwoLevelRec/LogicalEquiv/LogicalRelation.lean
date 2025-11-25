@@ -13,7 +13,7 @@ def log_approx_value : ℕ → Expr → Expr → Ty → Prop
   --   (k, λx.e₀, λx.e₁) |
   --   ⦰ ⊢ λx.e₀ : τ𝕒 → τ𝕓 ∧
   --   ⦰ ⊢ λx.e₁ : τ𝕒 → τ𝕓 ∧
-  --   ∀ j ≤ k, (j, v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. (j. λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧
+  --   ∀ j ≤ k, (j, v₀, v₁) ∈ 𝓥⟦τ𝕒⟧. (j, λx.e₀ @ v₀, λx.e₁ @ v₁) ∈ 𝓔⟦τ𝕓⟧
   -- }
   | k, .lam e₀, .lam e₁, (.arrow τ𝕒 τ𝕓 ⊥) =>
     typing ⦰ 𝟚 (.lam e₀) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ ∧
