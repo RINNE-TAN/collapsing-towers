@@ -80,6 +80,26 @@ lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx
     apply HE; apply HG; apply Hstep
     apply IH _ _ (grounded.under_step _ _ _ _ Hstep HG) rfl HEq₁
 
+lemma stepn_indexed_grounded.congruence_under_ctx𝔹 : ∀ k B σ₀ σ₁ e₀ e₁, ctx𝔹 B → grounded e₀ → (⟨σ₀, e₀⟩ ⇝ ⟦k⟧ ⟨σ₁, e₁⟩) → (⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟦k⟧ ⟨σ₁, B⟦e₁⟧⟩) :=
+  by
+  intros k B σ₀ σ₂ e₀ e₂ HB HG Hstepn
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₂
+  rw [HEq₀, HEq₁] at Hstepn
+  induction Hstepn generalizing σ₀ e₀
+  case refl st₁ =>
+    rcases st₁ with ⟨σ₁, e₁⟩
+    simp at HEq₀ HEq₁
+    simp [HEq₀, HEq₁]
+    apply stepn_indexed.refl
+  case multi st₀ st₁ st₂ Hstep Hstepn IH =>
+    rcases st₁ with ⟨σ₁, e₁⟩
+    rw [← HEq₀] at Hstep
+    apply stepn_indexed.multi
+    apply step_grounded.congruence_under_ctx𝔹
+    apply HB; apply HG; apply Hstep
+    apply IH _ _ (grounded.under_step _ _ _ _ Hstep HG) rfl HEq₁
+
 lemma step.congruence_under_ctx𝔹 :
   ∀ lvl B σ₀ σ₁ e₀ e₁,
     ctx𝔹 B →

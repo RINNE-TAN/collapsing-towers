@@ -149,6 +149,23 @@ lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ �
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
+lemma grounded.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
+  by
+  intros σ₀ σ₂ e₀ e₂
+  generalize HEq₀ : (σ₀, e₀) = st₀
+  generalize HEq₁ : (σ₂, e₂) = st₁
+  intros Hstepn HG
+  induction Hstepn generalizing σ₀ e₀
+  case refl =>
+    simp [← HEq₀] at HEq₁
+    rw [HEq₁.right]
+    apply HG
+  case multi st₀ st₁ st₂ Hstep _ IH =>
+    rcases st₁ with ⟨σ₁, e₁⟩
+    apply IH _ _ rfl HEq₁
+    apply grounded.under_step _ _ _ _ Hstep
+    simp [← HEq₀]; apply HG
+
 lemma immut.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → immut e₀ → immut e₁ :=
   by
   intros e₀ e₁ Hhead

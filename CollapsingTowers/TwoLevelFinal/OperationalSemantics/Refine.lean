@@ -1,2 +1,149 @@
 import CollapsingTowers.TwoLevelFinal.OperationalSemantics.Confluence
 import CollapsingTowers.TwoLevelFinal.OperationalSemantics.Congruence
+
+-- ⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟨σ₁, r⟩
+-- ———————————————————————————————————————————————
+-- ⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟨σ₁, B⟦e₁⟧⟩ ∧ ⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩
+lemma step.refine_at_ctx𝔹 :
+  ∀ σ₀ σ₁ B₀ e₀ r,
+    ctx𝔹 B₀ →
+    ¬value e₀ →
+    grounded B₀⟦e₀⟧  →
+    (⟨σ₀, B₀⟦e₀⟧⟩ ⇝ ⟨σ₁, r⟩) →
+    ∃ e₁, B₀⟦e₁⟧ = r ∧ (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) :=
+  by
+  intros σ₀ σ₁ B₀ e₀ r HB₀ HNv HG
+  generalize HEqe : B₀⟦e₀⟧ = E₀
+  intros Hstep
+  cases Hstep
+  case pure M e₁ e₂ HM Hlc Hhead =>
+    have Hstepable := head_pure_impl_head_stepable _ _ Hlc Hhead
+    cases HM
+    case hole =>
+      exfalso
+      apply Hstepable.HAtomic𝔹
+      apply HB₀; apply HNv
+      symm; apply HEqe
+    case cons𝔹 B₁ M HB₁ HM =>
+      have HNvM₁ := not_value.under_ctx𝕄 _ _ _ Hstepable.HNv HM
+      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
+      exists M⟦e₂⟧
+      constructor; simp [HEqB]
+      rw [HEqM]; apply step_lvl.pure
+      apply HM; apply Hlc; apply Hhead
+    case consℝ HR HM =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HB₀; apply HR; apply HEqe
+      apply HNv; apply not_value.under_ctx𝕄
+      apply Hstepable.HNv; apply HM
+  case mutable M e₁ e₂ HM Hlc Hmut =>
+    have Hstepable := head_mutable_impl_head_stepable _ _ _ _ Hlc Hmut
+    cases HM
+    case hole =>
+      exfalso
+      apply Hstepable.HAtomic𝔹
+      apply HB₀; apply HNv
+      symm; apply HEqe
+    case cons𝔹 B₁ M HB₁ HM =>
+      have HNvM₁ := not_value.under_ctx𝕄 _ _ _ Hstepable.HNv HM
+      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
+      exists M⟦e₂⟧
+      constructor; simp [HEqB]
+      rw [HEqM]; apply step_lvl.mutable
+      apply HM; apply Hlc; apply Hmut
+    case consℝ HR HM =>
+      exfalso
+      apply deterministic.under_ctx𝔹_ctxℝ
+      apply HB₀; apply HR; apply HEqe
+      apply HNv; apply not_value.under_ctx𝕄
+      apply Hstepable.HNv; apply HM
+  case reflect M E _ HP HE _ =>
+    rw [HEqe] at HG
+    have HM := rewrite.ctxℙ_ctx𝕄 _ _ HP
+    have HG := grounded.decompose_ctx𝕄 _ _ _ HM HG
+    have HG := grounded.decompose_ctx𝔼 _ _ HE HG
+    simp at HG
+
+-- ⟨σ₀, B⟦e⟧⟩ ⇝ₖ ⟨σ₁, v⟩
+-- ———————————————————————————————————————————————————————————
+-- k = i + j ∧ ⟨σ₀, e⟩ ⇝ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, B⟦v𝕖⟧⟩ ⇝ⱼ ⟨σ₁, v⟩
+lemma stepn_indexed.refine_at_ctx𝔹 :
+  ∀ σ₀ σ₁ B e₀ v k,
+    ctx𝔹 B →
+    value v →
+    grounded B⟦e₀⟧  →
+    (⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟦k⟧ ⟨σ₁, v⟩) →
+    ∃ imσ i j v𝕖,
+      i + j = k ∧
+      value v𝕖 ∧
+      (⟨σ₀, e₀⟩ ⇝ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
+      (⟨imσ, B⟦v𝕖⟧⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ B e₀ v k HB
+  generalize HEq₀ : (σ₀, B⟦e₀⟧) = st₀
+  generalize HEq₁ : (σ₁, v) = st₁
+  intros Hvalue HG₀ Hstep
+  induction Hstep generalizing e₀ σ₀
+  case refl =>
+    simp [← HEq₀] at HEq₁
+    exfalso; apply not_value.under_ctx𝔹
+    apply HB; rw [← HEq₁.right]; apply Hvalue
+  case multi k st₀ st₁ st₂ Hstep Hstepn IH =>
+    rw [← HEq₀] at Hstep
+    match value.decidable e₀ with
+    | isTrue Hvalue =>
+      exists σ₀, 0, k + 1, e₀
+      constructor; omega
+      constructor; apply Hvalue
+      constructor; apply stepn_indexed.refl
+      apply stepn_indexed.multi; apply Hstep; apply Hstepn
+    | isFalse HNv =>
+      rcases st₁ with ⟨imσ₀, e₁⟩
+      have ⟨e₁, HEqe₁, Hstep₀⟩ := step.refine_at_ctx𝔹 _ _ _ _ _ HB HNv HG₀ Hstep
+      have HG₁ := grounded.under_step _ _ _ _ Hstep HG₀
+      rw [← HEqe₁] at HG₁
+      have ⟨imσ₁, i, j, v𝕖, HEqk, Hvalue, Hstep₁, Hstep₂⟩ := IH imσ₀ e₁ (by simp [HEqe₁]) HEq₁ HG₁
+      exists imσ₁, i + 1, j, v𝕖
+      constructor; omega
+      constructor; apply Hvalue
+      constructor; apply stepn_indexed.multi
+      apply Hstep₀; apply Hstep₁; apply Hstep₂
+
+-- ⟨σ₀, E⟦e⟧⟩ ⇝ₖ ⟨σ₁, v⟩
+-- ———————————————————————————————————————————————————————————
+-- k = i + j ∧ ⟨σ₀, e⟩ ⇝ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, E⟦v𝕖⟧⟩ ⇝ⱼ ⟨σ₁, v⟩
+lemma stepn_indexed.refine_at_ctx𝔼 :
+  ∀ σ₀ σ₁ E e₀ v k,
+    ctx𝔼 E →
+    value v →
+    grounded E⟦e₀⟧  →
+    (⟨σ₀, E⟦e₀⟧⟩ ⇝ ⟦k⟧ ⟨σ₁, v⟩) →
+    ∃ imσ i j v𝕖,
+      i + j = k ∧
+      value v𝕖 ∧
+      (⟨σ₀, e₀⟩ ⇝ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
+      (⟨imσ, E⟦v𝕖⟧⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ E e₀ v k HE Hvalue HG₀ Hstep
+  induction HE generalizing σ₁ v k
+  case hole =>
+    exists σ₁, k, 0, v
+    constructor; rfl
+    constructor; apply Hvalue
+    constructor; apply Hstep
+    apply stepn_indexed.refl
+  case cons𝔹 B E HB HE IH =>
+    have HGE₀ := grounded.decompose_ctx𝔹 _ _ HB HG₀
+    have HGe₀ := grounded.decompose_ctx𝔼 _ _ HE HGE₀
+    have ⟨imσ₀, i₀, j₀, v𝕖₀, HEq₀, Hvalue₀, Hstepl₀, Hstepr₀⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ HB Hvalue HG₀ Hstep
+    have ⟨imσ₁, i₁, j₁, v𝕖₁, HEq₁, Hvalue₁, Hstepl₁, Hstepr₁⟩ := IH _ _ _ Hvalue₀ HGE₀ Hstepl₀
+    exists imσ₁, i₁, j₁ + j₀, v𝕖₁
+    constructor; omega
+    constructor; apply Hvalue₁
+    constructor; apply Hstepl₁
+    apply stepn_indexed.trans
+    apply stepn_indexed_grounded.congruence_under_ctx𝔹 _ _ _ _ _ _ HB
+    apply grounded.under_ctx𝔼 _ _ _ HE HGE₀
+    apply grounded.under_stepn; apply stepn_indexed_impl_stepn; apply Hstepl₁; apply HGe₀
+    apply Hstepr₁; apply Hstepr₀
