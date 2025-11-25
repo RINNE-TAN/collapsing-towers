@@ -193,3 +193,46 @@ lemma stepn_indexed.refine.app₁.eliminator :
   exists i
   constructor; omega
   simp [HEqσ, HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.binary₁.constructor :
+  ∀ σ₀ σ₁ op l r v j,
+    value v →
+    grounded (.binary₁ op l r) →
+    (⟨σ₀, .binary₁ op l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ imσ₀ imσ₁ i₀ i₁ i₂ lᵥ rᵥ,
+      i₀ + i₁ + i₂ = j ∧
+      value lᵥ ∧ value rᵥ ∧
+      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧ (⟨imσ₀, r⟩ ⇝ ⟦i₁⟧ ⟨imσ₁, rᵥ⟩) ∧ (⟨imσ₁, .binary₁ op lᵥ rᵥ⟩ ⇝ ⟦i₂⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ op l r v j Hvalue HG₀ Hstep
+  have ⟨HGl, HGr⟩ := HG₀
+  have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
+  have ⟨imσ₀, i₀, k, lᵥ, HEqj, Hvaluel, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.binaryl₁ _ _ Hlc.right) Hvalue HG₀ Hstep
+  have HGlᵥ := grounded.under_stepn _ _ _ _ (stepn_indexed_impl_stepn _ _ _ Hstep₀) HGl
+  have HG₁ : grounded (.binary₁ op lᵥ r) := by constructor; apply HGlᵥ; apply HGr
+  have ⟨imσ₁, i₁, i₂, rᵥ, HEqj, Hvaluer, Hstep₁, Hstep₂⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.binaryr₁ _ _ Hvaluel) Hvalue HG₁ Hstep
+  exists imσ₀, imσ₁, i₀, i₁, i₂, lᵥ, rᵥ
+  constructor; omega
+  constructor; apply Hvaluel
+  constructor; apply Hvaluer
+  constructor; apply Hstep₀
+  constructor; apply Hstep₁
+  apply Hstep₂
+
+lemma stepn_indexed.refine.binary₁.eliminator :
+  ∀ σ₀ σ₁ op l r v j,
+    value v →
+    (⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    σ₀ = σ₁ ∧ 1 = j ∧ v = .lit (eval op l r) :=
+  by
+  intros σ₀ σ₁ op l r v j Hvalue Hstep
+  have HstepHead : ⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⇝ ⟦1⟧ ⟨σ₀, .lit (eval op l r)⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_pure.binary₁
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ (value.lit _) Hstepr
+  rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega

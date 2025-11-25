@@ -288,8 +288,8 @@ lemma compatibility.app₁ :
   -- ⟨σ₁, γ₁(f₁)⟩ ⇝* ⟨imσ₁, fv₁⟩
   -- ⟨imσ₁, γ₁(arg₁)⟩ ⇝* ⟨imσ₃, argv₁⟩
   -- ⟨imσ₃, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
-  -- ——————————————————————————————————
-  -- γ₁(f₁) @ γ₁(arg₁) ⇝* v₁
+  -- ————————————————————————————————————
+  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⇝* ⟨σ₃, v₁⟩
   exists 𝓦₃, σ₃, v₁
   constructor
   . constructor; omega
@@ -314,3 +314,127 @@ lemma compatibility.app₁ :
   . apply Hsem_store
   . apply log_approx_value.antimono
     apply Hsem_value; simp; omega
+
+-- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+-- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : ℕ
+-- ——————————————————————————————
+-- Γ ⊧ l₀ ⊕ r₀ ≤𝑙𝑜𝑔 l₁ ⊕ r₁ : ℕ
+lemma compatibility.binary₁ :
+  ∀ Γ op l₀ l₁ r₀ r₁,
+    log_approx Γ l₀ l₁ .nat →
+    log_approx Γ r₀ r₁ .nat →
+    log_approx Γ (.binary₁ op l₀ r₀) (.binary₁ op l₁ r₁) .nat :=
+  by
+  intros Γ op l₀ l₁ r₀ r₁ Hl Hr
+  have ⟨Hτl₀, Hτl₁, Hl⟩ := Hl
+  have ⟨Hτr₀, Hτr₁, Hr⟩ := Hr
+  have Hτ₀ : typing Γ 𝟚 (.binary₁ op l₀ r₀) .nat ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.binary₁; apply Hτl₀; apply Hτr₀
+  have Hτ₁ : typing Γ 𝟚 (.binary₁ op l₁ r₁) .nat ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥, ← Effect.union_pure (⊥ ∪ ⊥)]
+    apply typing.binary₁; apply Hτl₁; apply Hτr₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+  have HG₀ : grounded (msubst γ₀ (.binary₁ op l₀ r₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₀
+  have HG₁ : grounded (msubst γ₁ (.binary₁ op l₁ r₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+  simp at HG₀ HG₁
+  simp only [log_approx_expr]
+  intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, γ₀(l₀) ⊕ γ₀(r₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ——————————————————————————————————————
+  -- i₀ + i₁ + i₂ = j
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
+  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  simp at Hstep₀
+  have ⟨imσ₀, imσ₂, i₀, i₁, i₂, lv₀, rv₀, HEqj, Hvaluel₀, Hvaluer₀, Hstepl₀, Hstepr₀, Hstep₀⟩ :=
+    stepn_indexed.refine.binary₁.constructor _ _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+  -- ————————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- (imσ₀, imσ₁) : 𝓦₂
+  -- lv₀ = lv₁
+  simp only [log_approx_expr] at Hl
+  have ⟨𝓦₁, imσ₁, lv₁, Hfuture₀, Hstepl₁, Hsem_store, Hsem_valuel⟩ := Hl _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ Hvaluel₀ Hstepl₀
+  have ⟨_, Hfuture₀⟩ := Hfuture₀
+  have ⟨Hvaluel₀, Hvaluel₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_valuel
+  cases Hvaluel₀ <;> try simp at Hsem_valuel
+  case lit lv₀ =>
+  cases Hvaluel₁ <;> try simp at Hsem_valuel
+  case lit lv₁ =>
+  --
+  --
+  -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
+  -- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : ℕ
+  -- ——————————————————————————————————————
+  -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨imσ₃, rv₁⟩
+  -- (imσ₂, imσ₃) : 𝓦₂
+  -- rv₀ = rv₁
+  simp only [log_approx_expr] at Hr
+  have HsemΓ : log_approx_env (k - i₀, 𝓦₁) γ₀ γ₁ Γ :=
+    by
+    apply log_approx_env.antimono; apply HsemΓ
+    constructor; omega; apply Hfuture₀
+  have ⟨𝓦₂, imσ₃, rv₁, Hfuture₁, Hstepr₁, Hsem_store, Hsem_valuer⟩ := Hr (k - i₀) 𝓦₁ _ _ HsemΓ i₁ (by omega) _ _ Hsem_store _ _ Hvaluer₀ Hstepr₀
+  have ⟨_, Hfuture₁⟩ := Hfuture₁
+  have ⟨Hvaluer₀, Hvaluer₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_valuer
+  cases Hvaluer₀ <;> try simp at Hsem_valuer
+  case lit rv₀ =>
+  cases Hvaluer₁ <;> try simp at Hsem_valuer
+  case lit rv₁ =>
+  --
+  --
+  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ——————————————————————————————————
+  -- imσ₂ = imσ₂
+  -- v₀ = lv₀ ⊕ rv₀
+  have ⟨HEqσ₂, _, HEqv₀⟩ := stepn_indexed.refine.binary₁.eliminator _ _ _ _ _ _ _ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨imσ₃, rv₁⟩
+  -- ————————————————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁) ⊕ γ₁(r₁)⟩ ⇝* ⟨imσ₃, lv₁ ⊕ rv₁⟩
+  exists 𝓦₂, imσ₃, v₀
+  constructor
+  . constructor; omega
+    apply World.future.trans _ _ _ Hfuture₁
+    apply Hfuture₀
+  constructor
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.binaryl₁ _ _ _) _ Hstepl₁
+    . apply lc.under_msubst _ _ _ Hmwf₁ (typing.regular _ _ _ _ _ Hτr₁)
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ Hτl₁)
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.binaryr₁ _ _ _) _ Hstepr₁
+    . apply value.lit
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ Hτr₁)
+    -- head
+    rw [← Hsem_valuel, ← Hsem_valuer, HEqv₀]
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_pure.binary₁
+  constructor
+  . rw [← HEqσ₂]; apply Hsem_store
+  . simp [HEqv₀]
