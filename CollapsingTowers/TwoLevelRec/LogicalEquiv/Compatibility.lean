@@ -165,7 +165,7 @@ lemma compatibility.app₁ :
   simp at HSτ₀ HSτ₁
   have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
   simp only [log_approx_expr]
-  intros j Hindex v₀ Hvalue₀ Hstep₀
+  intros j Hindexj v₀ Hvalue₀ Hstep₀
   --
   --
   -- γ₀(f₀) @ γ₀(arg₀) ⇝ ⟦j⟧ v₀
