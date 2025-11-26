@@ -385,10 +385,10 @@ lemma compatibility.lets :
   --
   --
   -- γ₀(b₀) ⇝ ⟦i₀⟧ bv₀
-  -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒 → τ𝕓
-  -- ———————————————————————————————
+  -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
+  -- ——————————————————————————
   -- γ₁(b₁) ⇝* bv₁
-  -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
+  -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_approx_expr] at Hb
   have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := Hb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
   have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_bind
