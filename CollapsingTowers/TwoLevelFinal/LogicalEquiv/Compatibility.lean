@@ -569,3 +569,89 @@ lemma compatibility.lets :
   . apply Hsem_store
   . apply log_approx_value.antimono
     apply Hsem_value; simp; omega
+
+lemma compatibility.fix₁.induction :
+  ∀ k 𝓦 f₀ f₁ τ𝕒 τ𝕓,
+    log_approx_value (k, 𝓦) f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥) →
+    log_approx_value (k, 𝓦)
+      (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0)))
+      (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0)))
+    (.arrow τ𝕒 τ𝕓 ⊥) :=
+  by
+  admit
+
+-- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
+-- ————————————————————————————————————
+-- Γ ⊧ fix f₀ ≤𝑙𝑜𝑔 fix f₁ : τ𝕒 → τ𝕓
+lemma compatibility.fix₁ :
+  ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
+    log_approx Γ f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥) →
+    log_approx Γ (.fix₁ f₀) (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ⊥) :=
+  by
+  intros Γ f₀ f₁ τ𝕒 τ𝕓 Hf
+  have ⟨HτFix₀, HτFix₁, Hf⟩ := Hf
+  have Hτ₀ : typing Γ 𝟚 (.fix₁ f₀) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ := by apply typing.fix₁; simp; rfl; apply HτFix₀
+  have Hτ₁ : typing Γ 𝟚 (.fix₁ f₁) (.arrow τ𝕒 τ𝕓 ⊥) ⊥ := by apply typing.fix₁; simp; rfl; apply HτFix₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+  have HG₀ : grounded (msubst γ₀ (.fix₁ f₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₀
+  have HG₁ : grounded (msubst γ₁ (.fix₁ f₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+  simp at HG₀ HG₁
+  simp only [log_approx_expr]
+  intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, fix γ₀(f₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ———————————————————————————————
+  -- i₀ + 1 = j
+  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨σ₂, fv₀⟩
+  -- v₀ = λx.fv₀ @ fix fv₀ @ x
+  simp at Hstep₀
+  have ⟨i₀, fv₀, HEqj, HvalueFix₀, HstepFix₀, HEqv₀⟩ := stepn_indexed.refine.fix₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+  rw [HEqv₀]
+  --
+  --
+  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨σ₂, fv₀⟩
+  -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
+  -- —————————————————————————————————————————————————
+  -- ⟨σ₀, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- (σ₂, σ₃) : 𝓦₁
+  -- (k - i₀, 𝓦₁, fv₀, fv₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓⟧
+  simp only [log_approx_expr] at Hf
+  have ⟨𝓦₁, σ₃, fv₁, Hfuture₀, HstepFix₁, Hsem_store, Hsem_value_fix⟩ := Hf _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueFix₀ HstepFix₀
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_fix
+  have ⟨_, Hfuture₀⟩ := Hfuture₀
+  --
+  --
+  -- ⟨σ₀, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- ———————————————————————————————————————————————
+  -- ⟨σ₀, fix γ₁(f₁)⟩ ⇝* ⟨σ₃, λx.fv₁ @ fix fv₁ @ x⟩
+  exists 𝓦₁, σ₃, .lam (.app₁ (.app₁ fv₁ (.fix₁ fv₁)) (.bvar 0))
+  constructor
+  . constructor; omega
+    apply Hfuture₀
+  constructor
+  . -- left
+    simp
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.fix₁ HG₁ HstepFix₁
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFix₁
+    apply head_pure.fix₁; apply HvalueFix₁
+  constructor
+  . apply Hsem_store
+  . apply compatibility.fix₁.induction
+    apply log_approx_value.antimono
+    apply Hsem_value_fix
+    constructor; omega; simp

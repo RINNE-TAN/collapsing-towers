@@ -633,13 +633,13 @@ lemma compatibility.fix₁ :
   --
   --
   -- γ₀(f₀) ⇝ ⟦i₀⟧ fv₀
-  -- (k, γ₀(f₀), γ₁(f₁)) ∈ 𝓔⟦τ𝕓⟧
-  -- ——————————————————————————
+  -- (k, γ₀(f₀), γ₁(f₁)) ∈ 𝓔⟦(τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓⟧
+  -- —————————————————————————————————————————————
   -- γ₁(f₁) ⇝* fv₁
-  -- (k - i₀, fv₀, fv₁) ∈ 𝓥⟦τ𝕓⟧
+  -- (k - i₀, fv₀, fv₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓⟧
   simp only [log_approx_expr] at Hf
-  have ⟨fv₁, HstepFix₁, Hsem_value_fun⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFix₀ HstepFix₀
-  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_fun
+  have ⟨fv₁, HstepFix₁, Hsem_value_fix⟩ := Hf _ _ _ HsemΓ i₀ (by omega) _ HvalueFix₀ HstepFix₀
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_fix
   --
   --
   -- γ₁(f₁) ⇝* fv₁
@@ -658,7 +658,7 @@ lemma compatibility.fix₁ :
     apply head.fix₁; apply HvalueFix₁
   . apply compatibility.fix₁.induction
     apply log_approx_value.antimono
-    apply Hsem_value_fun; omega
+    apply Hsem_value_fix; omega
 
 -- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
 -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : τ

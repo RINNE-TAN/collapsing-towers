@@ -248,7 +248,7 @@ lemma stepn_indexed.refine.fix₁.constructor :
     ∃ i fᵥ,
       i + 1 = j ∧
       value fᵥ ∧
-      (f ⇝ ⟦i⟧ fᵥ) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))  :=
+      (f ⇝ ⟦i⟧ fᵥ) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
   by
   intros f v j Hvalue₀ HG Hstep
   have ⟨i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ ctx𝔹.fix₁ Hvalue₀ HG Hstep
