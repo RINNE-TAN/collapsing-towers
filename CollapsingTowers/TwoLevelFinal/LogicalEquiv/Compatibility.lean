@@ -609,7 +609,7 @@ lemma compatibility.fix₁.induction :
     constructor; simp; apply HGFix₀
     constructor; apply HwfFun₁
     constructor; simp; apply HGFix₁
-    intro j 𝓦₁ argv₀ argv₁ Hfuture₀ Hsem_value_arg
+    intro s 𝓦₁ argv₀ argv₁ Hfuture₀ Hsem_value_arg
     have ⟨_, Hfuture₀⟩ := Hfuture₀
     have ⟨HvalueArg₀, HvalueArg₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_arg
     have ⟨HGArg₀, HGArg₁⟩ := log_approx_value.syntactic.grounded _ _ _ _ _ Hsem_value_arg
@@ -656,13 +656,73 @@ lemma compatibility.fix₁.induction :
     -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
     -- (k, 𝓦₁, f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧
     -- ———————————————————————————————————————————————————————————————————————————
-    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩⇝* ⟨imσ₁, fv₁⟩
+    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⇝* ⟨imσ₁, fv₁⟩
     -- (imσ₀, imσ₁) : 𝓦₂
     -- (k - i₀, 𝓦₂, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
     simp only [log_approx_expr] at Hsem_expr_fun
     have ⟨𝓦₂, imσ₁, fv₁, Hfuture₁, HstepFun₁, Hsem_store, Hsem_value_fun⟩ := Hsem_expr_fun i₀ (by omega) _ _ Hsem_store _ _ HvalueFun₀ HstepFun₀
     have ⟨_, Hfuture₁⟩ := Hfuture₁
-    admit
+    --
+    --
+    -- (k - i₀, 𝓦₂, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
+    -- (s, 𝓦₁, argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧
+    -- ——————————————————————————————————————————————————
+    -- (s - i₀ - 1, 𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
+    have Hsem_value_fun : log_approx_value (s - i₀ - 1, 𝓦₂) fv₀ fv₁ (τ𝕒.arrow τ𝕓 ⊥) :=
+      log_approx_value.antimono _ _ _ _ _ _ _ Hsem_value_fun (by constructor; omega; simp)
+    have Hsem_value_arg : log_approx_value (s - i₀ - 1, 𝓦₂) argv₀ argv₁ τ𝕒 :=
+      log_approx_value.antimono _ _ _ _ _ _ _ Hsem_value_arg (by constructor; omega; apply Hfuture₁)
+    have Hsem_expr := log_approx_value.apply _ _ _ _ _ _ _ _ Hsem_value_fun Hsem_value_arg
+    --
+    --
+    -- (s - i₀ - 1, 𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
+    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- —————————————————————————————————————————————
+    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₃
+    -- (s - i₀ - i₁ - 1, 𝓦₃, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
+    simp only [log_approx_expr] at Hsem_expr
+    have ⟨𝓦₃, σ₃, v₁, Hfuture₂, Hstep₁, Hsem_store, Hsem_value⟩ := Hsem_expr i₁ (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₂⟩ := Hfuture₂
+    --
+    --
+    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⇝* ⟨imσ₁, fv₁⟩
+    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ——————————————————————————————————————————————
+    -- ⟨σ₁, (λx.f₁ @ fix f₁ @ x) @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    exists 𝓦₃, σ₃, v₁
+    constructor
+    . constructor; omega
+      apply World.future.trans _ _ _ Hfuture₂
+      apply Hfuture₁
+    constructor
+    . -- head₀
+      apply stepn.multi
+      apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+      . simp; constructor
+        . apply lc.inc; apply lc.value _ HvalueFix₁; omega
+        . apply lc.value _ HvalueArg₁
+      . apply head_pure.app₁; apply HvalueArg₁
+      simp [identity.opening _ _ _ (lc.value _ HvalueFix₁)]
+      -- head₁
+      apply stepn.multi
+      apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
+      simp; apply HGFix₁
+      apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appr₁ _ HvalueFix₁)
+      simp; apply HGFix₁
+      apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+      . apply lc.value _ HvalueFix₁
+      . apply head_pure.fix₁; apply HvalueFix₁
+      -- left
+      apply stepn.trans
+      apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
+      simp; apply HGFix₁; apply HstepFun₁
+      -- head₂
+      apply Hstep₁
+    constructor
+    . apply Hsem_store
+    . apply log_approx_value.antimono
+      apply Hsem_value; simp; omega
 
 -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)
 -- ——————————————————————————————————————
