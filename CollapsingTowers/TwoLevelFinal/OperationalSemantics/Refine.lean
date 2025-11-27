@@ -294,3 +294,42 @@ lemma stepn_indexed.refine.fix₁.constructor :
   constructor; apply HvalueFun
   constructor; rw [HEqσ₀, ← HEqσ₁]; apply Hstep₀
   rw [HEqv₀, HEqv₁]
+
+lemma stepn_indexed.refine.fix₁.eliminator :
+  ∀ σ₀ σ₁ f arg v j,
+    value f → value arg → value v →
+    grounded (.fix₁ f) →
+    (⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ i,
+      i + 2 = j ∧
+      (⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ f arg v j HvalueFun HvalueArg Hvalue HG Hstep
+  have HstepHead₀ : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ :=
+    by
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    simp; constructor
+    apply lc.inc; apply lc.value; apply HvalueFun; omega
+    apply lc.value; apply HvalueArg
+    have HEqSubst₀ : .app₁ (.app₁ f (.fix₁ f)) arg = opening 0 arg (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)) :=
+      by
+      simp; rw [identity.opening]
+      apply lc.inc; apply lc.value; apply HvalueFun; omega
+    rw [HEqSubst₀]; apply head_pure.app₁; apply HvalueArg
+  have HstepHead₁ : ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ ⇝ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
+    by
+    apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg)) (by simp; apply HG)
+    apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appr₁ _ HvalueFun) (by simp; apply HG)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    simp; apply lc.value; apply HvalueFun
+    apply head_pure.fix₁; apply HvalueFun
+  have HstepHead : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟦2⟧ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
+    by
+    apply stepn_indexed.multi; apply HstepHead₀
+    apply stepn_indexed.multi; apply HstepHead₁
+    apply stepn_indexed.refl
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ, HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqσ, HEqv]; apply Hstepr

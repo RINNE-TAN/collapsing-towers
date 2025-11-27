@@ -578,10 +578,94 @@ lemma compatibility.fix₁.induction :
       (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0)))
     (.arrow τ𝕒 τ𝕓 ⊥) :=
   by
-  admit
+  intros k 𝓦₀ f₀ f₁ τ𝕒 τ𝕓 Hsem_value_fix
+  have ⟨HvalueFix₀, HvalueFix₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_fix
+  have ⟨HwfFix₀, HwfFix₁⟩ := log_approx_value.syntactic.wf _ _ _ _ _ Hsem_value_fix
+  have ⟨HGFix₀, HGFix₁⟩ := log_approx_value.syntactic.grounded _ _ _ _ _ Hsem_value_fix
+  have HwfFun₀ : wf (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))) :=
+    by
+    constructor
+    . simp; apply lc.inc; apply HwfFix₀.left; omega
+    . simp; apply HwfFix₀.right
+  have HwfFun₁ : wf (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))) :=
+    by
+    constructor
+    . simp; apply lc.inc; apply HwfFix₁.left; omega
+    . simp; apply HwfFix₁.right
+  induction k
+  case zero =>
+    simp only [log_approx_value]
+    constructor; apply HwfFun₀
+    constructor; simp; apply HGFix₀
+    constructor; apply HwfFun₁
+    constructor; simp; apply HGFix₁
+    intro z 𝓦₁ argv₀ argv₁ Hfuture₀ Hsem_value_arg
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    simp only [log_approx_expr]
+    intro j Hindexj; omega
+  case succ k IH =>
+    simp only [log_approx_value]
+    constructor; apply HwfFun₀
+    constructor; simp; apply HGFix₀
+    constructor; apply HwfFun₁
+    constructor; simp; apply HGFix₁
+    intro j 𝓦₁ argv₀ argv₁ Hfuture₀ Hsem_value_arg
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    have ⟨HvalueArg₀, HvalueArg₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_arg
+    have ⟨HGArg₀, HGArg₁⟩ := log_approx_value.syntactic.grounded _ _ _ _ _ Hsem_value_arg
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ——————————————————————————————————————————————————————
+    -- i + 2 = j
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦i⟧ ⟨σ₂, v₀⟩
+    have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.fix₁.eliminator _ _ _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ (by simp; apply HGFix₀) Hstep₀
+    --
+    --
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦i⟧ ⟨σ₂, v₀⟩
+    -- ——————————————————————————————————————————————————————
+    -- i₀ + i₁ = i
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    have ⟨imσ₀, _, i₀, z, i₁, fv₀, _, HEqj, HvalueFun₀, _, HstepFun₀, HstepArg₀, Hstep₀⟩ := stepn_indexed.refine.app₁.constructor _ _ _ _ _ _ Hvalue₀ (
+      by simp; constructor; apply HGFix₀; apply HGArg₀
+    ) Hstep₀
+    have ⟨HEqσ, HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ HvalueArg₀ HstepArg₀
+    rw [← HEqσ, ← HEqv] at Hstep₀
+    --
+    --
+    -- (k + 1, 𝓦₀, f₀, f₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)⟧
+    -- (k, 𝓦₀, λx.f₀ @ fix f₀ @ x, λx.f₁ @ fix f₁ @ x) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
+    -- ———————————————————————————————————————————————————————————————————————————
+    -- (k, 𝓦₁, f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧
+    have Hsem_expr_fun :
+      log_approx_expr (k, 𝓦₁)
+        (.app₁ f₀ (.lam (.app₁ (.app₁ f₀ (.fix₁ f₀)) (.bvar 0))))
+        (.app₁ f₁ (.lam (.app₁ (.app₁ f₁ (.fix₁ f₁)) (.bvar 0))))
+      (.arrow τ𝕒 τ𝕓 ⊥) :=
+      by
+      apply log_approx_value.apply
+      apply log_approx_value.antimono; apply Hsem_value_fix
+      constructor; omega; apply Hfuture₀
+      apply log_approx_value.antimono; apply IH (log_approx_value.antimono _ _ _ _ _ _ _ Hsem_value_fix (by simp))
+      constructor; omega; apply Hfuture₀
+    --
+    --
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+    -- (k, 𝓦₁, f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧
+    -- ———————————————————————————————————————————————————————————————————————————
+    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩⇝* ⟨imσ₁, fv₁⟩
+    -- (imσ₀, imσ₁) : 𝓦₂
+    -- (k - i₀, 𝓦₂, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
+    simp only [log_approx_expr] at Hsem_expr_fun
+    have ⟨𝓦₂, imσ₁, fv₁, Hfuture₁, HstepFun₁, Hsem_store, Hsem_value_fun⟩ := Hsem_expr_fun i₀ (by omega) _ _ Hsem_store _ _ HvalueFun₀ HstepFun₀
+    have ⟨_, Hfuture₁⟩ := Hfuture₁
+    admit
 
--- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
--- ————————————————————————————————————
+-- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)
+-- ——————————————————————————————————————
 -- Γ ⊧ fix f₀ ≤𝑙𝑜𝑔 fix f₁ : τ𝕒 → τ𝕓
 lemma compatibility.fix₁ :
   ∀ Γ f₀ f₁ τ𝕒 τ𝕓,
@@ -621,11 +705,11 @@ lemma compatibility.fix₁ :
   --
   --
   -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨σ₂, fv₀⟩
-  -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓
-  -- —————————————————————————————————————————————————
+  -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)
+  -- ——————————————————————————————————————————————————
   -- ⟨σ₀, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
-  -- (k - i₀, 𝓦₁, fv₀, fv₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → τ𝕒 → τ𝕓⟧
+  -- (k - i₀, 𝓦₁, fv₀, fv₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)⟧
   simp only [log_approx_expr] at Hf
   have ⟨𝓦₁, σ₃, fv₁, Hfuture₀, HstepFix₁, Hsem_store, Hsem_value_fix⟩ := Hf _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueFix₀ HstepFix₀
   have ⟨HvalueFix₀, HvalueFix₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_fix
