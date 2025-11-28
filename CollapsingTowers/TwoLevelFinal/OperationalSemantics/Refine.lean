@@ -400,3 +400,50 @@ lemma stepn_indexed.refine.load₁.eliminator :
   have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
   have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ (value.lit _) Hstepr
   rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega
+
+lemma stepn_indexed.refine.store₁.constructor :
+  ∀ σ₀ σ₁ l n v j,
+    value v →
+    grounded (.store₁ l n) →
+    (⟨σ₀, .store₁ l n⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ imσ₀ imσ₁ i₀ i₁ i₂ lᵥ nᵥ,
+      i₀ + i₁ + i₂ = j ∧
+      value lᵥ ∧
+      value nᵥ ∧
+      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧
+      (⟨imσ₀, n⟩ ⇝ ⟦i₁⟧ ⟨imσ₁, nᵥ⟩) ∧
+      (⟨imσ₁, .store₁ lᵥ nᵥ⟩ ⇝ ⟦i₂⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ l n v j Hvalue HG₀ Hstep
+  have ⟨HGl, HGn⟩ := HG₀
+  have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
+  have ⟨imσ₀, i₀, k, lᵥ, HEqj, Hvaluel, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.storel₁ _ Hlc.right) Hvalue HG₀ Hstep
+  have HGlᵥ := grounded.under_stepn _ _ _ _ (stepn_indexed_impl_stepn _ _ _ Hstep₀) HGl
+  have HG₁ : grounded (.store₁ lᵥ n) := by constructor; apply HGlᵥ; apply HGn
+  have ⟨imσ₁, i₁, i₂, nᵥ, HEqj, Hvaluen, Hstep₁, Hstep₂⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.storer₁ _ Hvaluel) Hvalue HG₁ Hstep
+  exists imσ₀, imσ₁, i₀, i₁, i₂, lᵥ, nᵥ
+  constructor; omega
+  constructor; apply Hvaluel
+  constructor; apply Hvaluen
+  constructor; apply Hstep₀
+  constructor; apply Hstep₁
+  apply Hstep₂
+
+lemma stepn_indexed.refine.store₁.eliminator :
+  ∀ σ₀ σ₁ imσ l v n j,
+    value v →
+    patch l (Expr.lit n) σ₀ imσ →
+    (⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    imσ = σ₁ ∧ 1 = j ∧ v = .unit :=
+  by
+  intros σ₀ σ₁ imσ l v n j Hvalue Hpatch Hstep
+  have HstepHead : ⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⇝ ⟦1⟧ ⟨imσ, .unit⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.store₁; apply Hpatch
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ value.unit Hstepr
+  rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega

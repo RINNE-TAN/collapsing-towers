@@ -737,6 +737,135 @@ lemma compatibility.load₁ :
   . apply Hsem_store
   . simp
 
+-- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ref ℕ
+-- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
+-- —————————————————————————————————————
+-- Γ ⊧ (l₁ := n₀) ≤𝑙𝑜𝑔 (l₁ := n₁) : unit
+lemma compatibility.store₁ :
+  ∀ Γ l₀ l₁ n₀ n₁,
+    log_approx Γ l₀ l₁ (.ref .nat) →
+    log_approx Γ n₀ n₁ .nat →
+    log_approx Γ (.store₁ l₀ n₀) (.store₁ l₁ n₁) .unit :=
+  by
+  intros Γ l₀ l₁ n₀ n₁ Hl Hn
+  have ⟨HτLoc₀, HτLoc₁, Hl⟩ := Hl
+  have ⟨HτNat₀, HτNat₁, Hn⟩ := Hn
+  have Hτ₀ : typing Γ 𝟚 (.store₁ l₀ n₀) .unit ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁; apply HτLoc₀; apply HτNat₀
+  have Hτ₁ : typing Γ 𝟚 (.store₁ l₁ n₁) .unit ⊥ :=
+    by
+    rw [← Effect.union_pure ⊥]
+    apply typing.store₁; apply HτLoc₁; apply HτNat₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ _ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+  have HG₀ : grounded (msubst γ₀ (.store₁ l₀ n₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₀
+  have HG₁ : grounded (msubst γ₁ (.store₁ l₁ n₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+  simp at HG₀ HG₁
+  simp only [log_approx_expr]
+  intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ——————————————————————————————————————
+  -- i₀ + i₁ + i₂ = j
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, γ₀(n₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
+  -- ⟨imσ₂, lv₀ := nv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  simp at Hstep₀
+  have ⟨imσ₀, imσ₂, i₀, i₁, i₂, lv₀, nv₀, HEqj, HvalueLoc₀, HvalueNat₀, HstepLoc₀, HstepNat₀, Hstep₀⟩ := stepn_indexed.refine.store₁.constructor _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+  -- ————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- (imσ₀, imσ₁) : 𝓦₁
+  -- 𝓦₁ lv₀ lv₁
+  simp only [log_approx_expr] at Hl
+  have ⟨𝓦₁, imσ₁, lv₁, Hfuture₀, HstepLoc₁, Hsem_store, Hsem_value_loc⟩ := Hl _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueLoc₀ HstepLoc₀
+  have ⟨_, Hfuture₀⟩ := Hfuture₀
+  have ⟨HvalueLoc₀, HvalueLoc₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_loc
+  cases HvalueLoc₀ <;> try simp at Hsem_value_loc
+  case loc lv₀ =>
+  cases HvalueLoc₁ <;> try simp at Hsem_value_loc
+  case loc lv₁ =>
+  -- ⟨imσ₀, γ₀(n₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
+  -- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
+  -- ————————————————————————————————
+  -- ⟨imσ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₃, nv₁⟩
+  -- (imσ₂, imσ₃) : 𝓦₂
+  -- nv₀ = nv₁
+  simp only [log_approx_expr] at Hn
+  have HsemΓ : log_approx_env (k - i₀, 𝓦₁) γ₀ γ₁ Γ :=
+    by
+    apply log_approx_env.antimono; apply HsemΓ
+    constructor; omega; apply Hfuture₀
+  have ⟨𝓦₂, imσ₃, nv₁, Hfuture₁, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := Hn (k - i₀) 𝓦₁ _ _ HsemΓ i₁ (by omega) _ _ Hsem_store _ _ HvalueNat₀ HstepNat₀
+  have ⟨_, Hfuture₁⟩ := Hfuture₁
+  have ⟨HvalueNat₀, HvalueNat₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_nat
+  cases HvalueNat₀ <;> try simp at Hsem_value_nat
+  case lit nv₀ =>
+  cases HvalueNat₁ <;> try simp at Hsem_value_nat
+  case lit nv₁ =>
+  have Hsem_value_loc := Hfuture₁ _ _ Hsem_value_loc
+  have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store.right _ _ Hsem_value_loc
+  have ⟨imσ₄, Hpatch₀⟩ : ∃ imσ₄, patch lv₀ (.lit nv₀) imσ₂ imσ₄ :=
+    by
+    simp [← setr_exists_iff_index_lt_length, getr_exists_iff_index_lt_length]
+    exists .lit n
+  have ⟨imσ₅, Hpatch₁⟩ : ∃ imσ₅, patch lv₁ (.lit nv₁) imσ₃ imσ₅ :=
+    by
+    simp [← setr_exists_iff_index_lt_length, getr_exists_iff_index_lt_length]
+    exists .lit n
+  have ⟨HEqσ₂, _, HEqv₀⟩ := stepn_indexed.refine.store₁.eliminator _ _ _ _ _ _ _ Hvalue₀ Hpatch₀ Hstep₀
+  rw [← HEqσ₂, HEqv₀]
+  --
+  --
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨imσ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₃, nv₁⟩
+  -- ————————————————————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⇝* ⟨(lv₁ ↦ nv₁)imσ₃, ()⟩
+  exists 𝓦₂, imσ₅, .unit
+  constructor
+  . constructor; omega
+    apply World.future.trans _ _ _ Hfuture₁
+    apply Hfuture₀
+  constructor
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storel₁ _ _) _ HstepLoc₁
+    . apply lc.under_msubst _ _ _ Hmwf₁ (typing.regular _ _ _ _ _ HτNat₁)
+    . apply HG₁.left
+    -- right
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.storer₁ _ _) _ HstepNat₁
+    . apply value.loc
+    . apply HG₁.right
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.store₁; apply Hpatch₁
+  constructor
+  . apply log_well_store.store
+    . apply Hsem_store
+    . apply Hsem_value_loc
+    . apply Hpatch₀
+    . simp [Hsem_value_nat]
+      apply Hpatch₁
+  . simp
+
 lemma compatibility.fix₁.induction :
   ∀ k 𝓦 f₀ f₁ τ𝕒 τ𝕓,
     log_approx_value (k, 𝓦) f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥) →
