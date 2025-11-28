@@ -333,3 +333,36 @@ lemma stepn_indexed.refine.fix₁.eliminator :
   exists i
   constructor; omega
   rw [HEqσ, HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.alloc₁.constructor :
+  ∀ σ₀ σ₁ n v j,
+    value v →
+    grounded (.alloc₁ n) →
+    (⟨σ₀, .alloc₁ n⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ imσ i₀ i₁ nᵥ,
+      i₀ + i₁ = j ∧
+      value nᵥ ∧
+      (⟨σ₀, n⟩ ⇝ ⟦i₀⟧ ⟨imσ, nᵥ⟩) ∧
+      (⟨imσ, .alloc₁ nᵥ⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ n v j Hvalue HG Hstep
+  have ⟨imσ, i₀, i₁, nᵥ, HEqj, HvalueNat, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ ctx𝔹.alloc₁ Hvalue HG Hstep
+  exists imσ, i₀, i₁, nᵥ
+
+lemma stepn_indexed.refine.alloc₁.eliminator :
+  ∀ σ₀ σ₁ n v j,
+    value v →
+    (⟨σ₀, .alloc₁ (.lit n)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (.lit n :: σ₀) = σ₁ ∧ 1 = j ∧ v = .loc σ₀.length :=
+  by
+  intros σ₀ σ₁ n v j Hvalue Hstep
+  have HstepHead : ⟨σ₀, .alloc₁ (.lit n)⟩ ⇝ ⟦1⟧ ⟨.lit n :: σ₀, .loc σ₀.length⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.alloc₁
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ (value.loc _) Hstepr
+  rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega

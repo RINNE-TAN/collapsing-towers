@@ -570,6 +570,90 @@ lemma compatibility.lets :
   . apply log_approx_value.antimono
     apply Hsem_value; simp; omega
 
+-- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
+-- ——————————————————————————————————
+-- Γ ⊧ alloc n₀ ≤𝑙𝑜𝑔 alloc n₁ : ref ℕ
+lemma compatibility.alloc₁ :
+  ∀ Γ n₀ n₁,
+    log_approx Γ n₀ n₁ .nat →
+    log_approx Γ (.alloc₁ n₀) (.alloc₁ n₁) (.ref .nat) :=
+  by
+  intros Γ n₀ n₁ Hn
+  have ⟨HτNat₀, HτNat₁, Hn⟩ := Hn
+  have Hτ₀ : typing Γ 𝟚 (.alloc₁ n₀) (.ref .nat) ⊥ :=
+    by
+    apply typing.alloc₁; apply HτNat₀
+  have Hτ₁ : typing Γ 𝟚 (.alloc₁ n₁) (.ref .nat) ⊥ :=
+    by
+    apply typing.alloc₁; apply HτNat₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ _ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+  have HG₀ : grounded (msubst γ₀ (.alloc₁ n₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₀
+  have HG₁ : grounded (msubst γ₁ (.alloc₁ n₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+  simp at HG₀ HG₁
+  simp only [log_approx_expr]
+  intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ——————————————————————————————————
+  -- i₀ + i₁ = j
+  -- ⟨σ₀, γ₀(n₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
+  -- ⟨imσ₀, alloc nv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  simp at Hstep₀
+  have ⟨imσ₀, i₀, i₁, nv₀, HEqj, HvalueNat₀, HstepNat₀, Hstep₀⟩ := stepn_indexed.refine.alloc₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+  -- ⟨σ₀, γ₀(n₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
+  -- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
+  -- ————————————————————————————————
+  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₁, nv₁⟩
+  -- (imσ₀, imσ₁) : 𝓦₁
+  -- nv₀ = nv₁
+  simp only [log_approx_expr] at Hn
+  have ⟨𝓦₁, imσ₁, nv₁, Hfuture₀, HstepNat₁, Hsem_store, Hsem_value_nat⟩ := Hn _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueNat₀ HstepNat₀
+  have ⟨_, Hfuture₀⟩ := Hfuture₀
+  have ⟨HvalueNat₀, HvalueNat₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_nat
+  cases HvalueNat₀ <;> try simp at Hsem_value_nat
+  case lit nv₀ =>
+  cases HvalueNat₁ <;> try simp at Hsem_value_nat
+  case lit nv₁ =>
+  have ⟨HEqσ₂, _, HEqv₀⟩ := stepn_indexed.refine.alloc₁.eliminator _ _ _ _ _ Hvalue₀ Hstep₀
+  rw [← HEqσ₂, HEqv₀]
+  --
+  --
+  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₁, nv₁⟩
+  -- —————————————————————————————————————————————————————
+  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⇝* ⟨nv₁ :: imσ₁, loc imσ₁.length⟩
+  exists World.ext 𝓦₁ imσ₀.length imσ₁.length, (.lit nv₁) :: imσ₁, .loc imσ₁.length
+  constructor
+  . constructor
+    . omega
+    . apply World.future.trans _ _ _ (World.future.ext _ _ _) Hfuture₀
+  constructor
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.alloc₁ _ HstepNat₁
+    apply HG₁
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.alloc₁
+  constructor
+  . rw [Hsem_value_nat]
+    apply log_well_store.alloc _ _ _ _ Hsem_store
+  . simp
+
 lemma compatibility.fix₁.induction :
   ∀ k 𝓦 f₀ f₁ τ𝕒 τ𝕓,
     log_approx_value (k, 𝓦) f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥) →
