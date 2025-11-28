@@ -1,4 +1,4 @@
-import CollapsingTowers.TwoLevelRec.LogicalEquiv.Compatibility
+import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Compatibility
 
 -- Γ ⊢ e : τ
 -- ————————————————
@@ -61,6 +61,21 @@ theorem log_approx.fundamental :
     . apply Hclosed
     . apply IH₀; apply HEq𝕊; rfl
     . apply IH₁; rfl; rfl
+  case unit => apply compatibility.unit
+  case alloc₁ IH HEq𝕊 HEqφ =>
+    apply compatibility.alloc₁
+    apply IH; apply HEq𝕊; apply HEqφ
+  case load₁ IH HEq𝕊 HEqφ =>
+    apply compatibility.load₁
+    apply IH; apply HEq𝕊; apply HEqφ
+  case store₁ φ₀ φ₁ _ _ IH₀ IH₁ HEq𝕊 HEqφ =>
+    have ⟨Hφ₀, Hφ₁⟩ : ⊥ = φ₀ ∧ ⊥ = φ₁ :=
+      by cases φ₀ <;> cases φ₁ <;> simp at HEqφ; simp
+    rw [← Hφ₀] at IH₀
+    rw [← Hφ₁] at IH₁
+    apply compatibility.store₁
+    . apply IH₀; apply HEq𝕊; rfl
+    . apply IH₁; apply HEq𝕊; rfl
   case fix₁ φ₀ φ₁ φ₂ Hfixφ H IH HEq𝕊 HEqφ =>
     rw [← HEq𝕊] at H
     have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ H
@@ -83,50 +98,3 @@ theorem log_approx.fundamental :
   case pure => simp
   case reify => simp
   apply Hτ
-
-alias log_approx.refl := log_approx.fundamental
-
-lemma log_approx_value.refl :
-  ∀ k v τ,
-    value v →
-    typing ⦰ 𝟚 v τ ⊥ →
-    log_approx_value k v v τ :=
-  by
-  intros k v τ Hvalue Hτ
-  cases k
-  case zero =>
-    have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτ
-    cases Hvalue
-    case lam e _ =>
-      cases τ
-      case arrow τ𝕒 τ𝕓 φ =>
-        cases φ <;> simp at Hwbt
-        simp only [log_approx_value]
-        constructor; apply Hτ
-        constructor; apply Hτ
-        simp
-      all_goals contradiction
-    case lit n =>
-      cases τ <;> try contradiction
-      simp
-    case code => nomatch Hτ
-  case succ k =>
-    have ⟨_, _, Hsem_expr⟩ := log_approx.refl _ _ _ Hτ
-    simp only [log_approx_expr] at Hsem_expr
-    have ⟨r, Hstep, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (log_approx_env.nil _) 0 (by omega) _ Hvalue (stepn_indexed.refl _)
-    rw [← stepn.value_impl_termination _ _ Hvalue Hstep] at Hsem_value
-    apply Hsem_value
-
-lemma log_approx_env.refl :
-  ∀ k γ Γ,
-    typing.subst γ Γ →
-    log_approx_env k γ γ Γ :=
-  by
-  intros k γ Γ HτΓ
-  induction HτΓ
-  case nil => apply log_approx_env.nil
-  case cons v γ τ Γ Hvalue Hτ _ IH =>
-    apply log_approx_env.cons
-    . apply log_approx_value.refl
-      apply Hvalue; apply Hτ
-    . apply IH

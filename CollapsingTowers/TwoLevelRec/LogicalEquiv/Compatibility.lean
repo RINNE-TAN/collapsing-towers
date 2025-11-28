@@ -707,7 +707,7 @@ lemma compatibility.ifz₁ :
     stepn_indexed.refine.ifz₁.constructor _ _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
   --
   --
-  -- γ₀(c₀) ⇝ ⟦i₀⟧ lv₀
+  -- γ₀(c₀) ⇝ ⟦i₀⟧ cv₀
   -- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
   -- ——————————————————
   -- γ₁(c₁) ⇝* cv₁
@@ -749,8 +749,8 @@ lemma compatibility.ifz₁ :
     -- ————————————————————————————————————————
     -- if γ₁(c₁) then γ₁(l₁) else γ₁(r₁) ⇝* v₁
     exists v₁; constructor
-    . simp
-      -- condition
+    . -- condition
+      simp
       apply stepn.trans
       apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.ifz₁ _ _ _ _)
       apply typing.dynamic_impl_grounded _ _ _ _ HSτc₁; apply Hstepc₁

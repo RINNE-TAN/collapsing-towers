@@ -447,3 +447,61 @@ lemma stepn_indexed.refine.store₁.eliminator :
   have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
   have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ value.unit Hstepr
   rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega
+
+lemma stepn_indexed.refine.ifz₁.constructor :
+  ∀ σ₀ σ₁ c l r v j,
+    value v →
+    grounded (.ifz₁ c l r) →
+    (⟨σ₀, .ifz₁ c l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ imσ i₀ i₁ cᵥ,
+      i₀ + i₁ = j ∧
+      value cᵥ ∧
+      (⟨σ₀, c⟩ ⇝ ⟦i₀⟧ ⟨imσ, cᵥ⟩) ∧ (⟨imσ, .ifz₁ cᵥ l r⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ c l r v j Hvalue HG₀ Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
+  apply stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.ifz₁ _ _ Hlc.right.left Hlc.right.right) Hvalue HG₀ Hstep
+
+lemma stepn_indexed.refine.ifz₁_then.eliminator :
+  ∀ σ₀ σ₁ l r v j,
+    value v →
+    (⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ i,
+      i + 1 = j ∧
+      (⟨σ₀, l⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ l r v j Hvalue Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
+  have HstepHead : ⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⇝ ⟦1⟧ ⟨σ₀, l⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . apply Hlc
+    . apply head_pure.ifz₁_then
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ, HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqσ, HEqv]; apply Hstepr
+
+lemma stepn_indexed.refine.ifz₁_else.eliminator :
+  ∀ σ₀ σ₁ n l r v j,
+    value v →
+    (⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ i,
+      i + 1 = j ∧
+      (⟨σ₀, r⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ n l r v j Hvalue Hstep
+  have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
+  have HstepHead : ⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⇝ ⟦1⟧ ⟨σ₀, r⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+    . apply Hlc
+    . apply head_pure.ifz₁_else
+  have ⟨z, i, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ, HEqv, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  exists i
+  constructor; omega
+  rw [HEqσ, HEqv]; apply Hstepr

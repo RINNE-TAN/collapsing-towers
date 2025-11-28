@@ -320,7 +320,7 @@ lemma stepn_indexed.refine.ifz₁.constructor :
       value cᵥ ∧
       (c ⇝ ⟦i₀⟧ cᵥ) ∧ ((.ifz₁ cᵥ l r) ⇝ ⟦i₁⟧ v) :=
   by
-  intros op l r v j Hvalue HG₀ Hstep
+  intros c l r v j Hvalue HG₀ Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ Hstep (lc.value _ Hvalue)
   apply stepn_indexed.refine_at_ctx𝔹 _ _ _ _ (ctx𝔹.ifz₁ _ _ Hlc.right.left Hlc.right.right) Hvalue HG₀ Hstep
 
