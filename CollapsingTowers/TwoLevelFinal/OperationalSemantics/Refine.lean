@@ -366,3 +366,37 @@ lemma stepn_indexed.refine.alloc₁.eliminator :
   have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
   have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ (value.loc _) Hstepr
   rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega
+
+lemma stepn_indexed.refine.load₁.constructor :
+  ∀ σ₀ σ₁ l v j,
+    value v →
+    grounded (.load₁ l) →
+    (⟨σ₀, .load₁ l⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    ∃ imσ i₀ i₁ lᵥ,
+      i₀ + i₁ = j ∧
+      value lᵥ ∧
+      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ, lᵥ⟩) ∧
+      (⟨imσ, .load₁ lᵥ⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+  by
+  intros σ₀ σ₁ l v j Hvalue HG Hstep
+  have ⟨imσ, i₀, i₁, lᵥ, HEqj, HvalueNat, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ ctx𝔹.load₁ Hvalue HG Hstep
+  exists imσ, i₀, i₁, lᵥ
+
+lemma stepn_indexed.refine.load₁.eliminator :
+  ∀ σ₀ σ₁ l v n j,
+    value v →
+    binds l (Expr.lit n) σ₀ →
+    (⟨σ₀, .load₁ (.loc l)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    σ₀ = σ₁ ∧ 1 = j ∧ v = .lit n :=
+  by
+  intros σ₀ σ₁ l v n j Hvalue Hbinds Hstep
+  have HstepHead : ⟨σ₀, .load₁ (.loc l)⟩ ⇝ ⟦1⟧ ⟨σ₀, .lit n⟩ :=
+    by
+    apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.load₁; apply Hbinds
+  have ⟨z₀, z₁, r, HEqIndex, Hstepl, Hstepr⟩ := stepn_indexed.church_rosser _ _ _ _ _ Hstep HstepHead
+  have ⟨HEqσ₀, HEqv₀, Hz₀⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ Hvalue Hstepl
+  have ⟨HEqσ₁, HEqv₁, Hz₁⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ (value.lit _) Hstepr
+  rw [HEqσ₀, HEqv₀, HEqσ₁, HEqv₁]; simp; omega

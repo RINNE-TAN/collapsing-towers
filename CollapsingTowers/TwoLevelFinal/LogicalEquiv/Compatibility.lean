@@ -654,6 +654,89 @@ lemma compatibility.alloc₁ :
     apply log_well_store.alloc _ _ _ _ Hsem_store
   . simp
 
+-- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ref ℕ
+-- ————————————————————————
+-- Γ ⊧ !l₀ ≤𝑙𝑜𝑔 !l₁ : ref ℕ
+lemma compatibility.load₁ :
+  ∀ Γ l₀ l₁,
+    log_approx Γ l₀ l₁ (.ref .nat) →
+    log_approx Γ (.load₁ l₀) (.load₁ l₁) .nat :=
+  by
+  intros Γ l₀ l₁ Hl
+  have ⟨HτLoc₀, HτLoc₁, Hl⟩ := Hl
+  have Hτ₀ : typing Γ 𝟚 (.load₁ l₀) .nat ⊥ :=
+    by
+    apply typing.load₁; apply HτLoc₀
+  have Hτ₁ : typing Γ 𝟚 (.load₁ l₁) .nat ⊥ :=
+    by
+    apply typing.load₁; apply HτLoc₁
+  constructor; apply Hτ₀
+  constructor; apply Hτ₁
+  intros k 𝓦₀ γ₀ γ₁ HsemΓ
+  have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ _ HsemΓ
+  have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+  have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+  have HG₀ : grounded (msubst γ₀ (.load₁ l₀)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₀
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₀
+  have HG₁ : grounded (msubst γ₁ (.load₁ l₁)) :=
+    by
+    apply grounded.under_msubst _ _ HmG₁
+    apply typing.dynamic_impl_grounded _ _ _ _ Hτ₁
+  simp at HG₀ HG₁
+  simp only [log_approx_expr]
+  intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+  --
+  --
+  -- ⟨σ₀, load γ₀(l₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ——————————————————————————————————
+  -- i₀ + i₁ = j
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, load lv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  simp at Hstep₀
+  have ⟨imσ₀, i₀, i₁, lv₀, HEqj, HvalueLoc₀, HstepLoc₀, Hstep₀⟩ := stepn_indexed.refine.load₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
+  -- ————————————————————————————————
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- (imσ₀, imσ₁) : 𝓦₁
+  -- 𝓦₁ lv₀ lv₁
+  simp only [log_approx_expr] at Hl
+  have ⟨𝓦₁, imσ₁, lv₁, Hfuture₀, HstepLoc₁, Hsem_store, Hsem_value_loc⟩ := Hl _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueLoc₀ HstepLoc₀
+  have ⟨_, Hfuture₀⟩ := Hfuture₀
+  have ⟨HvalueLoc₀, HvalueLoc₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_loc
+  cases HvalueLoc₀ <;> try simp at Hsem_value_loc
+  case loc lv₀ =>
+  cases HvalueLoc₁ <;> try simp at Hsem_value_loc
+  case loc lv₁ =>
+  have ⟨n, Hbinds₀, Hbinds₁⟩ := Hsem_store.right _ _ Hsem_value_loc
+  have ⟨HEqσ₂, _, HEqv₀⟩ := stepn_indexed.refine.load₁.eliminator _ _ _ _ _ _ Hvalue₀ Hbinds₀ Hstep₀
+  rw [← HEqσ₂, HEqv₀]
+  --
+  --
+  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ———————————————————————————————————
+  -- ⟨σ₁, !γ₁(l₁)⟩ ⇝* ⟨imσ₁, imσ₁(lv₁)⟩
+  exists 𝓦₁, imσ₁, .lit n
+  constructor
+  . constructor; omega
+    apply Hfuture₀
+  constructor
+  . simp
+    -- left
+    apply stepn.trans
+    apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ ctx𝔹.load₁ _ HstepLoc₁
+    . apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ HτLoc₁)
+    -- head
+    apply stepn.multi _ _ _ _ (stepn.refl _)
+    apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
+    . simp
+    . apply head_mutable.load₁; apply Hbinds₁
+  constructor
+  . apply Hsem_store
+  . simp
+
 lemma compatibility.fix₁.induction :
   ∀ k 𝓦 f₀ f₁ τ𝕒 τ𝕓,
     log_approx_value (k, 𝓦) f₀ f₁ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥) →
