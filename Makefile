@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 basic:
 	lake build CollapsingTowers.TwoLevelBasic.Defs
 
