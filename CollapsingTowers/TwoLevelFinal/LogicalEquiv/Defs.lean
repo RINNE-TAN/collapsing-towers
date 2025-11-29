@@ -2,3 +2,4 @@ import CollapsingTowers.TwoLevelFinal.LogicalEquiv.World
 import CollapsingTowers.TwoLevelFinal.LogicalEquiv.LogicalRelation
 import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Compatibility
 import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Fundamental
+import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Soundness
