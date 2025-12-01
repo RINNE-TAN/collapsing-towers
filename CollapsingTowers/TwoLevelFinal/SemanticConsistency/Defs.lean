@@ -1,1 +1,2 @@
 import CollapsingTowers.TwoLevelFinal.SemanticConsistency.ConsisCtx
+import CollapsingTowers.TwoLevelFinal.SemanticConsistency.ConsisPure

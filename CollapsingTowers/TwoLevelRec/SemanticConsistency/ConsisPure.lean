@@ -130,6 +130,8 @@ lemma consistency.lets :
     have HEq : msubst γ₁ ‖opening 0 bᵥ e‖ = opening 0 (msubst γ₁ ‖bᵥ‖) (msubst γ₁ ‖e‖) :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₁
     rw [HEq] at Hstep₁
+    --
+    --
     -- (x ↦ γ₁‖bᵥ‖, γ₁)‖e‖ ⇝* v₁
     -- —————————————————————————————————
     -- lets x = γ₁‖bᵥ‖ in γ₁‖e‖ ⇝* v₁
