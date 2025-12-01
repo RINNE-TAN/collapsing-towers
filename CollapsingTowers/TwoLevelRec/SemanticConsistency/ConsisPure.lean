@@ -261,6 +261,8 @@ lemma consistency.app₁ :
     have HEq : msubst γ₁ ‖opening 0 argᵥ e‖ = opening 0 (msubst γ₁ ‖argᵥ‖) (msubst γ₁ ‖e‖) :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₁
     rw [HEq] at Hstep₁
+    --
+    --
     -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⇝* v₁
     -- ————————————————————————————
     -- (λx.γ₁‖e‖) @ γ₁‖argᵥ‖ ⇝* v₁
@@ -274,7 +276,7 @@ lemma consistency.app₁ :
       --
       --
       -- value argᵥ
-      -- ———————————————————————————
+      -- ———————————————————————————————
       -- value γ₀‖argᵥ‖ ∧ value γ₁‖argᵥ‖
       have ⟨HvalueArg₀, HvalueArg₁⟩ : value (msubst γ₀ ‖argᵥ‖) ∧ value (msubst γ₁ ‖argᵥ‖) :=
         by
