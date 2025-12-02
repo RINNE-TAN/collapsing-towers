@@ -363,7 +363,7 @@ theorem consistency.reflect.head :
       . apply stepn.trans
         apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ HlcE₁.right) (typing.dynamic_impl_grounded _ _ _ _ HSτb₁) HstepBind₁
         apply stepn.multi _ _ _ _ HstepE₁
-        apply step_lvl.pure id; apply ctx𝕄.hole
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
         . constructor
           . apply HlcBind₁
           . apply lc.under_ctx𝔼; apply HE₁; simp
@@ -464,7 +464,6 @@ theorem consistency.reflect.head :
       -- E₁⟦bv₁⟧ ⇝* v₁
       -- ——————————————————————————————
       -- E₁⟦γ₁‖b‖⟧ ⇝* v₁
-      -- (k - i₀ - i₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       exists v₁
       constructor
       . apply stepn.trans _ _ _ _ HstepE₁
