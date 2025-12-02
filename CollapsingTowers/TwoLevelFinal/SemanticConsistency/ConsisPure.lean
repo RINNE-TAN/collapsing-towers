@@ -414,6 +414,139 @@ lemma consistency.lift_lam :
   -- right approximation
   . apply log_approx.fundamental; apply typing.erase.safety; apply Hτ₀
 
+lemma consistency.fix₁ :
+  ∀ Γ fᵥ τ φ₀ φ₁,
+    value fᵥ →
+    typing Γ 𝟙 (.fix₁ fᵥ) τ φ₀ →
+    typing Γ 𝟙 (.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))) τ φ₁ →
+    log_equiv (erase_env Γ) ‖.fix₁ fᵥ‖ ‖.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))‖ (erase_ty τ) :=
+  by
+  intros Γ fᵥ τ φ₀ φ₁ HvalueFix Hτ₀ Hτ₁
+  constructor
+  -- left approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₁
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+    have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+    have HG₀ : grounded (msubst γ₀ ‖.fix₁ fᵥ‖) :=
+      by
+      apply grounded.under_msubst _ _ HmG₀
+      apply typing.dynamic_impl_grounded _ _ _ _ HEτ₀
+    have HG₁ : grounded (msubst γ₁ ‖.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))‖) :=
+      by
+      apply grounded.under_msubst _ _ HmG₁
+      apply typing.dynamic_impl_grounded _ _ _ _ HEτ₁
+    simp at HG₀ HG₁
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- value fᵥ
+    -- ————————————
+    -- value γ₀‖fᵥ‖
+    -- value γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖
+    have HvalueFix₀ : value (msubst γ₀ ‖fᵥ‖) :=
+      by
+      cases HvalueFix
+      case lam e =>
+        simp; apply value.lam
+        apply lc.under_msubst; apply Hmwf₀
+        rw [← lc.under_erase]; apply typing.regular _ _ _ _ _ Hτ₀
+      all_goals nomatch Hτ₀
+    have HvalueFun₀ : value (msubst γ₀ ‖.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))‖) :=
+      by
+      simp; apply value.lam
+      simp; apply lc.inc; apply lc.value
+      apply HvalueFix₀; omega
+    --
+    --
+    -- ⟨σ₀, fix γ₀‖fᵥ‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ———————————————————————————————
+    -- σ₀ = σ₂
+    -- v₀ = γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖
+    simp at Hstep₀
+    have ⟨z, r, _, _, Hstepr, HEqv⟩ :=
+      stepn_indexed.refine.fix₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
+    have ⟨HEqσ, HEqr, Hz⟩ := stepn_indexed.value_impl_termination _ _ _ _ _ HvalueFix₀ Hstepr
+    rw [← HEqσ, HEqv, ← HEqr]
+    --
+    --
+    -- ‖Γ‖ ⊧ ‖λx.fᵥ @ (fix fᵥ) @ x‖ ≤𝑙𝑜𝑔 ‖λx.fᵥ @ (fix fᵥ) @ x‖ : ‖τ‖
+    -- —————————————————————————————————————————————————————————————————————
+    -- (k, 𝓦₁, γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖, γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ 0 (by omega) _ _ Hsem_store _ _ HvalueFun₀ (stepn_indexed.refl _)
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . simp; apply Hfuture₀
+    constructor
+    . apply Hstep₁
+    constructor
+    . apply Hsem_store
+    . simp at Hsem_value
+      apply log_approx_value.antimono
+      apply Hsem_value; simp
+  -- right approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₁
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₀
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ‖Γ‖ ⊧ ‖λx.fᵥ @ (fix fᵥ) @ x‖ ≤𝑙𝑜𝑔 ‖λx.fᵥ @ (fix fᵥ) @ x‖ : ‖τ‖
+    -- —————————————————————————————————————————————————————————————
+    -- ⟨σ₁, γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₁
+    -- (k - j, 𝓦₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ j (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    simp at Hstep₁
+    --
+    --
+    -- ⟨σ₁, γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ———————————————————————————————————————————
+    -- ⟨σ₁, γ₁‖fix fᵥ‖⟩ ⇝* ⟨σ₃, v₁⟩
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . simp; apply Hfuture₀
+    constructor
+    . simp
+      apply stepn.multi _ _ _ _ Hstep₁
+      apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+      . rw [← msubst.fix₁]
+        apply lc.under_msubst _ _ _ Hmwf₁
+        apply typing.regular _ _ _ _ _ HEτ₁
+      . apply head_pure.fix₁
+        --
+        --
+        -- value fᵥ
+        -- ————————————
+        -- value γ₁‖fᵥ‖
+        have HvalueFix₁ : value (msubst γ₁ ‖fᵥ‖) :=
+          by
+          cases HvalueFix
+          case lam e =>
+            simp; apply value.lam
+            apply lc.under_msubst; apply Hmwf₁
+            rw [← lc.under_erase]; apply typing.regular _ _ _ _ _ Hτ₀
+          all_goals nomatch Hτ₀
+        apply HvalueFix₁
+    constructor
+    . apply Hsem_store
+    . apply Hsem_value
+
 lemma consistency.ifz₁_then :
   ∀ Γ l r τ φ₀ φ₁,
     typing Γ 𝟙 (.ifz₁ (.lit 0) l r) τ φ₀ →
@@ -571,3 +704,44 @@ lemma consistency.ifz₁_else :
     constructor
     . apply Hsem_store
     . apply Hsem_value
+
+theorem consistency.pure.head :
+  ∀ Γ e₀ e₁ τ φ,
+    head_pure e₀ e₁ →
+    typing Γ 𝟙 e₀ τ φ →
+    log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+  by
+  intros Γ e₀ e₁ τ φ Hhead Hτ₀
+  have ⟨_, Hτ₁, _⟩ := preservation.pure.head _ _ _ _ _ Hhead Hτ₀
+  cases Hhead
+  case lets e bᵥ HvalueBind =>
+    apply consistency.lets
+    apply HvalueBind; apply Hτ₀; apply Hτ₁
+  case app₁ e argᵥ HvalueArg =>
+    apply consistency.app₁
+    apply HvalueArg; apply Hτ₀; apply Hτ₁
+  case binary₁ =>
+    apply consistency.binary₁
+    apply Hτ₀; apply Hτ₁
+  case lift_lam e =>
+    apply consistency.lift_lam
+    apply Hτ₀; apply Hτ₁
+  case fix₁ fᵥ HvalueFix =>
+    apply consistency.fix₁
+    apply HvalueFix; apply Hτ₀; apply Hτ₁
+  case ifz₁_then =>
+    apply consistency.ifz₁_then
+    apply Hτ₀; apply Hτ₁
+  case ifz₁_else =>
+    apply consistency.ifz₁_else
+    apply Hτ₀; apply Hτ₁
+  all_goals
+    constructor
+    -- left approximation
+    . apply log_approx.fundamental
+      apply typing.erase.safety
+      apply Hτ₀
+    -- right approximation
+    . apply log_approx.fundamental
+      apply typing.erase.safety
+      apply Hτ₁
