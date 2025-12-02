@@ -413,3 +413,161 @@ lemma consistency.lift_lam :
   . apply log_approx.fundamental; apply typing.erase.safety; apply Hτ₀
   -- right approximation
   . apply log_approx.fundamental; apply typing.erase.safety; apply Hτ₀
+
+lemma consistency.ifz₁_then :
+  ∀ Γ l r τ φ₀ φ₁,
+    typing Γ 𝟙 (.ifz₁ (.lit 0) l r) τ φ₀ →
+    typing Γ 𝟙 l τ φ₁ →
+    log_equiv (erase_env Γ) ‖.ifz₁ (.lit 0) l r‖ ‖l‖ (erase_ty τ) :=
+  by
+  intros Γ l r τ φ₀ φ₁ Hτ₀ Hτ₁
+  constructor
+  -- left approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₁
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, if 0 then γ₀‖l‖ else γ₀‖r‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ————————————————————————————————————————————————
+    -- i + 1 = j
+    -- ⟨σ₀, γ₀‖l‖⟩ ⇝* ⟦i⟧ ⟨σ₂, v₀⟩
+    simp at Hstep₀
+    have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.ifz₁_then.eliminator _ _ _ _ _ _ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, γ₀‖l‖⟩ ⇝* ⟦i⟧ ⟨σ₂, v₀⟩
+    -- ‖Γ‖ ⊧ ‖l‖ ≤𝑙𝑜𝑔 ‖l‖ : ‖τ‖
+    -- ——————————————————————————————
+    -- ⟨σ₁, γ₁‖l‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₁
+    -- (k - i, 𝓦₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ i (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . constructor; omega; apply Hfuture₀
+    constructor
+    . apply Hstep₁
+    constructor
+    . apply Hsem_store
+    . apply log_approx_value.antimono
+      apply Hsem_value; simp; omega
+  -- right approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₁
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₀
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, γ₀‖l‖⟩ ⇝* ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ‖Γ‖ ⊧ ‖l‖ ≤𝑙𝑜𝑔 ‖l‖ : ‖τ‖
+    -- ——————————————————————————————
+    -- ⟨σ₁, γ₁‖l‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₁
+    -- (k - j, 𝓦₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ j (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . constructor; omega; apply Hfuture₀
+    constructor
+    . apply stepn.multi _ _ _ _ Hstep₁
+      apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+      . apply lc.under_msubst _ _ _ Hmwf₁
+        apply typing.regular _ _ _ _ _ HEτ₁
+      . simp; apply head_pure.ifz₁_then
+    constructor
+    . apply Hsem_store
+    . apply Hsem_value
+
+lemma consistency.ifz₁_else :
+  ∀ Γ n l r τ φ₀ φ₁,
+    typing Γ 𝟙 (.ifz₁ (.lit (n + 1)) l r) τ φ₀ →
+    typing Γ 𝟙 r τ φ₁ →
+    log_equiv (erase_env Γ) ‖.ifz₁ (.lit (n + 1)) l r‖ ‖r‖ (erase_ty τ) :=
+  by
+  intros Γ n l r τ φ₀ φ₁ Hτ₀ Hτ₁
+  constructor
+  -- left approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₁
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, if (n + 1) then γ₀‖l‖ else γ₀‖r‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ——————————————————————————————————————————————————————
+    -- i + 1 = j
+    -- ⟨σ₀, γ₀‖r‖⟩ ⇝* ⟦i⟧ ⟨σ₂, v₀⟩
+    simp at Hstep₀
+    have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.ifz₁_else.eliminator _ _ _ _ _ _ _ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, γ₀‖r‖⟩ ⇝* ⟦i⟧ ⟨σ₂, v₀⟩
+    -- ‖Γ‖ ⊧ ‖r‖ ≤𝑙𝑜𝑔 ‖r‖ : ‖τ‖
+    -- ——————————————————————————————
+    -- ⟨σ₁, γ₁‖r‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₁
+    -- (k - i, 𝓦₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ i (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . constructor; omega; apply Hfuture₀
+    constructor
+    . apply Hstep₁
+    constructor
+    . apply Hsem_store
+    . apply log_approx_value.antimono
+      apply Hsem_value; simp; omega
+  -- right approximation
+  . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₁
+    have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₀
+    constructor; apply HEτ₀
+    constructor; apply HEτ₁
+    intros k 𝓦₀ γ₀ γ₁ HsemΓ
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
+    simp only [log_approx_expr]
+    intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
+    --
+    --
+    -- ⟨σ₀, γ₀‖r‖⟩ ⇝* ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ‖Γ‖ ⊧ ‖r‖ ≤𝑙𝑜𝑔 ‖r‖ : ‖τ‖
+    -- ——————————————————————————————
+    -- ⟨σ₁, γ₁‖r‖⟩ ⇝* ⟨σ₃, v₁⟩
+    -- (σ₂, σ₃) : 𝓦₁
+    -- (k - j, 𝓦₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+    have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
+    simp only [log_approx_expr] at IH
+    have ⟨𝓦₁, σ₃, v₁, Hfuture₀, Hstep₁, Hsem_store, Hsem_value⟩ := IH _ _ _ _ HsemΓ j (by omega) _ _ Hsem_store _ _ Hvalue₀ Hstep₀
+    have ⟨_, Hfuture₀⟩ := Hfuture₀
+    exists 𝓦₁, σ₃, v₁
+    constructor
+    . constructor; omega; apply Hfuture₀
+    constructor
+    . apply stepn.multi _ _ _ _ Hstep₁
+      apply step_lvl.pure _ _ _ _ ctx𝕄.hole
+      . apply lc.under_msubst _ _ _ Hmwf₁
+        apply typing.regular _ _ _ _ _ HEτ₁
+      . simp; apply head_pure.ifz₁_else
+    constructor
+    . apply Hsem_store
+    . apply Hsem_value
