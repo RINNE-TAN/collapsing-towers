@@ -3,8 +3,6 @@ import CollapsingTowers.TwoLevelFinal.Examples.Notation
 -- naive power function xⁿ
 namespace Power
 
---
---
 -- let (power : ℕ → ℕ → ℕ) =
 --   λ(x : ℕ).
 --     fix₁ (
@@ -15,8 +13,8 @@ namespace Power
 --           else x * f(n - 1)
 --     ) in
 -- power(47)(2)
-
 --
+-- ⇝*
 --
 -- 2209
 
