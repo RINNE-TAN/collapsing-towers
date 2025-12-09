@@ -935,3 +935,120 @@ example : typing_reification ⦰ expr𝕩𝕩𝕩₃ (.rep (.arrow .nat .nat ⊥
     | rw [← Effect.union_pure ⊥]
 
 end StagePower
+
+-- mutable stage power function xⁿ
+namespace MutableStagePower
+
+-- let ref = alloc₂ (lift 1) in
+-- let (power : <ℕ> → ℕ → <ℕ>) =
+--   λ(x : <ℕ>).
+--     fix₁ (
+--       λ(f : ℕ → <ℕ>).
+--       λ(n : ℕ).
+--         ifz₁ n
+--           then load₂ ref
+--           else
+--            let _ = store₂ ref (x *₂ (load₂ ref)) in
+--            f(n - 1)
+--     ) in
+-- lift (
+--   λ(y : <ℕ>).
+--     power(y)(2)
+-- )
+--
+-- -->*
+--
+-- code (
+--   let x₀ = 1 in
+--   let x₁ = alloc₁ x₀ in
+--   let f₀ =
+--     λ(x₂ : ℕ).
+--       let x₃ = load₁ x₁ in
+--       let x₄ = x₂ * x₃ in
+--       let x₅ = store₁ x₁ x₄ in
+--       let x₆ = load₁ x₁ in
+--       let x₇ = x₂ * x₆ in
+--       let x₈ = store₁ x₁ x₇ in
+--       let x₉ = load₁ x₁ in
+--       x₉
+--   in f₀
+-- )
+
+def x₀ : Expr :=
+  .fvar 0
+
+def x₁ : Expr :=
+  .fvar 1
+
+def x₂ : Expr :=
+  .fvar 2
+
+def x₃ : Expr :=
+  .fvar 3
+
+def x₄ : Expr :=
+  .fvar 4
+
+def x₅ : Expr :=
+  .fvar 5
+
+def x₆ : Expr :=
+  .fvar 6
+
+def x₇ : Expr :=
+  .fvar 7
+
+def x₈ : Expr :=
+  .fvar 8
+
+def x₉ : Expr :=
+  .fvar 9
+
+def f₀ : Expr :=
+  .fvar 10
+
+def ref : Expr :=
+  .fvar 100
+
+def power : Expr :=
+  .fvar 101
+
+def x : Expr :=
+  .fvar 102
+
+def f : Expr :=
+  .fvar 103
+
+def n : Expr :=
+  .fvar 104
+
+def y : Expr :=
+  .fvar 105
+
+def expr₀ : Expr :=
+  .lets (.alloc₂ (.lift (.lit 1))) { 100 ⇛
+  .lets (
+    .lam { 102 ⇛
+      .fix₁ (
+        .lam { 103 ⇛
+        .lam { 104 ⇛
+          .ifz₁ n (
+            .load₂ ref) (
+            .lets (.store₂ ref (.binary₂ .mul x (.load₂ ref))) (
+            .app₁ f (.binary₁ .sub n (.lit 1))))}})}) { 101 ⇛
+  .lift (
+    .lam { 105 ⇛
+      .app₁ (.app₁ power y) (.lit 2)})}}
+
+set_option maxRecDepth 1000 in
+example : typing_reification ⦰ expr₀ (.rep (.arrow .nat .nat ⊥)) ⊤ :=
+  by
+  rw [← Effect.reify_union ⊤]; repeat constructor
+  rw [← Effect.pure_union ⊤]; repeat constructor
+  rw [Effect.reify_union ⊥]; repeat constructor
+  rw [← Effect.union_reify (⊥ ∪ ⊤)]; repeat constructor
+  rw [← Effect.reify_union ⊤]; repeat constructor
+  rw [← Effect.union_pure ⊤, ← Effect.union_pure ⊤]; repeat constructor
+  rw [← Effect.pure_union ⊥, ← Effect.pure_union ⊥]; repeat constructor
+
+end MutableStagePower
