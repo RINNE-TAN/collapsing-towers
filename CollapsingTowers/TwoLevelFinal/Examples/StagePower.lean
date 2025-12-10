@@ -1564,6 +1564,131 @@ def expr𝕩𝕩₃ : Expr :=
                 .app₁ f (.binary₁ .sub n (.lit 1))))}}))) (
         .lit 1)}}}}}}
 
+def expr𝕩𝕩₄ : Expr :=
+  .lets𝕔 (.lit 1) { 0 ⇛
+  .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+  .lam𝕔 { 2 ⇛
+    .lets𝕔 (.load₁ x₁) { 3 ⇛
+    .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+    .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+      .app₁ (
+        .app₁ (
+          .lam { 103 ⇛
+          .lam { 104 ⇛
+            .ifz₁ n (
+              .load₂ (.code x₁)) (
+              .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+              .app₁ f (.binary₁ .sub n (.lit 1))))}}) (
+          .lam (
+            .app₁ (
+              .app₁ (
+                .lam { 103 ⇛
+                .lam { 104 ⇛
+                  .ifz₁ n (
+                    .load₂ (.code x₁)) (
+                    .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                    .app₁ f (.binary₁ .sub n (.lit 1))))}}) (
+                .fix₁ (
+                  .lam { 103 ⇛
+                  .lam { 104 ⇛
+                    .ifz₁ n (
+                      .load₂ (.code x₁)) (
+                      .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                      .app₁ f (.binary₁ .sub n (.lit 1))))}}))) (
+              .bvar 0)))) (
+        .lit 1)}}}}}}
+
+def expr𝕩𝕩₅ : Expr :=
+  .lets𝕔 (.lit 1) { 0 ⇛
+  .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+  .lam𝕔 { 2 ⇛
+    .lets𝕔 (.load₁ x₁) { 3 ⇛
+    .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+    .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+      .app₁ (
+        .lam { 104 ⇛
+          .ifz₁ n (
+            .load₂ (.code x₁)) (
+            .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+            .app₁ (
+              .lam (
+                .app₁ (
+                  .app₁ (
+                    .lam { 103 ⇛
+                    .lam { 104 ⇛
+                      .ifz₁ n (
+                        .load₂ (.code x₁)) (
+                        .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                        .app₁ f (.binary₁ .sub n (.lit 1))))}}) (
+                    .fix₁ (
+                      .lam { 103 ⇛
+                      .lam { 104 ⇛
+                        .ifz₁ n (
+                          .load₂ (.code x₁)) (
+                          .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                          .app₁ f (.binary₁ .sub n (.lit 1))))}}))) (
+                  .bvar 0))) (
+              .binary₁ .sub n (.lit 1))))}) (
+        .lit 1)}}}}}}
+
+def expr𝕩𝕩₆ : Expr :=
+  .lets𝕔 (.lit 1) { 0 ⇛
+  .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+  .lam𝕔 { 2 ⇛
+    .lets𝕔 (.load₁ x₁) { 3 ⇛
+    .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+    .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+      .ifz₁ (.lit 1) (
+        .load₂ (.code x₁)) (
+        .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+        .app₁ (
+          .lam (
+            .app₁ (
+              .app₁ (
+                .lam { 103 ⇛
+                .lam { 104 ⇛
+                  .ifz₁ n (
+                    .load₂ (.code x₁)) (
+                    .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                    .app₁ f (.binary₁ .sub n (.lit 1))))}}) (
+                .fix₁ (
+                  .lam { 103 ⇛
+                  .lam { 104 ⇛
+                    .ifz₁ n (
+                      .load₂ (.code x₁)) (
+                      .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                      .app₁ f (.binary₁ .sub n (.lit 1))))}}))) (
+              .bvar 0))) (
+          .binary₁ .sub (.lit 1) (.lit 1))))}}}}}}
+
+def expr𝕩𝕩₇ : Expr :=
+  .lets𝕔 (.lit 1) { 0 ⇛
+  .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+  .lam𝕔 { 2 ⇛
+    .lets𝕔 (.load₁ x₁) { 3 ⇛
+    .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+    .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+      .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+      .app₁ (
+        .lam (
+          .app₁ (
+            .app₁ (
+              .lam { 103 ⇛
+              .lam { 104 ⇛
+                .ifz₁ n (
+                  .load₂ (.code x₁)) (
+                  .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                  .app₁ f (.binary₁ .sub n (.lit 1))))}}) (
+              .fix₁ (
+                .lam { 103 ⇛
+                .lam { 104 ⇛
+                  .ifz₁ n (
+                    .load₂ (.code x₁)) (
+                    .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+                    .app₁ f (.binary₁ .sub n (.lit 1))))}}))) (
+            .bvar 0))) (
+        .binary₁ .sub (.lit 1) (.lit 1)))}}}}}}
+
 example : (⟨ϵ, expr₀⟩ ⇝ ⟨ϵ, expr₁⟩) := by
   apply step_lvl.pure (fun X => .lets (.alloc₂ X) _)
   apply ctx𝕄.cons𝔹 (fun X => .lets X _)
@@ -1947,6 +2072,111 @@ example : (⟨ϵ, expr𝕩𝕩₂⟩ ⇝ ⟨ϵ, expr𝕩𝕩₃⟩) := by
   apply ctx𝕄.consℝ (fun X => .lets𝕔 (.binary₁ .mul x₂ x₃) {0 ↤ 4} X)
   apply ctxℝ.lets𝕔; constructor; constructor; constructor
   apply ctx𝕄.consℝ (fun X => .lets𝕔 (.store₁ x₁ x₄) {0 ↤ 5} X)
+  repeat constructor
+
+example : (⟨ϵ, expr𝕩𝕩₃⟩ ⇝ ⟨ϵ, expr𝕩𝕩₄⟩) := by
+  let left : Expr :=
+    .lam { 103 ⇛
+    .lam { 104 ⇛
+      .ifz₁ n (
+        .load₂ (.code x₁)) (
+        .lets (.store₂ (.code x₁) (.binary₂ .mul (.code x₂) (.load₂ (.code x₁)))) (
+        .app₁ f (.binary₁ .sub n (.lit 1))))}}
+  apply step_lvl.pure
+    (fun X =>
+      .lets𝕔 (.lit 1) { 0 ⇛
+      .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+        .lam𝕔 { 2 ⇛
+          .lets𝕔 (.load₁ x₁) { 3 ⇛
+          .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+          .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+          .app₁ (.app₁ left X) _}}}}}})
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.lit 1) {0 ↤ 0} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.alloc₁ x₀) {0 ↤ 1} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 {0 ↤ 2} X)
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.load₁ x₁) {0 ↤ 3} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.binary₁ .mul x₂ x₃) {0 ↤ 4} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.store₁ x₁ x₄) {0 ↤ 5} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : (⟨ϵ, expr𝕩𝕩₄⟩ ⇝ ⟨ϵ, expr𝕩𝕩₅⟩) := by
+  apply step_lvl.pure
+    (fun X =>
+      .lets𝕔 (.lit 1) { 0 ⇛
+      .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+        .lam𝕔 { 2 ⇛
+          .lets𝕔 (.load₁ x₁) { 3 ⇛
+          .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+          .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+          .app₁ X _}}}}}})
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.lit 1) {0 ↤ 0} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.alloc₁ x₀) {0 ↤ 1} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 {0 ↤ 2} X)
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.load₁ x₁) {0 ↤ 3} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.binary₁ .mul x₂ x₃) {0 ↤ 4} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.store₁ x₁ x₄) {0 ↤ 5} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
+  repeat constructor
+
+example : (⟨ϵ, expr𝕩𝕩₅⟩ ⇝ ⟨ϵ, expr𝕩𝕩₆⟩) := by
+  apply step_lvl.pure
+    (fun X =>
+      .lets𝕔 (.lit 1) { 0 ⇛
+      .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+        .lam𝕔 { 2 ⇛
+          .lets𝕔 (.load₁ x₁) { 3 ⇛
+          .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+          .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+          X}}}}}})
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.lit 1) {0 ↤ 0} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.alloc₁ x₀) {0 ↤ 1} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 {0 ↤ 2} X)
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.load₁ x₁) {0 ↤ 3} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.binary₁ .mul x₂ x₃) {0 ↤ 4} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.store₁ x₁ x₄) {0 ↤ 5} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  repeat constructor
+
+example : (⟨ϵ, expr𝕩𝕩₆⟩ ⇝ ⟨ϵ, expr𝕩𝕩₇⟩) := by
+  apply step_lvl.pure
+    (fun X =>
+      .lets𝕔 (.lit 1) { 0 ⇛
+      .lets𝕔 (.alloc₁ x₀) { 1 ⇛
+        .lam𝕔 { 2 ⇛
+          .lets𝕔 (.load₁ x₁) { 3 ⇛
+          .lets𝕔 (.binary₁ .mul x₂ x₃) { 4 ⇛
+          .lets𝕔 (.store₁ x₁ x₄) { 5 ⇛
+          X}}}}}})
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.lit 1) {0 ↤ 0} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.alloc₁ x₀) {0 ↤ 1} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lam𝕔 {0 ↤ 2} X)
+  apply ctxℝ.lam𝕔
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.load₁ x₁) {0 ↤ 3} X)
+  apply ctxℝ.lets𝕔; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.binary₁ .mul x₂ x₃) {0 ↤ 4} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
+  apply ctx𝕄.consℝ (fun X => .lets𝕔 (.store₁ x₁ x₄) {0 ↤ 5} X)
+  apply ctxℝ.lets𝕔; constructor; constructor; constructor
   repeat constructor
 
 set_option maxRecDepth 1000 in
