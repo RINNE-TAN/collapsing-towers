@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelBasic.LogicalEquiv.Defs
 
-lemma consistency.erase_ctx𝔼 :
+lemma semantics_preservation.erase_ctx𝔼 :
   ∀ E Γ e τ φ γ₀ γ₁,
     ctx𝔼 E →
     typing Γ 𝟙 E⟦e⟧ τ φ →
@@ -109,7 +109,7 @@ lemma consistency.erase_ctx𝔼 :
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ————————————————————————————————————————————————————————
 -- ‖Γ‖ ⊨ ‖E⟦reflect b⟧‖ ≈𝑙𝑜𝑔 ‖lets𝕔 x = b in E⟦code x⟧‖ : ‖τ‖
-theorem consistency.reflect.head :
+theorem semantics_preservation.reflect.head :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
     typing Γ 𝟙 E⟦.reflect b⟧ τ φ →
@@ -156,7 +156,7 @@ theorem consistency.reflect.head :
     -- ————————————————————
     -- γ₀‖E⟦X⟧‖ = E₀⟦γ₀‖X‖⟧
     -- γ₁‖E⟦X⟧‖ = E₁⟦γ₀‖X‖⟧
-    have ⟨HE₀, HE₁⟩ := consistency.erase_ctx𝔼 _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
+    have ⟨HE₀, HE₁⟩ := semantics_preservation.erase_ctx𝔼 _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
     have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
     have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
     simp [HEqE₀, HEqE₁] at HSτ₀ HSτ₁

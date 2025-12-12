@@ -8,7 +8,7 @@ import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Defs
 -- value n  value λ.e        value (code x)  value (code e)
 -- ———————  ———————————————  ——————————————  ——————————————————
 -- value n  value λ.γ₀(‖e‖)  value γ₀(x)     Binding Time Error
-lemma consistency.erase_value :
+lemma semantics_preservation.erase_value :
   ∀ k 𝓦 Γ v τ φ γ₀ γ₁,
     value v →
     wbt 𝟙 τ →
@@ -39,7 +39,7 @@ lemma consistency.erase_value :
     simp; apply value.unit
   case loc => contradiction
 
-lemma consistency.lets :
+lemma semantics_preservation.lets :
   ∀ Γ e bᵥ τ φ₀ φ₁,
     value bᵥ →
     typing Γ 𝟙 (.lets bᵥ e) τ φ₀ →
@@ -76,7 +76,7 @@ lemma consistency.lets :
       by
       cases Hτ₀
       case lets Hwbt Hτb Hclosed Hτe =>
-        apply consistency.erase_value
+        apply semantics_preservation.erase_value
         apply HvalueBind; apply Hwbt; apply Hτb; apply HsemΓ
     simp at Hstep₀
     --
@@ -177,14 +177,14 @@ lemma consistency.lets :
           by
           cases Hτ₀
           case lets Hwbt Hτb Hclosed Hτe =>
-            apply consistency.erase_value
+            apply semantics_preservation.erase_value
             apply HvalueBind; apply Hwbt; apply Hτb; apply HsemΓ
         apply HvalueBind₁
     constructor
     . apply Hsem_store
     . apply Hsem_value
 
-lemma consistency.app₁ :
+lemma semantics_preservation.app₁ :
   ∀ Γ e argᵥ τ φ₀ φ₁,
     value argᵥ →
     typing Γ 𝟙 (.app₁ (.lam e) argᵥ) τ φ₀ →
@@ -223,7 +223,7 @@ lemma consistency.app₁ :
       case app₁ Hτarg Hτf =>
         cases Hτf
         case lam Hwbt _ =>
-          apply consistency.erase_value
+          apply semantics_preservation.erase_value
           apply HvalueArg; apply Hwbt; apply Hτarg; apply HsemΓ
     --
     --
@@ -340,14 +340,14 @@ lemma consistency.app₁ :
           case app₁ Hτarg Hτf =>
             cases Hτf
             case lam Hwbt _ =>
-              apply consistency.erase_value
+              apply semantics_preservation.erase_value
               apply HvalueArg; apply Hwbt; apply Hτarg; apply HsemΓ
         apply HvalueArg₁
     constructor
     . apply Hsem_store
     . apply Hsem_value
 
-lemma consistency.binary₁ :
+lemma semantics_preservation.binary₁ :
   ∀ Γ op l r τ φ₀ φ₁,
     typing Γ 𝟙 (.binary₁ op (.lit l) (.lit r)) τ φ₀ →
     typing Γ 𝟙 (.lit (eval op l r)) τ φ₁ →
@@ -398,7 +398,7 @@ lemma consistency.binary₁ :
     . apply Hsem_store
     . simp
 
-lemma consistency.lift_lam :
+lemma semantics_preservation.lift_lam :
   ∀ Γ e τ φ₀ φ₁,
     typing Γ 𝟙 (.lift (.lam e)) τ φ₀ →
     typing Γ 𝟙 (.lam𝕔 (codify 0 e)) τ φ₁ →
@@ -414,7 +414,7 @@ lemma consistency.lift_lam :
   -- right approximation
   . apply log_approx.fundamental; apply typing.erase.safety; apply Hτ₀
 
-lemma consistency.fix₁ :
+lemma semantics_preservation.fix₁ :
   ∀ Γ fᵥ τ φ₀ φ₁,
     value fᵥ →
     typing Γ 𝟙 (.fix₁ fᵥ) τ φ₀ →
@@ -547,7 +547,7 @@ lemma consistency.fix₁ :
     . apply Hsem_store
     . apply Hsem_value
 
-lemma consistency.ifz₁_then :
+lemma semantics_preservation.ifz₁_then :
   ∀ Γ l r τ φ₀ φ₁,
     typing Γ 𝟙 (.ifz₁ (.lit 0) l r) τ φ₀ →
     typing Γ 𝟙 l τ φ₁ →
@@ -626,7 +626,7 @@ lemma consistency.ifz₁_then :
     . apply Hsem_store
     . apply Hsem_value
 
-lemma consistency.ifz₁_else :
+lemma semantics_preservation.ifz₁_else :
   ∀ Γ n l r τ φ₀ φ₁,
     typing Γ 𝟙 (.ifz₁ (.lit (n + 1)) l r) τ φ₀ →
     typing Γ 𝟙 r τ φ₁ →
@@ -705,7 +705,7 @@ lemma consistency.ifz₁_else :
     . apply Hsem_store
     . apply Hsem_value
 
-theorem consistency.pure.head :
+theorem semantics_preservation.pure.head :
   ∀ Γ e₀ e₁ τ φ,
     head_pure e₀ e₁ →
     typing Γ 𝟙 e₀ τ φ →
@@ -715,25 +715,25 @@ theorem consistency.pure.head :
   have ⟨_, Hτ₁, _⟩ := preservation.pure.head _ _ _ _ _ Hhead Hτ₀
   cases Hhead
   case lets e bᵥ HvalueBind =>
-    apply consistency.lets
+    apply semantics_preservation.lets
     apply HvalueBind; apply Hτ₀; apply Hτ₁
   case app₁ e argᵥ HvalueArg =>
-    apply consistency.app₁
+    apply semantics_preservation.app₁
     apply HvalueArg; apply Hτ₀; apply Hτ₁
   case binary₁ =>
-    apply consistency.binary₁
+    apply semantics_preservation.binary₁
     apply Hτ₀; apply Hτ₁
   case lift_lam e =>
-    apply consistency.lift_lam
+    apply semantics_preservation.lift_lam
     apply Hτ₀; apply Hτ₁
   case fix₁ fᵥ HvalueFix =>
-    apply consistency.fix₁
+    apply semantics_preservation.fix₁
     apply HvalueFix; apply Hτ₀; apply Hτ₁
   case ifz₁_then =>
-    apply consistency.ifz₁_then
+    apply semantics_preservation.ifz₁_then
     apply Hτ₀; apply Hτ₁
   case ifz₁_else =>
-    apply consistency.ifz₁_else
+    apply semantics_preservation.ifz₁_else
     apply Hτ₀; apply Hτ₁
   all_goals
     constructor

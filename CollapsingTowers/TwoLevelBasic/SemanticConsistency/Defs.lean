@@ -1,4 +1,0 @@
-import CollapsingTowers.TwoLevelBasic.SemanticConsistency.ConsisCtx
-import CollapsingTowers.TwoLevelBasic.SemanticConsistency.ConsisPure
-import CollapsingTowers.TwoLevelBasic.SemanticConsistency.ConsisReflect
-import CollapsingTowers.TwoLevelBasic.SemanticConsistency.Consistency

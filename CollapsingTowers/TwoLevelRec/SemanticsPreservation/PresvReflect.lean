@@ -1,6 +1,6 @@
-import CollapsingTowers.TwoLevelFinal.LogicalEquiv.Defs
+import CollapsingTowers.TwoLevelRec.LogicalEquiv.Defs
 
-lemma consistency.erase_ctx𝔼 :
+lemma semantics_preservation.erase_ctx𝔼 :
   ∀ E Γ e τ φ k γ₀ γ₁,
     ctx𝔼 E →
     typing Γ 𝟙 E⟦e⟧ τ φ →
@@ -15,8 +15,8 @@ lemma consistency.erase_ctx𝔼 :
     . exists id; constructor; apply ctx𝔼.hole; simp
     . exists id; constructor; apply ctx𝔼.hole; simp
   case cons𝔹 HB HE IH =>
-    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
-    cases HB <;> try contradiction
+    have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+    cases HB
     case appl₁ arg Hlc =>
       cases Hτ
       case app₁ Harg HX =>
@@ -74,8 +74,8 @@ lemma consistency.erase_ctx𝔼 :
         cases Hf
         case code_fragment x _ Hbinds =>
           have Hbinds := erase_env.binds _ _ _ _ Hbinds
-          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ _ HsemΓ Hbinds
-          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value
+          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ Hbinds
+          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
           have ⟨IH₀, IH₁⟩ := IH _ _ HX
           have ⟨E₀, HE₀, IH₀⟩ := IH₀
           have ⟨E₁, HE₁, IH₁⟩ := IH₁
@@ -139,8 +139,8 @@ lemma consistency.erase_ctx𝔼 :
         cases Hl
         case code_fragment x _ Hbinds =>
           have Hbinds := erase_env.binds _ _ _ _ Hbinds
-          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ _ HsemΓ Hbinds
-          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value
+          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ HsemΓ Hbinds
+          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
           have ⟨IH₀, IH₁⟩ := IH _ _ HX
           have ⟨E₀, HE₀, IH₀⟩ := IH₀
           have ⟨E₁, HE₁, IH₁⟩ := IH₁
@@ -155,7 +155,6 @@ lemma consistency.erase_ctx𝔼 :
       cases Hτ
       case lift_lam HX => apply IH _ _ HX
       case lift_lit HX => apply IH _ _ HX
-      case lift_unit HX => apply IH _ _ HX
     case lets e Hlc =>
       cases Hτ
       case lets HX Hclosed He =>
@@ -171,63 +170,6 @@ lemma consistency.erase_ctx𝔼 :
           apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.lets _ _) HE₁
           apply lc.under_msubst; apply Hmwf₁
           rw [← lc.under_erase]; apply Hlc
-    case load₂ =>
-      cases Hτ
-      case load₂ HX =>
-        have ⟨IH₀, IH₁⟩ := IH _ _ HX
-        have ⟨E₀, HE₀, IH₀⟩ := IH₀
-        have ⟨E₁, HE₁, IH₁⟩ := IH₁
-        constructor
-        . exists (fun X => .load₁ X) ∘ E₀; simp [IH₀]
-          apply ctx𝔼.cons𝔹 _ _ ctx𝔹.load₁ HE₀
-        . exists (fun X => .load₁ X) ∘ E₁; simp [IH₁]
-          apply ctx𝔼.cons𝔹 _ _ ctx𝔹.load₁ HE₁
-    case alloc₂ =>
-      cases Hτ
-      case alloc₂ HX =>
-        have ⟨IH₀, IH₁⟩ := IH _ _ HX
-        have ⟨E₀, HE₀, IH₀⟩ := IH₀
-        have ⟨E₁, HE₁, IH₁⟩ := IH₁
-        constructor
-        . exists (fun X => .alloc₁ X) ∘ E₀; simp [IH₀]
-          apply ctx𝔼.cons𝔹 _ _ ctx𝔹.alloc₁ HE₀
-        . exists (fun X => .alloc₁ X) ∘ E₁; simp [IH₁]
-          apply ctx𝔼.cons𝔹 _ _ ctx𝔹.alloc₁ HE₁
-    case storel₂ r Hlc =>
-      cases Hτ
-      case store₂ HX Hr =>
-        have ⟨IH₀, IH₁⟩ := IH _ _ HX
-        have ⟨E₀, HE₀, IH₀⟩ := IH₀
-        have ⟨E₁, HE₁, IH₁⟩ := IH₁
-        constructor
-        . exists (fun X => .store₁ X (msubst γ₀ ‖r‖)) ∘ E₀; simp [IH₀]
-          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.storel₁ _ _) HE₀
-          apply lc.under_msubst; apply Hmwf₀
-          rw [← lc.under_erase]; apply Hlc
-        . exists (fun X => .store₁ X (msubst γ₁ ‖r‖)) ∘ E₁; simp [IH₁]
-          apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.storel₁ _ _) HE₁
-          apply lc.under_msubst; apply Hmwf₁
-          rw [← lc.under_erase]; apply Hlc
-    case storer₂ Hvalue =>
-      cases Hvalue <;> try contradiction
-      case code e Hlc =>
-      cases Hτ
-      case store₂ Hl HX =>
-        cases Hl
-        case code_fragment x _ Hbinds =>
-          have Hbinds := erase_env.binds _ _ _ _ Hbinds
-          have Hsem_value := log_approx_env.binds_log_approx_value _ _ _ _ _ _ _ HsemΓ Hbinds
-          have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value
-          have ⟨IH₀, IH₁⟩ := IH _ _ HX
-          have ⟨E₀, HE₀, IH₀⟩ := IH₀
-          have ⟨E₁, HE₁, IH₁⟩ := IH₁
-          constructor
-          . exists (fun X => .store₁ (msubst γ₀ (.fvar x)) X) ∘ E₀; simp [IH₀]
-            apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.storer₁ _ _) HE₀
-            apply Hvalue₀
-          . exists (fun X => .store₁ (msubst γ₁ (.fvar x)) X) ∘ E₁; simp [IH₁]
-            apply ctx𝔼.cons𝔹 _ _ (ctx𝔹.storer₁ _ _) HE₁
-            apply Hvalue₁
     case fix₁ =>
       cases Hτ
       case fix₁ HX =>
@@ -292,7 +234,7 @@ lemma consistency.erase_ctx𝔼 :
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ————————————————————————————————————————————————————————
 -- ‖Γ‖ ⊨ ‖E⟦reflect b⟧‖ ≈𝑙𝑜𝑔 ‖lets𝕔 x = b in E⟦code x⟧‖ : ‖τ‖
-theorem consistency.reflect.head :
+theorem semantics_preservation.reflect.head :
   ∀ Γ E b τ φ,
     ctx𝔼 E →
     typing Γ 𝟙 E⟦.reflect b⟧ τ φ →
@@ -330,233 +272,201 @@ theorem consistency.reflect.head :
     -- left approximation
     . constructor; apply HEτ₀
       constructor; apply HEτ₁
-      intros k 𝓦₀ γ₀ γ₁ HsemΓ
-      have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ _ HsemΓ
-      have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
-      have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
+      intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+      have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ HEτ₀ HEτ₁ HsemΓ
+      have ⟨HSτb₀, HSτb₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ HEτb₀ HEτb₀ HsemΓ
       --
       --
-      -- (k, 𝓦₀, γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧
+      -- (k, γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧
       -- ————————————————————
       -- γ₀‖E⟦X⟧‖ = E₀⟦γ₀‖X‖⟧
       -- γ₁‖E⟦X⟧‖ = E₁⟦γ₀‖X‖⟧
-      have ⟨HE₀, HE₁⟩ := consistency.erase_ctx𝔼 _ _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
+      have ⟨HE₀, HE₁⟩ := semantics_preservation.erase_ctx𝔼 _ _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
       have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
       have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
-      have HG₀ : grounded E₀⟦msubst γ₀ ‖.reflect b‖⟧ :=
-        by
-        rw [← HEqE₀ (.reflect b)]
-        apply grounded.under_msubst _ _ HmG₀
-        apply typing.dynamic_impl_grounded _ _ _ _ HEτ₀
-      simp at HG₀
+      simp [HEqE₀, HEqE₁] at HSτ₀ HSτ₁
+      have ⟨HlcE₀, HclosedE₀⟩ := typing.wf _ _ _ _ _ HSτ₀
+      have ⟨HlcE₁, HclosedE₁⟩ := typing.wf _ _ _ _ _ HSτ₁
       --
       --
-      -- ⟨σ₀, E₀⟦γ₀‖b‖⟧⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
-      -- ——————————————————————————————
+      -- E₀⟦γ₀‖b‖⟧ ⇝ ⟦j⟧ v₀
+      -- ——————————————————
       -- i₀ + i₁ = j
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
-      simp [HEqE₀, HEqE₁, - log_approx_expr]
-      simp only [log_approx_expr]
-      intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
-      have ⟨imσ₀, i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ _ _ HE₀ Hvalue₀ HG₀ Hstep₀      --
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      simp [HEqE₀, HEqE₁]
+      intros j Hindexj v₀ Hvalue₀ Hstep₀
+      have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ HE₀ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
       --
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+      --
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
       -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
-      -- ———————————————————————————————
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- (imσ₀, imσ₁) : 𝓦₁
-      -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
+      -- —————————————————————————
+      -- γ₁‖b‖ ⇝* bv₁
+      -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
       have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
       simp only [log_approx_expr] at IHb
-      have ⟨𝓦₁, imσ₁, bv₁, Hfuture₀, HstepBind₁, Hsem_store, Hsem_value_bind⟩ := IHb _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueBind₀ HstepBind₀
-      have ⟨_, Hfuture₀⟩ := Hfuture₀
-      have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_bind
-      have ⟨HwfBind₀, HwfBind₁⟩ := log_approx_value.syntactic.wf _ _ _ _ _ Hsem_value_bind
+      have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := IHb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
+      have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_bind
+      have ⟨HτBind₀, HτBind₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value_bind
+      have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
+      have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
       --
       --
       -- ‖Γ‖ ⊧ ‖E⟦x⟧‖ ≤𝑙𝑜𝑔 ‖E⟦x⟧‖ : ‖τ‖
-      -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
-      -- ———————————————————————————————————————————————————————————————
-      -- (k - i₀, 𝓦₁, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
+      -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
+      -- ———————————————————————————————————————————————————————————
+      -- (k - i₀, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
       have ⟨_, _, IHE⟩ := log_approx.fundamental _ _ _ HEτE₀
-      have Hsem_exprE := IHE (k - i₀) 𝓦₁ (bv₀ :: γ₀) (bv₁ :: γ₁) (
-        by
-        apply log_approx_env.cons; apply Hsem_value_bind
-        apply log_approx_env.antimono; apply HsemΓ
-        constructor; omega; apply Hfuture₀
-      )
-      --
-      --
-      -- (k - i₀, 𝓦₁, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
-      -- ————————————————————————————————————————————————————————————————
-      -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
-      have HEqE₀ : (msubst (bv₀ :: γ₀) ‖E⟦.fvar Γ.length⟧‖) = E₀⟦bv₀⟧:=
-        by
-        rw [erase_env.length, ← HEq₀]
-        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HwfBind₀.right Hmwf₀]
-        rw [HEqE₀, subst.under_ctx𝔼 _ _ _ _ _ HE₀]
-        simp; apply closed.inc
-        rw [← HEqE₀]; apply closed.under_msubst _ _ Hmwf₀
-        rw [HEq₀]; apply typing.closed_at_env _ _ _ _ _ HEτ₀; omega
-      have HEqE₁ : (msubst (bv₁ :: γ₁) ‖E⟦.fvar Γ.length⟧‖) = E₁⟦bv₁⟧:=
-        by
-        rw [erase_env.length, ← HEq₁]
-        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HwfBind₁.right Hmwf₁]
-        rw [HEqE₁, subst.under_ctx𝔼 _ _ _ _ _ HE₁]
-        simp; apply closed.inc
-        rw [← HEqE₁]; apply closed.under_msubst _ _ Hmwf₁
-        rw [HEq₁]; apply (typing.closed_at_env _ _ _ _ _ HEτ₁).right; omega
-      rw [HEqE₀, HEqE₁] at Hsem_exprE
-      --
-      --
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
-      -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
-      -- ———————————————————————————————————————
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      -- (σ₂, σ₃) : 𝓦₂
-      -- (k - i₀ - i₁, 𝓦₂, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
-      simp only [log_approx_expr] at Hsem_exprE
-      have ⟨𝓦₂, σ₃, v₁, Hfuture₁, HstepE₁, Hsem_store, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ _ Hsem_store _ _ Hvalue₀ HstepE₀
-      have ⟨_, Hfuture₁⟩ := Hfuture₁
-      --
-      --
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      -- —————————————————————————————————————————
-      -- ⟨σ₁, lets x = γ₁‖b‖ in E₁⟦x⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      exists 𝓦₂, σ₃, v₁
-      constructor
-      . constructor; omega
-        apply World.future.trans _ _ _ Hfuture₁
-        apply Hfuture₀
-      constructor
-      . apply stepn.trans
-        apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.lets _ _) _ HstepBind₁
-        apply lc.under_ctx𝔼; apply HE₁; simp
-        apply grounded.under_msubst _ _ HmG₁; apply typing.dynamic_impl_grounded _ _ _ _ HEτb₀
-        apply stepn.multi _ _ _ _ HstepE₁
-        apply step_lvl.pure _ _ _ _ ctx𝕄.hole
-        . constructor
-          . apply lc.value _ HvalueBind₁
-          . apply lc.under_ctx𝔼; apply HE₁; simp
-        . have HEq : E₁⟦bv₁⟧ = opening 0 bv₁ E₁⟦.bvar 0⟧ :=
-            by rw [opening.under_ctx𝔼 _ _ _ _ HE₁]; rfl
-          rw [HEq]
-          apply head_pure.lets; apply HvalueBind₁
-      constructor
-      . apply Hsem_store
-      . apply log_approx_value.antimono
-        apply Hsem_value; simp; omega
-    -- right approximation
-    . constructor; apply HEτ₁
-      constructor; apply HEτ₀
-      intros k 𝓦₀ γ₀ γ₁ HsemΓ
-      have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ _ HsemΓ
-      have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
-      have ⟨HmG₀, HmG₁⟩ := log_approx_env.syntactic.mgrounded _ _ _ _ _ HsemΓ
-      --
-      --
-      -- (k, 𝓦₀, γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧
-      -- ————————————————————
-      -- γ₀‖E⟦X⟧‖ = E₀⟦γ₀‖X‖⟧
-      -- γ₁‖E⟦X⟧‖ = E₁⟦γ₀‖X‖⟧
-      have ⟨HE₀, HE₁⟩ := consistency.erase_ctx𝔼 _ _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
-      have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
-      have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
-      have HG₀ : grounded (.lets (msubst γ₀ ‖b‖) E₀⟦msubst γ₀ ‖.code (.bvar 0)‖⟧) :=
-        by
-        rw [← HEqE₀, ← msubst.lets]
-        apply grounded.under_msubst _ _ HmG₀
-        apply typing.dynamic_impl_grounded _ _ _ _ HEτ₁
-      simp at HG₀
-      --
-      --
-      -- ⟨σ₀, lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
-      -- ———————————————————————————————————————————————
-      -- i₀ + 1 + i₁ = j
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
-      simp [HEqE₀, HEqE₁, - log_approx_expr]
-      simp only [log_approx_expr]
-      intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
-      have ⟨imσ₀, i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine.lets _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
-      simp [opening.under_ctx𝔼 _ _ _ _ HE₀] at HstepE₀
-      --
-      --
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-      -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
-      -- —————————————————————————————————
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- (imσ₀, imσ₁) : 𝓦₁
-      -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
-      have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
-      simp only [log_approx_expr] at IHb
-      have ⟨𝓦₁, imσ₁, bv₁, Hfuture₀, HstepBind₁, Hsem_store, Hsem_value_bind⟩ := IHb _ _ _ _ HsemΓ i₀ (by omega) _ _ Hsem_store _ _ HvalueBind₀ HstepBind₀
-      have ⟨_, Hfuture₀⟩ := Hfuture₀
-      have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_bind
-      have ⟨HwfBind₀, HwfBind₁⟩ := log_approx_value.syntactic.wf _ _ _ _ _ Hsem_value_bind
-      --
-      --
-      -- ‖Γ‖ ⊧ ‖E⟦x⟧‖ ≤𝑙𝑜𝑔 ‖E⟦x⟧‖ : ‖τ‖
-      -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
-      -- ———————————————————————————————————————————————————————————————
-      -- (k - i₀, 𝓦₁, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
-      have ⟨_, _, IHE⟩ := log_approx.fundamental _ _ _ HEτE₀
-      have Hsem_exprE := IHE (k - i₀) 𝓦₁ (bv₀ :: γ₀) (bv₁ :: γ₁) (
+      have Hsem_exprE := IHE (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) (
         by
         apply log_approx_env.cons; apply Hsem_value_bind
         apply log_approx_env.antimono; apply HsemΓ; omega
       )
       --
       --
-      -- (k - i₀, 𝓦₁, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
-      -- ————————————————————————————————————————————————————————————————
-      -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
+      -- (k - i₀, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
+      -- ———————————————————————————————————————————————————————————
+      -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
       have HEqE₀ : (msubst (bv₀ :: γ₀) ‖E⟦.fvar Γ.length⟧‖) = E₀⟦bv₀⟧:=
         by
         rw [erase_env.length, ← HEq₀]
-        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HwfBind₀.right Hmwf₀]
+        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HclosedBind₀ Hmwf₀]
         rw [HEqE₀, subst.under_ctx𝔼 _ _ _ _ _ HE₀]
-        simp; apply closed.inc
-        rw [← HEqE₀]; apply closed.under_msubst _ _ Hmwf₀
-        rw [HEq₀]; apply typing.closed_at_env _ _ _ _ _ HEτ₀; omega
+        simp; apply closed.inc; apply HclosedE₀; simp
       have HEqE₁ : (msubst (bv₁ :: γ₁) ‖E⟦.fvar Γ.length⟧‖) = E₁⟦bv₁⟧:=
         by
         rw [erase_env.length, ← HEq₁]
-        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HwfBind₁.right Hmwf₁]
+        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HclosedBind₁ Hmwf₁]
         rw [HEqE₁, subst.under_ctx𝔼 _ _ _ _ _ HE₁]
-        simp; apply closed.inc
-        rw [← HEqE₁]; apply closed.under_msubst _ _ Hmwf₁
-        rw [HEq₁]; apply (typing.closed_at_env _ _ _ _ _ HEτ₁).right; omega
+        simp; apply closed.inc; apply HclosedE₁.right; simp
       rw [HEqE₀, HEqE₁] at Hsem_exprE
       --
       --
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
-      -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
-      -- ———————————————————————————————————————
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      -- (σ₂, σ₃) : 𝓦₂
-      -- (k - i₀ - i₁, 𝓦₂, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
+      -- ———————————————————————————————————
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- (k - i₀ - i₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       simp only [log_approx_expr] at Hsem_exprE
-      have ⟨𝓦₂, σ₃, v₁, Hfuture₁, HstepE₁, Hsem_store, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ _ Hsem_store _ _ Hvalue₀ HstepE₀
-      have ⟨_, Hfuture₁⟩ := Hfuture₁
+      have ⟨v₁, HstepE₁, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ Hvalue₀ HstepE₀
       --
       --
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      -- ————————————————————————————
-      -- ⟨σ₁, E₁⟦γ₁‖b‖⟧⟩ ⇝* ⟨σ₃, v₁⟩
-      exists 𝓦₂, σ₃, v₁
+      -- γ₁‖b‖ ⇝* bv₁
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- ——————————————————————————————
+      -- lets x = γ₁‖b‖ in E₁⟦x⟧ ⇝* v₁
+      exists v₁
       constructor
-      . constructor; omega
-        apply World.future.trans _ _ _ Hfuture₁
-        apply Hfuture₀
+      . apply stepn.trans
+        apply stepn_grounded.congruence_under_ctx𝔹 _ _ _ (ctx𝔹.lets _ HlcE₁.right) (typing.dynamic_impl_grounded _ _ _ _ HSτb₁) HstepBind₁
+        apply stepn.multi _ _ _ _ HstepE₁
+        apply step_lvl.pure _ _ _ ctx𝕄.hole
+        . constructor
+          . apply HlcBind₁
+          . apply lc.under_ctx𝔼; apply HE₁; simp
+        . have HEq : E₁⟦bv₁⟧ = opening 0 bv₁ E₁⟦.bvar 0⟧ :=
+            by rw [opening.under_ctx𝔼 _ _ _ _ HE₁]; rfl
+          rw [HEq]
+          apply head.lets; apply HvalueBind₁
+      . apply log_approx_value.antimono
+        apply Hsem_value; omega
+    -- right approximation
+    . constructor; apply HEτ₁
+      constructor; apply HEτ₀
+      intros k γ₀ γ₁ HsemΓ
+      have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.mwf _ _ _ _ HsemΓ
+      have ⟨HEq₀, HEq₁⟩ := log_approx_env.length _ _ _ _ HsemΓ
+      have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ HEτ₁ HEτ₀ HsemΓ
+      have ⟨HSτb₀, HSτb₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ HEτb₀ HEτb₀ HsemΓ
+      --
+      --
+      -- (k, γ₀, γ₁) ∈ 𝓖⟦‖Γ‖⟧
+      -- ————————————————————
+      -- γ₀‖E⟦X⟧‖ = E₀⟦γ₀‖X‖⟧
+      -- γ₁‖E⟦X⟧‖ = E₁⟦γ₀‖X‖⟧
+      have ⟨HE₀, HE₁⟩ := semantics_preservation.erase_ctx𝔼 _ _ _ _ _ _ _ _ HE Hτ₀ HsemΓ
+      have ⟨E₀, HE₀, HEqE₀⟩ := HE₀
+      have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
+      simp [HEqE₀, HEqE₁] at HSτ₀ HSτ₁
+      --
+      --
+      -- lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖ ⇝ ⟦j⟧ v₀
+      -- —————————————————————————————————————
+      -- i₀ + 1 + i₁ = j
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      simp [HEqE₀, HEqE₁]
+      have ⟨HlcE₀, HclosedE₀⟩ := typing.wf _ _ _ _ _ HSτ₀
+      have ⟨HlcE₁, HclosedE₁⟩ := typing.wf _ _ _ _ _ HSτ₁
+      intros j Hindexj v₀ Hvalue₀ Hstep₀
+      have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ :=
+        stepn_indexed.refine.lets _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
+      simp [opening.under_ctx𝔼 _ _ _ _ HE₀] at HstepE₀
+      --
+      --
+      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
+      -- ————————————————————————————
+      -- γ₁‖b‖ ⇝* bv₁
+      -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
+      have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
+      simp only [log_approx_expr] at IHb
+      have ⟨bv₁, HstepBind₁, Hsem_value_bind⟩ := IHb _ _ _ HsemΓ i₀ (by omega) _ HvalueBind₀ HstepBind₀
+      have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value_bind
+      have ⟨HτBind₀, HτBind₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value_bind
+      have ⟨HlcBind₀, HclosedBind₀⟩ := typing.wf _ _ _ _ _ HτBind₀
+      have ⟨HlcBind₁, HclosedBind₁⟩ := typing.wf _ _ _ _ _ HτBind₁
+      --
+      --
+      -- ‖Γ‖ ⊧ ‖E⟦x⟧‖ ≤𝑙𝑜𝑔 ‖E⟦x⟧‖ : ‖τ‖
+      -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
+      -- ———————————————————————————————————————————————————————————
+      -- (k - i₀, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
+      have ⟨_, _, IHE⟩ := log_approx.fundamental _ _ _ HEτE₀
+      have Hsem_exprE := IHE (k - i₀) (bv₀ :: γ₀) (bv₁ :: γ₁) (
+        by
+        apply log_approx_env.cons; apply Hsem_value_bind
+        apply log_approx_env.antimono; apply HsemΓ; omega
+      )
+      --
+      --
+      -- (k - i₀, (x ↦ bv₀, γ₀)‖E⟦x⟧‖, (x ↦ bv₁, γ₁)‖E⟦x⟧‖) ∈ 𝓔⟦‖τ‖⟧
+      -- ———————————————————————————————————————————————————————————
+      -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
+      have HEqE₀ : (msubst (bv₀ :: γ₀) ‖E⟦.fvar Γ.length⟧‖) = E₀⟦bv₀⟧:=
+        by
+        rw [erase_env.length, ← HEq₀]
+        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HclosedBind₀ Hmwf₀]
+        rw [HEqE₀, subst.under_ctx𝔼 _ _ _ _ _ HE₀]
+        simp; apply closed.inc; apply HclosedE₀.right; simp
+      have HEqE₁ : (msubst (bv₁ :: γ₁) ‖E⟦.fvar Γ.length⟧‖) = E₁⟦bv₁⟧:=
+        by
+        rw [erase_env.length, ← HEq₁]
+        rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) HclosedBind₁ Hmwf₁]
+        rw [HEqE₁, subst.under_ctx𝔼 _ _ _ _ _ HE₁]
+        simp; apply closed.inc; apply HclosedE₁; simp
+      rw [HEqE₀, HEqE₁] at Hsem_exprE
+      --
+      --
+      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
+      -- ———————————————————————————————————
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- (k - i₀ - i₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
+      simp only [log_approx_expr] at Hsem_exprE
+      have ⟨v₁, HstepE₁, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ Hvalue₀ HstepE₀
+      --
+      --
+      -- γ₁‖b‖ ⇝* bv₁
+      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- ——————————————————————————————
+      -- E₁⟦γ₁‖b‖⟧ ⇝* v₁
+      exists v₁
       constructor
       . apply stepn.trans _ _ _ _ HstepE₁
-        apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ _ _ HE₁ _ HstepBind₁
-        apply grounded.under_msubst _ _ HmG₁ (typing.dynamic_impl_grounded _ _ _ _ HEτb₀)
-      constructor
-      . apply Hsem_store
+        apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE₁ (typing.dynamic_impl_grounded _ _ _ _ HSτb₁) HstepBind₁
       . apply log_approx_value.antimono
-        apply Hsem_value; simp; omega
+        apply Hsem_value; omega

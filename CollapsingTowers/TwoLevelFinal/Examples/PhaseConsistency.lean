@@ -1,6 +1,6 @@
 import CollapsingTowers.TwoLevelFinal.Examples.Notation
 
-namespace PhaseConsistency
+namespace Phasesemantics_preservation
 
 -- stuck example
 -- letsc x (* phase 2 *) = eff in
@@ -24,4 +24,4 @@ example : ∀ b τ φ, ¬typing_reification ⦰ (.lets b (.code (.bvar 0))) τ �
   case reify Hτ =>
     cases Hτ; contradiction
 
-end PhaseConsistency
+end Phasesemantics_preservation

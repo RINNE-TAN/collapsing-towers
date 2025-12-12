@@ -6,7 +6,7 @@ import CollapsingTowers.TwoLevelMut.LogicalEquiv.Defs
 -- Γ ⊢ B⟦e₀⟧ : τ →
 -- ‖Γ‖ ⊨ ‖B⟦e₀⟧‖ ≈𝑙𝑜𝑔 ‖B⟦e₁⟧‖ : ‖τ‖
 
-lemma consistency.under_ctx𝔹 :
+lemma semantics_preservation.under_ctx𝔹 :
   ∀ Γ B e₀ e₁ τ φ,
     ctx𝔹 B →
     (∀ τ φ,
@@ -94,7 +94,7 @@ lemma consistency.under_ctx𝔹 :
 -- ————————————————————————————
 -- Γ ⊢ R⟦e₀⟧ : τ →
 -- ‖Γ‖ ⊨ ‖R⟦e₀⟧‖ ≈𝑙𝑜𝑔 ‖R⟦e₁⟧‖ : ‖τ‖
-lemma consistency.under_ctxℝ :
+lemma semantics_preservation.under_ctxℝ :
   ∀ intro Γ R e₀ e₁ τ φ,
     ctxℝ intro Γ.length R →
     lc e₀ →
