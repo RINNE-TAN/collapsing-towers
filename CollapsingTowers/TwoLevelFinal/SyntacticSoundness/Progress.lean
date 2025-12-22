@@ -198,7 +198,7 @@ theorem progress.strengthened :
           . apply lc.under_closing; omega
             apply lc.inc; apply Hlc₁; omega
         . apply head_pure.lets𝕔
-  case run H Himmut Hclosed IH HDyn HEq𝕊 =>
+  case run H Hsf Hclosed IH HDyn HEq𝕊 =>
     left
     match IH HDyn with
     | .inl Hstep =>

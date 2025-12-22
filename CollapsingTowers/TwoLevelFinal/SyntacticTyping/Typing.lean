@@ -66,7 +66,7 @@ mutual
       typing Γ 𝟙 (.lets𝕔 b e) (.rep τ𝕓) ⊥
     | run : ∀ Γ e τ φ,
       typing_reification Γ e (.rep τ) φ →
-      immut e → closed e →
+      store_free e → closed e →
       typing Γ 𝟙 (.run e) τ ⊥
     | unit : ∀ Γ 𝕊,
       typing Γ 𝕊 .unit .unit ⊥

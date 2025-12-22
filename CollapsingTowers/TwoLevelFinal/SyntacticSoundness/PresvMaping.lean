@@ -169,11 +169,11 @@ lemma preservation.maping.strengthened :
     . apply closed.under_subst
       . apply typing.closed_at_env _ _ _ _ _ Hτv
       . simp; apply Hclosed
-  case run Himmut Hclosed IH Δ HEqΓ Hτv =>
+  case run Hsf Hclosed IH Δ HEqΓ Hτv =>
     apply typing.run
     . apply IH; apply HEqΓ; apply Hτv
     . rw [identity.subst]
-      apply Himmut
+      apply Hsf
       apply closed.inc; apply Hclosed; omega
     . rw [identity.subst]
       apply Hclosed

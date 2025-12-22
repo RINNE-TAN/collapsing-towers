@@ -202,23 +202,23 @@ lemma grounded.under_opening_value : ∀ e v i, grounded v → grounded e → gr
     apply IH₂; apply Hv; apply H₂
 
 @[simp]
-def immut (e : Expr) : Prop :=
+def store_free (e : Expr) : Prop :=
   match e with
   | .bvar _ => true
   | .fvar _ => true
-  | .lam e => immut e
-  | .lift e => immut e
-  | .app₁ f arg => immut f ∧ immut arg
-  | .app₂ f arg => immut f ∧ immut arg
-  | .binary₁ _ l r => immut l ∧ immut r
-  | .binary₂ _ l r => immut l ∧ immut r
+  | .lam e => store_free e
+  | .lift e => store_free e
+  | .app₁ f arg => store_free f ∧ store_free arg
+  | .app₂ f arg => store_free f ∧ store_free arg
+  | .binary₁ _ l r => store_free l ∧ store_free r
+  | .binary₂ _ l r => store_free l ∧ store_free r
   | .lit _ => true
-  | .run e => immut e
-  | .code e => immut e
-  | .reflect e => immut e
-  | .lam𝕔 e => immut e
-  | .lets b e => immut b ∧ immut e
-  | .lets𝕔 b e => immut b ∧ immut e
+  | .run e => store_free e
+  | .code e => store_free e
+  | .reflect e => store_free e
+  | .lam𝕔 e => store_free e
+  | .lets b e => store_free b ∧ store_free e
+  | .lets𝕔 b e => store_free b ∧ store_free e
   | .unit => true
   | .loc _ => true
   | .alloc₁ _ => false
@@ -227,12 +227,12 @@ def immut (e : Expr) : Prop :=
   | .load₂ _ => false
   | .store₁ _ _ => false
   | .store₂ _ _ => false
-  | .fix₁ e => immut e
-  | .fix₂ e => immut e
-  | .ifz₁ c l r => immut c ∧ immut l ∧ immut r
-  | .ifz₂ c l r => immut c ∧ immut l ∧ immut r
+  | .fix₁ e => store_free e
+  | .fix₂ e => store_free e
+  | .ifz₁ c l r => store_free c ∧ store_free l ∧ store_free r
+  | .ifz₂ c l r => store_free c ∧ store_free l ∧ store_free r
 
-lemma immut.under_opening : ∀ e i x, immut e ↔ immut ({i ↦ x} e) :=
+lemma store_free.under_opening : ∀ e i x, store_free e ↔ store_free ({i ↦ x} e) :=
   by
   intros e i x
   induction e generalizing i with
@@ -261,7 +261,7 @@ lemma immut.under_opening : ∀ e i x, immut e ↔ immut ({i ↦ x} e) :=
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp; rw [IH₀, IH₁, IH₂]
 
-lemma immut.under_closing : ∀ e i x, immut e ↔ immut ({i ↤ x} e) :=
+lemma store_free.under_closing : ∀ e i x, store_free e ↔ store_free ({i ↤ x} e) :=
   by
   intros e i x
   induction e generalizing i with
@@ -290,16 +290,16 @@ lemma immut.under_closing : ∀ e i x, immut e ↔ immut ({i ↤ x} e) :=
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp; rw [IH₀, IH₁, IH₂]
 
-lemma immut.under_opening_value : ∀ e v i, immut v → immut e → immut (opening i v e) :=
+lemma store_free.under_opening_value : ∀ e v i, store_free v → store_free e → store_free (opening i v e) :=
   by
-  intros e v i Himmut₀ Himmut₁
+  intros e v i Hsf₀ Hsf₁
   induction e generalizing i with
-  | alloc₁| alloc₂| load₁| load₂| store₁| store₂ => nomatch Himmut₁
+  | alloc₁| alloc₂| load₁| load₂| store₁| store₂ => nomatch Hsf₁
   | fvar| lit| unit| loc => simp
   | bvar j =>
     by_cases HEq : j = i
     . simp [if_pos HEq]
-      apply Himmut₀
+      apply Hsf₀
     . simp [if_neg HEq]
   | lam _ IH
   | lift _ IH
@@ -309,7 +309,7 @@ lemma immut.under_opening_value : ∀ e v i, immut v → immut e → immut (open
   | run _ IH
   | fix₁ _ IH
   | fix₂ _ IH =>
-    apply IH; apply Himmut₁
+    apply IH; apply Hsf₁
   | app₁ _ _ IH₀ IH₁
   | app₂ _ _ IH₀ IH₁
   | binary₁ _ _ _ IH₀ IH₁
@@ -317,17 +317,17 @@ lemma immut.under_opening_value : ∀ e v i, immut v → immut e → immut (open
   | lets _ _ IH₀ IH₁
   | lets𝕔 _ _ IH₀ IH₁ =>
     constructor
-    . apply IH₀; apply Himmut₁.left
-    . apply IH₁; apply Himmut₁.right
+    . apply IH₀; apply Hsf₁.left
+    . apply IH₁; apply Hsf₁.right
   | ifz₁ _ _ _ IH₀ IH₁ IH₂
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     constructor
-    . apply IH₀; apply Himmut₁.left
+    . apply IH₀; apply Hsf₁.left
     constructor
-    . apply IH₁; apply Himmut₁.right.left
-    . apply IH₂; apply Himmut₁.right.right
+    . apply IH₁; apply Hsf₁.right.left
+    . apply IH₂; apply Hsf₁.right.right
 
-lemma immut.under_codify : ∀ e i, immut e ↔ immut (codify i e) :=
+lemma store_free.under_codify : ∀ e i, store_free e ↔ store_free (codify i e) :=
   by
   intros e i
   induction e generalizing i with

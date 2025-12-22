@@ -211,22 +211,22 @@ lemma grounded.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* 
     apply grounded.under_step _ _ _ _ Hstep
     simp [← HEq₀]; apply HG
 
-lemma immut.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → immut e₀ → immut e₁ :=
+lemma store_free.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → store_free e₀ → store_free e₁ :=
   by
   intros e₀ e₁ Hhead
   cases Hhead <;> simp
   case lets =>
-    apply immut.under_opening_value
+    apply store_free.under_opening_value
   case app₁ =>
-    intros Himmut₀ Himmut₁
-    apply immut.under_opening_value _ _ _ Himmut₁ Himmut₀
+    intros Hsf₀ Hsf₁
+    apply store_free.under_opening_value _ _ _ Hsf₁ Hsf₀
   case lift_lam =>
-    simp [← immut.under_codify]
+    simp [← store_free.under_codify]
   case ifz₁_then =>
-    intros Himmut₀ Himmut₁
-    apply Himmut₀
+    intros Hsf₀ Hsf₁
+    apply Hsf₀
 
-lemma immut.under_head_mutable : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → ¬immut e₀ :=
+lemma store_free.under_head_mutable : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → ¬store_free e₀ :=
   by
-  intros σ₀ σ₁ e₀ e₁ Hmut Himmut
+  intros σ₀ σ₁ e₀ e₁ Hmut Hsf
   cases Hmut <;> contradiction

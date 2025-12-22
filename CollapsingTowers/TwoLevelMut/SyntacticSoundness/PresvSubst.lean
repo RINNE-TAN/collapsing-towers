@@ -171,10 +171,10 @@ lemma preservation.subst.strengthened :
       . apply not_in_fv.under_subst
         apply closed_impl_not_in_fv
         apply typing.closed_at_env _ _ _ _ _ Hτv; omega
-  case run Himmut Hclosed IH Δ HEqΓ Hτv =>
+  case run Hsf Hclosed IH Δ HEqΓ Hτv =>
     apply typing.run
     . apply IH; apply HEqΓ; apply Hτv
-    . rw [identity.shiftr, identity.subst]; apply Himmut
+    . rw [identity.shiftr, identity.subst]; apply Hsf
       apply closed.inc; apply Hclosed; omega
       rw [identity.subst]
       apply closed.inc; apply Hclosed; omega

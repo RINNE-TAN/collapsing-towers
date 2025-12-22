@@ -4,75 +4,75 @@ import CollapsingTowers.TwoLevelFinal.SyntacticSoundness.PresvCtx
 
 lemma typing.escape.strengthened :
   ∀ Γ e τ φ,
-    immut e →
+    store_free e →
     typing Γ 𝟚 e τ φ →
     typing (escape_env Γ) 𝟙 e τ φ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
-  intros Γ e τ φ Himmut Hτ
-  revert HEq𝕊 Himmut
+  intros Γ e τ φ Hsf Hτ
+  revert HEq𝕊 Hsf
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → immut e → typing (escape_env Γ) 𝟙 e τ φ)
+      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → store_free e → typing (escape_env Γ) 𝟙 e τ φ)
       (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
   <;> (intros; try contradiction)
-  case fvar x _ Hbinds Hwbt HEq𝕊 Himmut =>
+  case fvar x _ Hbinds Hwbt HEq𝕊 Hsf =>
     rw [← HEq𝕊] at Hwbt
     apply typing.fvar
     . apply escape_env.binds _ _ _ _ Hbinds
     . apply wbt.escape _ Hwbt
-  case lam Hwbt Hclosed IH HEq𝕊 Himmut =>
+  case lam Hwbt Hclosed IH HEq𝕊 Hsf =>
     rw [← HEq𝕊] at Hwbt
     apply typing.lam
     . rw [← escape_env.length, ← escape_env]
       apply IH; apply HEq𝕊
-      rw [← immut.under_opening]
-      apply Himmut
+      rw [← store_free.under_opening]
+      apply Hsf
     . apply wbt.escape _ Hwbt
     . rw [← escape_env.length]
       apply Hclosed
-  case app₁ IHf IHarg HEq𝕊 Himmut =>
+  case app₁ IHf IHarg HEq𝕊 Hsf =>
     apply typing.app₁
-    . apply IHf; apply HEq𝕊; apply Himmut.left
-    . apply IHarg; apply HEq𝕊; apply Himmut.right
+    . apply IHf; apply HEq𝕊; apply Hsf.left
+    . apply IHarg; apply HEq𝕊; apply Hsf.right
   case lit => apply typing.lit
-  case binary₁ IHl IHr HEq𝕊 Himmut =>
+  case binary₁ IHl IHr HEq𝕊 Hsf =>
     apply typing.binary₁
-    . apply IHl; apply HEq𝕊; apply Himmut.left
-    . apply IHr; apply HEq𝕊; apply Himmut.right
-  case lets Hwbt Hclosed IHb IHe HEq𝕊 Himmut =>
+    . apply IHl; apply HEq𝕊; apply Hsf.left
+    . apply IHr; apply HEq𝕊; apply Hsf.right
+  case lets Hwbt Hclosed IHb IHe HEq𝕊 Hsf =>
     rw [← HEq𝕊] at Hwbt
     apply typing.lets
-    . apply IHb; apply HEq𝕊; apply Himmut.left
+    . apply IHb; apply HEq𝕊; apply Hsf.left
     . rw [← escape_env.length, ← escape_env]
       apply IHe; apply HEq𝕊
-      rw [← immut.under_opening]
-      apply Himmut.right
+      rw [← store_free.under_opening]
+      apply Hsf.right
     . apply wbt.escape _ Hwbt
     . rw [← escape_env.length]
       apply Hclosed
   case unit => apply typing.unit
-  case fix₁ Hfixφ _ IH HEq𝕊 Himmut =>
+  case fix₁ Hfixφ _ IH HEq𝕊 Hsf =>
     apply typing.fix₁
     . apply Hfixφ
-    . apply IH; apply HEq𝕊; apply Himmut
-  case ifz₁ IHc IHl IHr HEq𝕊 Himmut =>
+    . apply IH; apply HEq𝕊; apply Hsf
+  case ifz₁ IHc IHl IHr HEq𝕊 Hsf =>
     apply typing.ifz₁
-    . apply IHc; apply HEq𝕊; apply Himmut.left
-    . apply IHl; apply HEq𝕊; apply Himmut.right.left
-    . apply IHr; apply HEq𝕊; apply Himmut.right.right
+    . apply IHc; apply HEq𝕊; apply Hsf.left
+    . apply IHl; apply HEq𝕊; apply Hsf.right.left
+    . apply IHr; apply HEq𝕊; apply Hsf.right.right
   case pure => simp
   case reify => simp
   apply Hτ
 
 theorem typing.escape :
   ∀ e τ φ,
-    immut e →
+    store_free e →
     typing ⦰ 𝟚 e τ φ →
     typing ⦰ 𝟙 e τ φ :=
   by
-  intros e τ φ Himmut Hτ
-  apply typing.escape.strengthened _ _ _ _ Himmut Hτ
+  intros e τ φ Hsf Hτ
+  apply typing.escape.strengthened _ _ _ _ Hsf Hτ
 
 theorem preservation.pure.head :
   ∀ Γ e₀ e₁ τ φ₀,
@@ -191,11 +191,11 @@ theorem preservation.pure.head :
   case run =>
     exists φ₀; simp
     cases Hτ
-    case run Himmut Hclosed Hτ =>
+    case run Hsf Hclosed Hτ =>
       rw [← List.append_nil Γ]
       apply typing.weakening
       apply typing.escape
-      apply Himmut
+      apply Hsf
       apply typing.shrinking; simp
       apply typing_reification_code _ _ _ _ Hτ
       apply Hclosed
@@ -305,21 +305,21 @@ theorem preservation.pure :
   case consℝ R M HR HM IH =>
     rw [← HEqlvl] at HR IH
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
-    have Himmut : immut M⟦e₀⟧ → immut M⟦e₁⟧ :=
+    have Hsf : store_free M⟦e₀⟧ → store_free M⟦e₁⟧ :=
       by
-      intros HimmutM
-      apply immut.under_ctx𝕄 _ _ _ _ HM HimmutM
-      apply immut.under_head_pure _ _ Hhead
-      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM
+      intros HsfM
+      apply store_free.under_ctx𝕄 _ _ _ _ HM HsfM
+      apply store_free.under_head_pure _ _ Hhead
+      apply store_free.decompose_ctx𝕄 _ _ _ HM HsfM
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_pure.fv_shrink _ _ Hhead)
     have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     case pure Hτ =>
       have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
       cases φ₂ <;> try contradiction
-      have Hτ := IHτR _ _ Himmut Hfv (typing_reification.pure _ _ _ Hτ)
+      have Hτ := IHτR _ _ Hsf Hfv (typing_reification.pure _ _ _ Hτ)
       exists φ₀
     case reify Hτ =>
       have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
-      have Hτ := IHτR _ _ Himmut Hfv (typing_reification.reify _ _ _ _ Hτ)
+      have Hτ := IHτR _ _ Hsf Hfv (typing_reification.reify _ _ _ _ Hτ)
       exists φ₀

@@ -209,7 +209,7 @@ lemma preservation.under_ctxℝ :
       Δ.length = Γ.length + intro ∧
       typing_reification Δ e₀ τ𝕖 φ₀ ∧
       ∀ e₁ φ₁,
-        (immut e₀ → immut e₁) →
+        (store_free e₀ → store_free e₁) →
         fv e₁ ⊆ fv e₀ →
         typing_reification Δ e₁ τ𝕖 φ₁ →
         typing Γ 𝟙 R⟦e₁⟧ τ φ :=
@@ -223,7 +223,7 @@ lemma preservation.under_ctxℝ :
       exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀
       constructor; simp
       constructor; apply HX
-      intros e₁ φ₁ IHimmut Hfv HX
+      intros e₁ φ₁ IHsf Hfv HX
       apply typing.lam𝕔
       . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ HX)]
         apply HX
@@ -237,7 +237,7 @@ lemma preservation.under_ctxℝ :
       exists (τ𝕒, 𝟚) :: Γ, .rep τ𝕓, φ₀
       constructor; simp
       constructor; apply HX
-      intros e₁ φ₁ IHimmut Hfv HX
+      intros e₁ φ₁ IHsf Hfv HX
       apply typing.lets𝕔
       . apply Hb
       . rw [identity.opening_closing _ _ _ (typing_reification.regular _ _ _ _ HX)]
@@ -247,14 +247,14 @@ lemma preservation.under_ctxℝ :
         apply typing_reification.closed_at_env _ _ _ _ HX
   case run =>
     cases Hτ
-    case run φ₀ Himmut Hclosed HX =>
+    case run φ₀ Hsf Hclosed HX =>
       exists Γ, .rep τ, φ₀
       constructor; simp
       constructor; apply HX
-      intros e₁ φ₁ IHimmut Hfv HX
+      intros e₁ φ₁ IHsf Hfv HX
       apply typing.run
       . apply HX
-      . apply IHimmut Himmut
+      . apply IHsf Hsf
       . rw [closed_iff_fv_empty] at Hclosed
         simp [Hclosed] at Hfv
         rw [closed_iff_fv_empty, Hfv]
@@ -264,7 +264,7 @@ lemma preservation.under_ctxℝ :
       exists Γ, .rep τ, φ₁
       constructor; simp
       constructor; apply HX
-      intros e₁ φ₁ IHimmut Hfv HX
+      intros e₁ φ₁ IHsf Hfv HX
       apply typing.ifz₂
       . apply Hc
       . apply HX
@@ -275,7 +275,7 @@ lemma preservation.under_ctxℝ :
       exists Γ, .rep τ, φ₂
       constructor; simp
       constructor; apply HX
-      intros e₁ φ₁ IHimmut Hfv HX
+      intros e₁ φ₁ IHsf Hfv HX
       apply typing.ifz₂
       . apply Hc
       . apply Hl

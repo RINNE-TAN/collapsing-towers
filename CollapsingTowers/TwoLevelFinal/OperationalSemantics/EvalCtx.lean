@@ -524,112 +524,112 @@ lemma rewrite.ctxℙ_ctx𝕄 :
   case consℚ HQ =>
     apply rewrite.ctxℚ_ctx𝕄 _ _ HQ
 
-lemma immut.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → immut B⟦e⟧ → immut e :=
+lemma store_free.decompose_ctx𝔹 : ∀ B e, ctx𝔹 B → store_free B⟦e⟧ → store_free e :=
   by
-  intros B e HB Himmut
+  intros B e HB Hsf
   cases HB with
-  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Himmut
-  | lift| fix₁| fix₂ => apply Himmut
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets| ifz₁| ifz₂ => apply Himmut.left
-  | appr₁| appr₂| binaryr₁| binaryr₂ => apply Himmut.right
+  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Hsf
+  | lift| fix₁| fix₂ => apply Hsf
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets| ifz₁| ifz₂ => apply Hsf.left
+  | appr₁| appr₂| binaryr₁| binaryr₂ => apply Hsf.right
 
-lemma immut.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → immut R⟦e⟧ → immut e :=
+lemma store_free.decompose_ctxℝ : ∀ intro lvl R e, ctxℝ intro lvl R → store_free R⟦e⟧ → store_free e :=
   by
-  intros intro lvl R e HR Himmut
+  intros intro lvl R e HR Hsf
   cases HR with
-  | lam𝕔 => rw [immut.under_closing]; apply Himmut
-  | lets𝕔 => rw [immut.under_closing]; apply Himmut.right
-  | run => apply Himmut
-  | ifzl₂ => apply Himmut.right.left
-  | ifzr₂ => apply Himmut.right.right
+  | lam𝕔 => rw [store_free.under_closing]; apply Hsf
+  | lets𝕔 => rw [store_free.under_closing]; apply Hsf.right
+  | run => apply Hsf
+  | ifzl₂ => apply Hsf.right.left
+  | ifzr₂ => apply Hsf.right.right
 
-lemma immut.decompose_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → immut M⟦e⟧ → immut e :=
+lemma store_free.decompose_ctx𝕄 : ∀ lvl M e, ctx𝕄 lvl M → store_free M⟦e⟧ → store_free e :=
   by
-  intros lvl M e HM Himmut
+  intros lvl M e HM Hsf
   induction HM
-  case hole => apply Himmut
+  case hole => apply Hsf
   case cons𝔹 HB _ IH =>
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf
   case consℝ HR _ IH =>
-    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR Himmut
+    apply IH; apply store_free.decompose_ctxℝ _ _ _ _ HR Hsf
 
-lemma immut.decompose_ctxℚ : ∀ lvl Q e, ctxℚ lvl Q → immut Q⟦e⟧ → immut e :=
+lemma store_free.decompose_ctxℚ : ∀ lvl Q e, ctxℚ lvl Q → store_free Q⟦e⟧ → store_free e :=
   by
-  intros lvl Q e HQ Himmut
+  intros lvl Q e HQ Hsf
   induction HQ
-  case holeℝ HR => apply immut.decompose_ctxℝ _ _ _ _ HR Himmut
+  case holeℝ HR => apply store_free.decompose_ctxℝ _ _ _ _ HR Hsf
   case cons𝔹 HB _ IH =>
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf
   case consℝ HR _ IH =>
-    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR Himmut
+    apply IH; apply store_free.decompose_ctxℝ _ _ _ _ HR Hsf
 
-lemma immut.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → immut E⟦e⟧ → immut e :=
+lemma store_free.decompose_ctx𝔼 : ∀ E e, ctx𝔼 E → store_free E⟦e⟧ → store_free e :=
   by
-  intros E e HE Himmut
+  intros E e HE Hsf
   induction HE
-  case hole => apply Himmut
+  case hole => apply Hsf
   case cons𝔹 HB _ IH =>
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf
 
-lemma immut.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → immut B⟦e₀⟧ → immut e₁ → immut B⟦e₁⟧ :=
+lemma store_free.under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → store_free B⟦e₀⟧ → store_free e₁ → store_free B⟦e₁⟧ :=
   by
-  intros B e₀ e₁ HB Himmut₀ Himmut₁
+  intros B e₀ e₁ HB Hsf₀ Hsf₁
   cases HB with
-  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Himmut₀
-  | lift| fix₁| fix₂ => apply Himmut₁
-  | appl₁| appl₂| binaryl₁| binaryl₂| lets => constructor; apply Himmut₁; apply Himmut₀.right
-  | appr₁| appr₂| binaryr₁| binaryr₂ => constructor; apply Himmut₀.left; apply Himmut₁
-  | ifz₁| ifz₂ => constructor; apply Himmut₁; apply Himmut₀.right
+  | alloc₁| alloc₂| load₁| load₂| storel₁| storer₁| storel₂| storer₂ => nomatch Hsf₀
+  | lift| fix₁| fix₂ => apply Hsf₁
+  | appl₁| appl₂| binaryl₁| binaryl₂| lets => constructor; apply Hsf₁; apply Hsf₀.right
+  | appr₁| appr₂| binaryr₁| binaryr₂ => constructor; apply Hsf₀.left; apply Hsf₁
+  | ifz₁| ifz₂ => constructor; apply Hsf₁; apply Hsf₀.right
 
-lemma immut.under_ctxℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → immut R⟦e₀⟧ → immut e₁ → immut R⟦e₁⟧ :=
+lemma store_free.under_ctxℝ : ∀ intro lvl R e₀ e₁, ctxℝ intro lvl R → store_free R⟦e₀⟧ → store_free e₁ → store_free R⟦e₁⟧ :=
   by
-  intros intro lvl R e₀ e₁ HR Himmut₀ Himmut₁
+  intros intro lvl R e₀ e₁ HR Hsf₀ Hsf₁
   cases HR with
-  | lam𝕔 => simp [← immut.under_closing]; apply Himmut₁
-  | lets𝕔 => simp [← immut.under_closing]; constructor; apply Himmut₀.left; apply Himmut₁
-  | run => apply Himmut₁
+  | lam𝕔 => simp [← store_free.under_closing]; apply Hsf₁
+  | lets𝕔 => simp [← store_free.under_closing]; constructor; apply Hsf₀.left; apply Hsf₁
+  | run => apply Hsf₁
   | ifzl₂ =>
     constructor
-    . apply Himmut₀.left
+    . apply Hsf₀.left
     constructor
-    . apply Himmut₁
-    . apply Himmut₀.right.right
+    . apply Hsf₁
+    . apply Hsf₀.right.right
   | ifzr₂ =>
     constructor
-    . apply Himmut₀.left
+    . apply Hsf₀.left
     constructor
-    . apply Himmut₀.right.left
-    . apply Himmut₁
+    . apply Hsf₀.right.left
+    . apply Hsf₁
 
-lemma immut.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → immut M⟦e₀⟧ → immut e₁ → immut M⟦e₁⟧ :=
+lemma store_free.under_ctx𝕄 : ∀ lvl M e₀ e₁, ctx𝕄 lvl M → store_free M⟦e₀⟧ → store_free e₁ → store_free M⟦e₁⟧ :=
   by
-  intros lvl M e₀ e₁ HM Himmut₀ Himmut₁
+  intros lvl M e₀ e₁ HM Hsf₀ Hsf₁
   induction HM
-  case hole => apply Himmut₁
+  case hole => apply Hsf₁
   case cons𝔹 B M HB _ IH =>
-    apply immut.under_ctx𝔹 _ _ _ HB Himmut₀
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut₀
+    apply store_free.under_ctx𝔹 _ _ _ HB Hsf₀
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf₀
   case consℝ HR _ IH =>
-    apply immut.under_ctxℝ _ _ _ _ _ HR Himmut₀
-    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR Himmut₀
+    apply store_free.under_ctxℝ _ _ _ _ _ HR Hsf₀
+    apply IH; apply store_free.decompose_ctxℝ _ _ _ _ HR Hsf₀
 
-lemma immut.under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → immut E⟦e₀⟧ → immut e₁ → immut E⟦e₁⟧ :=
+lemma store_free.under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → store_free E⟦e₀⟧ → store_free e₁ → store_free E⟦e₁⟧ :=
   by
-  intros E e₀ e₁ HE Himmut₀ Himmut₁
+  intros E e₀ e₁ HE Hsf₀ Hsf₁
   induction HE
-  case hole => apply Himmut₁
+  case hole => apply Hsf₁
   case cons𝔹 B M HB _ IH =>
-    apply immut.under_ctx𝔹 _ _ _ HB Himmut₀
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut₀
+    apply store_free.under_ctx𝔹 _ _ _ HB Hsf₀
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf₀
 
-lemma immut.under_ctxℚ : ∀ lvl Q e₀ e₁, ctxℚ lvl Q → immut Q⟦e₀⟧ → immut e₁ → immut Q⟦e₁⟧ :=
+lemma store_free.under_ctxℚ : ∀ lvl Q e₀ e₁, ctxℚ lvl Q → store_free Q⟦e₀⟧ → store_free e₁ → store_free Q⟦e₁⟧ :=
   by
-  intros lvl Q e₀ e₁ HQ Himmut₀ Himmut₁
+  intros lvl Q e₀ e₁ HQ Hsf₀ Hsf₁
   induction HQ
-  case holeℝ HR => apply immut.under_ctxℝ _ _ _ _ _ HR Himmut₀ Himmut₁
+  case holeℝ HR => apply store_free.under_ctxℝ _ _ _ _ _ HR Hsf₀ Hsf₁
   case cons𝔹 B M HB _ IH =>
-    apply immut.under_ctx𝔹 _ _ _ HB Himmut₀
-    apply IH; apply immut.decompose_ctx𝔹 _ _ HB Himmut₀
+    apply store_free.under_ctx𝔹 _ _ _ HB Hsf₀
+    apply IH; apply store_free.decompose_ctx𝔹 _ _ HB Hsf₀
   case consℝ HR _ IH =>
-    apply immut.under_ctxℝ _ _ _ _ _ HR Himmut₀
-    apply IH; apply immut.decompose_ctxℝ _ _ _ _ HR Himmut₀
+    apply store_free.under_ctxℝ _ _ _ _ _ HR Hsf₀
+    apply IH; apply store_free.decompose_ctxℝ _ _ _ _ HR Hsf₀

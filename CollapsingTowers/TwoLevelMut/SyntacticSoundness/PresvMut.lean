@@ -27,11 +27,11 @@ theorem preservation.mutable :
     rw [← HEqlvl] at HR IH
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head_mutable.fv_shrink _ _ _ _ Hmut)
-    have Himmut : immut M⟦e₀⟧ → immut M⟦e₁⟧ :=
+    have Hsf : store_free M⟦e₀⟧ → store_free M⟦e₁⟧ :=
       by
-      intros HimmutM; exfalso
-      apply immut.under_head_mutable _ _ _ _ Hmut
-      apply immut.decompose_ctx𝕄 _ _ _ HM HimmutM
+      intros HsfM; exfalso
+      apply store_free.under_head_mutable _ _ _ _ Hmut
+      apply store_free.decompose_ctx𝕄 _ _ _ HM HsfM
     have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     all_goals

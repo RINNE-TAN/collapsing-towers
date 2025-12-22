@@ -117,10 +117,10 @@ theorem typing.weakening.strengthened :
     . apply Hwbt
     . rw [HEq]
       apply closed.under_shiftl _ _ _ _ Hclosed
-  case run Himmut Hclosed IH Ψ HEqΓ =>
+  case run Hsf Hclosed IH Ψ HEqΓ =>
     apply typing.run
     . apply IH; apply HEqΓ
-    . rw [identity.shiftl]; apply Himmut
+    . rw [identity.shiftl]; apply Hsf
       apply closed.inc; apply Hclosed; omega
     . rw [identity.shiftl]; apply Hclosed
       apply closed.inc; apply Hclosed; omega

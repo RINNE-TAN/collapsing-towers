@@ -139,10 +139,10 @@ lemma typing.shrinking.strengthened :
     . apply Hwbt
     . simp; apply closed.dec.under_shiftr
       apply Hclosed; apply HclosedΔ.right
-  case run Himmut Hclosed IH Ψ HEqΓ HclosedΔ =>
+  case run Hsf Hclosed IH Ψ HEqΓ HclosedΔ =>
     apply typing.run
     . apply IH; apply HEqΓ; apply HclosedΔ
-    . rw [identity.shiftr]; apply Himmut
+    . rw [identity.shiftr]; apply Hsf
       apply closed.inc; apply Hclosed; omega
     . rw [identity.shiftr]; apply Hclosed
       apply closed.inc; apply Hclosed; omega
