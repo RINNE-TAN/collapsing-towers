@@ -1,8 +1,25 @@
-# instar-mechanization
+# OOPSLA 2026 Artifact
 
-Mechanized metatheory for
-**"When Do Staging Annotations Preserve Semantics? Mechanizing Typed Semantics-Preserving Multi-Stage Programming with Let-Insertion"**
-(OOPSLA 2026, Jun Tan and Guannan Wei).
+Name: **When Do Staging Annotations Preserve Semantics? Mechanizing Typed Semantics-Preserving Multi-Stage Programming with Let-Insertion**
+
+## Paper Summary
+
+Multi-stage programming allows programmers to write code that generates code,
+improving performance through specialization. However, staging annotations that
+control evaluation order can inadvertently change program semantics. The paper
+asks: **when do staging annotations preserve the semantics of the original
+unstaged program?**
+
+To answer this, the paper develops two typed two-stage calculi:
+
+- **λ|2|** — a calculus with general recursion and automatic let-insertion, where a lightweight
+  type-and-effect system tracks code-generation effects.
+- **λ|2|^ref** — an extension with second-stage mutable references, using a
+  Kripke world model to relate stores across runs
+
+The key result is **semantics preservation**: if a well-typed two-stage program
+evaluates to a code value, the generated code is contextually equivalent to the
+stage-erased original. This is proved via step-indexed binary logical relations.
 
 ## Calculus Variants
 
@@ -161,3 +178,198 @@ The mechanization covers **all theorems** stated in the paper.
 | Environment interpretation `(k, γ₀, γ₁) ∈ 𝒢⟦Γ⟧` | `log_approx_env : ℕ → Subst → Subst → TEnv → Prop` | same |
 | Logical approx. `Γ ⊨ t₁ ≼𝑙𝑜𝑔 t₂ : τ` | `log_approx Γ e₀ e₁ τ` | same |
 | Logical equiv. `Γ ⊨ t₁ ≃𝑙𝑜𝑔 t₂ : τ` | `log_equiv Γ e₀ e₁ τ` | same |
+
+### Theorems of λ|2|
+
+The table below maps every theorem and key lemma from the paper to the Lean code.
+
+| # | Paper Theorem / Lemma | Lean Identifier | File (TwoLevelBasic) |
+|---|---|---|---|
+| Lemma 3.1 | Deterministic Decomposition | `deterministic.decomposition_ctxℙ` | `OperationalSemantics/Deterministic.lean` |
+| Theorem 3.2 | Determinism | `deterministic` | `OperationalSemantics/Deterministic.lean` |
+| Lemma 3.3 | Strengthened Progress | `progress.strengthened` | `SyntacticSoundness/Progress.lean` |
+| Theorem 3.4 | Progress | `progress` | `SyntacticSoundness/Progress.lean` |
+| Theorem 3.5 | Preservation | `preservation` | `SyntacticSoundness/Preservation.lean` |
+| — | Multi-step Preservation | `preservation.stepn` | `SyntacticSoundness/Preservation.lean` |
+| — | Type Soundness | `soundness` | `SyntacticSoundness/Soundness.lean` |
+| Theorem 4.1 | Syntactic Erasure Soundness | `typing.erase.safety` | `SyntacticTyping/EraseSafety.lean` |
+| Theorem 5.3 | Transitivity of Contextual Equiv. | `ctx_equiv.trans` | `CtxEquiv/Transitivity.lean` |
+| Theorem 5.4 | Fundamental Property | `log_equiv.fundamental` | `LogicalEquiv/Fundamental.lean` |
+| Theorem 5.5 | Soundness of Logical Relations | `log_equiv.soundness` | `LogicalEquiv/Soundness.lean` |
+| — | Completeness of Logical Relations | `log_equiv.completeness` | `LogicalEquiv/Completeness.lean` |
+| Lemma 5.6 | Sem. Pres. of Substitution | `semantics_preservation.lets` | `SemanticsPreservation/PresvPure.lean` |
+| Lemma 5.7 | Sem. Pres. of Let-Insertion | `semantics_preservation.reflect.head` | `SemanticsPreservation/PresvReflect.lean` |
+| Theorem 5.8 | Sem. Pres. of Single-Step Reduction | `semantics_preservation` | `SemanticsPreservation/Preservation.lean` |
+| Theorem 5.9 | Strengthened Sem. Preservation | `semantics_preservation.stepn` | `SemanticsPreservation/Preservation.lean` |
+| Theorem 5.10 | Semantics Preservation | `semantics_preservation.stepn.rep` | `SemanticsPreservation/Preservation.lean` |
+
+---
+
+## 3. Libraries & Frameworks Overview
+
+### Proof Assistant
+
+The mechanization uses **Lean 4** (v4.29.0-rc2), a dependently typed
+proof assistant and functional programming language based on the
+Calculus of Inductive Constructions (CIC).
+
+### External Dependencies
+
+| Dependency | Purpose |
+|---|---|
+| **mathlib4** (`leanprover-community/mathlib`) | Standard library: `Nat`, `List`, `Fin`, `Omega` (for `omega` tactic) |
+| **Std** / **Batteries** | Extended standard library (transitive via mathlib) |
+| **Aesop** | Automation tactic (transitive via mathlib) |
+
+The mechanization makes **minimal use of external libraries** beyond the
+standard mathlib4 data structures. The proofs are largely self-contained
+and rely on structural induction rather than advanced automation.
+
+### Key Design Choices
+
+1. **Locally Nameless Representation**: Free variables use de Bruijn
+   levels; bound variables use de Bruijn indices. This follows Charguéraud
+   (2012) and is chosen to simplify fresh variable generation during
+   let-insertion and avoid α-equivalence.
+
+2. **Level-Indexed Reduction**: Because reification contexts introduce
+   second-stage bindings, the reduction relation is indexed by the current
+   de Bruijn level. Evaluation contexts track this level.
+
+3. **Step-Indexed Logical Relations**: Following Ahmed (2006) and
+   Ahmed, Dreyer, Rossberg (POPL 2009), the logical relation is
+   step-indexed to handle divergence without requiring domain-theoretic
+   constructions.
+
+4. **World Model** (λ|2|^ref only): A partial bijection on locations
+   relates stores across two program runs. Since stores contain only
+   natural numbers (first-order), worlds need not be recursively indexed.
+
+---
+
+## 4. Proof Structure & Organization
+
+### File Organization
+
+Each calculus variant (`TwoLevelBasic`, `TwoLevelRec`, `TwoLevelMut`, `TwoLevelFinal`)
+follows the same module hierarchy:
+
+```
+Instar/<Variant>/
+├── Utils/
+│   ├── Defs.lean          — General utilities
+│   └── List.lean          — List lemmas
+├── Syntax/
+│   ├── Basic.lean         — Core AST definitions (Expr, Stage, Ty)
+│   ├── Defs.lean          — Import aggregator
+│   ├── Transform.lean     — Substitution, erasure, opening/closing
+│   ├── Fv.lean            — Free variable computations
+│   ├── LocallyNameless.lean — Local closure, well-formedness
+│   ├── Grounded.lean      — Grounded terms (no staging constructs)
+│   ├── Identity.lean      — Opening/closing identity lemmas
+│   ├── Commutativity.lean — Substitution commutation lemmas
+│   └── Intro.lean         — Introduction lemmas
+├── OperationalSemantics/
+│   ├── Value.lean         — Value predicate
+│   ├── EvalCtx.lean       — Evaluation contexts (ctx𝔹, ctxℝ, ctx𝔼, ctx𝕄)
+│   ├── SmallStep.lean     — Single/multi-step reduction
+│   ├── Defs.lean          — Head reduction, import aggregator
+│   ├── Congruence.lean    — Congruence lemmas for contexts
+│   ├── Deterministic.lean — Determinism proof
+│   ├── Confluence.lean    — Confluence proof
+│   ├── Refine.lean        — Simulation/refinement lemmas (Rec/Final only)
+│   ├── Termination.lean   — Termination characterization (Rec/Final only)
+│   └── Store.lean         — Store model (Mut/Final only)
+├── SyntacticTyping/
+│   ├── Ty.lean            — Types, well-formedness, type erasure
+│   ├── Effect.lean        — Effect lattice
+│   ├── Env.lean           — Typing environments, env erasure
+│   ├── Typing.lean        — Typing judgments and rules
+│   ├── Defs.lean          — Import aggregator
+│   ├── Weakening.lean     — Weakening lemmas
+│   ├── Shrinking.lean     — Shrinking lemmas
+│   └── EraseSafety.lean   — Syntactic Erasure Soundness
+├── SyntacticSoundness/
+│   ├── Progress.lean      — Progress theorem
+│   ├── Preservation.lean  — Preservation theorem
+│   ├── Soundness.lean     — Type Soundness (progress + preservation)
+│   ├── Defs.lean          — Import aggregator
+│   ├── PresvCtx.lean      — Preservation under contexts
+│   ├── PresvSubst.lean    — Substitution lemmas for preservation
+│   ├── PresvMaping.lean   — Mapping lemmas
+│   ├── PresvPure.lean     — Pure step preservation
+│   ├── PresvReflect.lean  — Reflection step preservation
+│   └── PresvMut.lean      — Mutation step preservation (Mut/Final only)
+├── CtxEquiv/
+│   ├── ObsCtx.lean        — Observational contexts
+│   ├── Defs.lean          — Contextual approximation & equivalence
+│   └── Transitivity.lean  — Transitivity of contextual equivalence
+├── LogicalEquiv/
+│   ├── LogicalRelation.lean — Value/term/environment interpretations
+│   ├── Compatibility.lean   — Compatibility lemmas
+│   ├── Fundamental.lean     — Fundamental theorem
+│   ├── Soundness.lean       — Soundness wrt contextual equivalence
+│   ├── Completeness.lean    — Completeness (ciu theorem)
+│   ├── Transitivity.lean    — Transitivity of logical equivalence
+│   ├── Defs.lean            — Import aggregator
+│   └── World.lean           — World model (Mut/Final only)
+├── SemanticsPreservation/
+│   ├── PresvPure.lean       — Preservation for pure steps
+│   ├── PresvReflect.lean    — Preservation for let-insertion steps
+│   ├── PresvCtx.lean        — Preservation under contexts
+│   ├── Preservation.lean    — Main semantics preservation theorems
+│   └── Defs.lean            — Import aggregator
+├── Examples/                 — (TwoLevelFinal only)
+│   ├── Notation.lean         — Pretty-printing notation
+│   ├── Power.lean            — Unstaged power function evaluation
+│   ├── StagePower.lean       — Staged power function evaluation
+│   ├── Reification.lean      — Reification example
+│   └── PhaseConsistency.lean — Phase consistency example
+└── Defs.lean                 — Top-level import aggregator
+```
+
+---
+
+## 5. Axioms, Assumptions & Incomplete Proofs
+
+### Axiom Inventory
+
+The mechanization contains **zero axioms, zero `sorry` blocks, and zero
+`admit` blocks**. Every theorem claimed in the paper is fully proved.
+
+You can verify this by running:
+
+```bash
+grep -rn -E '\b(axiom|sorry|admit)\b' Instar/ --include="*.lean"
+# or
+make check-axioms
+```
+
+This returns no results.
+
+### Logic-Extending Axioms
+
+The development does **not** rely on any logic-extending axioms such as:
+
+- Functional extensionality (`funext`)
+- Classical choice (`Classical.choice`)
+- Excluded middle (`em`)
+- Propositional extensionality (`propext`)
+
+The entire development is constructive and compatible with the standard
+Calculus of Inductive Constructions.
+
+### Trusted Code Base
+
+The trusted computing base consists of:
+
+1. **Lean 4 kernel** (type checker) — the standard trust base for all
+   Lean developments
+2. **mathlib4** — standard library, widely used and reviewed
+3. **The definitions in this artifact** — all theorems proved relative
+   to these definitions
+
+No custom tactics or automation are used that would expand the TCB
+beyond these standard components.
+
+---

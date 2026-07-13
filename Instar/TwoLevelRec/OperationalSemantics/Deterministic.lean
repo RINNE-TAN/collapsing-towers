@@ -110,7 +110,7 @@ lemma deterministic.head :
   intros e l r Hstepl Hstepr
   cases Hstepl <;> cases Hstepr <;> rfl
 
-lemma deterministic.under_ctx𝔹 :
+lemma deterministic.decomposition_ctx𝔹 :
   ∀ e₀ e₁ B₀ B₁,
     ctx𝔹 B₀ →
     ctx𝔹 B₁ →
@@ -127,7 +127,7 @@ lemma deterministic.under_ctx𝔹 :
   (try apply HNv₀; simp [HEq]; assumption) <;>
   (try apply HNv₁; simp [← HEq]; assumption)
 
-lemma deterministic.under_ctxℝ :
+lemma deterministic.decomposition_ctxℝ :
   ∀ e₀ e₁ lvl intro₀ intro₁ R₀ R₁,
     ctxℝ intro₀ lvl R₀ →
     ctxℝ intro₁ lvl R₁ →
@@ -155,7 +155,7 @@ lemma deterministic.under_ctxℝ :
   case ifzr₂.ifzl₂ =>
     exfalso; apply HNv₁; simp [← HEq]; assumption
 
-lemma deterministic.under_ctx𝔹_ctxℝ :
+lemma deterministic.decomposition_ctx𝔹_ctxℝ :
   ∀ e₀ e₁ lvl intro B R,
     ctx𝔹 B →
     ctxℝ intro lvl R →
@@ -169,7 +169,7 @@ lemma deterministic.under_ctx𝔹_ctxℝ :
   case ifz₂.ifzl₂ => apply HNv₀; simp [HEq]; assumption
   case ifz₂.ifzr₂ => apply HNv₀; simp [HEq]; assumption
 
-lemma deterministic.under_ctx𝔼 :
+lemma deterministic.decomposition_ctx𝔼 :
   ∀ e₀ e₁ E₀ E₁,
     ctx𝔼 E₀ →
     ctx𝔼 E₁ →
@@ -198,11 +198,11 @@ lemma deterministic.under_ctx𝔼 :
     case cons𝔹 B₁ E₁ HB₁ HE₁ =>
       have HNvM₀ := not_value.under_ctx𝔼 _ _ He₀.HNv HE₀
       have HNvM₁ := not_value.under_ctx𝔼 _ _ He₁.HNv HE₁
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
       have ⟨HEqe, HEqM⟩ := IH _ HE₁ HEqM
       simp [HEqe, HEqB, HEqM]
 
-lemma deterministic.under_ctx𝕄 :
+lemma deterministic.decomposition_ctx𝕄 :
   ∀ e₀ e₁ lvl M₀ M₁,
     ctx𝕄 lvl M₀ →
     ctx𝕄 lvl M₁ →
@@ -237,12 +237,12 @@ lemma deterministic.under_ctx𝕄 :
     case cons𝔹 B₁ M₁ HB₁ HM₁ =>
       have HNvM₀ := not_value.under_ctx𝕄 _ _ _ He₀.HNv HM₀
       have HNvM₁ := not_value.under_ctx𝕄 _ _ _ He₁.HNv HM₁
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HB₀ HB₁ HEq HNvM₀ HNvM₁
       have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
       simp [HEqe, HEqB, HEqM]
     case consℝ R₁ M₁ HR₁ HM₁ =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HB₀; apply HR₁; apply HEq
       apply not_value.under_ctx𝕄 _ _ _ He₀.HNv HM₀
       apply not_value.under_ctx𝕄 _ _ _ He₁.HNv HM₁
@@ -256,7 +256,7 @@ lemma deterministic.under_ctx𝕄 :
       symm; apply HEq
     case cons𝔹 B₁ M₁ HB₁ HM₁ =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HB₁; apply HR₀; symm; apply HEq
       apply not_value.under_ctx𝕄 _ _ _ He₁.HNv HM₁
       apply not_value.under_ctx𝕄 _ _ _ He₀.HNv HM₀
@@ -265,12 +265,12 @@ lemma deterministic.under_ctx𝕄 :
       have HNvM₁ := not_value.under_ctx𝕄 _ _ _ He₁.HNv HM₁
       have Hlc₀ := lc.under_ctx𝕄 _ _ _ _ HM₀ He₀.Hlc
       have Hlc₁ := lc.under_ctx𝕄 _ _ _ _ HM₁ He₁.Hlc
-      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HR₀ HR₁ HEq Hlc₀ Hlc₁ HNvM₀ HNvM₁
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.decomposition_ctxℝ _ _ _ _ _ _ _ HR₀ HR₁ HEq Hlc₀ Hlc₁ HNvM₀ HNvM₁
       rw [HEqi] at IH
       have ⟨HEqe, HEqM⟩ := IH _ HM₁ HEqM
       simp [HEqe, HEqR, HEqM]
 
-lemma deterministic.under_ctxℚ_ctx𝔼 :
+lemma deterministic.decomposition_ctxℚ_ctx𝔼 :
   ∀ el er lvl Qr El Er,
     ctxℚ lvl Qr →
     ctx𝔼 El →
@@ -291,7 +291,7 @@ lemma deterministic.under_ctxℚ_ctx𝔼 :
       apply lc.under_ctx𝔼 _ _ _ HEr
       apply Her.Hlc; apply HEq
     case cons𝔹 Bl El HBl HEl =>
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBl; apply HRr; apply HEq
       . apply not_value.under_ctx𝔼
         apply Hel.HNv; apply HEl
@@ -307,7 +307,7 @@ lemma deterministic.under_ctxℚ_ctx𝔼 :
       apply lc.under_ctx𝔼 _ _ _ HEr
       apply Her.Hlc; apply HEq
     case cons𝔹 Bl El HBl HEl =>
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBl; apply HRr; apply HEq
       . apply not_value.under_ctx𝔼
         apply Hel.HNv; apply HEl
@@ -329,10 +329,10 @@ lemma deterministic.under_ctxℚ_ctx𝔼 :
       by
         apply not_value.under_ctxℚ _ _ Er⟦er⟧
         apply HQr
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
       apply HEqM
 
-lemma deterministic.under_ctxℚ :
+lemma deterministic.decomposition_ctxℚ :
   ∀ el er lvl Ql Qr El Er,
     ctxℚ lvl Ql →
     ctxℚ lvl Qr →
@@ -352,12 +352,12 @@ lemma deterministic.under_ctxℚ :
       have HNvr := not_value.under_ctx𝔼 _ _ Her.HNv HEr
       have Hlcl := lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc
       have Hlcr := lc.under_ctx𝔼 _ _ _ HEr Her.Hlc
-      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.decomposition_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
       constructor
       apply HEqM; apply HEqR
     case cons𝔹 Br Qr HBr HQr =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBr; apply HRl
       symm; apply HEq
       . apply not_value.under_ctxℚ _ _ Er⟦er⟧
@@ -376,15 +376,15 @@ lemma deterministic.under_ctxℚ :
         apply HQr
       have Hlcl := lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc
       have Hlcr := lc.under_ctxℚ _ _ _ _ HQr (lc.under_ctx𝔼 _ _ _ HEr Her.Hlc)
-      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
-      apply deterministic.under_ctxℚ_ctx𝔼
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.decomposition_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply deterministic.decomposition_ctxℚ_ctx𝔼
       apply HQr; apply HEl; apply HEr
       apply HEqM; apply Hel; apply Her
   case cons𝔹 Bl Ql HBl HQl IH =>
     cases HQr
     case holeℝ HRr =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBl; apply HRr
       apply HEq
       . apply not_value.under_ctxℚ _ _ El⟦el⟧
@@ -400,12 +400,12 @@ lemma deterministic.under_ctxℚ :
       by
         apply not_value.under_ctxℚ _ _ Er⟦er⟧
         apply HQr
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HBl HBr HEq HNvl HNvr
       have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
       simp [HEqe, HEqB, HEqQ]
     case consℝ Rr Qr HRr HQr =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBl; apply HRr
       apply HEq
       . apply not_value.under_ctxℚ _ _ El⟦el⟧
@@ -426,13 +426,13 @@ lemma deterministic.under_ctxℚ :
         apply Her.HNv; apply HEr
       have Hlcl := lc.under_ctxℚ _ _ _ _ HQl (lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc)
       have Hlcr := lc.under_ctx𝔼 _ _ _ HEr Her.Hlc
-      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
-      apply deterministic.under_ctxℚ_ctx𝔼
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.decomposition_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      apply deterministic.decomposition_ctxℚ_ctx𝔼
       apply HQl; apply HEr; apply HEl
       symm; apply HEqM; apply Her; apply Hel
     case cons𝔹 lvl Br Qr HBr HQr =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HBr; apply HRl
       symm; apply HEq
       . apply not_value.under_ctxℚ _ _ Er⟦er⟧
@@ -450,12 +450,12 @@ lemma deterministic.under_ctxℚ :
         apply HQr
       have Hlcl := lc.under_ctxℚ _ _ _ _ HQl (lc.under_ctx𝔼 _ _ _ HEl Hel.Hlc)
       have Hlcr := lc.under_ctxℚ _ _ _ _ HQr (lc.under_ctx𝔼 _ _ _ HEr Her.Hlc)
-      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.under_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
+      have ⟨HEqM, HEqi, HEqR⟩ := deterministic.decomposition_ctxℝ _ _ _ _ _ _ _ HRl HRr HEq Hlcl Hlcr HNvl HNvr
       rw [← HEqi] at HQr
       have ⟨HEqe, HEqQ⟩ := IH _ HQr HEqM
       simp [HEqe, HEqR, HEqQ]
 
-lemma deterministic.under_ctxℙ :
+lemma deterministic.decomposition_ctxℙ :
   ∀ el er lvl Pl Pr El Er,
     ctxℙ lvl Pl →
     ctxℙ lvl Pr →
@@ -471,23 +471,23 @@ lemma deterministic.under_ctxℙ :
   case hole =>
     cases HPr
     case hole =>
-      simp; apply deterministic.under_ctx𝔼
+      simp; apply deterministic.decomposition_ctx𝔼
       apply HEl; apply HEr; apply HEq; apply Hel; apply Her
     case consℚ HQr =>
       exfalso
-      apply deterministic.under_ctxℚ_ctx𝔼
+      apply deterministic.decomposition_ctxℚ_ctx𝔼
       apply HQr; apply HEl; apply HEr
       apply HEq; apply Hel; apply Her
   case consℚ HQl =>
     cases HPr
     case hole =>
       exfalso
-      apply deterministic.under_ctxℚ_ctx𝔼
+      apply deterministic.decomposition_ctxℚ_ctx𝔼
       apply HQl; apply HEr; apply HEl
       symm; apply HEq; apply Her; apply Hel
     case consℚ HQr =>
-      have ⟨HEqE, HEqQ⟩ := deterministic.under_ctxℚ _ _ _ _ _ _ _ HQl HQr HEl HEr HEq Hel Her
-      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝔼 _ _ _ _ HEl HEr HEqE Hel Her
+      have ⟨HEqE, HEqQ⟩ := deterministic.decomposition_ctxℚ _ _ _ _ _ _ _ HQl HQr HEl HEr HEq Hel Her
+      have ⟨HEqe, HEqM⟩ := deterministic.decomposition_ctx𝔼 _ _ _ _ HEl HEr HEqE Hel Her
       constructor; apply HEqe
       constructor; apply HEqQ
       apply HEqM
@@ -507,7 +507,7 @@ theorem deterministic :
     case pure Mr er₀ er₁ HMr Hlcr Hheadr =>
       have Hstepablel := head_impl_head_stepable _ _ Hlcl Hheadl
       have Hstepabler := head_impl_head_stepable _ _ Hlcr Hheadr
-      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      have ⟨HEqe, HEqM⟩ := deterministic.decomposition_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
       rw [HEqe] at Hheadl
       have HEqr := deterministic.head _ _ _ Hheadl Hheadr
       rw [HEqM, HEqr]
@@ -520,7 +520,7 @@ theorem deterministic :
         apply HPr; apply HEr
       have Hstepablel := head_impl_head_stepable _ _ Hlcl Hheadl
       have Hstepabler := reflect_impl_head_stepable _ Hlcr
-      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      have ⟨HEqe, HEqM⟩ := deterministic.decomposition_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
       rw [HEqe] at Hheadl
       nomatch Hheadl
   case reflect Pl El bl HPl HEl Hlcl =>
@@ -536,12 +536,12 @@ theorem deterministic :
         apply HPl; apply HEl
       have Hstepablel := reflect_impl_head_stepable _ Hlcl
       have Hstepabler := head_impl_head_stepable _ _ Hlcr Hheadr
-      have ⟨HEqe, HEqM⟩ := deterministic.under_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
+      have ⟨HEqe, HEqM⟩ := deterministic.decomposition_ctx𝕄 _ _ _ _ _ HMl HMr HEq Hstepablel Hstepabler
       rw [← HEqe] at Hheadr
       nomatch Hheadr
     case reflect Pr Er br HPr HEr Hlcr =>
       have Hstepablel := reflect_impl_head_stepable _ Hlcl
       have Hstepabler := reflect_impl_head_stepable _ Hlcr
-      have ⟨HEqr, HEqP, HEqE⟩ := deterministic.under_ctxℙ _ _ _ _ _ _ _ HPl HPr HEl HEr HEq Hstepablel Hstepabler
+      have ⟨HEqr, HEqP, HEqE⟩ := deterministic.decomposition_ctxℙ _ _ _ _ _ _ _ HPl HPr HEl HEr HEq Hstepablel Hstepabler
       simp at HEqr
       simp [HEqr, HEqP, HEqE]

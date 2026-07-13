@@ -26,14 +26,14 @@ lemma step.refine_at_ctx𝔹 :
       symm; apply HEqe
     case cons𝔹 B₁ M HB₁ HM =>
       have HNvM₁ := not_value.under_ctx𝕄 _ _ _ Hstepable.HNv HM
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
       exists M⟦e₂⟧
       constructor; simp [HEqB]
       rw [HEqM]; apply step_lvl.pure
       apply HM; apply Hlc; apply Hhead
     case consℝ HR HM =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HB₀; apply HR; apply HEqe
       apply HNv; apply not_value.under_ctx𝕄
       apply Hstepable.HNv; apply HM
@@ -47,14 +47,14 @@ lemma step.refine_at_ctx𝔹 :
       symm; apply HEqe
     case cons𝔹 B₁ M HB₁ HM =>
       have HNvM₁ := not_value.under_ctx𝕄 _ _ _ Hstepable.HNv HM
-      have ⟨HEqM, HEqB⟩ := deterministic.under_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
+      have ⟨HEqM, HEqB⟩ := deterministic.decomposition_ctx𝔹 _ _ _ _ HB₀ HB₁ HEqe HNv HNvM₁
       exists M⟦e₂⟧
       constructor; simp [HEqB]
       rw [HEqM]; apply step_lvl.mutable
       apply HM; apply Hlc; apply Hmut
     case consℝ HR HM =>
       exfalso
-      apply deterministic.under_ctx𝔹_ctxℝ
+      apply deterministic.decomposition_ctx𝔹_ctxℝ
       apply HB₀; apply HR; apply HEqe
       apply HNv; apply not_value.under_ctx𝕄
       apply Hstepable.HNv; apply HM
