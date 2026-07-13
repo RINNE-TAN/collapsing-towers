@@ -5,7 +5,7 @@ import Instar.TwoLevelBasic.LogicalEquiv.Fundamental
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ γ : Γ, ⦰ ⊢ E⟦⦰ ⊢ τ⟧ : ℕ).
---   ∀ v. E⟦γ(e₀)⟧ ⇝* v ↔ E⟦γ(e₁)⟧ ⇝* v
+--   ∀ v. E⟦γ(e₀)⟧ ⭢* v ↔ E⟦γ(e₁)⟧ ⭢* v
 @[simp]
 def ciu_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   typing Γ 𝟚 e₀ τ ⊥ ∧
@@ -15,7 +15,7 @@ def ciu_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
       ctx𝔼 E →
       ObsCtxℂ ⦰ τ E ⦰ .nat →
       ∀ v, value v → (
-        (E⟦msubst γ e₀⟧ ⇝* v) ↔ (E⟦msubst γ e₁⟧ ⇝* v)
+        (E⟦msubst γ e₀⟧ ⭢* v) ↔ (E⟦msubst γ e₁⟧ ⭢* v)
       )
 
 -- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
@@ -73,7 +73,7 @@ theorem ctx_equiv_impl_ciu_equiv :
     have ⟨Hlc₀, Hclosed₀⟩ := typing.wf _ _ _ _ _ HSτ₀
     have ⟨Hlc₁, Hclosed₁⟩ := typing.wf _ _ _ _ _ HSτ₁
     simp at Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
-    have HstepHead₀ : (E⟦msubst γ (.app₁ (.lam {0 ↤ List.length Γ}e₀) argv)⟧ ⇝* E⟦msubst (argv :: γ) e₀⟧) :=
+    have HstepHead₀ : (E⟦msubst γ (.app₁ (.lam {0 ↤ List.length Γ}e₀) argv)⟧ ⭢* E⟦msubst (argv :: γ) e₀⟧) :=
       by
       apply stepn.multi _ _ _ _ (stepn.refl _)
       apply step_grounded.congruence_under_ctx𝔼 _ _ _ HE (typing.dynamic_impl_grounded _ _ _ _ HSτ₀)
@@ -82,7 +82,7 @@ theorem ctx_equiv_impl_ciu_equiv :
       . simp [HEq, HEqSubst₀]
         apply head.app₁; rw [identity.msubst]
         apply HvalueArg; apply typing.closed_at_env _ _ _ _ _ Hτv
-    have HstepHead₁ : (E⟦msubst γ (.app₁ (.lam {0 ↤ List.length Γ}e₁) argv)⟧ ⇝* E⟦msubst (argv :: γ) e₁⟧) :=
+    have HstepHead₁ : (E⟦msubst γ (.app₁ (.lam {0 ↤ List.length Γ}e₁) argv)⟧ ⭢* E⟦msubst (argv :: γ) e₁⟧) :=
       by
       apply stepn.multi _ _ _ _ (stepn.refl _)
       apply step_grounded.congruence_under_ctx𝔼 _ _ _ HE (typing.dynamic_impl_grounded _ _ _ _ HSτ₁)
@@ -177,12 +177,12 @@ lemma ciu_equiv_respects_log_equiv_value :
     constructor; apply Hτv₂
     intros γ Hγ E HE HτE v Hvalue
     cases γ <;> cases Hγ
-    have HstepHead₁ : (E⟦.app₁ (.lam e₁) argv₁⟧ ⇝* E⟦v₁⟧) :=
+    have HstepHead₁ : (E⟦.app₁ (.lam e₁) argv₁⟧ ⭢* E⟦v₁⟧) :=
       by
       apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
       apply typing.dynamic_impl_grounded; apply typing.app₁ _ _ _ _ _ _ _ _ _ Hτ₁ HτArg₁
       apply Hstep₁
-    have HstepHead₂ : (E⟦.app₁ (.lam e₂) argv₁⟧ ⇝* E⟦v₂⟧) :=
+    have HstepHead₂ : (E⟦.app₁ (.lam e₂) argv₁⟧ ⭢* E⟦v₂⟧) :=
       by
       apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
       apply typing.dynamic_impl_grounded; apply typing.app₁ _ _ _ _ _ _ _ _ _ Hτ₂ HτArg₁
@@ -255,12 +255,12 @@ theorem ciu_equiv_impl_log_equiv :
   constructor; apply Hτv₂
   intros γ Hγ E HE HτE v Hvalue
   cases γ <;> cases Hγ
-  have HstepHead₁ : (E⟦msubst γ₁ e₀⟧ ⇝* E⟦v₁⟧) :=
+  have HstepHead₁ : (E⟦msubst γ₁ e₀⟧ ⭢* E⟦v₁⟧) :=
     by
     apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
     apply typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₀
     apply Hstep₁
-  have HstepHead₂ : (E⟦msubst γ₁ e₁⟧ ⇝* E⟦v₂⟧) :=
+  have HstepHead₂ : (E⟦msubst γ₁ e₁⟧ ⭢* E⟦v₂⟧) :=
     by
     apply stepn_grounded.congruence_under_ctx𝔼 _ _ _ HE
     apply typing.dynamic_impl_grounded _ _ _ _ HSγ₁τ₁

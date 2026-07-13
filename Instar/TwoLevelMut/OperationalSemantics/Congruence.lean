@@ -1,6 +1,6 @@
 import Instar.TwoLevelMut.OperationalSemantics.SmallStep
 
-lemma step_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx𝔹 B → grounded e₀ → (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → (⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟨σ₁, B⟦e₁⟧⟩) :=
+lemma step_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx𝔹 B → grounded e₀ → (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) → (⟨σ₀, B⟦e₀⟧⟩ ⭢ ⟨σ₁, B⟦e₁⟧⟩) :=
   by
   intros B σ₀ σ₁ e₀ e₁ HB HG Hstep
   cases Hstep
@@ -20,7 +20,7 @@ lemma step_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx�
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma step_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx𝔼 E → grounded e₀ → (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → (⟨σ₀, E⟦e₀⟧⟩ ⇝ ⟨σ₁, E⟦e₁⟧⟩) :=
+lemma step_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx𝔼 E → grounded e₀ → (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) → (⟨σ₀, E⟦e₀⟧⟩ ⭢ ⟨σ₁, E⟦e₁⟧⟩) :=
   by
   intros E σ₀ σ₁ e₀ e₁ HE HG Hstep
   cases Hstep
@@ -40,7 +40,7 @@ lemma step_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx�
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx𝔹 B → grounded e₀ → (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → (⟨σ₀, B⟦e₀⟧⟩ ⇝* ⟨σ₁, B⟦e₁⟧⟩) :=
+lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx𝔹 B → grounded e₀ → (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) → (⟨σ₀, B⟦e₀⟧⟩ ⭢* ⟨σ₁, B⟦e₁⟧⟩) :=
   by
   intros B σ₀ σ₂ e₀ e₂ HB HG Hstepn
   generalize HEq₀ : (σ₀, e₀) = st₀
@@ -60,7 +60,7 @@ lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B σ₀ σ₁ e₀ e₁, ctx
     apply HB; apply HG; apply Hstep
     apply IH _ _ (grounded.under_step _ _ _ _ Hstep HG) rfl HEq₁
 
-lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx𝔼 E → grounded e₀ → (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → (⟨σ₀, E⟦e₀⟧⟩ ⇝* ⟨σ₁, E⟦e₁⟧⟩) :=
+lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E σ₀ σ₁ e₀ e₁, ctx𝔼 E → grounded e₀ → (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) → (⟨σ₀, E⟦e₀⟧⟩ ⭢* ⟨σ₁, E⟦e₁⟧⟩) :=
   by
   intros E σ₀ σ₂ e₀ e₂ HE HG Hstepn
   generalize HEq₀ : (σ₀, e₀) = st₀

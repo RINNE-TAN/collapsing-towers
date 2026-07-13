@@ -47,7 +47,7 @@ theorem preservation.strengthened :
 
 theorem preservation :
   ∀ σ₀ σ₁ e₀ e₁ τ φ₀,
-    (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) →
+    (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ₀ →
     ∃ φ₁,
       typing_reification ⦰ e₁ τ φ₁ ∧
@@ -59,7 +59,7 @@ theorem preservation :
 
 theorem preservation.stepn :
   ∀ σ₀ σ₁ e₀ e₁ τ φ₀,
-    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) →
+    (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ₀ →
     ∃ φ₁,
       typing_reification ⦰ e₁ τ φ₁ ∧

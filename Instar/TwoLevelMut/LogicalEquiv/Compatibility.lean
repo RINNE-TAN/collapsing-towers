@@ -120,8 +120,8 @@ lemma compatibility.lam :
   --
   -- (𝓦₁, (x ↦ argv₀, γ₀)(e₀), (x ↦ argv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ————————————————————————————————————————————————————————
-  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
-  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⭢* ⟨σ₄, v₀⟩
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- (σ₄, σ₅) : 𝓦₂
   -- (𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ _ Hsem_value_arg (log_equiv_env.antimono _ _ _ _ _ HsemΓ Hfuture₀)
@@ -131,9 +131,9 @@ lemma compatibility.lam :
   constructor
   . apply Hfuture₁
   constructor
-  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⭢* ⟨σ₄, v₀⟩
   -- ——————————————————————————————————————
-  -- ⟨σ₂, λx.e₀ @ argv₀⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₂, λx.e₀ @ argv₀⟩ ⭢* ⟨σ₄, v₀⟩
   . have HEqSubst₀ : opening 0 argv₀ (msubst γ₀ e₀) = msubst (argv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
       by
       rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₀]
@@ -147,9 +147,9 @@ lemma compatibility.lam :
     . constructor; apply Hwfe₀.left; apply HwfArg₀.left
     . apply head_pure.app₁; apply HvalueArg₀
   constructor
-  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- ——————————————————————————————————————
-  -- ⟨σ₃, λx.e₁ @ argv₁⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₃, λx.e₁ @ argv₁⟩ ⭢* ⟨σ₅, v₁⟩
   . have HEqSubst₁ : opening 0 argv₁ (msubst γ₁ e₁) = msubst (argv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
       by
       rw [msubst, ← comm.msubst_subst _ _ _ _ (by omega) _ Hmwf₁]
@@ -199,8 +199,8 @@ lemma compatibility.app₁ :
   -- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
   -- ————————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝* ⟨σ₂, fv₀⟩
-  -- ⟨σ₁, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢* ⟨σ₂, fv₀⟩
+  -- ⟨σ₁, γ₁(f₁)⟩ ⭢* ⟨σ₃, fv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- (𝓦₁, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
   simp only [log_equiv_expr] at Hf
@@ -211,8 +211,8 @@ lemma compatibility.app₁ :
   -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
   -- ——————————————————————————————
   -- 𝓦₂ ⊒ 𝓦₁
-  -- ⟨σ₂, γ₀(arg₀)⟩ ⇝* ⟨σ₄, argv₀⟩
-  -- ⟨σ₃, γ₁(arg₁)⟩ ⇝* ⟨σ₅, argv₁⟩
+  -- ⟨σ₂, γ₀(arg₀)⟩ ⭢* ⟨σ₄, argv₀⟩
+  -- ⟨σ₃, γ₁(arg₁)⟩ ⭢* ⟨σ₅, argv₁⟩
   -- (σ₄, σ₅) : 𝓦₂
   -- (𝓦₂, argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_equiv_expr] at Harg
@@ -229,8 +229,8 @@ lemma compatibility.app₁ :
   -- (𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
   -- ——————————————————————————————————————
   -- 𝓦₃ ⊒ 𝓦₂
-  -- ⟨σ₄, fv₀ @ argv₀⟩ ⇝* ⟨σ₆, v₀⟩
-  -- ⟨σ₅, fv₁ @ argv₁⟩ ⇝* ⟨σ₇, v₁⟩
+  -- ⟨σ₄, fv₀ @ argv₀⟩ ⭢* ⟨σ₆, v₀⟩
+  -- ⟨σ₅, fv₁ @ argv₁⟩ ⭢* ⟨σ₇, v₁⟩
   -- (σ₆, σ₇) : 𝓦₃
   -- (𝓦₃, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   simp only [log_equiv_expr] at Hsem_expr
@@ -243,11 +243,11 @@ lemma compatibility.app₁ :
   constructor
   --
   --
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝* ⟨σ₂, fv₀⟩
-  -- ⟨σ₂, γ₀(arg₀)⟩ ⇝* ⟨σ₄, argv₀⟩
-  -- ⟨σ₄, fv₀ @ argv₀⟩ ⇝* ⟨σ₆, v₀⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢* ⟨σ₂, fv₀⟩
+  -- ⟨σ₂, γ₀(arg₀)⟩ ⭢* ⟨σ₄, argv₀⟩
+  -- ⟨σ₄, fv₀ @ argv₀⟩ ⭢* ⟨σ₆, v₀⟩
   -- ————————————————————————————————————
-  -- ⟨σ₀, γ₀(f₀) @ γ₀(arg₀)⟩ ⇝* ⟨σ₆, v₀⟩
+  -- ⟨σ₀, γ₀(f₀) @ γ₀(arg₀)⟩ ⭢* ⟨σ₆, v₀⟩
   . simp
     -- left
     apply stepn.trans
@@ -264,11 +264,11 @@ lemma compatibility.app₁ :
   constructor
   --
   --
-  -- ⟨σ₁, γ₀(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
-  -- ⟨σ₃, γ₁(arg₁)⟩ ⇝* ⟨σ₅, argv₁⟩
-  -- ⟨σ₅, fv₁ @ argv₁⟩ ⇝* ⟨σ₇, v₁⟩
+  -- ⟨σ₁, γ₀(f₁)⟩ ⭢* ⟨σ₃, fv₁⟩
+  -- ⟨σ₃, γ₁(arg₁)⟩ ⭢* ⟨σ₅, argv₁⟩
+  -- ⟨σ₅, fv₁ @ argv₁⟩ ⭢* ⟨σ₇, v₁⟩
   -- ————————————————————————————————————
-  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⇝* ⟨σ₇, v₁⟩
+  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⭢* ⟨σ₇, v₁⟩
   . simp
     -- left
     apply stepn.trans
@@ -323,8 +323,8 @@ lemma compatibility.lets :
   -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
-  -- ⟨σ₀, γ₀(b₀)⟩ ⇝* ⟨σ₂, bv₀⟩
-  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨σ₃, bv₁⟩
+  -- ⟨σ₀, γ₀(b₀)⟩ ⭢* ⟨σ₂, bv₀⟩
+  -- ⟨σ₁, γ₁(b₁)⟩ ⭢* ⟨σ₃, bv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- (𝓦₁, bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_equiv_expr] at Hb
@@ -336,8 +336,8 @@ lemma compatibility.lets :
   -- (𝓦₁, (x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ———————————————————————————————————————————————————
   -- 𝓦₂ ⊒ 𝓦₁
-  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
-  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⭢* ⟨σ₄, v₀⟩
+  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- (σ₄, σ₅) : 𝓦₂
   -- (𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ _ Hsem_value_bind (log_equiv_env.antimono _ _ _ _ _ HsemΓ Hfuture₀)
@@ -350,10 +350,10 @@ lemma compatibility.lets :
   constructor
   --
   --
-  -- ⟨σ₀, γ₀(b₀)⟩ ⇝* ⟨σ₂, bv₀⟩
-  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₀, γ₀(b₀)⟩ ⭢* ⟨σ₂, bv₀⟩
+  -- ⟨σ₂, (x ↦ bv₀, γ₀)(e₀)⟩ ⭢* ⟨σ₄, v₀⟩
   -- ————————————————————————————————————————————
-  -- ⟨σ₀, lets x = γ₀(b₀) in γ₀(e₀)⟩ ⇝* ⟨σ₄, v₀⟩
+  -- ⟨σ₀, lets x = γ₀(b₀) in γ₀(e₀)⟩ ⭢* ⟨σ₄, v₀⟩
   . simp
     -- left
     apply stepn.trans
@@ -382,10 +382,10 @@ lemma compatibility.lets :
   constructor
   --
   --
-  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨σ₃, bv₁⟩
-  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₁, γ₁(b₁)⟩ ⭢* ⟨σ₃, bv₁⟩
+  -- ⟨σ₃, (x ↦ bv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- ————————————————————————————————————————————
-  -- ⟨σ₁, lets x = γ₁(b₁) in γ₁(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₁, lets x = γ₁(b₁) in γ₁(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   . simp
     -- left
     apply stepn.trans
@@ -442,8 +442,8 @@ lemma compatibility.alloc₁ :
   -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
-  -- ⟨σ₀, γ₀(n₀)⟩ ⇝* ⟨σ₂, nv₀⟩
-  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨σ₃, nv₁⟩
+  -- ⟨σ₀, γ₀(n₀)⟩ ⭢* ⟨σ₂, nv₀⟩
+  -- ⟨σ₁, γ₁(n₁)⟩ ⭢* ⟨σ₃, nv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- nv₀ = nv₁
   simp only [log_equiv_expr] at Hn
@@ -459,9 +459,9 @@ lemma compatibility.alloc₁ :
   constructor
   --
   --
-  -- ⟨σ₀, γ₀(n₀)⟩ ⇝* ⟨σ₂, nv₀⟩
+  -- ⟨σ₀, γ₀(n₀)⟩ ⭢* ⟨σ₂, nv₀⟩
   -- —————————————————————————————————————————————————
-  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⇝* ⟨nv₀ :: σ₂, loc σ₂.length⟩
+  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⭢* ⟨nv₀ :: σ₂, loc σ₂.length⟩
   . simp
     -- left
     apply stepn.trans
@@ -475,9 +475,9 @@ lemma compatibility.alloc₁ :
   constructor
   --
   --
-  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨σ₃, nv₁⟩
+  -- ⟨σ₁, γ₁(n₁)⟩ ⭢* ⟨σ₃, nv₁⟩
   -- —————————————————————————————————————————————————
-  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⇝* ⟨nv₁ :: σ₃, loc σ₃.length⟩
+  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⭢* ⟨nv₁ :: σ₃, loc σ₃.length⟩
   . simp
     -- left
     apply stepn.trans
@@ -520,8 +520,8 @@ lemma compatibility.load₁ :
   -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, lv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- 𝓦₁ lv₀ lv₁
   simp only [log_equiv_expr] at Hl
@@ -538,9 +538,9 @@ lemma compatibility.load₁ :
   constructor
   --
   --
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
   -- ———————————————————————————————
-  -- ⟨σ₀, !γ₀(l₀)⟩ ⇝* ⟨σ₂, σ₂(lv₀)⟩
+  -- ⟨σ₀, !γ₀(l₀)⟩ ⭢* ⟨σ₂, σ₂(lv₀)⟩
   . simp
     -- left
     apply stepn.trans
@@ -554,9 +554,9 @@ lemma compatibility.load₁ :
   constructor
   --
   --
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, lv₁⟩
   -- ———————————————————————————————
-  -- ⟨σ₁, !γ₁(l₁)⟩ ⇝* ⟨σ₃, σ₃(lv₁)⟩
+  -- ⟨σ₁, !γ₁(l₁)⟩ ⭢* ⟨σ₃, σ₃(lv₁)⟩
   . simp
     -- left
     apply stepn.trans
@@ -604,8 +604,8 @@ lemma compatibility.store₁ :
   -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, lv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- 𝓦₁ lv₀ lv₁
   simp only [log_equiv_expr] at Hl
@@ -620,8 +620,8 @@ lemma compatibility.store₁ :
   -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₂ ⊒ 𝓦₁
-  -- ⟨σ₂, γ₀(n₀)⟩ ⇝* ⟨σ₄, nv₀⟩
-  -- ⟨σ₃, γ₁(n₁)⟩ ⇝* ⟨σ₅, nv₁⟩
+  -- ⟨σ₂, γ₀(n₀)⟩ ⭢* ⟨σ₄, nv₀⟩
+  -- ⟨σ₃, γ₁(n₁)⟩ ⭢* ⟨σ₅, nv₁⟩
   -- (σ₄, σ₅) : 𝓦₂
   -- nv₀ = nv₁
   simp only [log_equiv_expr] at Hn
@@ -648,10 +648,10 @@ lemma compatibility.store₁ :
   constructor
   --
   --
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝* ⟨σ₂, lv₀⟩
-  -- ⟨σ₂, γ₀(n₀)⟩ ⇝* ⟨σ₄, nv₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
+  -- ⟨σ₂, γ₀(n₀)⟩ ⭢* ⟨σ₄, nv₀⟩
   -- ——————————————————————————————————————————————
-  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⇝* ⟨(lv₀ ↦ nv₀)σ₄, ()⟩
+  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⭢* ⟨(lv₀ ↦ nv₀)σ₄, ()⟩
   . simp
     -- left
     apply stepn.trans
@@ -671,10 +671,10 @@ lemma compatibility.store₁ :
   constructor
   --
   --
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, lv₁⟩
-  -- ⟨σ₃, γ₁(n₁)⟩ ⇝* ⟨σ₅, nv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, lv₁⟩
+  -- ⟨σ₃, γ₁(n₁)⟩ ⭢* ⟨σ₅, nv₁⟩
   -- ——————————————————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⇝* ⟨(lv₁ ↦ nv₁)σ₅, ()⟩
+  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⭢* ⟨(lv₁ ↦ nv₁)σ₅, ()⟩
   . simp
     -- left
     apply stepn.trans

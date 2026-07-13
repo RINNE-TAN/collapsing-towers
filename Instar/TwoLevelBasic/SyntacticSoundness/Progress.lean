@@ -178,7 +178,7 @@ theorem progress.strengthened :
 theorem progress :
   ∀ e₀ τ φ,
     typing_reification ⦰ e₀ τ φ →
-    (∃ e₁, (e₀ ⇝ e₁)) ∨ value e₀ :=
+    (∃ e₁, (e₀ ⭢ e₁)) ∨ value e₀ :=
   by
   intros _ _ _ Hτ
   apply progress.strengthened ⦰ _ _ _ Hτ (by simp)

@@ -291,20 +291,20 @@ theorem semantics_preservation.reflect.head :
       have ⟨HlcE₁, HclosedE₁⟩ := typing.wf _ _ _ _ _ HSτ₁
       --
       --
-      -- E₀⟦γ₀‖b‖⟧ ⇝ ⟦j⟧ v₀
+      -- E₀⟦γ₀‖b‖⟧ ⭢ ⟦j⟧ v₀
       -- ——————————————————
       -- i₀ + i₁ = j
-      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
-      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- γ₀‖b‖ ⭢ ⟦i₀⟧ bv₀
+      -- E₀⟦bv₀⟧ ⭢ ⟦i₁⟧ v₀
       simp [HEqE₀, HEqE₁]
       intros j Hindexj v₀ Hvalue₀ Hstep₀
       have ⟨i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ HE₀ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
       --
       --
-      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- γ₀‖b‖ ⭢ ⟦i₀⟧ bv₀
       -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
       -- —————————————————————————
-      -- γ₁‖b‖ ⇝* bv₁
+      -- γ₁‖b‖ ⭢* bv₁
       -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
       have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
       simp only [log_approx_expr] at IHb
@@ -345,19 +345,19 @@ theorem semantics_preservation.reflect.head :
       rw [HEqE₀, HEqE₁] at Hsem_exprE
       --
       --
-      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- E₀⟦bv₀⟧ ⭢ ⟦i₁⟧ v₀
       -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
       -- ———————————————————————————————————
-      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- E₁⟦bv₁⟧ ⭢* v₁
       -- (k - i₀ - i₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       simp only [log_approx_expr] at Hsem_exprE
       have ⟨v₁, HstepE₁, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ Hvalue₀ HstepE₀
       --
       --
-      -- γ₁‖b‖ ⇝* bv₁
-      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- γ₁‖b‖ ⭢* bv₁
+      -- E₁⟦bv₁⟧ ⭢* v₁
       -- ——————————————————————————————
-      -- lets x = γ₁‖b‖ in E₁⟦x⟧ ⇝* v₁
+      -- lets x = γ₁‖b‖ in E₁⟦x⟧ ⭢* v₁
       exists v₁
       constructor
       . apply stepn.trans
@@ -393,11 +393,11 @@ theorem semantics_preservation.reflect.head :
       simp [HEqE₀, HEqE₁] at HSτ₀ HSτ₁
       --
       --
-      -- lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖ ⇝ ⟦j⟧ v₀
+      -- lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖ ⭢ ⟦j⟧ v₀
       -- —————————————————————————————————————
       -- i₀ + 1 + i₁ = j
-      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
-      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- γ₀‖b‖ ⭢ ⟦i₀⟧ bv₀
+      -- E₀⟦bv₀⟧ ⭢ ⟦i₁⟧ v₀
       simp [HEqE₀, HEqE₁]
       have ⟨HlcE₀, HclosedE₀⟩ := typing.wf _ _ _ _ _ HSτ₀
       have ⟨HlcE₁, HclosedE₁⟩ := typing.wf _ _ _ _ _ HSτ₁
@@ -407,10 +407,10 @@ theorem semantics_preservation.reflect.head :
       simp [opening.under_ctx𝔼 _ _ _ _ HE₀] at HstepE₀
       --
       --
-      -- γ₀‖b‖ ⇝ ⟦i₀⟧ bv₀
+      -- γ₀‖b‖ ⭢ ⟦i₀⟧ bv₀
       -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
       -- ————————————————————————————
-      -- γ₁‖b‖ ⇝* bv₁
+      -- γ₁‖b‖ ⭢* bv₁
       -- (k - i₀, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
       have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
       simp only [log_approx_expr] at IHb
@@ -451,19 +451,19 @@ theorem semantics_preservation.reflect.head :
       rw [HEqE₀, HEqE₁] at Hsem_exprE
       --
       --
-      -- E₀⟦bv₀⟧ ⇝ ⟦i₁⟧ v₀
+      -- E₀⟦bv₀⟧ ⭢ ⟦i₁⟧ v₀
       -- (k - i₀, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
       -- ———————————————————————————————————
-      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- E₁⟦bv₁⟧ ⭢* v₁
       -- (k - i₀ - i₁, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       simp only [log_approx_expr] at Hsem_exprE
       have ⟨v₁, HstepE₁, Hsem_value⟩ := Hsem_exprE i₁ (by omega) _ Hvalue₀ HstepE₀
       --
       --
-      -- γ₁‖b‖ ⇝* bv₁
-      -- E₁⟦bv₁⟧ ⇝* v₁
+      -- γ₁‖b‖ ⭢* bv₁
+      -- E₁⟦bv₁⟧ ⭢* v₁
       -- ——————————————————————————————
-      -- E₁⟦γ₁‖b‖⟧ ⇝* v₁
+      -- E₁⟦γ₁‖b‖⟧ ⭢* v₁
       exists v₁
       constructor
       . apply stepn.trans _ _ _ _ HstepE₁

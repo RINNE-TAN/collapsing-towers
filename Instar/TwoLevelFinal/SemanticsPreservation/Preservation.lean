@@ -2,7 +2,7 @@ import Instar.TwoLevelFinal.SemanticsPreservation.PresvCtx
 import Instar.TwoLevelFinal.SemanticsPreservation.PresvPure
 import Instar.TwoLevelFinal.SemanticsPreservation.PresvReflect
 
--- ⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩ (under Γ)
+-- ⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ——————————————————————————————
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
@@ -62,7 +62,7 @@ theorem semantics_preservation.strengthened :
 
 theorem semantics_preservation :
   ∀ σ₀ σ₁ e₀ e₁ τ φ,
-    (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) →
+    (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
@@ -72,13 +72,13 @@ theorem semantics_preservation :
     apply log_equiv.soundness
     apply semantics_preservation.strengthened ⦰ _ _ _ _ _ _ Hstep Hτ
 
--- ⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩
+-- ⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
 -- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
 theorem semantics_preservation.stepn :
   ∀ σ₀ σ₁ e₀ e₁ τ φ,
-    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) →
+    (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ φ →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
@@ -107,14 +107,14 @@ theorem semantics_preservation.stepn :
     . apply semantics_preservation _ _ _ _ _ _ Hstep Hτ₀
     . apply IH; apply Hτ₁; rfl; apply HEq₁
 
--- ⟨σ₀, e₀⟩ ⇝* ⟨σ₁, v⟩
+-- ⟨σ₀, e₀⟩ ⭢* ⟨σ₁, v⟩
 -- ∅ ⊢ e₀ : <τ>
 -- ————————————————————
 -- v = code e₁
 -- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 e₁ : τ
 theorem semantics_preservation.stepn.rep :
   ∀ σ₀ σ₁ e₀ v τ φ,
-    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, v⟩) → value v →
+    (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, v⟩) → value v →
     typing_reification ⦰ e₀ (.rep τ) φ →
     ∃ e₁,
       v = .code e₁ ∧

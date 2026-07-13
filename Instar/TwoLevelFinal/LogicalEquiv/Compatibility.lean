@@ -107,7 +107,7 @@ lemma compatibility.lam :
   intros z Hindexz σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, λx.γ₀(e₀)⟩ ⇝ ⟦z⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, λx.γ₀(e₀)⟩ ⭢ ⟦z⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————
   -- z = 0
   -- σ₂ = σ₀
@@ -131,17 +131,17 @@ lemma compatibility.lam :
   intros j Hindexj σ₂ σ₃ Hsem_store σ₄ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₂, λx.γ₀(e₀) @ argv₀⟩ ⇝ ⟦j⟧ ⟨σ₄, v₀⟩
+  -- ⟨σ₂, λx.γ₀(e₀) @ argv₀⟩ ⭢ ⟦j⟧ ⟨σ₄, v₀⟩
   -- —————————————————————————————————————————
   -- j = i + 1
-  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝ ⟦i⟧ ⟨σ₄, v₀⟩
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⭢ ⟦i⟧ ⟨σ₄, v₀⟩
   have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.app₁.eliminator _ _ _ _ _ _ (value.lam _ Hwfe₀.left) HvalueArg₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⇝ ⟦i⟧ ⟨σ₄, v₀⟩
+  -- ⟨σ₂, (x ↦ argv₀, γ₀)(e₀)⟩ ⭢ ⟦i⟧ ⟨σ₄, v₀⟩
   -- (k, 𝓦₁, (x ↦ argv₀, γ₀)(e₀), (x ↦ argv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ——————————————————————————————————————————————————————————
-  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- (σ₄, σ₅) : 𝓦₂
   -- (k - i, 𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HEqSubst₀ : opening 0 argv₀ (msubst γ₀ e₀) = msubst (argv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
@@ -162,9 +162,9 @@ lemma compatibility.lam :
   have ⟨_, Hfuture₁⟩ := Hfuture₁
   --
   --
-  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₃, (x ↦ argv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₅, v₁⟩
   -- ——————————————————————————————————————
-  -- ⟨σ₃, λx.γ₁(e₁) @ argv₁⟩ ⇝* ⟨σ₅, v₁⟩
+  -- ⟨σ₃, λx.γ₁(e₁) @ argv₁⟩ ⭢* ⟨σ₅, v₁⟩
   exists 𝓦₂, σ₅, v₁
   constructor
   . constructor; omega; apply Hfuture₁
@@ -225,21 +225,21 @@ lemma compatibility.app₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(f₀) @ γ₀(arg₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(f₀) @ γ₀(arg₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————————
   -- i₀ + i₁ + i₂ = j
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
-  -- ⟨imσ₀, γ₀(arg₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, argv₀⟩
-  -- ⟨imσ₂, fv₀ @ argv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+  -- ⟨imσ₀, γ₀(arg₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, argv₀⟩
+  -- ⟨imσ₂, fv₀ @ argv₀⟩ ⭢ ⟦i₂⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, imσ₂, i₀, i₁, i₂, fv₀, argv₀, HEqj, HvalueFun₀, HvalueArg₀, HstepFun₀, HstepArg₀, Hstep₀⟩ :=
     stepn_indexed.refine.app₁.constructor _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
   -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
   -- ————————————————————————————————————
-  -- ⟨σ₁, γ₁(f₁)⟩ ⇝* ⟨imσ₁, fv₁⟩
+  -- ⟨σ₁, γ₁(f₁)⟩ ⭢* ⟨imσ₁, fv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₂
   -- (k - i₀, 𝓦₁, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
   simp only [log_approx_expr] at Hf
@@ -248,10 +248,10 @@ lemma compatibility.app₁ :
   have ⟨HvalueFun₀, HvalueFun₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_fun
   --
   --
-  -- ⟨imσ₀, γ₀(arg₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, argv₀⟩
+  -- ⟨imσ₀, γ₀(arg₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, argv₀⟩
   -- Γ ⊧ arg₀ ≤𝑙𝑜𝑔 arg₁ : τ𝕒
   -- ————————————————————————————————————————
-  -- ⟨imσ₁, γ₁(arg₁)⟩ ⇝* ⟨imσ₃, argv₁⟩
+  -- ⟨imσ₁, γ₁(arg₁)⟩ ⭢* ⟨imσ₃, argv₁⟩
   -- (imσ₂, imσ₃) : 𝓦₂
   -- (k - i₀ - i₁, 𝓦₂, argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧
   have HsemΓ : log_approx_env (k - i₀, 𝓦₁) γ₀ γ₁ Γ :=
@@ -275,9 +275,9 @@ lemma compatibility.app₁ :
   --
   --
   -- (k - i₀ - i₁, 𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
-  -- ⟨imσ₂, fv₀ @ argv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ⟨imσ₂, fv₀ @ argv₀⟩ ⭢ ⟦i₂⟧ ⟨σ₂, v₀⟩
   -- ————————————————————————————————————————————————————
-  -- ⟨imσ₃, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨imσ₃, fv₁ @ argv₁⟩ ⭢* ⟨σ₃, v₁⟩
   -- (σ₂, σ₃) : 𝓦₃
   -- (k - i₀ - i₁ - i₂, 𝓦₃, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   simp only [log_approx_expr] at Hsem_expr
@@ -285,11 +285,11 @@ lemma compatibility.app₁ :
   have ⟨_, Hfuture₂⟩ := Hfuture₂
   --
   --
-  -- ⟨σ₁, γ₁(f₁)⟩ ⇝* ⟨imσ₁, fv₁⟩
-  -- ⟨imσ₁, γ₁(arg₁)⟩ ⇝* ⟨imσ₃, argv₁⟩
-  -- ⟨imσ₃, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨σ₁, γ₁(f₁)⟩ ⭢* ⟨imσ₁, fv₁⟩
+  -- ⟨imσ₁, γ₁(arg₁)⟩ ⭢* ⟨imσ₃, argv₁⟩
+  -- ⟨imσ₃, fv₁ @ argv₁⟩ ⭢* ⟨σ₃, v₁⟩
   -- ————————————————————————————————————
-  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨σ₁, γ₁(f₁) @ γ₁(arg₁)⟩ ⭢* ⟨σ₃, v₁⟩
   exists 𝓦₃, σ₃, v₁
   constructor
   . constructor; omega
@@ -354,21 +354,21 @@ lemma compatibility.binary₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(l₀) ⊕ γ₀(r₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(l₀) ⊕ γ₀(r₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————————
   -- i₀ + i₁ + i₂ = j
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
-  -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
-  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
+  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⭢ ⟦i₂⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, imσ₂, i₀, i₁, i₂, lv₀, rv₀, HEqj, Hvaluel₀, Hvaluer₀, Hstepl₀, Hstepr₀, Hstep₀⟩ :=
     stepn_indexed.refine.binary₁.constructor _ _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
   -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
   -- ————————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₁
   -- lv₀ = lv₁
   simp only [log_approx_expr] at Hl
@@ -381,10 +381,10 @@ lemma compatibility.binary₁ :
   case lit lv₁ =>
   --
   --
-  -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
+  -- ⟨imσ₀, γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, rv₀⟩
   -- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : ℕ
   -- ——————————————————————————————————————
-  -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨imσ₃, rv₁⟩
+  -- ⟨imσ₁, γ₁(r₁)⟩ ⭢* ⟨imσ₃, rv₁⟩
   -- (imσ₂, imσ₃) : 𝓦₂
   -- rv₀ = rv₁
   simp only [log_approx_expr] at Hr
@@ -401,17 +401,17 @@ lemma compatibility.binary₁ :
   case lit rv₁ =>
   --
   --
-  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ⟨imσ₂, lv₀ ⊕ rv₀⟩ ⭢ ⟦i₂⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————
   -- imσ₂ = imσ₂
   -- v₀ = lv₀ ⊕ rv₀
   have ⟨HEqσ₂, _, HEqv₀⟩ := stepn_indexed.refine.binary₁.eliminator _ _ _ _ _ _ _ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
-  -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨imσ₃, rv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
+  -- ⟨imσ₁, γ₁(r₁)⟩ ⭢* ⟨imσ₃, rv₁⟩
   -- ————————————————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁) ⊕ γ₁(r₁)⟩ ⇝* ⟨imσ₃, lv₁ ⊕ rv₁⟩
+  -- ⟨σ₁, γ₁(l₁) ⊕ γ₁(r₁)⟩ ⭢* ⟨imσ₃, lv₁ ⊕ rv₁⟩
   exists 𝓦₂, imσ₃, v₀
   constructor
   . constructor; omega
@@ -482,20 +482,20 @@ lemma compatibility.lets :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, lets x = γ₀(b₀) in γ₀(e₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, lets x = γ₀(b₀) in γ₀(e₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————————————————
   -- i₀ + 1 + i₁ = j
-  -- ⟨σ₀, γ₀(b₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-  -- ⟨imσ₀, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(b₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+  -- ⟨imσ₀, (x ↦ bv₀, γ₀)(e₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, Hstep₀⟩ :=
     stepn_indexed.refine.lets _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(b₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+  -- ⟨σ₀, γ₀(b₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
   -- Γ ⊧ b₀ ≤𝑙𝑜𝑔 b₁ : τ𝕒
   -- ——————————————————————————————
-  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨imσ₁, bv₁⟩
+  -- ⟨σ₁, γ₁(b₁)⟩ ⭢* ⟨imσ₁, bv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₁
   -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_approx_expr] at Hb
@@ -505,10 +505,10 @@ lemma compatibility.lets :
   have ⟨HvalueBind₀, HvalueBind₁⟩ := log_approx_value.syntactic.value _ _ _ _ _ Hsem_value_bind
   --
   --
-  -- ⟨imσ₀, (x ↦ bv₀, γ₀)(e₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  -- ⟨imσ₀, (x ↦ bv₀, γ₀)(e₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
   -- (k - i₀, 𝓦₁, (x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ———————————————————————————————————————————————————————————
-  -- ⟨imσ₁, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨imσ₁, (x ↦ bv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₃, v₁⟩
   -- (σ₂, σ₃) : 𝓦₂
   -- (k - i₀ - i₁, 𝓦₂, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HEqSubst₀ : opening 0 bv₀ (msubst γ₀ e₀) = msubst (bv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
@@ -530,10 +530,10 @@ lemma compatibility.lets :
   have ⟨_, Hfuture₁⟩ := Hfuture₁
   --
   --
-  -- ⟨σ₁, γ₁(b₁)⟩ ⇝* ⟨imσ₁, bv₁⟩
-  -- ⟨imσ₁, (x ↦ bv₁, γ₁)(e₁)⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨σ₁, γ₁(b₁)⟩ ⭢* ⟨imσ₁, bv₁⟩
+  -- ⟨imσ₁, (x ↦ bv₁, γ₁)(e₁)⟩ ⭢* ⟨σ₃, v₁⟩
   -- ————————————————————————————————————————————
-  -- ⟨σ₁, lets x = γ₁(b₁) in γ₁(e₁)⟩ ⇝* ⟨σ₃, v₁⟩
+  -- ⟨σ₁, lets x = γ₁(b₁) in γ₁(e₁)⟩ ⭢* ⟨σ₃, v₁⟩
   exists 𝓦₂, σ₃, v₁
   constructor
   . constructor; omega
@@ -605,17 +605,17 @@ lemma compatibility.alloc₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, alloc γ₀(n₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————
   -- i₀ + i₁ = j
-  -- ⟨σ₀, γ₀(n₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
-  -- ⟨imσ₀, alloc nv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(n₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
+  -- ⟨imσ₀, alloc nv₀⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, i₀, i₁, nv₀, HEqj, HvalueNat₀, HstepNat₀, Hstep₀⟩ := stepn_indexed.refine.alloc₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
-  -- ⟨σ₀, γ₀(n₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
+  -- ⟨σ₀, γ₀(n₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, nv₀⟩
   -- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
   -- ————————————————————————————————
-  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₁, nv₁⟩
+  -- ⟨σ₁, γ₁(n₁)⟩ ⭢* ⟨imσ₁, nv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₁
   -- nv₀ = nv₁
   simp only [log_approx_expr] at Hn
@@ -630,9 +630,9 @@ lemma compatibility.alloc₁ :
   rw [← HEqσ₂, HEqv₀]
   --
   --
-  -- ⟨σ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₁, nv₁⟩
+  -- ⟨σ₁, γ₁(n₁)⟩ ⭢* ⟨imσ₁, nv₁⟩
   -- —————————————————————————————————————————————————————
-  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⇝* ⟨nv₁ :: imσ₁, loc imσ₁.length⟩
+  -- ⟨σ₁, alloc γ₁(n₁)⟩ ⭢* ⟨nv₁ :: imσ₁, loc imσ₁.length⟩
   exists World.ext 𝓦₁ imσ₀.length imσ₁.length, (.lit nv₁) :: imσ₁, .loc imσ₁.length
   constructor
   . constructor
@@ -689,17 +689,17 @@ lemma compatibility.load₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, load γ₀(l₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, load γ₀(l₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————
   -- i₀ + i₁ = j
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
-  -- ⟨imσ₀, load lv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, load lv₀⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, i₀, i₁, lv₀, HEqj, HvalueLoc₀, HstepLoc₀, Hstep₀⟩ := stepn_indexed.refine.load₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
   -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
   -- ————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₁
   -- 𝓦₁ lv₀ lv₁
   simp only [log_approx_expr] at Hl
@@ -715,9 +715,9 @@ lemma compatibility.load₁ :
   rw [← HEqσ₂, HEqv₀]
   --
   --
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
   -- ———————————————————————————————————
-  -- ⟨σ₁, !γ₁(l₁)⟩ ⇝* ⟨imσ₁, imσ₁(lv₁)⟩
+  -- ⟨σ₁, !γ₁(l₁)⟩ ⭢* ⟨imσ₁, imσ₁(lv₁)⟩
   exists 𝓦₁, imσ₁, .lit n
   constructor
   . constructor; omega
@@ -777,18 +777,18 @@ lemma compatibility.store₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(l₀) := γ₀(n₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————————
   -- i₀ + i₁ + i₂ = j
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
-  -- ⟨imσ₀, γ₀(n₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
-  -- ⟨imσ₂, lv₀ := nv₀⟩ ⇝ ⟦i₂⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨imσ₀, γ₀(n₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
+  -- ⟨imσ₂, lv₀ := nv₀⟩ ⭢ ⟦i₂⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, imσ₂, i₀, i₁, i₂, lv₀, nv₀, HEqj, HvalueLoc₀, HvalueNat₀, HstepLoc₀, HstepNat₀, Hstep₀⟩ := stepn_indexed.refine.store₁.constructor _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
-  -- ⟨σ₀, γ₀(l₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
+  -- ⟨σ₀, γ₀(l₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lv₀⟩
   -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : ℕ
   -- ————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
   -- (imσ₀, imσ₁) : 𝓦₁
   -- 𝓦₁ lv₀ lv₁
   simp only [log_approx_expr] at Hl
@@ -799,10 +799,10 @@ lemma compatibility.store₁ :
   case loc lv₀ =>
   cases HvalueLoc₁ <;> try simp at Hsem_value_loc
   case loc lv₁ =>
-  -- ⟨imσ₀, γ₀(n₀)⟩ ⇝ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
+  -- ⟨imσ₀, γ₀(n₀)⟩ ⭢ ⟦i₁⟧ ⟨imσ₂, nv₀⟩
   -- Γ ⊧ n₀ ≤𝑙𝑜𝑔 n₁ : ℕ
   -- ————————————————————————————————
-  -- ⟨imσ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₃, nv₁⟩
+  -- ⟨imσ₁, γ₁(n₁)⟩ ⭢* ⟨imσ₃, nv₁⟩
   -- (imσ₂, imσ₃) : 𝓦₂
   -- nv₀ = nv₁
   simp only [log_approx_expr] at Hn
@@ -831,10 +831,10 @@ lemma compatibility.store₁ :
   rw [← HEqσ₂, HEqv₀]
   --
   --
-  -- ⟨σ₁, γ₁(l₁)⟩ ⇝* ⟨imσ₁, lv₁⟩
-  -- ⟨imσ₁, γ₁(n₁)⟩ ⇝* ⟨imσ₃, nv₁⟩
+  -- ⟨σ₁, γ₁(l₁)⟩ ⭢* ⟨imσ₁, lv₁⟩
+  -- ⟨imσ₁, γ₁(n₁)⟩ ⭢* ⟨imσ₃, nv₁⟩
   -- ————————————————————————————————————————————————
-  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⇝* ⟨(lv₁ ↦ nv₁)imσ₃, ()⟩
+  -- ⟨σ₁, γ₁(l₁) := γ₁(n₁)⟩ ⭢* ⟨(lv₁ ↦ nv₁)imσ₃, ()⟩
   exists 𝓦₂, imσ₅, .unit
   constructor
   . constructor; omega
@@ -913,18 +913,18 @@ lemma compatibility.fix₁.induction :
     intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
     --
     --
-    -- ⟨σ₀, (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+    -- ⟨σ₀, (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
     -- ——————————————————————————————————————————————————————
     -- i + 2 = j
-    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦i⟧ ⟨σ₂, v₀⟩
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⭢ ⟦i⟧ ⟨σ₂, v₀⟩
     have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.fix₁.eliminator _ _ _ _ _ _ HvalueFix₀ HvalueArg₀ Hvalue₀ (by simp; apply HGFix₀) Hstep₀
     --
     --
-    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⇝ ⟦i⟧ ⟨σ₂, v₀⟩
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x) @ argv₀⟩ ⭢ ⟦i⟧ ⟨σ₂, v₀⟩
     -- ——————————————————————————————————————————————————————
     -- i₀ + i₁ = i
-    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
-    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     have ⟨imσ₀, _, i₀, z, i₁, fv₀, _, HEqj, HvalueFun₀, _, HstepFun₀, HstepArg₀, Hstep₀⟩ := stepn_indexed.refine.app₁.constructor _ _ _ _ _ _ Hvalue₀ (
       by simp; constructor; apply HGFix₀; apply HGArg₀
     ) Hstep₀
@@ -949,10 +949,10 @@ lemma compatibility.fix₁.induction :
       constructor; omega; apply Hfuture₀
     --
     --
-    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
+    -- ⟨σ₀, f₀ @ (λx.f₀ @ fix f₀ @ x)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, fv₀⟩
     -- (k, 𝓦₁, f₀ @ (λx.f₀ @ fix f₀ @ x), f₁ @ (λx.f₁ @ fix f₁ @ x)) ∈ 𝓔⟦τ𝕒 → τ𝕓⟧
     -- ———————————————————————————————————————————————————————————————————————————
-    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⇝* ⟨imσ₁, fv₁⟩
+    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⭢* ⟨imσ₁, fv₁⟩
     -- (imσ₀, imσ₁) : 𝓦₂
     -- (k - i₀, 𝓦₂, fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
     simp only [log_approx_expr] at Hsem_expr_fun
@@ -972,9 +972,9 @@ lemma compatibility.fix₁.induction :
     --
     --
     -- (s - i₀ - 1, 𝓦₂, fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
-    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, fv₀ @ argv₀⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     -- —————————————————————————————————————————————
-    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⭢* ⟨σ₃, v₁⟩
     -- (σ₂, σ₃) : 𝓦₃
     -- (s - i₀ - i₁ - 1, 𝓦₃, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
     simp only [log_approx_expr] at Hsem_expr
@@ -982,10 +982,10 @@ lemma compatibility.fix₁.induction :
     have ⟨_, Hfuture₂⟩ := Hfuture₂
     --
     --
-    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⇝* ⟨imσ₁, fv₁⟩
-    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, f₁ @ (λx.f₁ @ fix f₁ @ x)⟩ ⭢* ⟨imσ₁, fv₁⟩
+    -- ⟨imσ₁, fv₁ @ argv₁⟩ ⭢* ⟨σ₃, v₁⟩
     -- ——————————————————————————————————————————————
-    -- ⟨σ₁, (λx.f₁ @ fix f₁ @ x) @ argv₁⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, (λx.f₁ @ fix f₁ @ x) @ argv₁⟩ ⭢* ⟨σ₃, v₁⟩
     exists 𝓦₃, σ₃, v₁
     constructor
     . constructor; omega
@@ -1050,20 +1050,20 @@ lemma compatibility.fix₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, fix γ₀(f₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, fix γ₀(f₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ———————————————————————————————
   -- i₀ + 1 = j
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨σ₂, fv₀⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢ ⟦i₀⟧ ⟨σ₂, fv₀⟩
   -- v₀ = λx.fv₀ @ fix fv₀ @ x
   simp at Hstep₀
   have ⟨i₀, fv₀, HEqj, HvalueFix₀, HstepFix₀, HEqv₀⟩ := stepn_indexed.refine.fix₁.constructor _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
   rw [HEqv₀]
   --
   --
-  -- ⟨σ₀, γ₀(f₀)⟩ ⇝ ⟦i₀⟧ ⟨σ₂, fv₀⟩
+  -- ⟨σ₀, γ₀(f₀)⟩ ⭢ ⟦i₀⟧ ⟨σ₂, fv₀⟩
   -- Γ ⊧ f₀ ≤𝑙𝑜𝑔 f₁ : (τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)
   -- ——————————————————————————————————————————————————
-  -- ⟨σ₀, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- ⟨σ₀, γ₁(f₁)⟩ ⭢* ⟨σ₃, fv₁⟩
   -- (σ₂, σ₃) : 𝓦₁
   -- (k - i₀, 𝓦₁, fv₀, fv₁) ∈ 𝓥⟦(τ𝕒 → τ𝕓) → (τ𝕒 → τ𝕓)⟧
   simp only [log_approx_expr] at Hf
@@ -1072,9 +1072,9 @@ lemma compatibility.fix₁ :
   have ⟨_, Hfuture₀⟩ := Hfuture₀
   --
   --
-  -- ⟨σ₀, γ₁(f₁)⟩ ⇝* ⟨σ₃, fv₁⟩
+  -- ⟨σ₀, γ₁(f₁)⟩ ⭢* ⟨σ₃, fv₁⟩
   -- ———————————————————————————————————————————————
-  -- ⟨σ₀, fix γ₁(f₁)⟩ ⇝* ⟨σ₃, λx.fv₁ @ fix fv₁ @ x⟩
+  -- ⟨σ₀, fix γ₁(f₁)⟩ ⭢* ⟨σ₃, λx.fv₁ @ fix fv₁ @ x⟩
   exists 𝓦₁, σ₃, .lam (.app₁ (.app₁ fv₁ (.fix₁ fv₁)) (.bvar 0))
   constructor
   . constructor; omega
@@ -1139,17 +1139,17 @@ lemma compatibility.ifz₁ :
   intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
   --
   --
-  -- ⟨σ₀, if γ₀(c₀) then γ₀(l₀) else γ₀(r₀)⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, if γ₀(c₀) then γ₀(l₀) else γ₀(r₀)⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
   -- ——————————————————————————————————————————————————————
   -- i₀ + i₁ = j
-  -- ⟨σ₀, γ₀(c₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, cv₀⟩
-  -- ⟨imσ₀, if cv₀ then γ₀(l₀) else γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+  -- ⟨σ₀, γ₀(c₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, cv₀⟩
+  -- ⟨imσ₀, if cv₀ then γ₀(l₀) else γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
   simp at Hstep₀
   have ⟨imσ₀, i₀, i₁, cv₀, HEqj, Hvaluec₀, Hstepc₀, Hstep₀⟩ :=
     stepn_indexed.refine.ifz₁.constructor _ _ _ _ _ _ _ Hvalue₀ HG₀ Hstep₀
   --
   --
-  -- ⟨σ₀, γ₀(c₀)⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, cv₀⟩
+  -- ⟨σ₀, γ₀(c₀)⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, cv₀⟩
   -- Γ ⊧ c₀ ≤𝑙𝑜𝑔 c₁ : ℕ
   -- ————————————————————————————————
   -- c
@@ -1172,17 +1172,17 @@ lemma compatibility.ifz₁ :
   | .zero, .zero =>
     --
     --
-    -- ⟨imσ₀, if 0 then γ₀(l₀) else γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, if 0 then γ₀(l₀) else γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     -- ——————————————————————————————————————————————————————
     -- i₂ + 1 = i₁
-    -- ⟨imσ₀, γ₀(l₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, γ₀(l₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     have ⟨i₂, HEqi₁, Hstep₀⟩ := stepn_indexed.refine.ifz₁_then.eliminator _ _ _ _ _ _ Hvalue₀ Hstep₀
     --
     --
-    -- ⟨imσ₀, γ₀(l₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, γ₀(l₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     -- Γ ⊧ l₀ ≤𝑙𝑜𝑔 l₁ : τ
     -- ———————————————————————————————
-    -- ⟨imσ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨imσ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, v₁⟩
     -- (σ₂, σ₃) : 𝓦₂
     -- (k - i₀ - i₂, 𝓦₂, v₀, v₁) ∈ 𝓥⟦τ⟧
     simp only [log_approx_expr] at Hl
@@ -1194,10 +1194,10 @@ lemma compatibility.ifz₁ :
     have ⟨_, Hfuture₁⟩ := Hfuture₁
     --
     --
-    -- ⟨σ₁, γ₁(c₁)⟩ ⇝* ⟨imσ₁, 0⟩
-    -- ⟨imσ₁, γ₁(l₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, γ₁(c₁)⟩ ⭢* ⟨imσ₁, 0⟩
+    -- ⟨imσ₁, γ₁(l₁)⟩ ⭢* ⟨σ₃, v₁⟩
     -- ————————————————————————————————————————————————————
-    -- ⟨σ₁, if γ₁(c₁) then γ₁(l₁) else γ₁(r₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, if γ₁(c₁) then γ₁(l₁) else γ₁(r₁)⟩ ⭢* ⟨σ₃, v₁⟩
     exists 𝓦₂, σ₃, v₁
     constructor
     . constructor; omega
@@ -1227,17 +1227,17 @@ lemma compatibility.ifz₁ :
   | .succ cv₀, .succ cv₁ =>
     --
     --
-    -- ⟨imσ₀, if (n + 1) then γ₀(l₀) else γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, if (n + 1) then γ₀(l₀) else γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     -- ——————————————————————————————————————————————————————————
     -- i₂ + 1 = i₁
-    -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     have ⟨i₂, HEqi₁, Hstep₀⟩ := stepn_indexed.refine.ifz₁_else.eliminator _ _ _ _ _ _ _ Hvalue₀ Hstep₀
     --
     --
-    -- ⟨imσ₀, γ₀(r₀)⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+    -- ⟨imσ₀, γ₀(r₀)⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
     -- Γ ⊧ r₀ ≤𝑙𝑜𝑔 r₁ : τ
     -- ———————————————————————————————
-    -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨imσ₁, γ₁(r₁)⟩ ⭢* ⟨σ₃, v₁⟩
     -- (σ₂, σ₃) : 𝓦₂
     -- (k - i₀ - i₂, 𝓦₂, v₀, v₁) ∈ 𝓥⟦τ⟧
     simp only [log_approx_expr] at Hr
@@ -1249,10 +1249,10 @@ lemma compatibility.ifz₁ :
     have ⟨_, Hfuture₁⟩ := Hfuture₁
     --
     --
-    -- ⟨σ₁, γ₁(c₁)⟩ ⇝* ⟨imσ₁, n + 1⟩
-    -- ⟨imσ₁, γ₁(r₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, γ₁(c₁)⟩ ⭢* ⟨imσ₁, n + 1⟩
+    -- ⟨imσ₁, γ₁(r₁)⟩ ⭢* ⟨σ₃, v₁⟩
     -- ————————————————————————————————————————————————————
-    -- ⟨σ₁, if γ₁(c₁) then γ₁(l₁) else γ₁(r₁)⟩ ⇝* ⟨σ₃, v₁⟩
+    -- ⟨σ₁, if γ₁(c₁) then γ₁(l₁) else γ₁(r₁)⟩ ⭢* ⟨σ₃, v₁⟩
     exists 𝓦₂, σ₃, v₁
     constructor
     . constructor; omega

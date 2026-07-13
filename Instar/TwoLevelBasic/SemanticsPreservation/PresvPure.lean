@@ -160,7 +160,7 @@ lemma semantics_preservation.lift_lam :
 
 theorem semantics_preservation.pure.head :
   ∀ Γ e₀ e₁ τ φ,
-    head e₀ e₁ →
+    e₀ ↝ e₁ →
     typing Γ 𝟙 e₀ τ φ →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by

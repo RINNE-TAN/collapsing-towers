@@ -3,11 +3,11 @@ import Instar.TwoLevelBasic.SyntacticSoundness.Progress
 
 @[simp]
 def stuck (e₀ : Expr) : Prop :=
-  ¬(∃ e₁, e₀ ⇝ e₁) ∧ ¬value e₀
+  ¬(∃ e₁, e₀ ⭢ e₁) ∧ ¬value e₀
 
 theorem soundness :
   ∀ e₀ e₁ τ φ,
-    (e₀ ⇝* e₁) →
+    (e₀ ⭢* e₁) →
     typing_reification ⦰ e₀ τ φ →
     ¬stuck e₁ :=
   by

@@ -8,7 +8,7 @@ lemma value_ctx𝕄_impl_ctx_is_hole : ∀ lvl M e, ctx𝕄 lvl M → value M⟦
   case cons𝔹 HB _ => exfalso; apply not_value.under_ctx𝔹; apply HB; apply Hvalue
   case consℝ HR _ => exfalso; apply not_value.under_ctxℝ; apply HR; apply Hvalue
 
-lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀, v⟩ ⇝ ⟨σ₁, e⟩) :=
+lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀, v⟩ ⭢ ⟨σ₁, e⟩) :=
   by
   intros σ₀ σ₁ v e Hvalue Hstep
   cases Hstep
@@ -30,7 +30,7 @@ lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀
 lemma stepn.value_impl_termination :
   ∀ σ₀ σ₁ v₀ v₁,
     value v₀ →
-    (⟨σ₀, v₀⟩ ⇝* ⟨σ₁, v₁⟩) →
+    (⟨σ₀, v₀⟩ ⭢* ⟨σ₁, v₁⟩) →
     σ₀ = σ₁ ∧ v₀ = v₁ :=
   by
   intros σ₀ σ₁ v₀ v₁ Hvalue Hstepn
@@ -43,7 +43,7 @@ lemma stepn.value_impl_termination :
 lemma stepn_indexed.value_impl_termination :
   ∀ k σ₀ σ₁ v₀ v₁,
     value v₀ →
-    (⟨σ₀, v₀⟩ ⇝ ⟦k⟧ ⟨σ₁, v₁⟩) →
+    (⟨σ₀, v₀⟩ ⭢ ⟦k⟧ ⟨σ₁, v₁⟩) →
     σ₀ = σ₁ ∧ v₀ = v₁ ∧ k = 0 :=
   by
   intros k σ₀ σ₁ v₀ v₁ Hvalue Hstepn
@@ -55,11 +55,11 @@ lemma stepn_indexed.value_impl_termination :
 
 theorem stepn.church_rosser :
   ∀ st stl str,
-    (st ⇝* stl) →
-    (st ⇝* str) →
+    (st ⭢* stl) →
+    (st ⭢* str) →
     ∃ stv,
-      (stl ⇝* stv) ∧
-      (str ⇝* stv) :=
+      (stl ⭢* stv) ∧
+      (str ⭢* stv) :=
   by
   intros st stl str Hstepl Hstepr
   induction Hstepl generalizing str
@@ -81,12 +81,12 @@ theorem stepn.church_rosser :
 
 theorem stepn_indexed.church_rosser :
   ∀ il ir st stl str,
-    (st ⇝ ⟦il⟧ stl) →
-    (st ⇝ ⟦ir⟧ str) →
+    (st ⭢ ⟦il⟧ stl) →
+    (st ⭢ ⟦ir⟧ str) →
     ∃ jl jr stv,
       il + jl = ir + jr ∧
-      (stl ⇝ ⟦jl⟧ stv) ∧
-      (str ⇝ ⟦jr⟧ stv) :=
+      (stl ⭢ ⟦jl⟧ stv) ∧
+      (str ⭢ ⟦jr⟧ stv) :=
   by
   intros il ir st stl str Hstepl Hstepr
   induction Hstepl generalizing ir str
@@ -105,7 +105,7 @@ theorem stepn_indexed.church_rosser :
       apply IHstepl; apply IHstepln
     case multi ir str₀ IHstepr IHsteprn =>
       rcases stl₁ with ⟨σl₁, l₁⟩
-      have IHstepln : (⟨σl₁, l₁⟩ ⇝ ⟦ir⟧ str) :=
+      have IHstepln : (⟨σl₁, l₁⟩ ⭢ ⟦ir⟧ str) :=
         by
         simp [deterministic _ _ _ _ _ _ IHstepl IHstepr]
         apply IHsteprn
@@ -116,8 +116,8 @@ theorem stepn_indexed.church_rosser :
 
 theorem stepn.unique_normal_forms :
   ∀ σ σ₀ σ₁ e v₀ v₁,
-    (⟨σ, e⟩ ⇝* ⟨σ₀, v₀⟩) →
-    (⟨σ, e⟩ ⇝* ⟨σ₁, v₁⟩) →
+    (⟨σ, e⟩ ⭢* ⟨σ₀, v₀⟩) →
+    (⟨σ, e⟩ ⭢* ⟨σ₁, v₁⟩) →
     value v₀ →
     value v₁ →
     σ₀ = σ₁ ∧ v₀ = v₁ :=

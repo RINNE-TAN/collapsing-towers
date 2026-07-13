@@ -3,12 +3,12 @@ import Instar.TwoLevelFinal.SyntacticSoundness.Progress
 
 @[simp]
 def stuck (σ₀ : Store) (e₀ : Expr) : Prop :=
-  ¬(∃ σ₁ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩)) ∧ ¬value e₀
+  ¬(∃ σ₁ e₁, (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩)) ∧ ¬value e₀
 
 theorem soundness :
   ∀ σ₀ σ₁ e₀ e₁ τ φ,
     typing_reification ⦰ e₀ τ φ →
-    (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) →
+    (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) →
     ¬stuck σ₁ e₁ :=
   by
   intros σ₀ σ₁ e₀ e₁ τ φ₀ Hτ₀ Hstepn

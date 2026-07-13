@@ -69,10 +69,10 @@ lemma semantics_preservation.lets :
         apply HvalueBind; apply Hwbt; apply Hτb; apply HsemΓ
     --
     --
-    -- lets x = γ₀‖bᵥ‖ in γ₀‖e‖ ⇝ ⟦j⟧ v₀
+    -- lets x = γ₀‖bᵥ‖ in γ₀‖e‖ ⭢ ⟦j⟧ v₀
     -- —————————————————————————————————
     -- i + 1 = j
-    -- (x ↦ γ₀‖bᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+    -- (x ↦ γ₀‖bᵥ‖, γ₀)‖e‖ ⭢ ⟦i⟧ v₀
     simp at Hstep₀
     have ⟨z, i, r, HEqj, _, Hstepr, Hstep₀⟩ :=
       stepn_indexed.refine.lets _ _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
@@ -80,18 +80,18 @@ lemma semantics_preservation.lets :
     rw [← HEqv] at Hstep₀
     --
     --
-    -- (x ↦ γ₀‖bᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+    -- (x ↦ γ₀‖bᵥ‖, γ₀)‖e‖ ⭢ ⟦i⟧ v₀
     -- —————————————————————————————
-    -- γ₀‖(x ↦ bᵥ)e‖ ⇝ ⟦i⟧ v₀
+    -- γ₀‖(x ↦ bᵥ)e‖ ⭢ ⟦i⟧ v₀
     have HEq : opening 0 (msubst γ₀ ‖bᵥ‖) (msubst γ₀ ‖e‖) = msubst γ₀ ‖opening 0 bᵥ e‖ :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₀
     rw [HEq] at Hstep₀
     --
     --
-    -- γ₀‖(x ↦ bᵥ)e‖ ⇝ ⟦i⟧ v₀
+    -- γ₀‖(x ↦ bᵥ)e‖ ⭢ ⟦i⟧ v₀
     -- ‖Γ‖ ⊧ ‖(x ↦ bᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ bᵥ)e‖ : ‖τ‖
     -- —————————————————————————————————————————
-    -- γ₁‖(x ↦ bᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ bᵥ)e‖ ⭢* v₁
     -- (k - i, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
     simp only [log_approx_expr] at IH
@@ -114,27 +114,27 @@ lemma semantics_preservation.lets :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖(x ↦ bᵥ)e‖ ⇝ ⟦j⟧ v₀
+    -- γ₀‖(x ↦ bᵥ)e‖ ⭢ ⟦j⟧ v₀
     -- ‖Γ‖ ⊧ ‖(x ↦ bᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ bᵥ)e‖ : ‖τ‖
     -- —————————————————————————————————————————
-    -- γ₁‖(x ↦ bᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ bᵥ)e‖ ⭢* v₁
     -- (k - j, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
     simp only [log_approx_expr] at IH
     have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
     --
     --
-    -- γ₁‖(x ↦ bᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ bᵥ)e‖ ⭢* v₁
     -- —————————————————————————————
-    -- (x ↦ γ₁‖bᵥ‖, γ₁)‖e‖ ⇝* v₁
+    -- (x ↦ γ₁‖bᵥ‖, γ₁)‖e‖ ⭢* v₁
     have HEq : msubst γ₁ ‖opening 0 bᵥ e‖ = opening 0 (msubst γ₁ ‖bᵥ‖) (msubst γ₁ ‖e‖) :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₁
     rw [HEq] at Hstep₁
     --
     --
-    -- (x ↦ γ₁‖bᵥ‖, γ₁)‖e‖ ⇝* v₁
+    -- (x ↦ γ₁‖bᵥ‖, γ₁)‖e‖ ⭢* v₁
     -- —————————————————————————————————
-    -- lets x = γ₁‖bᵥ‖ in γ₁‖e‖ ⇝* v₁
+    -- lets x = γ₁‖bᵥ‖ in γ₁‖e‖ ⭢* v₁
     exists v₁
     constructor
     . simp
@@ -203,26 +203,26 @@ lemma semantics_preservation.app₁ :
         rw [← lc.under_erase]; apply typing.regular _ _ _ _ _ Hτf
     --
     --
-    -- λx.γ₀‖e₀‖ @ γ₀‖argᵥ‖ ⇝ ⟦j⟧ v₀
+    -- λx.γ₀‖e₀‖ @ γ₀‖argᵥ‖ ⭢ ⟦j⟧ v₀
     -- ————————————————————————————————
     -- j = i + 1
-    -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+    -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⭢ ⟦i⟧ v₀
     simp at Hstep₀
     have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.app₁.eliminator _ _ _ _ HvalueFun₀ HvalueArg₀ Hvalue₀ Hstep₀
     --
     --
-    -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⇝ ⟦i⟧ v₀
+    -- (x ↦ γ₀‖argᵥ‖, γ₀)‖e‖ ⭢ ⟦i⟧ v₀
     -- ———————————————————————————————
-    -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦i⟧ v₀
+    -- γ₀‖(x ↦ argᵥ)e‖ ⭢ ⟦i⟧ v₀
     have HEq : opening 0 (msubst γ₀ ‖argᵥ‖) (msubst γ₀ ‖e‖) = msubst γ₀ ‖opening 0 argᵥ e‖ :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₀
     rw [HEq] at Hstep₀
     --
     --
-    -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦i⟧ v₀
+    -- γ₀‖(x ↦ argᵥ)e‖ ⭢ ⟦i⟧ v₀
     -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
     -- —————————————————————————————————————————
-    -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ argᵥ)e‖ ⭢* v₁
     -- (k - i, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
     simp only [log_approx_expr] at IH
@@ -245,27 +245,27 @@ lemma semantics_preservation.app₁ :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖(x ↦ argᵥ)e‖ ⇝ ⟦j⟧ v₀
+    -- γ₀‖(x ↦ argᵥ)e‖ ⭢ ⟦j⟧ v₀
     -- ‖Γ‖ ⊧ ‖(x ↦ argᵥ)e‖ ≤𝑙𝑜𝑔 ‖(x ↦ argᵥ)e‖ : ‖τ‖
     -- ————————————————————————————————————————————
-    -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ argᵥ)e‖ ⭢* v₁
     -- (k - j, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
     simp only [log_approx_expr] at IH
     have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
     --
     --
-    -- γ₁‖(x ↦ argᵥ)e‖ ⇝* v₁
+    -- γ₁‖(x ↦ argᵥ)e‖ ⭢* v₁
     -- —————————————————————————————
-    -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⇝* v₁
+    -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⭢* v₁
     have HEq : msubst γ₁ ‖opening 0 argᵥ e‖ = opening 0 (msubst γ₁ ‖argᵥ‖) (msubst γ₁ ‖e‖) :=
       by rw [comm.erase_opening_value, comm.msubst_opening_value]; apply Hmwf₁
     rw [HEq] at Hstep₁
     --
     --
-    -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⇝* v₁
+    -- (x ↦ γ₁‖argᵥ‖, γ₁)‖e‖ ⭢* v₁
     -- ————————————————————————————
-    -- (λx.γ₁‖e‖) @ γ₁‖argᵥ‖ ⇝* v₁
+    -- (λx.γ₁‖e‖) @ γ₁‖argᵥ‖ ⭢* v₁
     exists v₁
     constructor
     . simp
@@ -388,7 +388,7 @@ lemma semantics_preservation.fix₁ :
       apply HvalueFix₀; omega
     --
     --
-    -- fix γ₀‖fᵥ‖ ⇝ ⟦j⟧ v₀
+    -- fix γ₀‖fᵥ‖ ⭢ ⟦j⟧ v₀
     -- —————————————————————————————
     -- v₀ = γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖
     have ⟨z, r, HEqj, _, Hstepr, HEqv⟩ := stepn_indexed.refine.fix₁.constructor _ _ _ Hvalue₀ (typing.dynamic_impl_grounded _ _ _ _ HSτ₀) Hstep₀
@@ -421,18 +421,18 @@ lemma semantics_preservation.fix₁ :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖ ⇝ ⟦j⟧ v₀
+    -- γ₀‖λx.fᵥ @ (fix fᵥ) @ x‖ ⭢ ⟦j⟧ v₀
     -- ‖Γ‖ ⊧ ‖λx.fᵥ @ (fix fᵥ) @ x‖ ≤𝑙𝑜𝑔 ‖λx.fᵥ @ (fix fᵥ) @ x‖ : ‖τ‖
     -- —————————————————————————————————————————————————————————————
-    -- γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖ ⇝* v₁
+    -- γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖ ⭢* v₁
     -- (k - j, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
     simp only [log_approx_expr] at IH
     have ⟨v₁, Hstep₁, Hsem_value⟩ := IH _ _ _ HsemΓ _ Hindexj _ Hvalue₀ Hstep₀
     simp at Hstep₁
-    -- γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖ ⇝* v₁
+    -- γ₁‖λx.fᵥ @ (fix fᵥ) @ x‖ ⭢* v₁
     -- ——————————————————————————————
-    -- γ₁‖fix fᵥ‖ ⇝* v₁
+    -- γ₁‖fix fᵥ‖ ⭢* v₁
     exists v₁
     constructor
     . simp
@@ -474,18 +474,18 @@ lemma semantics_preservation.ifz₁_then :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- if 0 then γ₀‖l‖ else γ₀‖r‖ ⇝ ⟦j⟧ v₀
+    -- if 0 then γ₀‖l‖ else γ₀‖r‖ ⭢ ⟦j⟧ v₀
     -- ———————————————————————————————————
     -- i + 1 = j
-    -- γ₀‖l‖ ⇝* v₀
+    -- γ₀‖l‖ ⭢* v₀
     simp at Hstep₀
     have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.ifz₁_then.eliminator _ _ _ _ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖l‖ ⇝* v₀
+    -- γ₀‖l‖ ⭢* v₀
     -- ‖Γ‖ ⊧ ‖l‖ ≤𝑙𝑜𝑔 ‖l‖ : ‖τ‖
     -- ————————————————————————
-    -- γ₁‖l‖ ⇝* v₁
+    -- γ₁‖l‖ ⭢* v₁
     -- (k - i, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
     simp only [log_approx_expr] at IH
@@ -506,10 +506,10 @@ lemma semantics_preservation.ifz₁_then :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖l‖ ⇝ ⟦j⟧ v₀
+    -- γ₀‖l‖ ⭢ ⟦j⟧ v₀
     -- ‖Γ‖ ⊧ ‖l‖ ≤𝑙𝑜𝑔 ‖l‖ : ‖τ‖
     -- ————————————————————————
-    -- γ₁‖l‖ ⇝* v₁
+    -- γ₁‖l‖ ⭢* v₁
     -- (k - j, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
     simp only [log_approx_expr] at IH
@@ -540,18 +540,18 @@ lemma semantics_preservation.ifz₁_else :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- if (n + 1) then γ₀‖l‖ else γ₀‖r‖ ⇝ ⟦j⟧ v₀
+    -- if (n + 1) then γ₀‖l‖ else γ₀‖r‖ ⭢ ⟦j⟧ v₀
     -- —————————————————————————————————————————
     -- i + 1 = j
-    -- γ₀‖r‖ ⇝* v₀
+    -- γ₀‖r‖ ⭢* v₀
     simp at Hstep₀
     have ⟨i, HEqj, Hstep₀⟩ := stepn_indexed.refine.ifz₁_else.eliminator _ _ _ _ _ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖r‖ ⇝* v₁
+    -- γ₀‖r‖ ⭢* v₁
     -- ‖Γ‖ ⊧ ‖r‖ ≤𝑙𝑜𝑔 ‖r‖ : ‖τ‖
     -- ————————————————————————
-    -- γ₁‖r‖ ⇝* v₁
+    -- γ₁‖r‖ ⭢* v₁
     -- (k - i, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₁
     simp only [log_approx_expr] at IH
@@ -572,10 +572,10 @@ lemma semantics_preservation.ifz₁_else :
     intros j Hindexj v₀ Hvalue₀ Hstep₀
     --
     --
-    -- γ₀‖r‖ ⇝ ⟦j⟧ v₁
+    -- γ₀‖r‖ ⭢ ⟦j⟧ v₁
     -- ‖Γ‖ ⊧ ‖r‖ ≤𝑙𝑜𝑔 ‖r‖ : ‖τ‖
     -- ————————————————————————
-    -- γ₁‖r‖ ⇝* v₁
+    -- γ₁‖r‖ ⭢* v₁
     -- (k - j, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
     have ⟨_, _, IH⟩ := log_approx.fundamental _ _ _ HEτ₀
     simp only [log_approx_expr] at IH
@@ -590,7 +590,7 @@ lemma semantics_preservation.ifz₁_else :
 
 theorem semantics_preservation.pure.head :
   ∀ Γ e₀ e₁ τ φ,
-    head e₀ e₁ →
+    e₀ ↝ e₁ →
     typing Γ 𝟙 e₀ τ φ →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by

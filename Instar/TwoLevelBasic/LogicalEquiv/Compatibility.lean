@@ -72,8 +72,8 @@ lemma compatibility.lam :
   --
   -- ((x ↦ argv₀, γ₀)(e₀), (x ↦ argv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ———————————————————————————————————————————————————
-  -- (x ↦ argv₀, γ₀)(e₀) ⇝* v₀
-  -- (x ↦ argv₁, γ₁)(e₁) ⇝* v₁
+  -- (x ↦ argv₀, γ₀)(e₀) ⭢* v₀
+  -- (x ↦ argv₁, γ₁)(e₁) ⭢* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ Hsem_value_arg HsemΓ
   simp only [log_equiv_expr] at He
@@ -81,9 +81,9 @@ lemma compatibility.lam :
   simp only [log_equiv_expr]
   exists v₀, v₁
   constructor
-  -- (x ↦ argv₀, γ₀)(e₀) ⇝* v₀
+  -- (x ↦ argv₀, γ₀)(e₀) ⭢* v₀
   -- ——————————————————————————
-  -- λx.e₀ @ argv₀ ⇝* v₀
+  -- λx.e₀ @ argv₀ ⭢* v₀
   . have HEqSubst₀ : opening 0 argv₀ (msubst γ₀ e₀) = msubst (argv₀ :: γ₀) ({0 ↦ Γ.length} e₀) :=
       by
       rw [msubst, ← comm.msubst_subst _ _ _ _ _ _ Hmwf₀]
@@ -97,9 +97,9 @@ lemma compatibility.lam :
     constructor; apply Hlc₀; apply lc.value; apply HvalueArg₀
     apply head.app₁; apply HvalueArg₀
   constructor
-  -- (x ↦ argv₁, γ₁)(e₁) ⇝* v₁
+  -- (x ↦ argv₁, γ₁)(e₁) ⭢* v₁
   -- ——————————————————————————
-  -- λx.e₁ @ argv₁ ⇝* v₁
+  -- λx.e₁ @ argv₁ ⭢* v₁
   . have HEqSubst₁ : opening 0 argv₁ (msubst γ₁ e₁) = msubst (argv₁ :: γ₁) ({0 ↦ Γ.length} e₁) :=
       by
       rw [msubst, ← comm.msubst_subst _ _ _ _ _ _ Hmwf₁]
@@ -144,8 +144,8 @@ lemma compatibility.app₁ :
   --
   -- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
   -- ————————————————————————
-  -- γ₀(f₀) ⇝* fv₀
-  -- γ₁(f₁) ⇝* fv₁
+  -- γ₀(f₀) ⭢* fv₀
+  -- γ₁(f₁) ⭢* fv₁
   -- (fv₀, fv₁) ∈ 𝓥⟦τ𝕒 → τ𝕓⟧
   simp only [log_equiv_expr] at Hf
   have ⟨fv₀, fv₁, HstepFun₀, HstepFun₁, Hsem_value_fun⟩ := Hf _ _ HsemΓ
@@ -154,8 +154,8 @@ lemma compatibility.app₁ :
   --
   -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
   -- ———————————————————————
-  -- γ₀(arg₀) ⇝* argv₀
-  -- γ₁(arg₁) ⇝* argv₁
+  -- γ₀(arg₀) ⭢* argv₀
+  -- γ₁(arg₁) ⭢* argv₁
   -- (argv₀, argv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_equiv_expr] at Harg
   have ⟨argv₀, argv₁, HstepArg₀, HstepArg₁, Hsem_value_arg⟩ := Harg _ _ HsemΓ
@@ -170,8 +170,8 @@ lemma compatibility.app₁ :
   --
   -- (fv₀ @ argv₀, fv₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
   -- ——————————————————————————————————
-  -- fv₀ @ argv₀ ⇝* v₀
-  -- fv₁ @ argv₁ ⇝* v₁
+  -- fv₀ @ argv₀ ⭢* v₀
+  -- fv₁ @ argv₁ ⭢* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   simp only [log_equiv_expr] at Hsem_expr
   have ⟨v₀, v₁, Hstep₀, Hstep₁, Hsem_value⟩ := Hsem_expr
@@ -180,11 +180,11 @@ lemma compatibility.app₁ :
   constructor
   --
   --
-  -- γ₀(f₀) ⇝* fv₀
-  -- γ₀(arg₀) ⇝* argv₀
-  -- fv₀ @ argv₀ ⇝* v₀
+  -- γ₀(f₀) ⭢* fv₀
+  -- γ₀(arg₀) ⭢* argv₀
+  -- fv₀ @ argv₀ ⭢* v₀
   -- ————————————————————————
-  -- γ₀(f₀) @ γ₀(arg₀) ⇝* v₀
+  -- γ₀(f₀) @ γ₀(arg₀) ⭢* v₀
   . simp
     -- left
     apply stepn.trans
@@ -200,11 +200,11 @@ lemma compatibility.app₁ :
   constructor
   --
   --
-  -- γ₁(f₁) ⇝* fv₁
-  -- γ₁(arg₁) ⇝* argv₁
-  -- fv₁ @ argv₁ ⇝* v₁
+  -- γ₁(f₁) ⭢* fv₁
+  -- γ₁(arg₁) ⭢* argv₁
+  -- fv₁ @ argv₁ ⭢* v₁
   -- ————————————————————————
-  -- γ₁(f₁) @ γ₁(arg₁) ⇝* v₁
+  -- γ₁(f₁) @ γ₁(arg₁) ⭢* v₁
   . simp
     -- left
     apply stepn.trans
@@ -257,8 +257,8 @@ lemma compatibility.lets :
   --
   -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
   -- ———————————————————
-  -- γ₀(b₀) ⇝* bv₀
-  -- γ₁(b₁) ⇝* bv₁
+  -- γ₀(b₀) ⭢* bv₀
+  -- γ₁(b₁) ⭢* bv₁
   -- (bv₀, bv₁) ∈ 𝓥⟦τ𝕒⟧
   simp only [log_equiv_expr] at Hb
   have ⟨bv₀, bv₁, HstepBind₀, HstepBind₁, Hsem_value_bind⟩ := Hb _ _ HsemΓ
@@ -270,8 +270,8 @@ lemma compatibility.lets :
   --
   -- ((x ↦ bv₀, γ₀)(e₀), (x ↦ bv₁, γ₁)(e₁)) ∈ 𝓔⟦τ𝕓⟧
   -- ———————————————————————————————————————————————————
-  -- (x ↦ bv₀, γ₀)(e₀) ⇝* v₀
-  -- (x ↦ bv₁, γ₁)(e₁) ⇝* v₁
+  -- (x ↦ bv₀, γ₀)(e₀) ⭢* v₀
+  -- (x ↦ bv₁, γ₁)(e₁) ⭢* v₁
   -- (v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
   have HsemΓ := log_equiv_env.cons _ _ _ _ _ _ Hsem_value_bind HsemΓ
   simp only [log_equiv_expr] at He
@@ -279,10 +279,10 @@ lemma compatibility.lets :
   simp only [log_equiv_expr]
   exists v₀, v₁
   constructor
-  -- γ₀(b₀) ⇝* bv₀
-  -- (x ↦ bv₀, γ₀)(e₀) ⇝* v₀
+  -- γ₀(b₀) ⭢* bv₀
+  -- (x ↦ bv₀, γ₀)(e₀) ⭢* v₀
   -- ——————————————————————————
-  -- lets x = γ₀(b₀) in γ₀(e₀) ⇝* v₀
+  -- lets x = γ₀(b₀) in γ₀(e₀) ⭢* v₀
   . simp
     -- left
     apply stepn.trans
@@ -301,10 +301,10 @@ lemma compatibility.lets :
     constructor; apply HlcBind₀; apply Hlc₀.right
     apply head.lets; apply HvalueBind₀
   constructor
-  -- γ₁(b₁) ⇝* bv₁
-  -- (x ↦ bv₁, γ₁)(e₁) ⇝* v₁
+  -- γ₁(b₁) ⭢* bv₁
+  -- (x ↦ bv₁, γ₁)(e₁) ⭢* v₁
   -- ——————————————————————————
-  -- lets x = γ₁(b₁) in γ₁(e₁) ⇝* v₁
+  -- lets x = γ₁(b₁) in γ₁(e₁) ⭢* v₁
   . simp
     -- left
     apply stepn.trans

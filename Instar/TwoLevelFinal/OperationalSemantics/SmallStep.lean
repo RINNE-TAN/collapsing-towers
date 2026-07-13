@@ -23,31 +23,33 @@ inductive head_pure : Expr → Expr → Prop where
   | ifz₁_else : ∀ l r n, head_pure (.ifz₁ (.lit (.succ n)) l r) r
   | ifz₂ : ∀ c l r, head_pure (.ifz₂ (.code c) (.code l) (.code r)) (.reflect (.ifz₁ c l r))
 
+notation e₀:39 " ↝ " e₁:39 => head_pure e₀ e₁
+
 inductive head_mutable : (Store × Expr) → (Store × Expr) → Prop where
   | alloc₁ : ∀ σ n, head_mutable ⟨σ, .alloc₁ (.lit n)⟩ ⟨.lit n :: σ, .loc (σ.length)⟩
   | load₁ : ∀ σ l n, binds l (.lit n) σ → head_mutable ⟨σ, .load₁ (.loc l)⟩ ⟨σ, .lit n⟩
   | store₁ : ∀ σ₀ σ₁ l n, patch l (.lit n) σ₀ σ₁ → head_mutable ⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⟨σ₁, .unit⟩
 
 inductive step_lvl (lvl : ℕ) : (Store × Expr) → (Store × Expr) → Prop where
-  | pure : ∀ M e₀ e₁ σ, ctx𝕄 lvl M → lc e₀ → head_pure e₀ e₁ → step_lvl lvl ⟨σ, M⟦e₀⟧⟩ ⟨σ, M⟦e₁⟧⟩
+  | pure : ∀ M e₀ e₁ σ, ctx𝕄 lvl M → lc e₀ → e₀ ↝ e₁ → step_lvl lvl ⟨σ, M⟦e₀⟧⟩ ⟨σ, M⟦e₁⟧⟩
   | mutable : ∀ M σ₀ σ₁ e₀ e₁, ctx𝕄 lvl M → lc e₀ → head_mutable ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ → step_lvl lvl ⟨σ₀, M⟦e₀⟧⟩ ⟨σ₁, M⟦e₁⟧⟩
   | reflect : ∀ P E b σ, ctxℙ lvl P → ctx𝔼 E → lc b → step_lvl lvl ⟨σ, P⟦E⟦.reflect b⟧⟧⟩ ⟨σ, P⟦.lets𝕔 b E⟦.code (.bvar 0)⟧⟧⟩
 
-notation:max st₀ " ⇝ " st₁  => step_lvl 0 st₀ st₁
+notation st₀:39 " ⭢ " st₁:39  => step_lvl 0 st₀ st₁
 
 inductive stepn : (Store × Expr) → (Store × Expr) → Prop
   | refl : ∀ st, stepn st st
-  | multi : ∀ st₀ st₁ st₂, (st₀ ⇝ st₁) → stepn st₁ st₂ → stepn st₀ st₂
+  | multi : ∀ st₀ st₁ st₂, (st₀ ⭢ st₁) → stepn st₁ st₂ → stepn st₀ st₂
 
-notation:max st₀ " ⇝* " st₁  => stepn st₀ st₁
+notation st₀:39 " ⭢* " st₁:39  => stepn st₀ st₁
 
 inductive stepn_indexed : ℕ → (Store × Expr) → (Store × Expr) → Prop
   | refl : ∀ st, stepn_indexed 0 st st
-  | multi : ∀ k st₀ st₁ st₂, (st₀ ⇝ st₁) → stepn_indexed k st₁ st₂ → stepn_indexed (k + 1) st₀ st₂
+  | multi : ∀ k st₀ st₁ st₂, (st₀ ⭢ st₁) → stepn_indexed k st₁ st₂ → stepn_indexed (k + 1) st₀ st₂
 
-notation:max st₀ " ⇝ " "⟦" k "⟧ " st₁  => stepn_indexed k st₀ st₁
+notation st₀:39 " ⭢ " "⟦" k "⟧ " st₁:39  => stepn_indexed k st₀ st₁
 
-lemma stepn.trans : ∀ st₀ st₁ st₂, (st₀ ⇝* st₁) → (st₁ ⇝* st₂) → (st₀ ⇝* st₂) :=
+lemma stepn.trans : ∀ st₀ st₁ st₂, (st₀ ⭢* st₁) → (st₁ ⭢* st₂) → (st₀ ⭢* st₂) :=
   by
   intros st₀ st₁ st₂ Hstep₀ Hstep₁
   induction Hstep₀
@@ -56,7 +58,7 @@ lemma stepn.trans : ∀ st₀ st₁ st₂, (st₀ ⇝* st₁) → (st₁ ⇝* st
     apply stepn.multi
     apply H; apply IH; apply Hstep₁
 
-lemma stepn_indexed.trans : ∀ i j st₀ st₁ st₂, (st₀ ⇝ ⟦i⟧ st₁) → (st₁ ⇝ ⟦j⟧ st₂) → (st₀ ⇝ ⟦i + j⟧ st₂) :=
+lemma stepn_indexed.trans : ∀ i j st₀ st₁ st₂, (st₀ ⭢ ⟦i⟧ st₁) → (st₁ ⭢ ⟦j⟧ st₂) → (st₀ ⭢ ⟦i + j⟧ st₂) :=
   by
   intros i j st₀ st₁ st₂ Hstep₀ Hstep₁
   induction Hstep₀
@@ -67,7 +69,7 @@ lemma stepn_indexed.trans : ∀ i j st₀ st₁ st₂, (st₀ ⇝ ⟦i⟧ st₁)
     apply stepn_indexed.multi
     apply H; apply IH; apply Hstep₁
 
-lemma stepn_indexed_impl_stepn : ∀ k st₀ st₁, (st₀ ⇝ ⟦k⟧ st₁) → (st₀ ⇝* st₁) :=
+lemma stepn_indexed_impl_stepn : ∀ k st₀ st₁, (st₀ ⭢ ⟦k⟧ st₁) → (st₀ ⭢* st₁) :=
   by
   intros k st₀ st₁ Hstepn
   induction Hstepn
@@ -76,7 +78,7 @@ lemma stepn_indexed_impl_stepn : ∀ k st₀ st₁, (st₀ ⇝ ⟦k⟧ st₁) �
     apply stepn.multi
     apply H; apply IH
 
-lemma stepn_impl_stepn_indexed : ∀ st₀ st₁, (st₀ ⇝* st₁) → ∃ k, (st₀ ⇝ ⟦k⟧ st₁) :=
+lemma stepn_impl_stepn_indexed : ∀ st₀ st₁, (st₀ ⭢* st₁) → ∃ k, (st₀ ⭢ ⟦k⟧ st₁) :=
   by
   intros st₀ st₁ Hstepn
   induction Hstepn
@@ -87,7 +89,7 @@ lemma stepn_impl_stepn_indexed : ∀ st₀ st₁, (st₀ ⇝* st₁) → ∃ k, 
     apply stepn_indexed.multi
     apply H; apply IH
 
-lemma head_pure.fv_shrink : ∀ e₀ e₁, head_pure e₀ e₁ → fv e₁ ⊆ fv e₀ :=
+lemma head_pure.fv_shrink : ∀ e₀ e₁, e₀ ↝ e₁ → fv e₁ ⊆ fv e₀ :=
   by
   intros e₀ e₁ Hhead
   cases Hhead <;> simp
@@ -112,7 +114,7 @@ lemma head_mutable.store_grow : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨σ₀
   case load₁ => simp
   case store₁ Hpatch => simp [patch.length _ _ _ _ Hpatch]
 
-lemma lc.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → lc e₀ :=
+lemma lc.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) → lc e₀ :=
   by
   intros σ₀ σ₁ e₀ e₁ Hstep
   cases Hstep
@@ -125,7 +127,7 @@ lemma lc.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁
     apply lc.under_ctx𝔼; apply HE
     apply Hlc
 
-lemma lc.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
+lemma lc.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
   by
   intros σ₀ σ₂ e₀ e₂
   generalize HEq₀ : (σ₀, e₀) = st₀
@@ -141,7 +143,7 @@ lemma lc.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* ⟨σ�
     simp [← HEq₀] at H
     apply H
 
-lemma lc.under_stepn_indexed : ∀ k σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟦k⟧ ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
+lemma lc.under_stepn_indexed : ∀ k σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⭢ ⟦k⟧ ⟨σ₁, e₁⟩) → lc e₁ → lc e₀ :=
   by
   intros k σ₀ σ₂ e₀ e₂
   generalize HEq₀ : (σ₀, e₀) = st₀
@@ -157,7 +159,7 @@ lemma lc.under_stepn_indexed : ∀ k σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ �
     simp [← HEq₀] at H
     apply H
 
-lemma grounded.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → grounded e₀ → grounded e₁ :=
+lemma grounded.under_head_pure : ∀ e₀ e₁, e₀ ↝ e₁ → grounded e₀ → grounded e₁ :=
   by
   intros e₀ e₁ Hhead HG
   cases Hhead <;> simp at *
@@ -176,7 +178,7 @@ lemma grounded.under_head_mutable : ∀ σ₀ σ₁ e₀ e₁, head_mutable ⟨�
   intros σ₀ σ₁ e₀ e₁ Hmut HG
   cases Hmut <;> simp
 
-lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
+lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
   by
   intros σ₀ σ₁ e₀ e₁ Hstep HG
   cases Hstep
@@ -194,7 +196,7 @@ lemma grounded.under_step : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝ �
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma grounded.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
+lemma grounded.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) → grounded e₀ → grounded e₁ :=
   by
   intros σ₀ σ₂ e₀ e₂
   generalize HEq₀ : (σ₀, e₀) = st₀
@@ -211,7 +213,7 @@ lemma grounded.under_stepn : ∀ σ₀ σ₁ e₀ e₁, (⟨σ₀, e₀⟩ ⇝* 
     apply grounded.under_step _ _ _ _ Hstep
     simp [← HEq₀]; apply HG
 
-lemma store_free.under_head_pure : ∀ e₀ e₁, head_pure e₀ e₁ → store_free e₀ → store_free e₁ :=
+lemma store_free.under_head_pure : ∀ e₀ e₁, e₀ ↝ e₁ → store_free e₀ → store_free e₁ :=
   by
   intros e₀ e₁ Hhead
   cases Hhead <;> simp

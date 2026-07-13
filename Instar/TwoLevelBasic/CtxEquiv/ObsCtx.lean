@@ -109,14 +109,14 @@ lemma typing.congruence_under_ObsCtxℂ :
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ C⟦Γ ⊢ τ⟧ : ℕ).
---   ∀ v. C⟦e₀⟧ ⇝* v ↔ C⟦e₁⟧ ⇝* v
+--   ∀ v. C⟦e₀⟧ ⭢* v ↔ C⟦e₁⟧ ⭢* v
 @[simp]
 def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   typing Γ 𝟚 e₀ τ ⊥ ∧
   typing Γ 𝟚 e₁ τ ⊥ ∧
     ∀ C, ObsCtxℂ Γ τ C ⦰ .nat →
     ∀ v, value v → (
-      (C⟦e₀⟧ ⇝* v) ↔ (C⟦e₁⟧ ⇝* v)
+      (C⟦e₀⟧ ⭢* v) ↔ (C⟦e₁⟧ ⭢* v)
     )
 
 lemma ctx_equiv.congruence_under_ObsCtx𝔹 :

@@ -8,7 +8,7 @@ lemma value_ctx𝕄_impl_ctx_is_hole : ∀ lvl M e, ctx𝕄 lvl M → value M⟦
   case cons𝔹 HB _ => exfalso; apply not_value.under_ctx𝔹; apply HB; apply Hvalue
   case consℝ HR _ => exfalso; apply not_value.under_ctxℝ; apply HR; apply Hvalue
 
-lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀, v⟩ ⇝ ⟨σ₁, e⟩) :=
+lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀, v⟩ ⭢ ⟨σ₁, e⟩) :=
   by
   intros σ₀ σ₁ v e Hvalue Hstep
   cases Hstep
@@ -30,7 +30,7 @@ lemma step.value_impl_termination : ∀ σ₀ σ₁ v e, value v → ¬(⟨σ₀
 lemma stepn.value_impl_termination :
   ∀ σ₀ σ₁ v₀ v₁,
     value v₀ →
-    (⟨σ₀, v₀⟩ ⇝* ⟨σ₁, v₁⟩) →
+    (⟨σ₀, v₀⟩ ⭢* ⟨σ₁, v₁⟩) →
     σ₀ = σ₁ ∧ v₀ = v₁ :=
   by
   intros σ₀ σ₁ v₀ v₁ Hvalue Hstepn
@@ -42,11 +42,11 @@ lemma stepn.value_impl_termination :
 
 theorem stepn.church_rosser :
   ∀ st stl str,
-    (st ⇝* stl) →
-    (st ⇝* str) →
+    (st ⭢* stl) →
+    (st ⭢* str) →
     ∃ stv,
-      (stl ⇝* stv) ∧
-      (str ⇝* stv) :=
+      (stl ⭢* stv) ∧
+      (str ⭢* stv) :=
   by
   intros st stl str Hstepl Hstepr
   induction Hstepl generalizing str
@@ -70,8 +70,8 @@ theorem stepn.church_rosser :
 
 theorem stepn.unique_normal_forms :
   ∀ σ σ₀ σ₁ e v₀ v₁,
-    (⟨σ, e⟩ ⇝* ⟨σ₀, v₀⟩) →
-    (⟨σ, e⟩ ⇝* ⟨σ₁, v₁⟩) →
+    (⟨σ, e⟩ ⭢* ⟨σ₀, v₀⟩) →
+    (⟨σ, e⟩ ⭢* ⟨σ₁, v₁⟩) →
     value v₀ →
     value v₁ →
     σ₀ = σ₁ ∧ v₀ = v₁ :=

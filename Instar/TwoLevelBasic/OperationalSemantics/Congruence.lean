@@ -1,6 +1,6 @@
 import Instar.TwoLevelBasic.OperationalSemantics.SmallStep
 
-lemma step_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝ e₁) → (B⟦e₀⟧ ⇝ B⟦e₁⟧) :=
+lemma step_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⭢ e₁) → (B⟦e₀⟧ ⭢ B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstep
   cases Hstep
@@ -15,7 +15,7 @@ lemma step_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → gr
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma step_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⇝ e₁) → (E⟦e₀⟧ ⇝ E⟦e₁⟧) :=
+lemma step_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⭢ e₁) → (E⟦e₀⟧ ⭢ E⟦e₁⟧) :=
   by
   intros E e₀ e₁ HE HG Hstep
   cases Hstep
@@ -30,7 +30,7 @@ lemma step_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → gr
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
-lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⇝* e₁) → (B⟦e₀⟧ ⇝* B⟦e₁⟧) :=
+lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → grounded e₀ → (e₀ ⭢* e₁) → (B⟦e₀⟧ ⭢* B⟦e₁⟧) :=
   by
   intros B e₀ e₁ HB HG Hstepn
   induction Hstepn
@@ -42,7 +42,7 @@ lemma stepn_grounded.congruence_under_ctx𝔹 : ∀ B e₀ e₁, ctx𝔹 B → g
     apply IH; apply grounded.under_step
     apply H; apply HG
 
-lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⇝* e₁) → (E⟦e₀⟧ ⇝* E⟦e₁⟧) :=
+lemma stepn_grounded.congruence_under_ctx𝔼 : ∀ E e₀ e₁, ctx𝔼 E → grounded e₀ → (e₀ ⭢* e₁) → (E⟦e₀⟧ ⭢* E⟦e₁⟧) :=
   by
   intros E e₀ e₁ HE HG Hstepn
   induction Hstepn

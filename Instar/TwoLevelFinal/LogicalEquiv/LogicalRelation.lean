@@ -53,10 +53,10 @@ def log_approx_value : KripkeWorld → Expr → Expr → Ty → Prop
 -- 𝓔⟦τ⟧ ≜ {
 --   (k, 𝓦₀, e₀, e₁) |
 --   ∀ j ≤ k, (σ₀, σ₁) : 𝓦₀, σ₂, v₀.
---   ⟨σ₀, e₀⟩ ⇝ⱼ ⟨σ₂, v₀⟩ →
+--   ⟨σ₀, e₀⟩ ⭢ⱼ ⟨σ₂, v₀⟩ →
 --   ∃ 𝓦₁, σ₃, v₁.
 --     (k - j, 𝓦₁) ⊒ (k, 𝓦₀) ∧
---     ⟨σ₁, e₁⟩ ⇝* ⟨σ₃, v₁⟩ ∧
+--     ⟨σ₁, e₁⟩ ⭢* ⟨σ₃, v₁⟩ ∧
 --     (σ₂, σ₃) : 𝓦₁ ∧
 --     (k - j, 𝓦₁, v₀, v₁) ∈ 𝓥⟦τ⟧
 -- }
@@ -65,10 +65,10 @@ def log_approx_expr : KripkeWorld → Expr → Expr → Ty → Prop
   | (k, 𝓦₀), e₀, e₁, τ =>
     ∀ j, j < k →
     ∀ σ₀ σ₁, log_well_store 𝓦₀ σ₀ σ₁ →
-    ∀ σ₂ v₀, value v₀ → (⟨σ₀, e₀⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩) →
+    ∀ σ₂ v₀, value v₀ → (⟨σ₀, e₀⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩) →
     ∃ 𝓦₁ σ₃ v₁,
       ((k - j, 𝓦₁) ⊒ (k, 𝓦₀)) ∧
-      (⟨σ₁, e₁⟩ ⇝* ⟨σ₃, v₁⟩) ∧
+      (⟨σ₁, e₁⟩ ⭢* ⟨σ₃, v₁⟩) ∧
       log_well_store 𝓦₁ σ₂ σ₃ ∧
       log_approx_value (k - j, 𝓦₁) v₀ v₁ τ
 end

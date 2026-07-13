@@ -27,7 +27,7 @@ def log_equiv_value : Expr → Expr → Ty → Prop
 @[simp]
 def log_equiv_expr (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   ∃ v₀ v₁,
-    (e₀ ⇝* v₀) ∧ (e₁ ⇝* v₁) ∧ log_equiv_value v₀ v₁ τ
+    (e₀ ⭢* v₀) ∧ (e₁ ⭢* v₁) ∧ log_equiv_value v₀ v₁ τ
 end
 
 inductive typing.subst : Subst → TEnv → Prop where

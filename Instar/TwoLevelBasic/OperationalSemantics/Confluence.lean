@@ -8,7 +8,7 @@ lemma value_ctx𝕄_impl_ctx_is_hole : ∀ lvl M e, ctx𝕄 lvl M → value M⟦
   case cons𝔹 HB _ => exfalso; apply not_value.under_ctx𝔹; apply HB; apply Hvalue
   case consℝ HR _ => exfalso; apply not_value.under_ctxℝ; apply HR; apply Hvalue
 
-lemma step.value_impl_termination : ∀ v e, value v → ¬(v ⇝ e) :=
+lemma step.value_impl_termination : ∀ v e, value v → ¬(v ⭢ e) :=
   by
   intros v e Hvalue Hstep
   cases Hstep
@@ -24,7 +24,7 @@ lemma step.value_impl_termination : ∀ v e, value v → ¬(v ⇝ e) :=
     rw [ctx_comp P E, value_ctx𝕄_impl_ctx_is_hole _ _ _ HM Hvalue] at Hvalue
     nomatch Hvalue
 
-lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇝* v₁) → v₀ = v₁ :=
+lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⭢* v₁) → v₀ = v₁ :=
   by
   intros v₀ v₁ Hvalue Hstepn
   cases Hstepn
@@ -35,11 +35,11 @@ lemma stepn.value_impl_termination : ∀ v₀ v₁, value v₀ → (v₀ ⇝* v�
 
 theorem stepn.church_rosser :
   ∀ e l r,
-    (e ⇝* l) →
-    (e ⇝* r) →
+    (e ⭢* l) →
+    (e ⭢* r) →
     ∃ v,
-      (l ⇝* v) ∧
-      (r ⇝* v) :=
+      (l ⭢* v) ∧
+      (r ⭢* v) :=
   by
   intros e l r Hstepl Hstepr
   induction Hstepl generalizing r
@@ -60,8 +60,8 @@ theorem stepn.church_rosser :
 
 theorem stepn.unique_normal_forms :
   ∀ e v₀ v₁,
-    (e ⇝* v₀) →
-    (e ⇝* v₁) →
+    (e ⭢* v₀) →
+    (e ⭢* v₁) →
     value v₀ →
     value v₁ →
     v₀ = v₁ :=

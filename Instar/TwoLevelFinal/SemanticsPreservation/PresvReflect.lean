@@ -351,20 +351,20 @@ theorem semantics_preservation.reflect.head :
       simp at HG₀
       --
       --
-      -- ⟨σ₀, E₀⟦γ₀‖b‖⟧⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+      -- ⟨σ₀, E₀⟦γ₀‖b‖⟧⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
       -- ——————————————————————————————
       -- i₀ + i₁ = j
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+      -- ⟨σ₀, γ₀‖b‖⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
       simp [HEqE₀, HEqE₁, - log_approx_expr]
       simp only [log_approx_expr]
       intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
       have ⟨imσ₀, i₀, i₁, bv₀, HEqj, HvalueBind₀, HstepBind₀, HstepE₀⟩ := stepn_indexed.refine_at_ctx𝔼 _ _ _ _ _ _ HE₀ Hvalue₀ HG₀ Hstep₀      --
       --
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+      -- ⟨σ₀, γ₀‖b‖⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
       -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
       -- ———————————————————————————————
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
+      -- ⟨σ₁, γ₁‖b‖⟩ ⭢* ⟨imσ₁, bv₁⟩
       -- (imσ₀, imσ₁) : 𝓦₁
       -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
       have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
@@ -410,10 +410,10 @@ theorem semantics_preservation.reflect.head :
       rw [HEqE₀, HEqE₁] at Hsem_exprE
       --
       --
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
       -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
       -- ———————————————————————————————————————
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⭢* ⟨σ₃, v₁⟩
       -- (σ₂, σ₃) : 𝓦₂
       -- (k - i₀ - i₁, 𝓦₂, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       simp only [log_approx_expr] at Hsem_exprE
@@ -421,10 +421,10 @@ theorem semantics_preservation.reflect.head :
       have ⟨_, Hfuture₁⟩ := Hfuture₁
       --
       --
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨σ₁, γ₁‖b‖⟩ ⭢* ⟨imσ₁, bv₁⟩
+      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⭢* ⟨σ₃, v₁⟩
       -- —————————————————————————————————————————
-      -- ⟨σ₁, lets x = γ₁‖b‖ in E₁⟦x⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨σ₁, lets x = γ₁‖b‖ in E₁⟦x⟧⟩ ⭢* ⟨σ₃, v₁⟩
       exists 𝓦₂, σ₃, v₁
       constructor
       . constructor; omega
@@ -472,11 +472,11 @@ theorem semantics_preservation.reflect.head :
       simp at HG₀
       --
       --
-      -- ⟨σ₀, lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖⟩ ⇝ ⟦j⟧ ⟨σ₂, v₀⟩
+      -- ⟨σ₀, lets x = γ₀‖b‖ in γ₀‖E⟦x⟧‖⟩ ⭢ ⟦j⟧ ⟨σ₂, v₀⟩
       -- ———————————————————————————————————————————————
       -- i₀ + 1 + i₁ = j
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+      -- ⟨σ₀, γ₀‖b‖⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
       simp [HEqE₀, HEqE₁, - log_approx_expr]
       simp only [log_approx_expr]
       intros j Hindexj σ₀ σ₁ Hsem_store σ₂ v₀ Hvalue₀ Hstep₀
@@ -484,10 +484,10 @@ theorem semantics_preservation.reflect.head :
       simp [opening.under_ctx𝔼 _ _ _ _ HE₀] at HstepE₀
       --
       --
-      -- ⟨σ₀, γ₀‖b‖⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
+      -- ⟨σ₀, γ₀‖b‖⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, bv₀⟩
       -- ‖Γ‖ ⊧ ‖b‖ ≤𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
       -- —————————————————————————————————
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
+      -- ⟨σ₁, γ₁‖b‖⟩ ⭢* ⟨imσ₁, bv₁⟩
       -- (imσ₀, imσ₁) : 𝓦₁
       -- (k - i₀, 𝓦₁, bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
       have ⟨_, _, IHb⟩ := log_approx.fundamental _ _ _ HEτb₀
@@ -532,10 +532,10 @@ theorem semantics_preservation.reflect.head :
       rw [HEqE₀, HEqE₁] at Hsem_exprE
       --
       --
-      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⇝ ⟦i₁⟧ ⟨σ₂, v₀⟩
+      -- ⟨imσ₀, E₀⟦bv₀⟧⟩ ⭢ ⟦i₁⟧ ⟨σ₂, v₀⟩
       -- (k - i₀, 𝓦₁, E₀⟦bv₀⟧, E₁⟦bv₁⟧) ∈ 𝓔⟦‖τ‖⟧
       -- ———————————————————————————————————————
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⭢* ⟨σ₃, v₁⟩
       -- (σ₂, σ₃) : 𝓦₂
       -- (k - i₀ - i₁, 𝓦₂, v₀, v₁) ∈ 𝓥⟦‖τ‖⟧
       simp only [log_approx_expr] at Hsem_exprE
@@ -543,10 +543,10 @@ theorem semantics_preservation.reflect.head :
       have ⟨_, Hfuture₁⟩ := Hfuture₁
       --
       --
-      -- ⟨σ₁, γ₁‖b‖⟩ ⇝* ⟨imσ₁, bv₁⟩
-      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨σ₁, γ₁‖b‖⟩ ⭢* ⟨imσ₁, bv₁⟩
+      -- ⟨imσ₁, E₁⟦bv₁⟧⟩ ⭢* ⟨σ₃, v₁⟩
       -- ————————————————————————————
-      -- ⟨σ₁, E₁⟦γ₁‖b‖⟧⟩ ⇝* ⟨σ₃, v₁⟩
+      -- ⟨σ₁, E₁⟦γ₁‖b‖⟧⟩ ⭢* ⟨σ₃, v₁⟩
       exists 𝓦₂, σ₃, v₁
       constructor
       . constructor; omega

@@ -166,8 +166,8 @@ theorem semantics_preservation.reflect.head :
     --
     -- ‖Γ‖ ⊧ ‖b‖ ≈𝑙𝑜𝑔 ‖b‖ : ‖τ𝕖‖
     -- —————————————————————————
-    -- γ₀‖b‖ ⇝* bv₀
-    -- γ₁‖b‖ ⇝* bv₁
+    -- γ₀‖b‖ ⭢* bv₀
+    -- γ₁‖b‖ ⭢* bv₁
     -- (bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
     have ⟨_, _, IHb⟩ := log_equiv.fundamental _ _ _ HEτb₀
     simp only [log_equiv_expr] at IHb
@@ -181,8 +181,8 @@ theorem semantics_preservation.reflect.head :
     -- ‖Γ‖ ⊧ ‖E⟦x⟧‖ ≈𝑙𝑜𝑔 ‖E⟦x⟧‖ : ‖τ‖
     -- (bv₀, bv₁) ∈ 𝓥⟦‖τ𝕖‖⟧
     -- ———————————————————————————————————————————————————————————
-    -- (x ↦ bv₀, γ₀)‖E⟦x⟧‖ ⇝* v₀
-    -- (x ↦ bv₁, γ₁)‖E⟦x⟧‖ ⇝* v₁
+    -- (x ↦ bv₀, γ₀)‖E⟦x⟧‖ ⭢* v₀
+    -- (x ↦ bv₁, γ₁)‖E⟦x⟧‖ ⭢* v₁
     -- (v₀, v₁) ∈ 𝓔⟦‖τ‖⟧
     have ⟨_, _, IHE⟩ := log_equiv.fundamental _ _ _ HEτE₀
     simp only [log_equiv_expr] at IHE
@@ -194,10 +194,10 @@ theorem semantics_preservation.reflect.head :
     constructor
     --
     --
-    -- γ₀‖b‖ ⇝* bv₀
-    -- (x ↦ bv₀, γ₀)‖E⟦x⟧‖ ⇝* v₀
+    -- γ₀‖b‖ ⭢* bv₀
+    -- (x ↦ bv₀, γ₀)‖E⟦x⟧‖ ⭢* v₀
     -- —————————————————————————
-    -- γ₀‖E⟦b⟧‖ ⇝* v₀
+    -- γ₀‖E⟦b⟧‖ ⭢* v₀
     . simp [HEqE₀]
       have HEqE₀ : (msubst (bv₀ :: γ₀) ‖E⟦.fvar Γ.length⟧‖) = E₀⟦bv₀⟧:=
         by
@@ -212,10 +212,10 @@ theorem semantics_preservation.reflect.head :
     constructor
     --
     --
-    -- γ₁‖b‖ ⇝* bv₁
-    -- (x ↦ bv₁, γ₁)‖E⟦x⟧‖ ⇝* v₀
+    -- γ₁‖b‖ ⭢* bv₁
+    -- (x ↦ bv₁, γ₁)‖E⟦x⟧‖ ⭢* v₀
     -- —————————————————————————
-    -- lets x = γ₁‖b‖ in γ₁‖E⟦x⟧‖ ⇝* v₀
+    -- lets x = γ₁‖b‖ in γ₁‖E⟦x⟧‖ ⭢* v₀
     . simp [HEqE₁]
       have HEqE₁ : (msubst (bv₁ :: γ₁) ‖E⟦.fvar Γ.length⟧‖) = E₁⟦bv₁⟧:=
         by

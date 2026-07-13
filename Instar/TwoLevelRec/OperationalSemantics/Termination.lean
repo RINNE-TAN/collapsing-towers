@@ -1,13 +1,13 @@
 import Instar.TwoLevelRec.OperationalSemantics.Refine
 
--- e₁⇓ ≜ ∃ v, e ⇝* v
+-- e₁⇓ ≜ ∃ v, e ⭢* v
 @[simp]
 def termination (e : Expr) : Prop :=
-  ∃ v, value v ∧ e ⇝* v
+  ∃ v, value v ∧ e ⭢* v
 
 lemma termination.under_stepn :
   ∀ e₀ e₁,
-    (e₀ ⇝* e₁) →
+    (e₀ ⭢* e₁) →
     (termination e₀ ↔ termination e₁) :=
   by
   intros e₀ e₁ Hstepl
@@ -26,7 +26,7 @@ lemma termination.under_stepn :
     . apply Hvalue
     . apply stepn.trans _ _ _ Hstepl Hstepr
 
-lemma termination.refl : ∀ z e, (e ⇝ ⟦z⟧ e) → termination e → z = 0 :=
+lemma termination.refl : ∀ z e, (e ⭢ ⟦z⟧ e) → termination e → z = 0 :=
   by
   intros zl₀ e Hstepl₀ Htermination
   have ⟨v, Hvalue, Hstepr₀⟩ := Htermination
@@ -58,9 +58,9 @@ theorem divergence : ¬termination diverge :=
     repeat constructor
   --
   --
-  -- ⇝ F @ fix(F) @ 17
+  -- ⭢ F @ fix(F) @ 17
   have Hstep₀ : (
-    (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17)) ⇝
+    (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17)) ⭢
     (.app₁ (.app₁ F (.fix₁ F)) (.lit 17))
   ) :=
     by
@@ -70,9 +70,9 @@ theorem divergence : ¬termination diverge :=
     repeat constructor
   --
   --
-  -- ⇝ F @ (λx.F @ fix(F) @ x) @ 17
+  -- ⭢ F @ (λx.F @ fix(F) @ x) @ 17
   have Hstep₁ : (
-    (.app₁ (.app₁ F (.fix₁ F)) (.lit 17)) ⇝
+    (.app₁ (.app₁ F (.fix₁ F)) (.lit 17)) ⭢
     (.app₁ (.app₁ F (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0)))) (.lit 17))
   ) :=
     by
@@ -84,9 +84,9 @@ theorem divergence : ¬termination diverge :=
     repeat constructor
   --
   --
-  -- ⇝ (λx.(λy.F @ fix(F) @ y) @ x) @ 17
+  -- ⭢ (λx.(λy.F @ fix(F) @ y) @ x) @ 17
   have Hstep₂ : (
-    (.app₁ (.app₁ F (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0)))) (.lit 17)) ⇝
+    (.app₁ (.app₁ F (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0)))) (.lit 17)) ⭢
     (.app₁ (.lam (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.bvar 0))) (.lit 17))
   ) :=
     by
@@ -97,9 +97,9 @@ theorem divergence : ¬termination diverge :=
     repeat constructor
   --
   --
-  -- ⇝ (λx.F @ fix(F) @ x) @ 17
+  -- ⭢ (λx.F @ fix(F) @ x) @ 17
   have Hstep₃ : (
-    (.app₁ (.lam (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.bvar 0))) (.lit 17)) ⇝
+    (.app₁ (.lam (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.bvar 0))) (.lit 17)) ⭢
     (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17))
   ) :=
     by
@@ -109,9 +109,9 @@ theorem divergence : ¬termination diverge :=
     repeat constructor
   --
   --
-  -- (λx.F @ fix(F) @ x) @ 17 ⇝ ⟦4⟧ (λx.F @ fix(F) @ x) @ 17
+  -- (λx.F @ fix(F) @ x) @ 17 ⭢ ⟦4⟧ (λx.F @ fix(F) @ x) @ 17
   have Hstepn : (
-    (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17)) ⇝ ⟦4⟧
+    (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17)) ⭢ ⟦4⟧
     (.app₁ (.lam (.app₁ (.app₁ F (.fix₁ F)) (.bvar 0))) (.lit 17))
   ) :=
     by

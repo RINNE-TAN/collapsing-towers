@@ -76,7 +76,7 @@ theorem typing.escape :
 
 theorem preservation.pure.head :
   ∀ Γ e₀ e₁ τ φ₀,
-    head_pure e₀ e₁ →
+    e₀ ↝ e₁ →
     typing Γ 𝟙 e₀ τ φ₀ →
     ∃ φ₁,
       typing Γ 𝟙 e₁ τ φ₁ ∧
@@ -283,7 +283,7 @@ theorem preservation.pure :
   ∀ Γ M e₀ e₁ τ φ₀,
     ctx𝕄 Γ.length M →
     lc e₀ →
-    head_pure e₀ e₁ →
+    e₀ ↝ e₁ →
     typing Γ 𝟙 M⟦e₀⟧ τ φ₀ →
     ∃ φ₁,
       typing Γ 𝟙 M⟦e₁⟧ τ φ₁ ∧

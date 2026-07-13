@@ -14,7 +14,7 @@ namespace Power
 --     ) in
 -- power(47)(2)
 --
--- ⇝*
+-- ⭢*
 --
 -- 2209
 
@@ -480,25 +480,25 @@ def expr𝕩𝕩₁ : Expr :=
 def expr𝕩𝕩₂ : Expr :=
   .lit 2209
 
-example : (⟨ϵ, expr₀⟩ ⇝ ⟨ϵ, expr₁⟩) := by
+example : (⟨ϵ, expr₀⟩ ⭢ ⟨ϵ, expr₁⟩) := by
   apply step_lvl.pure id
   repeat constructor
 
-example : (⟨ϵ, expr₁⟩ ⇝ ⟨ϵ, expr₂⟩) := by
+example : (⟨ϵ, expr₁⟩ ⭢ ⟨ϵ, expr₂⟩) := by
   apply step_lvl.pure (fun X => .app₁ X _)
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr₂⟩ ⇝ ⟨ϵ, expr₃⟩) := by
+example : (⟨ϵ, expr₂⟩ ⭢ ⟨ϵ, expr₃⟩) := by
   apply step_lvl.pure (fun X => .app₁ X _)
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr₃⟩ ⇝ ⟨ϵ, expr₄⟩) := by
+example : (⟨ϵ, expr₃⟩ ⭢ ⟨ϵ, expr₄⟩) := by
   apply step_lvl.pure id
   repeat constructor
 
-example : (⟨ϵ, expr₄⟩ ⇝ ⟨ϵ, expr₅⟩) := by
+example : (⟨ϵ, expr₄⟩ ⭢ ⟨ϵ, expr₅⟩) := by
   let left : Expr :=
     .lam { 2 ⇛
     .lam { 3 ⇛
@@ -509,20 +509,20 @@ example : (⟨ϵ, expr₄⟩ ⇝ ⟨ϵ, expr₅⟩) := by
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr₅⟩ ⇝ ⟨ϵ, expr₆⟩) := by
+example : (⟨ϵ, expr₅⟩ ⭢ ⟨ϵ, expr₆⟩) := by
   apply step_lvl.pure (fun X => .app₁ X _)
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr₆⟩ ⇝ ⟨ϵ, expr₇⟩) := by
+example : (⟨ϵ, expr₆⟩ ⭢ ⟨ϵ, expr₇⟩) := by
   apply step_lvl.pure id
   repeat constructor
 
-example : (⟨ϵ, expr₇⟩ ⇝ ⟨ϵ, expr₈⟩) := by
+example : (⟨ϵ, expr₇⟩ ⭢ ⟨ϵ, expr₈⟩) := by
   apply step_lvl.pure id
   repeat constructor
 
-example : (⟨ϵ, expr₈⟩ ⇝ ⟨ϵ, expr₉⟩) := by
+example : (⟨ϵ, expr₈⟩ ⭢ ⟨ϵ, expr₉⟩) := by
   let left : Expr :=
     .lam (
       .app₁ (
@@ -542,11 +542,11 @@ example : (⟨ϵ, expr₈⟩ ⇝ ⟨ϵ, expr₉⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.app₁ left X))
   repeat constructor
 
-example : (⟨ϵ, expr₉⟩ ⇝ ⟨ϵ, expr𝕩₀⟩) := by
+example : (⟨ϵ, expr₉⟩ ⭢ ⟨ϵ, expr𝕩₀⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ X)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₀⟩ ⇝ ⟨ϵ, expr𝕩₁⟩) := by
+example : (⟨ϵ, expr𝕩₀⟩ ⭢ ⟨ϵ, expr𝕩₁⟩) := by
   let left : Expr :=
     .lam { 2 ⇛
     .lam { 3 ⇛
@@ -558,21 +558,21 @@ example : (⟨ϵ, expr𝕩₀⟩ ⇝ ⟨ϵ, expr𝕩₁⟩) := by
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₁⟩ ⇝ ⟨ϵ, expr𝕩₂⟩) := by
+example : (⟨ϵ, expr𝕩₁⟩ ⭢ ⟨ϵ, expr𝕩₂⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.app₁ X _))
   repeat constructor
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₂⟩ ⇝ ⟨ϵ, expr𝕩₃⟩) := by
+example : (⟨ϵ, expr𝕩₂⟩ ⭢ ⟨ϵ, expr𝕩₃⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ X)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₃⟩ ⇝ ⟨ϵ, expr𝕩₄⟩) := by
+example : (⟨ϵ, expr𝕩₃⟩ ⭢ ⟨ϵ, expr𝕩₄⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ X)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₄⟩ ⇝ ⟨ϵ, expr𝕩₅⟩) := by
+example : (⟨ϵ, expr𝕩₄⟩ ⭢ ⟨ϵ, expr𝕩₅⟩) := by
   let left : Expr :=
     .lam (
       .app₁ (
@@ -592,11 +592,11 @@ example : (⟨ϵ, expr𝕩₄⟩ ⇝ ⟨ϵ, expr𝕩₅⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.binary₁ .mul _ (.app₁ left X)))
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₅⟩ ⇝ ⟨ϵ, expr𝕩₆⟩) := by
+example : (⟨ϵ, expr𝕩₅⟩ ⭢ ⟨ϵ, expr𝕩₆⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.binary₁ .mul _ X))
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₆⟩ ⇝ ⟨ϵ, expr𝕩₇⟩) := by
+example : (⟨ϵ, expr𝕩₆⟩ ⭢ ⟨ϵ, expr𝕩₇⟩) := by
   let left : Expr :=
     .lam { 2 ⇛
     .lam { 3 ⇛
@@ -608,25 +608,25 @@ example : (⟨ϵ, expr𝕩₆⟩ ⇝ ⟨ϵ, expr𝕩₇⟩) := by
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₇⟩ ⇝ ⟨ϵ, expr𝕩₈⟩) := by
+example : (⟨ϵ, expr𝕩₇⟩ ⭢ ⟨ϵ, expr𝕩₈⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.binary₁ .mul _ (.app₁ X _)))
   repeat constructor
   apply ctx𝕄.cons𝔹 (fun X => .app₁ X _)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₈⟩ ⇝ ⟨ϵ, expr𝕩₉⟩) := by
+example : (⟨ϵ, expr𝕩₈⟩ ⭢ ⟨ϵ, expr𝕩₉⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.binary₁ .mul _ X))
   repeat constructor
 
-example : (⟨ϵ, expr𝕩₉⟩ ⇝ ⟨ϵ, expr𝕩𝕩₀⟩) := by
+example : (⟨ϵ, expr𝕩₉⟩ ⭢ ⟨ϵ, expr𝕩𝕩₀⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ (.binary₁ .mul _ X))
   repeat constructor
 
-example : (⟨ϵ, expr𝕩𝕩₀⟩ ⇝ ⟨ϵ, expr𝕩𝕩₁⟩) := by
+example : (⟨ϵ, expr𝕩𝕩₀⟩ ⭢ ⟨ϵ, expr𝕩𝕩₁⟩) := by
   apply step_lvl.pure (fun X => .binary₁ .mul _ X)
   repeat constructor
 
-example : (⟨ϵ, expr𝕩𝕩₁⟩ ⇝ ⟨ϵ, expr𝕩𝕩₂⟩) := by
+example : (⟨ϵ, expr𝕩𝕩₁⟩ ⭢ ⟨ϵ, expr𝕩𝕩₂⟩) := by
   apply step_lvl.pure id
   repeat constructor
 

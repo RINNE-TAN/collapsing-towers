@@ -150,10 +150,10 @@ lemma ciu_approx_respects_log_approx_value :
       -- n₁ < n₂
       -- E = fun X => if (X - n₁) then 0 else diverge
       -- —————————————————————————————————————————————
-      -- E⟦n₁⟧ ⇝* 0
-      -- E⟦n₂⟧ ⇝* diverge
+      -- E⟦n₁⟧ ⭢* 0
+      -- E⟦n₂⟧ ⭢* diverge
       -- ⦰ ⊢ E⟦⦰ ⊢ ℕ⟧ : ℕ
-      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₁)) (.lit 0) diverge) ⇝* (.lit 0)) :=
+      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₁)) (.lit 0) diverge) ⭢* (.lit 0)) :=
         by
         -- head sub
         apply stepn.multi
@@ -166,7 +166,7 @@ lemma ciu_approx_respects_log_approx_value :
         apply step_lvl.pure _ _ _ ctx𝕄.hole
         . simp; apply typing.regular _ _ _ _ _ typing_diverge
         . simp; apply head.ifz₁_then
-      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₁)) (.lit 0) diverge) ⇝* diverge) :=
+      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₁)) (.lit 0) diverge) ⭢* diverge) :=
         by
         -- head sub
         apply stepn.multi
@@ -203,7 +203,7 @@ lemma ciu_approx_respects_log_approx_value :
       --
       --
       -- E⟦n₂⟧⇓
-      -- E⟦n₂⟧ ⇝* diverge
+      -- E⟦n₂⟧ ⭢* diverge
       -- ——————————————————
       -- diverge⇓
       rw [← termination.under_stepn]
@@ -217,10 +217,10 @@ lemma ciu_approx_respects_log_approx_value :
       -- n₁ > n₂
       -- E = fun X => if (X - n₂) then diverge else 0
       -- —————————————————————————————————————————————
-      -- E⟦n₁⟧ ⇝* 0
-      -- E⟦n₂⟧ ⇝* diverge
+      -- E⟦n₁⟧ ⭢* 0
+      -- E⟦n₂⟧ ⭢* diverge
       -- ⦰ ⊢ E⟦⦰ ⊢ ℕ⟧ : ℕ
-      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₂)) diverge (.lit 0)) ⇝* (.lit 0)) :=
+      have Hstep₁ : ((.ifz₁ (.binary₁ .sub (.lit n₁) (.lit n₂)) diverge (.lit 0)) ⭢* (.lit 0)) :=
         by
         -- head sub
         apply stepn.multi
@@ -235,7 +235,7 @@ lemma ciu_approx_respects_log_approx_value :
         . have ⟨n, HEqn⟩ : ∃ n, n₁ - n₂ = n + 1 := by exists n₁ - n₂ - 1; omega
           simp [HEqn]
           apply head.ifz₁_else
-      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₂)) diverge (.lit 0)) ⇝* diverge) :=
+      have Hstep₂ : ((.ifz₁ (.binary₁ .sub (.lit n₂) (.lit n₂)) diverge (.lit 0)) ⭢* diverge) :=
         by
         -- head sub
         apply stepn.multi
@@ -270,7 +270,7 @@ lemma ciu_approx_respects_log_approx_value :
       --
       --
       -- E⟦n₂⟧⇓
-      -- E⟦n₂⟧ ⇝* diverge
+      -- E⟦n₂⟧ ⭢* diverge
       -- ——————————————————
       -- diverge⇓
       rw [← termination.under_stepn]
@@ -303,10 +303,10 @@ lemma ciu_approx_respects_log_approx_value :
     simp only [log_approx_expr] at Hsem_expr
     --
     --
-    -- λx.e₀ @ argv₀ ⇝ ⟦i⟧ v₀
+    -- λx.e₀ @ argv₀ ⭢ ⟦i⟧ v₀
     -- (j, λx.e₀ @ argv₀, λx.e₁ @ argv₁) ∈ 𝓔⟦τ𝕓⟧
     -- —————————————————————————————————————————
-    -- λx.e₁ @ argv₁ ⇝* v₁
+    -- λx.e₁ @ argv₁ ⭢* v₁
     -- (j - i, v₀, v₁) ∈ 𝓥⟦τ𝕓⟧
     have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr i Hindexi v₀ Hvalue₀ Hstep₀
     have ⟨Hvalue₀, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
@@ -315,9 +315,9 @@ lemma ciu_approx_respects_log_approx_value :
     --
     -- ⦰ ⊢ (fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕓
     -- ⦰ ⊧ λx.e₁ ≤𝑐𝑖𝑢 λx.e₂ : τ𝕒 → τ𝕓
-    -- λx.e₁ @ argv₁ ⇝* v₁
+    -- λx.e₁ @ argv₁ ⭢* v₁
     -- ———————————————————————————————————
-    -- λx.e₂ @ argv₁ ⇝* v₂
+    -- λx.e₂ @ argv₁ ⭢* v₂
     have HE : ctx𝔼 (fun X => .app₁ X argv₁) := ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁)) ctx𝔼.hole
     have HτE : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (fun X => .app₁ X argv₁) ⦰ τ𝕓 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ (ObsCtxℂ.hole _ _) (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
     have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists v₁)
@@ -325,7 +325,7 @@ lemma ciu_approx_respects_log_approx_value :
     --
     -- ⦰ ⊢ λx.e₂ : τ𝕒 → τ𝕓
     -- ⦰ ⊢ argv₁ : τ𝕒
-    -- λx.e₂ @ argv₁ ⇝* v₂
+    -- λx.e₂ @ argv₁ ⭢* v₂
     -- ————————————————————
     -- ⦰ ⊢ v₂ : τ𝕓
     have Hτv₂ : typing ⦰ 𝟚 v₂ τ𝕓 ⊥ :=
@@ -342,7 +342,7 @@ lemma ciu_approx_respects_log_approx_value :
       cases γ <;> cases Hγ
       --
       --
-      -- λx.e₁ @ argv₁ ⇝* v₁
+      -- λx.e₁ @ argv₁ ⭢* v₁
       -- E⟦v₁⟧⇓
       -- ————————————————————
       -- E⟦λx.e₁ @ argv₁⟧⇓
@@ -374,7 +374,7 @@ lemma ciu_approx_respects_log_approx_value :
       --
       --
       -- E⟦λx.e₂ @ argv₁⟧⇓
-      -- λx.e₂ @ argv₁ ⇝* v₂
+      -- λx.e₂ @ argv₁ ⭢* v₂
       -- ———————————————————
       -- E⟦v₂⟧⇓
       rw [← termination.under_stepn]
@@ -407,10 +407,10 @@ theorem ciu_approx_impl_log_approx :
   intros j Hj v₀ Hvalue₀ Hstep₀
   --
   --
-  -- γ₀(e₀) ⇝ ⟦j⟧ v₀
+  -- γ₀(e₀) ⭢ ⟦j⟧ v₀
   -- Γ ⊢ e₀ : τ
   -- ——————————————————————
-  -- γ₁(e₀) ⇝* v₁
+  -- γ₁(e₀) ⭢* v₁
   -- (k - j, v₀, v₁) ∈ 𝓥⟦τ⟧
   have ⟨_, _, Hsem_expr⟩ := log_approx.fundamental _ _ _ Hτ₀
   simp only [log_approx_expr] at Hsem_expr
@@ -419,14 +419,14 @@ theorem ciu_approx_impl_log_approx :
   have ⟨Hτv₀, Hτv₁⟩ := log_approx_value.syntactic.typing _ _ _ _ Hsem_value
   --
   --
-  -- γ₁(e₀) ⇝* v₁
+  -- γ₁(e₀) ⭢* v₁
   -- Γ ⊧ e₀ ≤𝑐𝑖𝑢 e₁ : τ
   -- ——————————————————
-  -- γ₁(e₁) ⇝* v₂
+  -- γ₁(e₁) ⭢* v₂
   have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu _ Hγ₁ _ _ ctx𝔼.hole (ObsCtxℂ.hole _ _) (by exists v₁)
   --
   --
-  -- γ₁(e₁) ⇝* v₂
+  -- γ₁(e₁) ⭢* v₂
   -- ⦰ ⊢ γ₁(e₁) : τ
   -- ———————————————
   -- ⦰ ⊢ v₂ : τ
@@ -440,7 +440,7 @@ theorem ciu_approx_impl_log_approx :
     cases γ <;> cases Hγ
     --
     --
-    -- γ₁(e₀) ⇝* v₁
+    -- γ₁(e₀) ⭢* v₁
     -- E⟦v₁⟧⇓
     -- —————————————
     -- E⟦γ₁(e₀)⟧⇓
@@ -459,7 +459,7 @@ theorem ciu_approx_impl_log_approx :
     --
     --
     -- E⟦γ₁(e₁)⟧⇓
-    -- γ₁(e₁) ⇝* v₂
+    -- γ₁(e₁) ⭢* v₂
     -- —————————————
     -- E⟦v₂⟧⇓
     rw [← termination.under_stepn]

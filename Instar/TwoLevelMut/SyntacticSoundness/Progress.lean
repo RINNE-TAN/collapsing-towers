@@ -241,7 +241,7 @@ theorem progress.strengthened :
 theorem progress :
   ∀ σ₀ e₀ τ φ,
     typing_reification ⦰ e₀ τ φ →
-    (∃ σ₁ e₁, (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩)) ∨ value e₀ :=
+    (∃ σ₁ e₁, (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩)) ∨ value e₀ :=
   by
   intros _ _ _ _ Hτ
   apply progress.strengthened _ ⦰ _ _ _ Hτ (by simp)

@@ -1,16 +1,16 @@
 import Instar.TwoLevelFinal.OperationalSemantics.Confluence
 import Instar.TwoLevelFinal.OperationalSemantics.Congruence
 
--- ⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟨σ₁, r⟩
+-- ⟨σ₀, B⟦e₀⟧⟩ ⭢ ⟨σ₁, r⟩
 -- ———————————————————————————————————————————————
--- ⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟨σ₁, B⟦e₁⟧⟩ ∧ ⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩
+-- ⟨σ₀, B⟦e₀⟧⟩ ⭢ ⟨σ₁, B⟦e₁⟧⟩ ∧ ⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩
 lemma step.refine_at_ctx𝔹 :
   ∀ σ₀ σ₁ B₀ e₀ r,
     ctx𝔹 B₀ →
     ¬value e₀ →
     grounded B₀⟦e₀⟧  →
-    (⟨σ₀, B₀⟦e₀⟧⟩ ⇝ ⟨σ₁, r⟩) →
-    ∃ e₁, B₀⟦e₁⟧ = r ∧ (⟨σ₀, e₀⟩ ⇝ ⟨σ₁, e₁⟩) :=
+    (⟨σ₀, B₀⟦e₀⟧⟩ ⭢ ⟨σ₁, r⟩) →
+    ∃ e₁, B₀⟦e₁⟧ = r ∧ (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) :=
   by
   intros σ₀ σ₁ B₀ e₀ r HB₀ HNv HG
   generalize HEqe : B₀⟦e₀⟧ = E₀
@@ -65,20 +65,20 @@ lemma step.refine_at_ctx𝔹 :
     have HG := grounded.decompose_ctx𝔼 _ _ HE HG
     simp at HG
 
--- ⟨σ₀, B⟦e⟧⟩ ⇝ₖ ⟨σ₁, v⟩
+-- ⟨σ₀, B⟦e⟧⟩ ⭢ₖ ⟨σ₁, v⟩
 -- ———————————————————————————————————————————————————————————
--- k = i + j ∧ ⟨σ₀, e⟩ ⇝ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, B⟦v𝕖⟧⟩ ⇝ⱼ ⟨σ₁, v⟩
+-- k = i + j ∧ ⟨σ₀, e⟩ ⭢ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, B⟦v𝕖⟧⟩ ⭢ⱼ ⟨σ₁, v⟩
 lemma stepn_indexed.refine_at_ctx𝔹 :
   ∀ σ₀ σ₁ B e₀ v k,
     ctx𝔹 B →
     value v →
     grounded B⟦e₀⟧  →
-    (⟨σ₀, B⟦e₀⟧⟩ ⇝ ⟦k⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, B⟦e₀⟧⟩ ⭢ ⟦k⟧ ⟨σ₁, v⟩) →
     ∃ imσ i j v𝕖,
       i + j = k ∧
       value v𝕖 ∧
-      (⟨σ₀, e₀⟩ ⇝ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
-      (⟨imσ, B⟦v𝕖⟧⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, e₀⟩ ⭢ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
+      (⟨imσ, B⟦v𝕖⟧⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ B e₀ v k HB
   generalize HEq₀ : (σ₀, B⟦e₀⟧) = st₀
@@ -110,20 +110,20 @@ lemma stepn_indexed.refine_at_ctx𝔹 :
       constructor; apply stepn_indexed.multi
       apply Hstep₀; apply Hstep₁; apply Hstep₂
 
--- ⟨σ₀, E⟦e⟧⟩ ⇝ₖ ⟨σ₁, v⟩
+-- ⟨σ₀, E⟦e⟧⟩ ⭢ₖ ⟨σ₁, v⟩
 -- ———————————————————————————————————————————————————————————
--- k = i + j ∧ ⟨σ₀, e⟩ ⇝ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, E⟦v𝕖⟧⟩ ⇝ⱼ ⟨σ₁, v⟩
+-- k = i + j ∧ ⟨σ₀, e⟩ ⭢ᵢ ⟨imσ, v𝕖⟩ ∧ ⟨imσ, E⟦v𝕖⟧⟩ ⭢ⱼ ⟨σ₁, v⟩
 lemma stepn_indexed.refine_at_ctx𝔼 :
   ∀ σ₀ σ₁ E e₀ v k,
     ctx𝔼 E →
     value v →
     grounded E⟦e₀⟧  →
-    (⟨σ₀, E⟦e₀⟧⟩ ⇝ ⟦k⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, E⟦e₀⟧⟩ ⭢ ⟦k⟧ ⟨σ₁, v⟩) →
     ∃ imσ i j v𝕖,
       i + j = k ∧
       value v𝕖 ∧
-      (⟨σ₀, e₀⟩ ⇝ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
-      (⟨imσ, E⟦v𝕖⟧⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, e₀⟩ ⭢ ⟦i⟧ ⟨imσ, v𝕖⟩) ∧
+      (⟨imσ, E⟦v𝕖⟧⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ E e₀ v k HE Hvalue HG₀ Hstep
   induction HE generalizing σ₁ v k
@@ -152,11 +152,11 @@ lemma stepn_indexed.refine.app₁.constructor :
   ∀ σ₀ σ₁ f arg v j,
     value v →
     grounded (.app₁ f arg) →
-    (⟨σ₀, .app₁ f arg⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .app₁ f arg⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ₀ imσ₁ i₀ i₁ i₂ fᵥ argᵥ,
       i₀ + i₁ + i₂ = j ∧
       value fᵥ ∧ value argᵥ ∧
-      (⟨σ₀, f⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, fᵥ⟩) ∧ (⟨imσ₀, arg⟩ ⇝ ⟦i₁⟧ ⟨imσ₁, argᵥ⟩) ∧ ((⟨imσ₁, .app₁ fᵥ argᵥ⟩) ⇝ ⟦i₂⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, f⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, fᵥ⟩) ∧ (⟨imσ₀, arg⟩ ⭢ ⟦i₁⟧ ⟨imσ₁, argᵥ⟩) ∧ ((⟨imσ₁, .app₁ fᵥ argᵥ⟩) ⭢ ⟦i₂⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ f arg v j Hvalue HG₀ Hstep
   have ⟨HGFun, HGArg⟩ := HG₀
@@ -176,13 +176,13 @@ lemma stepn_indexed.refine.app₁.constructor :
 lemma stepn_indexed.refine.app₁.eliminator :
   ∀ σ₀ σ₁ e arg v j,
     value (.lam e) → value arg → value v →
-    (⟨σ₀, .app₁ (.lam e) arg⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .app₁ (.lam e) arg⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ i,
       i + 1 = j ∧
-      (⟨σ₀, opening 0 arg e⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, opening 0 arg e⟩ ⭢ ⟦i⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ e arg v j HvalueFun HvalueArg Hvalue Hstep
-  have HstepHead : ⟨σ₀, .app₁ (.lam e) arg⟩ ⇝ ⟦1⟧ ⟨σ₀, opening 0 arg e⟩ :=
+  have HstepHead : ⟨σ₀, .app₁ (.lam e) arg⟩ ⭢ ⟦1⟧ ⟨σ₀, opening 0 arg e⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -198,11 +198,11 @@ lemma stepn_indexed.refine.binary₁.constructor :
   ∀ σ₀ σ₁ op l r v j,
     value v →
     grounded (.binary₁ op l r) →
-    (⟨σ₀, .binary₁ op l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .binary₁ op l r⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ₀ imσ₁ i₀ i₁ i₂ lᵥ rᵥ,
       i₀ + i₁ + i₂ = j ∧
       value lᵥ ∧ value rᵥ ∧
-      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧ (⟨imσ₀, r⟩ ⇝ ⟦i₁⟧ ⟨imσ₁, rᵥ⟩) ∧ (⟨imσ₁, .binary₁ op lᵥ rᵥ⟩ ⇝ ⟦i₂⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, l⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧ (⟨imσ₀, r⟩ ⭢ ⟦i₁⟧ ⟨imσ₁, rᵥ⟩) ∧ (⟨imσ₁, .binary₁ op lᵥ rᵥ⟩ ⭢ ⟦i₂⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ op l r v j Hvalue HG₀ Hstep
   have ⟨HGl, HGr⟩ := HG₀
@@ -222,11 +222,11 @@ lemma stepn_indexed.refine.binary₁.constructor :
 lemma stepn_indexed.refine.binary₁.eliminator :
   ∀ σ₀ σ₁ op l r v j,
     value v →
-    (⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     σ₀ = σ₁ ∧ 1 = j ∧ v = .lit (eval op l r) :=
   by
   intros σ₀ σ₁ op l r v j Hvalue Hstep
-  have HstepHead : ⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⇝ ⟦1⟧ ⟨σ₀, .lit (eval op l r)⟩ :=
+  have HstepHead : ⟨σ₀, .binary₁ op (.lit l) (.lit r)⟩ ⭢ ⟦1⟧ ⟨σ₀, .lit (eval op l r)⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -241,16 +241,16 @@ lemma stepn_indexed.refine.lets :
   ∀ σ₀ σ₁ b e v j,
     value v →
     grounded (.lets b e) →
-    (⟨σ₀, .lets b e⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .lets b e⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ i₀ i₁ bᵥ,
       i₀ + 1 + i₁ = j ∧
       value bᵥ ∧
-      (⟨σ₀, b⟩ ⇝ ⟦i₀⟧ ⟨imσ, bᵥ⟩) ∧ (⟨imσ, opening 0 bᵥ e⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, b⟩ ⭢ ⟦i₀⟧ ⟨imσ, bᵥ⟩) ∧ (⟨imσ, opening 0 bᵥ e⟩ ⭢ ⟦i₁⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ b e v j Hvalue HG Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
   have ⟨imσ, i₀, k, bᵥ, HEqj, HvalueBind, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ (ctx𝔹.lets _ Hlc.right) Hvalue HG Hstep
-  have HstepHead : ⟨imσ, .lets bᵥ e⟩ ⇝ ⟦1⟧ ⟨imσ, opening 0 bᵥ e⟩ :=
+  have HstepHead : ⟨imσ, .lets bᵥ e⟩ ⭢ ⟦1⟧ ⟨imσ, opening 0 bᵥ e⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -268,15 +268,15 @@ lemma stepn_indexed.refine.fix₁.constructor :
   ∀ σ₀ σ₁ f v j,
     value v →
     grounded (.fix₁ f) →
-    (⟨σ₀, .fix₁ f⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .fix₁ f⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ i fᵥ,
       i + 1 = j ∧
       value fᵥ ∧
-      (⟨σ₀, f⟩ ⇝ ⟦i⟧ ⟨σ₁, fᵥ⟩) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
+      (⟨σ₀, f⟩ ⭢ ⟦i⟧ ⟨σ₁, fᵥ⟩) ∧ v = .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0)) :=
   by
   intros σ₀ σ₁ f v j Hvalue₀ HG Hstep
   have ⟨imσ, i₀, k, fᵥ, HEqj, HvalueFun, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ ctx𝔹.fix₁ Hvalue₀ HG Hstep
-  have HstepHead : ⟨imσ, .fix₁ fᵥ⟩ ⇝ ⟦1⟧ ⟨imσ, .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))⟩ :=
+  have HstepHead : ⟨imσ, .fix₁ fᵥ⟩ ⭢ ⟦1⟧ ⟨imσ, .lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -299,13 +299,13 @@ lemma stepn_indexed.refine.fix₁.eliminator :
   ∀ σ₀ σ₁ f arg v j,
     value f → value arg → value v →
     grounded (.fix₁ f) →
-    (⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ i,
       i + 2 = j ∧
-      (⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ ⭢ ⟦i⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ f arg v j HvalueFun HvalueArg Hvalue HG Hstep
-  have HstepHead₀ : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ :=
+  have HstepHead₀ : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⭢ ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ :=
     by
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
     simp; constructor
@@ -316,14 +316,14 @@ lemma stepn_indexed.refine.fix₁.eliminator :
       simp; rw [identity.opening]
       apply lc.inc; apply lc.value; apply HvalueFun; omega
     rw [HEqSubst₀]; apply head_pure.app₁; apply HvalueArg
-  have HstepHead₁ : ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ ⇝ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
+  have HstepHead₁ : ⟨σ₀, .app₁ (.app₁ f (.fix₁ f)) arg⟩ ⭢ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
     by
     apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg)) (by simp; apply HG)
     apply step_grounded.congruence_under_ctx𝔹 _ _ _ _ _ (ctx𝔹.appr₁ _ HvalueFun) (by simp; apply HG)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
     simp; apply lc.value; apply HvalueFun
     apply head_pure.fix₁; apply HvalueFun
-  have HstepHead : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⇝ ⟦2⟧ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
+  have HstepHead : ⟨σ₀, .app₁ (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0))) arg⟩ ⭢ ⟦2⟧ ⟨σ₀, .app₁ (.app₁ f (.lam (.app₁ (.app₁ f (.fix₁ f)) (.bvar 0)))) arg⟩ :=
     by
     apply stepn_indexed.multi; apply HstepHead₀
     apply stepn_indexed.multi; apply HstepHead₁
@@ -338,12 +338,12 @@ lemma stepn_indexed.refine.alloc₁.constructor :
   ∀ σ₀ σ₁ n v j,
     value v →
     grounded (.alloc₁ n) →
-    (⟨σ₀, .alloc₁ n⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .alloc₁ n⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ i₀ i₁ nᵥ,
       i₀ + i₁ = j ∧
       value nᵥ ∧
-      (⟨σ₀, n⟩ ⇝ ⟦i₀⟧ ⟨imσ, nᵥ⟩) ∧
-      (⟨imσ, .alloc₁ nᵥ⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, n⟩ ⭢ ⟦i₀⟧ ⟨imσ, nᵥ⟩) ∧
+      (⟨imσ, .alloc₁ nᵥ⟩ ⭢ ⟦i₁⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ n v j Hvalue HG Hstep
   have ⟨imσ, i₀, i₁, nᵥ, HEqj, HvalueNat, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ ctx𝔹.alloc₁ Hvalue HG Hstep
@@ -352,11 +352,11 @@ lemma stepn_indexed.refine.alloc₁.constructor :
 lemma stepn_indexed.refine.alloc₁.eliminator :
   ∀ σ₀ σ₁ n v j,
     value v →
-    (⟨σ₀, .alloc₁ (.lit n)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .alloc₁ (.lit n)⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     (.lit n :: σ₀) = σ₁ ∧ 1 = j ∧ v = .loc σ₀.length :=
   by
   intros σ₀ σ₁ n v j Hvalue Hstep
-  have HstepHead : ⟨σ₀, .alloc₁ (.lit n)⟩ ⇝ ⟦1⟧ ⟨.lit n :: σ₀, .loc σ₀.length⟩ :=
+  have HstepHead : ⟨σ₀, .alloc₁ (.lit n)⟩ ⭢ ⟦1⟧ ⟨.lit n :: σ₀, .loc σ₀.length⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
@@ -371,12 +371,12 @@ lemma stepn_indexed.refine.load₁.constructor :
   ∀ σ₀ σ₁ l v j,
     value v →
     grounded (.load₁ l) →
-    (⟨σ₀, .load₁ l⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .load₁ l⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ i₀ i₁ lᵥ,
       i₀ + i₁ = j ∧
       value lᵥ ∧
-      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ, lᵥ⟩) ∧
-      (⟨imσ, .load₁ lᵥ⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, l⟩ ⭢ ⟦i₀⟧ ⟨imσ, lᵥ⟩) ∧
+      (⟨imσ, .load₁ lᵥ⟩ ⭢ ⟦i₁⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ l v j Hvalue HG Hstep
   have ⟨imσ, i₀, i₁, lᵥ, HEqj, HvalueNat, Hstep₀, Hstep⟩ := stepn_indexed.refine_at_ctx𝔹 _ _ _ _ _ _ ctx𝔹.load₁ Hvalue HG Hstep
@@ -386,11 +386,11 @@ lemma stepn_indexed.refine.load₁.eliminator :
   ∀ σ₀ σ₁ l v n j,
     value v →
     binds l (Expr.lit n) σ₀ →
-    (⟨σ₀, .load₁ (.loc l)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .load₁ (.loc l)⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     σ₀ = σ₁ ∧ 1 = j ∧ v = .lit n :=
   by
   intros σ₀ σ₁ l v n j Hvalue Hbinds Hstep
-  have HstepHead : ⟨σ₀, .load₁ (.loc l)⟩ ⇝ ⟦1⟧ ⟨σ₀, .lit n⟩ :=
+  have HstepHead : ⟨σ₀, .load₁ (.loc l)⟩ ⭢ ⟦1⟧ ⟨σ₀, .lit n⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
@@ -405,14 +405,14 @@ lemma stepn_indexed.refine.store₁.constructor :
   ∀ σ₀ σ₁ l n v j,
     value v →
     grounded (.store₁ l n) →
-    (⟨σ₀, .store₁ l n⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .store₁ l n⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ₀ imσ₁ i₀ i₁ i₂ lᵥ nᵥ,
       i₀ + i₁ + i₂ = j ∧
       value lᵥ ∧
       value nᵥ ∧
-      (⟨σ₀, l⟩ ⇝ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧
-      (⟨imσ₀, n⟩ ⇝ ⟦i₁⟧ ⟨imσ₁, nᵥ⟩) ∧
-      (⟨imσ₁, .store₁ lᵥ nᵥ⟩ ⇝ ⟦i₂⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, l⟩ ⭢ ⟦i₀⟧ ⟨imσ₀, lᵥ⟩) ∧
+      (⟨imσ₀, n⟩ ⭢ ⟦i₁⟧ ⟨imσ₁, nᵥ⟩) ∧
+      (⟨imσ₁, .store₁ lᵥ nᵥ⟩ ⭢ ⟦i₂⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ l n v j Hvalue HG₀ Hstep
   have ⟨HGl, HGn⟩ := HG₀
@@ -433,11 +433,11 @@ lemma stepn_indexed.refine.store₁.eliminator :
   ∀ σ₀ σ₁ imσ l v n j,
     value v →
     patch l (Expr.lit n) σ₀ imσ →
-    (⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     imσ = σ₁ ∧ 1 = j ∧ v = .unit :=
   by
   intros σ₀ σ₁ imσ l v n j Hvalue Hpatch Hstep
-  have HstepHead : ⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⇝ ⟦1⟧ ⟨imσ, .unit⟩ :=
+  have HstepHead : ⟨σ₀, .store₁ (.loc l) (.lit n)⟩ ⭢ ⟦1⟧ ⟨imσ, .unit⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.mutable _ _ _ _ _ ctx𝕄.hole
@@ -452,11 +452,11 @@ lemma stepn_indexed.refine.ifz₁.constructor :
   ∀ σ₀ σ₁ c l r v j,
     value v →
     grounded (.ifz₁ c l r) →
-    (⟨σ₀, .ifz₁ c l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .ifz₁ c l r⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ imσ i₀ i₁ cᵥ,
       i₀ + i₁ = j ∧
       value cᵥ ∧
-      (⟨σ₀, c⟩ ⇝ ⟦i₀⟧ ⟨imσ, cᵥ⟩) ∧ (⟨imσ, .ifz₁ cᵥ l r⟩ ⇝ ⟦i₁⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, c⟩ ⭢ ⟦i₀⟧ ⟨imσ, cᵥ⟩) ∧ (⟨imσ, .ifz₁ cᵥ l r⟩ ⭢ ⟦i₁⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ c l r v j Hvalue HG₀ Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
@@ -465,14 +465,14 @@ lemma stepn_indexed.refine.ifz₁.constructor :
 lemma stepn_indexed.refine.ifz₁_then.eliminator :
   ∀ σ₀ σ₁ l r v j,
     value v →
-    (⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ i,
       i + 1 = j ∧
-      (⟨σ₀, l⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, l⟩ ⭢ ⟦i⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ l r v j Hvalue Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
-  have HstepHead : ⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⇝ ⟦1⟧ ⟨σ₀, l⟩ :=
+  have HstepHead : ⟨σ₀, .ifz₁ (.lit 0) l r⟩ ⭢ ⟦1⟧ ⟨σ₀, l⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole
@@ -487,14 +487,14 @@ lemma stepn_indexed.refine.ifz₁_then.eliminator :
 lemma stepn_indexed.refine.ifz₁_else.eliminator :
   ∀ σ₀ σ₁ n l r v j,
     value v →
-    (⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⇝ ⟦j⟧ ⟨σ₁, v⟩) →
+    (⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⭢ ⟦j⟧ ⟨σ₁, v⟩) →
     ∃ i,
       i + 1 = j ∧
-      (⟨σ₀, r⟩ ⇝ ⟦i⟧ ⟨σ₁, v⟩) :=
+      (⟨σ₀, r⟩ ⭢ ⟦i⟧ ⟨σ₁, v⟩) :=
   by
   intros σ₀ σ₁ n l r v j Hvalue Hstep
   have Hlc := lc.under_stepn_indexed _ _ _ _ _ Hstep (lc.value _ Hvalue)
-  have HstepHead : ⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⇝ ⟦1⟧ ⟨σ₀, r⟩ :=
+  have HstepHead : ⟨σ₀, .ifz₁ (.lit (.succ n)) l r⟩ ⭢ ⟦1⟧ ⟨σ₀, r⟩ :=
     by
     apply stepn_indexed.multi _ _ _ _ _ (stepn_indexed.refl _)
     apply step_lvl.pure _ _ _ _ ctx𝕄.hole

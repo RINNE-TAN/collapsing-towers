@@ -8,7 +8,7 @@ structure HeadStepable (e : Expr) where
   HAtomic𝔹 : ∀ B r, ctx𝔹 B → ¬value r → e ≠ B⟦r⟧
   HAtomicℝ : ∀ R r, ctxℝ intro lvl R → ¬value r → lc r → e ≠ R⟦r⟧
 
-lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → head e₀ e₁ → HeadStepable e₀ :=
+lemma head_impl_head_stepable : ∀ e₀ e₁, lc e₀ → e₀ ↝ e₁ → HeadStepable e₀ :=
   by
   intros e₀ e₁ Hlc Hhead
   apply HeadStepable.mk
@@ -494,8 +494,8 @@ lemma deterministic.under_ctxℙ :
 
 theorem deterministic :
   ∀ e l r,
-    (e ⇝ l) →
-    (e ⇝ r) →
+    (e ⭢ l) →
+    (e ⭢ r) →
     l = r :=
   by
   intros e l r Hstepl Hstepr
