@@ -47,10 +47,10 @@ lemma log_equiv.congruence_under_ObsCtx𝔽 :
       apply typing.regular; apply Hτ₁
       apply typing.regular; apply Hτ₀
 
--- Δ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τδ
+-- Δ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τδ
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
 -- ————————————————————————
--- Γ ⊧ C⟦e₀⟧ ≈𝑙𝑜𝑔 C⟦e₁⟧ : τγ
+-- Γ ⊧ C⟦e₀⟧ ≃𝑙𝑜𝑔 C⟦e₁⟧ : τγ
 lemma log_equiv.congruence_under_ObsCtxℂ :
   ∀ Δ Γ τδ τγ C e₀ e₁,
     log_equiv Δ e₀ e₁ τδ →
@@ -65,9 +65,9 @@ lemma log_equiv.congruence_under_ObsCtxℂ :
     apply log_equiv.congruence_under_ObsCtx𝔽
     apply Hsem; apply HF
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
 theorem log_equiv.soundness :
   ∀ Γ τ e₀ e₁,
     log_equiv Γ e₀ e₁ τ →

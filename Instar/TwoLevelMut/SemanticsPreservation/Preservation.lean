@@ -5,7 +5,7 @@ import Instar.TwoLevelMut.SemanticsPreservation.PresvReflect
 -- ⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ——————————————————————————————
--- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≃𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 theorem semantics_preservation.strengthened :
   ∀ Γ σ₀ σ₁ e₀ e₁ τ ε,
     step_lvl Γ.length ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ →
@@ -75,7 +75,7 @@ theorem semantics_preservation :
 -- ⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
--- ∅ ⊨ ⎸e₀⎹ ≈𝑐𝑡𝑥 ⎸e₁⎹ : ⎸τ⎹
+-- ∅ ⊨ ⎸e₀⎹ ≃𝑐𝑡𝑥 ⎸e₁⎹ : ⎸τ⎹
 theorem semantics_preservation.stepn :
   ∀ σ₀ σ₁ e₀ e₁ τ ε,
     (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) →
@@ -107,7 +107,7 @@ theorem semantics_preservation.stepn :
 -- ∅ ⊢ e₀ : <τ>
 -- ————————————————————
 -- v = code e₁
--- ∅ ⊢ ⎸e₀⎹ ≈𝑐𝑡𝑥 e₁ : τ
+-- ∅ ⊢ ⎸e₀⎹ ≃𝑐𝑡𝑥 e₁ : τ
 theorem semantics_preservation.stepn.rep :
   ∀ σ₀ σ₁ e₀ v τ ε,
     (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, v⟩) → value v →

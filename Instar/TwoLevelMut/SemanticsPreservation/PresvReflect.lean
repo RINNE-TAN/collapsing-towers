@@ -166,7 +166,7 @@ lemma semantics_preservation.erase_ctx𝔼 :
 
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ————————————————————————————————————————————————————————
--- ⎸Γ⎹ ⊨ ⎸E⟦reflect b⟧⎹ ≈𝑙𝑜𝑔 ⎸lets𝕔 x = b in E⟦code x⟧⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸E⟦reflect b⟧⎹ ≃𝑙𝑜𝑔 ⎸lets𝕔 x = b in E⟦code x⟧⎹ : ⎸τ⎹
 theorem semantics_preservation.reflect.head :
   ∀ Γ E b τ ε,
     ctx𝔼 E →
@@ -228,7 +228,7 @@ theorem semantics_preservation.reflect.head :
     have ⟨E₁, HE₁, HEqE₁⟩ := HE₁
     --
     --
-    -- ⎸Γ⎹ ⊧ ⎸b⎹ ≈𝑙𝑜𝑔 ⎸b⎹ : ⎸τ𝕖⎹
+    -- ⎸Γ⎹ ⊧ ⎸b⎹ ≃𝑙𝑜𝑔 ⎸b⎹ : ⎸τ𝕖⎹
     -- —————————————————————————
     -- 𝓦₁ ⊒ 𝓦₀
     -- ⟨σ₀, γ₀⎸b⎹⟩ ⭢* ⟨σ₂, bv₀⟩
@@ -244,7 +244,7 @@ theorem semantics_preservation.reflect.head :
     have ⟨HlcBind₁, HclosedBind₁⟩ := HwfBind₁
     --
     --
-    -- ⎸Γ⎹ ⊧ ⎸E⟦x⟧⎹ ≈𝑙𝑜𝑔 ⎸E⟦x⟧⎹ : ⎸τ⎹
+    -- ⎸Γ⎹ ⊧ ⎸E⟦x⟧⎹ ≃𝑙𝑜𝑔 ⎸E⟦x⟧⎹ : ⎸τ⎹
     -- (𝓦₁, bv₀, bv₁) ∈ 𝓥⟦⎸τ𝕖⎹⟧
     -- ———————————————————————————————————————————————————————————
     -- 𝓦₂ ⊒ 𝓦₁

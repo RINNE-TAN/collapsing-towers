@@ -1,6 +1,6 @@
 import Instar.TwoLevelBasic.LogicalEquiv.LogicalRelation
 
--- Γ ⊧ x ≈𝑙𝑜𝑔 x : Γ(x)
+-- Γ ⊧ x ≃𝑙𝑜𝑔 x : Γ(x)
 lemma compatibility.fvar :
   ∀ Γ x τ,
     binds x (τ, 𝟚) Γ →
@@ -17,7 +17,7 @@ lemma compatibility.fvar :
   constructor; apply stepn.refl
   apply log_equiv_env.binds_log_equiv_value _ _ _ _ _ HsemΓ Hbinds
 
--- Γ ⊧ n ≈𝑙𝑜𝑔 n : ℕ
+-- Γ ⊧ n ≃𝑙𝑜𝑔 n : ℕ
 lemma compatibility.lit :
   ∀ Γ n,
     log_equiv Γ (.lit n) (.lit n) .nat :=
@@ -32,9 +32,9 @@ lemma compatibility.lit :
   constructor; simp; apply stepn.refl
   simp
 
--- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ𝕓
 -- ——————————————————————————————
--- Γ ⊧ λx.e₀ ≈𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
+-- Γ ⊧ λx.e₀ ≃𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
 lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     wbt 𝟚 τ𝕒 →
@@ -114,10 +114,10 @@ lemma compatibility.lam :
     apply head.app₁; apply HvalueArg₁
   . apply Hsem_value
 
--- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
--- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
+-- Γ ⊧ f₀ ≃𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
+-- Γ ⊧ arg₀ ≃𝑙𝑜𝑔 arg₁ : τ𝕒
 -- —————————————————————————————————
--- Γ ⊧ f₀ @ arg₀ ≈𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
+-- Γ ⊧ f₀ @ arg₀ ≃𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
 lemma compatibility.app₁ :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
     log_equiv Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ⊥) →
@@ -142,7 +142,7 @@ lemma compatibility.app₁ :
   have ⟨HSτArg₀, HSτArg₁⟩ := log_equiv_env.msubst.typing _ _ _ _ _ _ HτArg₀ HτArg₁ HsemΓ
   --
   --
-  -- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
+  -- Γ ⊧ f₀ ≃𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
   -- ————————————————————————
   -- γ₀(f₀) ⭢* fv₀
   -- γ₁(f₁) ⭢* fv₁
@@ -152,7 +152,7 @@ lemma compatibility.app₁ :
   have ⟨HvalueFun₀, HvalueFun₁⟩ := log_equiv_value.syntactic.value _ _ _ Hsem_value_fun
   --
   --
-  -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
+  -- Γ ⊧ arg₀ ≃𝑙𝑜𝑔 arg₁ : τ𝕒
   -- ———————————————————————
   -- γ₀(arg₀) ⭢* argv₀
   -- γ₁(arg₁) ⭢* argv₁
@@ -219,10 +219,10 @@ lemma compatibility.app₁ :
     apply Hstep₁
   . apply Hsem_value
 
--- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
--- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- Γ ⊧ b₀ ≃𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ𝕓
 -- —————————————————————————————————————————————————
--- Γ ⊧ lets x = b₀ in e₀ ≈𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
+-- Γ ⊧ lets x = b₀ in e₀ ≃𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
 lemma compatibility.lets :
   ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
     wbt 𝟚 τ𝕒 →
@@ -255,7 +255,7 @@ lemma compatibility.lets :
   simp at HSτ₀ HSτ₁ Hlc₀ Hlc₁ Hclosed₀ Hclosed₁
   --
   --
-  -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+  -- Γ ⊧ b₀ ≃𝑙𝑜𝑔 b₁ : τ𝕒
   -- ———————————————————
   -- γ₀(b₀) ⭢* bv₀
   -- γ₁(b₁) ⭢* bv₁

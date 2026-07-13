@@ -2,7 +2,7 @@ import Instar.TwoLevelMut.LogicalEquiv.Compatibility
 
 -- Γ ⊢ e : τ
 -- ————————————————
--- Γ ⊧ e ≈𝑙𝑜𝑔 e : τ
+-- Γ ⊧ e ≃𝑙𝑜𝑔 e : τ
 theorem log_equiv.fundamental :
   ∀ Γ e τ,
     typing Γ 𝟚 e τ ⊥ →

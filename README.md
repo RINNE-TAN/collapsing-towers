@@ -142,12 +142,22 @@ The mechanization covers **all theorems** stated in the paper.
 | Type erasure `⎸τ⎹` | `erase_ty τ` | `SyntacticTyping/Ty.lean` |
 | Environment erasure `⎸Γ⎹` | `erase_env Γ` | `SyntacticTyping/Env.lean` |
 
-### Contextual Equivalence (Fig. 9)
+### Contextual Equivalence of λ|2|↓ (Fig. 9)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
 | Observational context `C` | `ObsCtxℂ` | `CtxEquiv/ObsCtx.lean` |
-| Basic observation frame `F` | `ObsCtx𝔹` | same |
+| Basic observation frame `F` | `ObsCtx𝔽` | same |
 | Context typing `C : (Γ ⊢ τ) ⇒ (Γ' ⊢ τ')` | `ObsCtxℂ Γ τ C Γ' τ'` | same |
 | Contextual approx. `Γ ⊨ t₁ ≼𝑐𝑡𝑥 t₂ : τ` | `ctx_approx` | same |
 | Contextual equiv. `Γ ⊨ t₁ ≃𝑐𝑡𝑥 t₂ : τ` | `ctx_equiv` | same |
+
+### Binary Logical Relations of λ|2|↓ (Fig. 10)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| Value interpretation `(k, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value : ℕ → Expr → Expr → Ty → Prop` | `LogicalEquiv/LogicalRelation.lean` |
+| Term interpretation `(k, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr : ℕ → Expr → Expr → Ty → Prop` | same |
+| Environment interpretation `(k, γ₀, γ₁) ∈ 𝒢⟦Γ⟧` | `log_approx_env : ℕ → Subst → Subst → TEnv → Prop` | same |
+| Logical approx. `Γ ⊨ t₁ ≼𝑙𝑜𝑔 t₂ : τ` | `log_approx Γ e₀ e₁ τ` | same |
+| Logical equiv. `Γ ⊨ t₁ ≃𝑙𝑜𝑔 t₂ : τ` | `log_equiv Γ e₀ e₁ τ` | same |

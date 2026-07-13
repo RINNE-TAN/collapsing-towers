@@ -20,10 +20,10 @@ theorem ctx_approx.trans :
   apply Hctx₀ _ _ HC
   apply Htermination₀
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
--- Γ ⊧ e₁ ≈𝑐𝑡𝑥 e₂ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₁ ≃𝑐𝑡𝑥 e₂ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₂ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₂ : τ
 theorem ctx_equiv.trans :
   ∀ Γ e₀ e₁ e₂ τ,
     ctx_equiv Γ e₀ e₁ τ →

@@ -119,9 +119,9 @@ theorem log_approx.soundness :
     apply log_approx.congruence_under_ObsCtx𝔽
     apply Hsem; apply HF; apply HEqΔ; apply Htermination
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
 theorem log_equiv.soundness :
   ∀ Γ τ e₀ e₁,
     log_equiv Γ e₀ e₁ τ →

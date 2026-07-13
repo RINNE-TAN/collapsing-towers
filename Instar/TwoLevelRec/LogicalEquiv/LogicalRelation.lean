@@ -59,7 +59,7 @@ def log_approx (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
     log_approx_env k γ₀ γ₁ Γ →
     log_approx_expr k (msubst γ₀ e₀) (msubst γ₁ e₁) τ
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑙𝑜𝑔 e₀ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑙𝑜𝑔 e₀ : τ
 @[simp]
 def log_equiv (Γ : TEnv) (e₀ e₁ : Expr) (τ : Ty) : Prop :=
   log_approx Γ e₀ e₁ τ ∧ log_approx Γ e₁ e₀ τ

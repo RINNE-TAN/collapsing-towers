@@ -1,10 +1,10 @@
 import Instar.TwoLevelBasic.LogicalEquiv.Defs
 
 -- Γ ⊢ e₀ : τ →
--- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≃𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 -- ———————————————————————————————
 -- Γ ⊢ B⟦e₀⟧ : τ →
--- ⎸Γ⎹ ⊨ ⎸B⟦e₀⟧⎹ ≈𝑙𝑜𝑔 ⎸B⟦e₁⟧⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸B⟦e₀⟧⎹ ≃𝑙𝑜𝑔 ⎸B⟦e₁⟧⎹ : ⎸τ⎹
 
 lemma semantics_preservation.under_ctx𝔹 :
   ∀ Γ B e₀ e₁ τ ε,
@@ -70,10 +70,10 @@ lemma semantics_preservation.under_ctx𝔹 :
         apply typing.erase.safety _ _ _ _ _ He
 
 -- Γ ⊢ e₀ : τ →
--- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≃𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 -- ————————————————————————————
 -- Γ ⊢ R⟦e₀⟧ : τ →
--- ⎸Γ⎹ ⊨ ⎸R⟦e₀⟧⎹ ≈𝑙𝑜𝑔 ⎸R⟦e₁⟧⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸R⟦e₀⟧⎹ ≃𝑙𝑜𝑔 ⎸R⟦e₁⟧⎹ : ⎸τ⎹
 lemma semantics_preservation.under_ctxℝ :
   ∀ intro Γ R e₀ e₁ τ ε,
     ctxℝ intro Γ.length R →

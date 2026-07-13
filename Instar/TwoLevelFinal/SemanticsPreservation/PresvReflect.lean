@@ -291,7 +291,7 @@ lemma semantics_preservation.erase_ctx𝔼 :
 
 -- Γ ⊢ E⟦reflect b⟧ : τ
 -- ————————————————————————————————————————————————————————
--- ⎸Γ⎹ ⊨ ⎸E⟦reflect b⟧⎹ ≈𝑙𝑜𝑔 ⎸lets𝕔 x = b in E⟦code x⟧⎹ : ⎸τ⎹
+-- ⎸Γ⎹ ⊨ ⎸E⟦reflect b⟧⎹ ≃𝑙𝑜𝑔 ⎸lets𝕔 x = b in E⟦code x⟧⎹ : ⎸τ⎹
 theorem semantics_preservation.reflect.head :
   ∀ Γ E b τ ε,
     ctx𝔼 E →

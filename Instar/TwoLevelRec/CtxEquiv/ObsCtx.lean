@@ -212,7 +212,7 @@ lemma ctx_approx.congruence_under_ObsCtxℂ :
     apply ctx_approx.congruence_under_ObsCtx𝔽
     apply Hctx; apply HF
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑐𝑡𝑥 e₀ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
 def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   ctx_approx Γ e₀ e₁ τ ∧ ctx_approx Γ e₁ e₀ τ

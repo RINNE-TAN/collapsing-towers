@@ -1,6 +1,6 @@
 import Instar.TwoLevelMut.LogicalEquiv.LogicalRelation
 
--- Γ ⊧ x ≈𝑙𝑜𝑔 x : Γ(x)
+-- Γ ⊧ x ≃𝑙𝑜𝑔 x : Γ(x)
 lemma compatibility.fvar :
   ∀ Γ x τ,
     binds x (τ, 𝟚) Γ →
@@ -20,7 +20,7 @@ lemma compatibility.fvar :
   constructor; apply Hsem_store
   apply log_equiv_env.binds_log_equiv_value _ _ _ _ _ _ HsemΓ Hbinds
 
--- Γ ⊧ n ≈𝑙𝑜𝑔 n : ℕ
+-- Γ ⊧ n ≃𝑙𝑜𝑔 n : ℕ
 lemma compatibility.lit :
   ∀ Γ n,
     log_equiv Γ (.lit n) (.lit n) .nat :=
@@ -38,7 +38,7 @@ lemma compatibility.lit :
   constructor; apply Hsem_store
   simp
 
--- Γ ⊧ () ≈𝑙𝑜𝑔 () : unit
+-- Γ ⊧ () ≃𝑙𝑜𝑔 () : unit
 lemma compatibility.unit :
   ∀ Γ,
     log_equiv Γ .unit .unit .unit :=
@@ -56,9 +56,9 @@ lemma compatibility.unit :
   constructor; apply Hsem_store
   simp
 
--- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ𝕓
 -- ——————————————————————————————
--- Γ ⊧ λx.e₀ ≈𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
+-- Γ ⊧ λx.e₀ ≃𝑙𝑜𝑔 λx.e₁ : τ𝕒 → τ𝕓
 lemma compatibility.lam :
   ∀ Γ e₀ e₁ τ𝕒 τ𝕓,
     wbt 𝟚 τ𝕒 →
@@ -166,10 +166,10 @@ lemma compatibility.lam :
   . apply Hsem_store
   . apply Hsem_value
 
--- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
--- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
+-- Γ ⊧ f₀ ≃𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
+-- Γ ⊧ arg₀ ≃𝑙𝑜𝑔 arg₁ : τ𝕒
 -- —————————————————————————————————
--- Γ ⊧ f₀ @ arg₀ ≈𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
+-- Γ ⊧ f₀ @ arg₀ ≃𝑙𝑜𝑔 f₁ @ arg₁ : τ𝕓
 lemma compatibility.app₁ :
   ∀ Γ f₀ f₁ arg₀ arg₁ τ𝕒 τ𝕓,
     log_equiv Γ f₀ f₁ (.arrow τ𝕒 τ𝕓 ⊥) →
@@ -196,7 +196,7 @@ lemma compatibility.app₁ :
   intros σ₀ σ₁ Hsem_store
   --
   --
-  -- Γ ⊧ f₀ ≈𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
+  -- Γ ⊧ f₀ ≃𝑙𝑜𝑔 f₁ : τ𝕒 → τ𝕓
   -- ————————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(f₀)⟩ ⭢* ⟨σ₂, fv₀⟩
@@ -208,7 +208,7 @@ lemma compatibility.app₁ :
   have ⟨HvalueFun₀, HvalueFun₁⟩ := log_equiv_value.syntactic.value _ _ _ _ Hsem_value_fun
   --
   --
-  -- Γ ⊧ arg₀ ≈𝑙𝑜𝑔 arg₁ : τ𝕒
+  -- Γ ⊧ arg₀ ≃𝑙𝑜𝑔 arg₁ : τ𝕒
   -- ——————————————————————————————
   -- 𝓦₂ ⊒ 𝓦₁
   -- ⟨σ₂, γ₀(arg₀)⟩ ⭢* ⟨σ₄, argv₀⟩
@@ -286,10 +286,10 @@ lemma compatibility.app₁ :
   . apply Hsem_store
   . apply Hsem_value
 
--- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
--- x ↦ τ𝕒, Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ𝕓
+-- Γ ⊧ b₀ ≃𝑙𝑜𝑔 b₁ : τ𝕒
+-- x ↦ τ𝕒, Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ𝕓
 -- —————————————————————————————————————————————————
--- Γ ⊧ lets x = b₀ in e₀ ≈𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
+-- Γ ⊧ lets x = b₀ in e₀ ≃𝑙𝑜𝑔 lets x = b₁ in e₁ : τ𝕓
 lemma compatibility.lets :
   ∀ Γ b₀ b₁ e₀ e₁ τ𝕒 τ𝕓,
     wbt 𝟚 τ𝕒 →
@@ -320,7 +320,7 @@ lemma compatibility.lets :
   intros σ₀ σ₁ Hsem_store
   --
   --
-  -- Γ ⊧ b₀ ≈𝑙𝑜𝑔 b₁ : τ𝕒
+  -- Γ ⊧ b₀ ≃𝑙𝑜𝑔 b₁ : τ𝕒
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(b₀)⟩ ⭢* ⟨σ₂, bv₀⟩
@@ -415,9 +415,9 @@ lemma compatibility.lets :
   . apply Hsem_store
   . apply Hsem_value
 
--- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+-- Γ ⊧ n₀ ≃𝑙𝑜𝑔 n₁ : ℕ
 -- ——————————————————————————————————
--- Γ ⊧ alloc n₀ ≈𝑙𝑜𝑔 alloc n₁ : ref ℕ
+-- Γ ⊧ alloc n₀ ≃𝑙𝑜𝑔 alloc n₁ : ref ℕ
 lemma compatibility.alloc₁ :
   ∀ Γ n₀ n₁,
     log_equiv Γ n₀ n₁ .nat →
@@ -439,7 +439,7 @@ lemma compatibility.alloc₁ :
   intros σ₀ σ₁ Hsem_store
   --
   --
-  -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+  -- Γ ⊧ n₀ ≃𝑙𝑜𝑔 n₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(n₀)⟩ ⭢* ⟨σ₂, nv₀⟩
@@ -493,9 +493,9 @@ lemma compatibility.alloc₁ :
     apply log_well_store.alloc _ _ _ _ Hsem_store
   . simp
 
--- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
+-- Γ ⊧ l₀ ≃𝑙𝑜𝑔 l₁ : ref ℕ
 -- ————————————————————————
--- Γ ⊧ !l₀ ≈𝑙𝑜𝑔 !l₁ : ref ℕ
+-- Γ ⊧ !l₀ ≃𝑙𝑜𝑔 !l₁ : ref ℕ
 lemma compatibility.load₁ :
   ∀ Γ l₀ l₁,
     log_equiv Γ l₀ l₁ (.ref .nat) →
@@ -517,7 +517,7 @@ lemma compatibility.load₁ :
   intros σ₀ σ₁ Hsem_store
   --
   --
-  -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
+  -- Γ ⊧ l₀ ≃𝑙𝑜𝑔 l₁ : ref ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
@@ -571,10 +571,10 @@ lemma compatibility.load₁ :
   . apply Hsem_store
   . simp
 
--- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ref ℕ
--- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+-- Γ ⊧ l₀ ≃𝑙𝑜𝑔 l₁ : ref ℕ
+-- Γ ⊧ n₀ ≃𝑙𝑜𝑔 n₁ : ℕ
 -- —————————————————————————————————————
--- Γ ⊧ (l₀ := n₀) ≈𝑙𝑜𝑔 (l₁ := n₁) : unit
+-- Γ ⊧ (l₀ := n₀) ≃𝑙𝑜𝑔 (l₁ := n₁) : unit
 lemma compatibility.store₁ :
   ∀ Γ l₀ l₁ n₀ n₁,
     log_equiv Γ l₀ l₁ (.ref .nat) →
@@ -601,7 +601,7 @@ lemma compatibility.store₁ :
   intros σ₀ σ₁ Hsem_store
   --
   --
-  -- Γ ⊧ l₀ ≈𝑙𝑜𝑔 l₁ : ℕ
+  -- Γ ⊧ l₀ ≃𝑙𝑜𝑔 l₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₁ ⊒ 𝓦₀
   -- ⟨σ₀, γ₀(l₀)⟩ ⭢* ⟨σ₂, lv₀⟩
@@ -617,7 +617,7 @@ lemma compatibility.store₁ :
   case loc lv₁ =>
   --
   --
-  -- Γ ⊧ n₀ ≈𝑙𝑜𝑔 n₁ : ℕ
+  -- Γ ⊧ n₀ ≃𝑙𝑜𝑔 n₁ : ℕ
   -- ——————————————————————————
   -- 𝓦₂ ⊒ 𝓦₁
   -- ⟨σ₂, γ₀(n₀)⟩ ⭢* ⟨σ₄, nv₀⟩

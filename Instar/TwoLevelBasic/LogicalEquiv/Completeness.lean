@@ -1,7 +1,7 @@
 import Instar.TwoLevelBasic.CtxEquiv.Defs
 import Instar.TwoLevelBasic.LogicalEquiv.Fundamental
 
--- Γ ⊧ e₀ ≈𝑐𝑖𝑢 e₁ : τ ≜
+-- Γ ⊧ e₀ ≃𝑐𝑖𝑢 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ γ : Γ, ⦰ ⊢ E⟦⦰ ⊢ τ⟧ : ℕ).
@@ -18,9 +18,9 @@ def ciu_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
         (E⟦msubst γ e₀⟧ ⭢* v) ↔ (E⟦msubst γ e₁⟧ ⭢* v)
       )
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑐𝑖𝑢 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑖𝑢 e₁ : τ
 theorem ctx_equiv_impl_ciu_equiv :
   ∀ Γ τ e₀ e₁,
     ctx_equiv Γ e₀ e₁ τ →
@@ -54,9 +54,9 @@ theorem ctx_equiv_impl_ciu_equiv :
       apply Hmwf₁
     --
     --
-    -- (x ↦ τ𝕒, Γ) ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+    -- (x ↦ τ𝕒, Γ) ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
     -- —————————————————————————————————————
-    -- Γ ⊧ λx.e₀ @ argv ≈𝑐𝑡𝑥 λx.e₁ @ argv : τ
+    -- Γ ⊧ λx.e₀ @ argv ≃𝑐𝑡𝑥 λx.e₁ @ argv : τ
     have Hctx : ctx_equiv Γ (.app₁ (.lam {0 ↤ Γ.length}e₀) argv) (.app₁ (.lam {0 ↤ Γ.length}e₁) argv) τ :=
       by
       apply ctx_equiv.congruence_under_ObsCtxℂ _ _ _ _ _ _ _ Hctx
@@ -214,9 +214,9 @@ lemma ciu_equiv_respects_log_equiv_value :
   case fragment => simp at Hsem_value
   case rep => simp at Hsem_value
 
--- Γ ⊧ e₀ ≈𝑐𝑖𝑢 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑖𝑢 e₁ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ
 theorem ciu_equiv_impl_log_equiv :
   ∀ Γ τ e₀ e₁,
     ciu_equiv Γ e₀ e₁ τ →
@@ -282,9 +282,9 @@ theorem ciu_equiv_impl_log_equiv :
     rw [HEq]
     apply Hstepr
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ
 theorem log_equiv.completeness :
   ∀ Γ τ e₀ e₁,
     ctx_equiv Γ e₀ e₁ τ →

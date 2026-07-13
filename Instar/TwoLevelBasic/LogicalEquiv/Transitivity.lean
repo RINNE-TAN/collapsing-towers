@@ -62,10 +62,10 @@ lemma log_equiv_expr.trans :
   apply Hsem_value₀; apply Hsem_value₁
 end
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
--- Γ ⊧ e₁ ≈𝑙𝑜𝑔 e₂ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ
+-- Γ ⊧ e₁ ≃𝑙𝑜𝑔 e₂ : τ
 -- ——————————————————
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₂ : τ
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₂ : τ
 theorem log_equiv.trans :
   ∀ Γ e₀ e₁ e₂ τ,
     log_equiv Γ e₀ e₁ τ →

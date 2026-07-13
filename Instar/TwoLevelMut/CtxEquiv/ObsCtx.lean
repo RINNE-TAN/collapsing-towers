@@ -143,7 +143,7 @@ lemma typing.congruence_under_ObsCtxℂ :
     apply IH; apply typing.congruence_under_ObsCtx𝔽
     apply HX; apply HF
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ C⟦Γ ⊢ τ⟧ : ℕ).

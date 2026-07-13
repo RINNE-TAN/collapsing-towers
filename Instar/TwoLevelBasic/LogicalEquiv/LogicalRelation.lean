@@ -45,7 +45,7 @@ inductive log_equiv_env : Subst → Subst → TEnv → Prop where
     log_equiv_env γ₀ γ₁ Γ →
     log_equiv_env (v₀ :: γ₀) (v₁ :: γ₁) ((τ, 𝟚) :: Γ)
 
--- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ ≜
+-- Γ ⊧ e₀ ≃𝑙𝑜𝑔 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (γ₀, γ₁) ∈ 𝓖⟦Γ⟧. (γ₀(e₀), γ₁(e₁)) ∈ 𝓔⟦τ⟧

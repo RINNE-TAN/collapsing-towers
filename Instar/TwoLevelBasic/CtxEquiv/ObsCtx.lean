@@ -105,7 +105,7 @@ lemma typing.congruence_under_ObsCtxℂ :
     apply IH; apply typing.congruence_under_ObsCtx𝔽
     apply HX; apply HF
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧
 --   Γ ⊢ e₁ : τ ∧
 --   ∀ (⦰ ⊢ C⟦Γ ⊢ τ⟧ : ℕ).
@@ -134,10 +134,10 @@ lemma ctx_equiv.congruence_under_ObsCtx𝔽 :
   apply Hctx
   apply ObsCtxℂ.cons𝔽; apply HC; apply HF
 
--- Δ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τδ
+-- Δ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τδ
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ
 -- ————————————————————————
--- Γ ⊧ C⟦e₀⟧ ≈𝑐𝑡𝑥 C⟦e₁⟧ : τγ
+-- Γ ⊧ C⟦e₀⟧ ≃𝑐𝑡𝑥 C⟦e₁⟧ : τγ
 lemma ctx_equiv.congruence_under_ObsCtxℂ :
   ∀ Δ Γ τδ τγ C e₀ e₁,
     ctx_equiv Δ e₀ e₁ τδ →

@@ -217,7 +217,7 @@ def ctx_approx (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
       termination C⟦e₀⟧ →
       termination C⟦e₁⟧
 
--- Γ ⊧ e₀ ≈𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑐𝑡𝑥 e₀ : τ
+-- Γ ⊧ e₀ ≃𝑐𝑡𝑥 e₁ : τ ≜ Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ∧ Γ ⊧ e₁ ≤𝑐𝑡𝑥 e₀ : τ
 @[simp]
 def ctx_equiv (Γ : TEnv) (e₀ e₁: Expr) (τ : Ty) : Prop :=
   ctx_approx Γ e₀ e₁ τ ∧ ctx_approx Γ e₁ e₀ τ
