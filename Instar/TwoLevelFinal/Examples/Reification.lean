@@ -7,13 +7,13 @@ namespace Reification
 --    letc x0 = eff in
 --    code x0
 -- in e
-example : ∀ b e τ φ, ¬typing_reification ⦰ (.lets (.lets𝕔 b (.code (.bvar 0))) e) τ φ :=
+example : ∀ b e τ ε, ¬typing_reification ⦰ (.lets (.lets𝕔 b (.code (.bvar 0))) e) τ ε :=
   by
   intros _ _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize HEqφ : ⊥ = φ
-    rw [HEqφ] at Hτ
+    generalize HEqε : ⊥ = ε
+    rw [HEqε] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
   case reify Hτ =>
@@ -26,13 +26,13 @@ example : ∀ b e τ φ, ¬typing_reification ⦰ (.lets (.lets𝕔 b (.code (.b
 --    x0
 -- )
 -- in e
-example : ∀ b e τ φ, ¬typing_reification ⦰ (.lets (.code (.lets b (.bvar 0))) e) τ φ :=
+example : ∀ b e τ ε, ¬typing_reification ⦰ (.lets (.code (.lets b (.bvar 0))) e) τ ε :=
   by
   intros _ _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize HEqφ : ⊥ = φ
-    rw [HEqφ] at Hτ
+    generalize HEqε : ⊥ = ε
+    rw [HEqε] at Hτ
     cases Hτ
     case lets Hcode _ _ => cases Hcode; contradiction
   case reify Hτ =>
@@ -43,17 +43,17 @@ example : ∀ b e τ φ, ¬typing_reification ⦰ (.lets (.code (.lets b (.bvar 
 -- E : (Γ ⊢ fragment τ) => (Γ ⊢ rep τ)
 -- let x = reflect e
 -- in 1
-example : ∀ e τ φ, ¬typing_reification ⦰ (.lets (.reflect e) (.lit 1)) τ φ :=
+example : ∀ e τ ε, ¬typing_reification ⦰ (.lets (.reflect e) (.lit 1)) τ ε :=
   by
   intros _ _ _ Hτ
   cases Hτ
   case pure Hτ =>
-    generalize HEqφ : ⊥ = φ
-    rw [HEqφ] at Hτ
+    generalize HEqε : ⊥ = ε
+    rw [HEqε] at Hτ
     cases Hτ
     case lets Hreflect _ _ =>
       cases Hreflect
-      simp at HEqφ
+      simp at HEqε
   case reify Hτ =>
     cases Hτ
     contradiction

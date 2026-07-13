@@ -18,24 +18,24 @@ def Effect.union : Effect → Effect → Effect
 instance : Union Effect where union := Effect.union
 
 @[simp]
-lemma Effect.union_pure : forall φ : Effect, φ ∪ ⊥ = φ := by
-  intro φ
-  cases φ <;> rfl
+lemma Effect.union_pure : forall ε : Effect, ε ∪ ⊥ = ε := by
+  intro ε
+  cases ε <;> rfl
 
 @[simp]
-lemma Effect.pure_union : forall φ : Effect, ⊥ ∪ φ = φ := by
-  intro φ
-  cases φ <;> rfl
+lemma Effect.pure_union : forall ε : Effect, ⊥ ∪ ε = ε := by
+  intro ε
+  cases ε <;> rfl
 
 @[simp]
-lemma Effect.union_reify : forall φ : Effect, φ ∪ ⊤ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
+lemma Effect.union_reify : forall ε : Effect, ε ∪ ⊤ = ⊤ := by
+  intro ε
+  cases ε <;> rfl
 
 @[simp]
-lemma Effect.reify_union : forall φ : Effect, ⊤ ∪ φ = ⊤ := by
-  intro φ
-  cases φ <;> rfl
+lemma Effect.reify_union : forall ε : Effect, ⊤ ∪ ε = ⊤ := by
+  intro ε
+  cases ε <;> rfl
 
 @[simp]
 def Effect.le : Effect → Effect → Prop

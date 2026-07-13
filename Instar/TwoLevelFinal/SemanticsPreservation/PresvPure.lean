@@ -9,14 +9,14 @@ import Instar.TwoLevelFinal.LogicalEquiv.Defs
 -- ———————  ———————————————  ——————————————  ——————————————————
 -- value n  value λ.γ₀(‖e‖)  value γ₀(x)     Binding Time Error
 lemma semantics_preservation.erase_value :
-  ∀ k 𝓦 Γ v τ φ γ₀ γ₁,
+  ∀ k 𝓦 Γ v τ ε γ₀ γ₁,
     value v →
     wbt 𝟙 τ →
-    typing Γ 𝟙 v τ φ →
+    typing Γ 𝟙 v τ ε →
     log_approx_env (k, 𝓦) γ₀ γ₁ (erase_env Γ) →
     value (msubst γ₀ ‖v‖) ∧ value (msubst γ₁ ‖v‖) :=
   by
-  intros k 𝓦 Γ v τ φ γ₀ γ₁ Hvalue HwellBinds Hτ HsemΓ
+  intros k 𝓦 Γ v τ ε γ₀ γ₁ Hvalue HwellBinds Hτ HsemΓ
   have ⟨Hmwf₀, Hmwf₁⟩ := log_approx_env.syntactic.mwf _ _ _ _ _ HsemΓ
   cases Hvalue
   case lam Hlc =>
@@ -40,13 +40,13 @@ lemma semantics_preservation.erase_value :
   case loc => contradiction
 
 lemma semantics_preservation.lets :
-  ∀ Γ e bᵥ τ φ₀ φ₁,
+  ∀ Γ e bᵥ τ ε₀ ε₁,
     value bᵥ →
-    typing Γ 𝟙 (.lets bᵥ e) τ φ₀ →
-    typing Γ 𝟙 (opening 0 bᵥ e) τ φ₁ →
+    typing Γ 𝟙 (.lets bᵥ e) τ ε₀ →
+    typing Γ 𝟙 (opening 0 bᵥ e) τ ε₁ →
     log_equiv (erase_env Γ) ‖.lets bᵥ e‖ ‖opening 0 bᵥ e‖ (erase_ty τ) :=
   by
-  intros Γ e bᵥ τ φ₀ φ₁ HvalueBind Hτ₀ Hτ₁
+  intros Γ e bᵥ τ ε₀ ε₁ HvalueBind Hτ₀ Hτ₁
   constructor
   -- left approximation
   . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
@@ -185,13 +185,13 @@ lemma semantics_preservation.lets :
     . apply Hsem_value
 
 lemma semantics_preservation.app₁ :
-  ∀ Γ e argᵥ τ φ₀ φ₁,
+  ∀ Γ e argᵥ τ ε₀ ε₁,
     value argᵥ →
-    typing Γ 𝟙 (.app₁ (.lam e) argᵥ) τ φ₀ →
-    typing Γ 𝟙 (opening 0 argᵥ e) τ φ₁ →
+    typing Γ 𝟙 (.app₁ (.lam e) argᵥ) τ ε₀ →
+    typing Γ 𝟙 (opening 0 argᵥ e) τ ε₁ →
     log_equiv (erase_env Γ) ‖.app₁ (.lam e) argᵥ‖ ‖opening 0 argᵥ e‖ (erase_ty τ) :=
   by
-  intros Γ e argᵥ τ φ₀ φ₁ HvalueArg Hτ₀ Hτ₁
+  intros Γ e argᵥ τ ε₀ ε₁ HvalueArg Hτ₀ Hτ₁
   constructor
   -- left approximation
   . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
@@ -348,12 +348,12 @@ lemma semantics_preservation.app₁ :
     . apply Hsem_value
 
 lemma semantics_preservation.binary₁ :
-  ∀ Γ op l r τ φ₀ φ₁,
-    typing Γ 𝟙 (.binary₁ op (.lit l) (.lit r)) τ φ₀ →
-    typing Γ 𝟙 (.lit (eval op l r)) τ φ₁ →
+  ∀ Γ op l r τ ε₀ ε₁,
+    typing Γ 𝟙 (.binary₁ op (.lit l) (.lit r)) τ ε₀ →
+    typing Γ 𝟙 (.lit (eval op l r)) τ ε₁ →
     log_equiv (erase_env Γ) ‖.binary₁ op (.lit l) (.lit r)‖ ‖.lit (eval op l r)‖ (erase_ty τ) :=
   by
-  intros Γ op l r τ φ₀ φ₁ Hτ₀ Hτ₁
+  intros Γ op l r τ ε₀ ε₁ Hτ₀ Hτ₁
   cases τ <;> try contradiction
   constructor
   -- left approximation
@@ -399,12 +399,12 @@ lemma semantics_preservation.binary₁ :
     . simp
 
 lemma semantics_preservation.lift_lam :
-  ∀ Γ e τ φ₀ φ₁,
-    typing Γ 𝟙 (.lift (.lam e)) τ φ₀ →
-    typing Γ 𝟙 (.lam𝕔 (codify 0 e)) τ φ₁ →
+  ∀ Γ e τ ε₀ ε₁,
+    typing Γ 𝟙 (.lift (.lam e)) τ ε₀ →
+    typing Γ 𝟙 (.lam𝕔 (codify 0 e)) τ ε₁ →
     log_equiv (erase_env Γ) ‖.lift (.lam e)‖ ‖.lam𝕔 (codify 0 e)‖ (erase_ty τ) :=
   by
-  intros Γ e τ φ₀ φ₁ Hτ₀ Hτ₁
+  intros Γ e τ ε₀ ε₁ Hτ₀ Hτ₁
   have HEq : ‖.lam𝕔 (codify 0 e)‖ = ‖.lift (.lam e)‖ :=
     by simp [identity.erase_codify]
   rw [HEq]
@@ -415,13 +415,13 @@ lemma semantics_preservation.lift_lam :
   . apply log_approx.fundamental; apply typing.erase.safety; apply Hτ₀
 
 lemma semantics_preservation.fix₁ :
-  ∀ Γ fᵥ τ φ₀ φ₁,
+  ∀ Γ fᵥ τ ε₀ ε₁,
     value fᵥ →
-    typing Γ 𝟙 (.fix₁ fᵥ) τ φ₀ →
-    typing Γ 𝟙 (.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))) τ φ₁ →
+    typing Γ 𝟙 (.fix₁ fᵥ) τ ε₀ →
+    typing Γ 𝟙 (.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))) τ ε₁ →
     log_equiv (erase_env Γ) ‖.fix₁ fᵥ‖ ‖.lam (.app₁ (.app₁ fᵥ (.fix₁ fᵥ)) (.bvar 0))‖ (erase_ty τ) :=
   by
-  intros Γ fᵥ τ φ₀ φ₁ HvalueFix Hτ₀ Hτ₁
+  intros Γ fᵥ τ ε₀ ε₁ HvalueFix Hτ₀ Hτ₁
   constructor
   -- left approximation
   . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
@@ -548,12 +548,12 @@ lemma semantics_preservation.fix₁ :
     . apply Hsem_value
 
 lemma semantics_preservation.ifz₁_then :
-  ∀ Γ l r τ φ₀ φ₁,
-    typing Γ 𝟙 (.ifz₁ (.lit 0) l r) τ φ₀ →
-    typing Γ 𝟙 l τ φ₁ →
+  ∀ Γ l r τ ε₀ ε₁,
+    typing Γ 𝟙 (.ifz₁ (.lit 0) l r) τ ε₀ →
+    typing Γ 𝟙 l τ ε₁ →
     log_equiv (erase_env Γ) ‖.ifz₁ (.lit 0) l r‖ ‖l‖ (erase_ty τ) :=
   by
-  intros Γ l r τ φ₀ φ₁ Hτ₀ Hτ₁
+  intros Γ l r τ ε₀ ε₁ Hτ₀ Hτ₁
   constructor
   -- left approximation
   . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
@@ -627,12 +627,12 @@ lemma semantics_preservation.ifz₁_then :
     . apply Hsem_value
 
 lemma semantics_preservation.ifz₁_else :
-  ∀ Γ n l r τ φ₀ φ₁,
-    typing Γ 𝟙 (.ifz₁ (.lit (n + 1)) l r) τ φ₀ →
-    typing Γ 𝟙 r τ φ₁ →
+  ∀ Γ n l r τ ε₀ ε₁,
+    typing Γ 𝟙 (.ifz₁ (.lit (n + 1)) l r) τ ε₀ →
+    typing Γ 𝟙 r τ ε₁ →
     log_equiv (erase_env Γ) ‖.ifz₁ (.lit (n + 1)) l r‖ ‖r‖ (erase_ty τ) :=
   by
-  intros Γ n l r τ φ₀ φ₁ Hτ₀ Hτ₁
+  intros Γ n l r τ ε₀ ε₁ Hτ₀ Hτ₁
   constructor
   -- left approximation
   . have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
@@ -706,12 +706,12 @@ lemma semantics_preservation.ifz₁_else :
     . apply Hsem_value
 
 theorem semantics_preservation.pure.head :
-  ∀ Γ e₀ e₁ τ φ,
+  ∀ Γ e₀ e₁ τ ε,
     e₀ ↝ e₁ →
-    typing Γ 𝟙 e₀ τ φ →
+    typing Γ 𝟙 e₀ τ ε →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros Γ e₀ e₁ τ φ Hhead Hτ₀
+  intros Γ e₀ e₁ τ ε Hhead Hτ₀
   have ⟨_, Hτ₁, _⟩ := preservation.pure.head _ _ _ _ _ Hhead Hτ₀
   cases Hhead
   case lets e bᵥ HvalueBind =>

@@ -1,24 +1,24 @@
 import Instar.TwoLevelBasic.SyntacticTyping.Defs
 
 lemma preservation.dynamic_subst.strengthened :
-  ∀ Γ Δ Φ v e τ𝕒 τ𝕓 φ,
-    typing Γ 𝟚 e τ𝕓 φ →
+  ∀ Γ Δ Φ v e τ𝕒 τ𝕓 ε,
+    typing Γ 𝟚 e τ𝕓 ε →
     Γ = Δ ++ (τ𝕒, 𝟚) :: Φ →
     typing Φ 𝟚 v τ𝕒 ⊥ →
-    typing (Δ ++ Φ) 𝟚 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ :=
+    typing (Δ ++ Φ) 𝟚 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 ε :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
-  intros Γ Δ Φ v e τ𝕒 τ𝕓 φ Hτe HEqΓ
+  intros Γ Δ Φ v e τ𝕒 τ𝕓 ε Hτe HEqΓ
   revert Δ HEq𝕊
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
+      (fun Γ 𝕊 e τ𝕓 ε (H : typing Γ 𝕊 e τ𝕓 ε) =>
         𝟚 = 𝕊 →
         ∀ Δ,
           Γ = Δ ++ (τ𝕒, 𝕊) :: Φ →
           typing Φ 𝕊 v τ𝕒 ⊥ →
-          typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
-      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) => true)
+          typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 ε)
+      (fun Γ e τ𝕓 ε (H : typing_reification Γ e τ𝕓 ε) => true)
   <;> (intros; try contradiction)
   case fvar 𝕊 x _ Hbinds Hwbt HEq𝕊 Δ HEqΓ Hτv =>
     rw [HEqΓ] at Hbinds
@@ -108,26 +108,26 @@ theorem preservation.dynamic_subst :
   rw [← List.length_cons]; apply typing.closed_at_env; apply Hτe
 
 lemma preservation.subst.strengthened :
-  ∀ Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 φ,
-    typing Γ 𝕊 e τ𝕓 φ →
+  ∀ Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 ε,
+    typing Γ 𝕊 e τ𝕓 ε →
     Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
     typing Φ 𝟙 v τ𝕒 ⊥ →
-    typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ :=
+    typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 ε :=
   by
-  intros Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 φ Hτe HEqΓ
+  intros Γ Δ Φ 𝕊 v e τ𝕒 τ𝕓 ε Hτe HEqΓ
   revert Δ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
+      (fun Γ 𝕊 e τ𝕓 ε (H : typing Γ 𝕊 e τ𝕓 ε) =>
         ∀ Δ,
           Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
           typing Φ 𝟙 v τ𝕒 ⊥ →
-          typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
-      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) =>
+          typing (Δ ++ Φ) 𝕊 (shiftr Φ.length (subst Φ.length v e)) τ𝕓 ε)
+      (fun Γ e τ𝕓 ε (H : typing_reification Γ e τ𝕓 ε) =>
         ∀ Δ,
           Γ = Δ ++ (τ𝕒, 𝟙) :: Φ →
           typing Φ 𝟙 v τ𝕒 ⊥ →
-          typing_reification (Δ ++ Φ) (shiftr Φ.length (subst Φ.length v e)) τ𝕓 φ)
+          typing_reification (Δ ++ Φ) (shiftr Φ.length (subst Φ.length v e)) τ𝕓 ε)
   <;> intros
   case fvar 𝕊 x _ Hbinds Hwbt Δ HEqΓ Hτv =>
     rw [HEqΓ] at Hbinds
@@ -294,13 +294,13 @@ lemma preservation.subst.strengthened :
   apply Hτe
 
 theorem preservation.subst :
-  ∀ Γ 𝕊 v e τ𝕒 τ𝕓 φ,
+  ∀ Γ 𝕊 v e τ𝕒 τ𝕓 ε,
     typing Γ 𝟙 v τ𝕒 ⊥ →
-    typing ((τ𝕒, 𝟙) :: Γ) 𝕊 e τ𝕓 φ →
-    typing Γ 𝕊 (subst Γ.length v e) τ𝕓 φ :=
+    typing ((τ𝕒, 𝟙) :: Γ) 𝕊 e τ𝕓 ε →
+    typing Γ 𝕊 (subst Γ.length v e) τ𝕓 ε :=
   by
-  intros Γ 𝕊 v e τ𝕒 τ𝕓 φ Hτv Hτe
-  have H := preservation.subst.strengthened ((τ𝕒, 𝟙) :: Γ) ⦰ Γ 𝕊 v e τ𝕒 τ𝕓 φ Hτe rfl Hτv
+  intros Γ 𝕊 v e τ𝕒 τ𝕓 ε Hτv Hτe
+  have H := preservation.subst.strengthened ((τ𝕒, 𝟙) :: Γ) ⦰ Γ 𝕊 v e τ𝕒 τ𝕓 ε Hτe rfl Hτv
   rw [identity.shiftr] at H; apply H
   apply closed.under_subst
   apply closed.inc; apply typing.closed_at_env; apply Hτv; omega

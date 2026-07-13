@@ -1,26 +1,26 @@
 import Instar.TwoLevelRec.SyntacticTyping.Defs
 
 lemma preservation.maping.strengthened :
-  ∀ Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 φ,
-    typing Γ 𝕊𝕓 e τ𝕓 φ →
+  ∀ Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 ε,
+    typing Γ 𝕊𝕓 e τ𝕓 ε →
     Γ = Δ ++ (τ𝕔, 𝟙) :: Φ →
     typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ⊥ →
-    typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝕊𝕓 (subst Φ.length v e) τ𝕓 φ :=
+    typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝕊𝕓 (subst Φ.length v e) τ𝕓 ε :=
   by
-  intros Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 φ Hτe HEqΓ Hτv
+  intros Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 ε Hτe HEqΓ Hτv
   revert Δ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ𝕓 φ (H : typing Γ 𝕊 e τ𝕓 φ) =>
+      (fun Γ 𝕊 e τ𝕓 ε (H : typing Γ 𝕊 e τ𝕓 ε) =>
         ∀ Δ,
           Γ = Δ ++ (τ𝕔, 𝟙) :: Φ →
           typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ⊥ →
-          typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝕊 (subst Φ.length v e) τ𝕓 φ)
-      (fun Γ e τ𝕓 φ (H : typing_reification Γ e τ𝕓 φ) =>
+          typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝕊 (subst Φ.length v e) τ𝕓 ε)
+      (fun Γ e τ𝕓 ε (H : typing_reification Γ e τ𝕓 ε) =>
         ∀ Δ,
           Γ = Δ ++ (τ𝕔, 𝟙) :: Φ →
           typing (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) 𝟙 v τ𝕔 ⊥ →
-          typing_reification (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) (subst Φ.length v e) τ𝕓 φ)
+          typing_reification (Δ ++ (τ𝕒, 𝕊𝕒) :: Φ) (subst Φ.length v e) τ𝕓 ε)
   <;> intros
   case fvar 𝕊 x _ Hbinds Hwbt Δ HEqΓ Hτv =>
     rw [HEqΓ] at Hbinds
@@ -175,9 +175,9 @@ lemma preservation.maping.strengthened :
     . rw [identity.subst]
       apply Hclosed
       apply closed.inc; apply Hclosed; omega
-  case fix₁ Hfixφ _ IH Δ HEqΓ Hτv =>
+  case fix₁ Hfixε _ IH Δ HEqΓ Hτv =>
     apply typing.fix₁
-    . apply Hfixφ
+    . apply Hfixε
     . apply IH; apply HEqΓ; apply Hτv
   case fix₂ IH Δ HEqΓ Hτv =>
     apply typing.fix₂
@@ -201,10 +201,10 @@ lemma preservation.maping.strengthened :
   apply Hτe
 
 theorem preservation.maping :
-  ∀ Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 φ,
-    typing ((τ𝕔, 𝟙) :: Γ) 𝟙 e τ𝕓 φ →
+  ∀ Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 ε,
+    typing ((τ𝕔, 𝟙) :: Γ) 𝟙 e τ𝕓 ε →
     typing ((τ𝕒, 𝕊) :: Γ) 𝟙 v τ𝕔 ⊥ →
-    typing ((τ𝕒, 𝕊) :: Γ) 𝟙 (subst Γ.length v e) τ𝕓 φ :=
+    typing ((τ𝕒, 𝕊) :: Γ) 𝟙 (subst Γ.length v e) τ𝕓 ε :=
   by
-  intros Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 φ Hτe Hτv
+  intros Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 ε Hτe Hτv
   apply preservation.maping.strengthened _ ⦰ _ _ _ _ _ _ _ _ _ Hτe rfl Hτv

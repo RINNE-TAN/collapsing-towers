@@ -28,26 +28,26 @@ lemma fvar.shrinking :
     simp; apply Hbinds
 
 lemma typing.shrinking.strengthened :
-  ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
-    typing Γ 𝕊 e τ φ →
+  ∀ Γ Ψ Δ Φ 𝕊 e τ ε,
+    typing Γ 𝕊 e τ ε →
     Γ = Ψ ++ Φ :: Δ →
     Δ.length ∉ fv e →
-    typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ :=
+    typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ ε :=
   by
-  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ
+  intros Γ Ψ Δ Φ 𝕊 e τ ε Hτ
   revert Ψ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
+      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ :: Δ →
           Δ.length ∉ fv e →
-          typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ φ)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
+          typing (Ψ ++ Δ) 𝕊 (shiftr Δ.length e) τ ε)
+      (fun Γ e τ ε (H : typing_reification Γ e τ ε) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ :: Δ →
           Δ.length ∉ fv e →
-          typing_reification (Ψ ++ Δ) (shiftr Δ.length e) τ φ)
+          typing_reification (Ψ ++ Δ) (shiftr Δ.length e) τ ε)
   <;> intros
   case fvar Hbinds Hwbt Ψ HEqΓ HclosedΔ =>
     rw [HEqΓ] at Hbinds
@@ -180,25 +180,25 @@ lemma typing.shrinking.strengthened :
   apply Hτ
 
 theorem typing.shrinking.singleton :
-  ∀ Γ Φ 𝕊 e τ φ,
-    typing (Φ :: Γ) 𝕊 e τ φ →
+  ∀ Γ Φ 𝕊 e τ ε,
+    typing (Φ :: Γ) 𝕊 e τ ε →
     closed_at e Γ.length →
-    typing Γ 𝕊 e τ φ :=
+    typing Γ 𝕊 e τ ε :=
   by
-  intros Γ Φ 𝕊 e τ φ Hτ Hclosed
-  have H := typing.shrinking.strengthened (Φ :: Γ) ⦰ Γ Φ 𝕊 e τ φ
+  intros Γ Φ 𝕊 e τ ε Hτ Hclosed
+  have H := typing.shrinking.strengthened (Φ :: Γ) ⦰ Γ Φ 𝕊 e τ ε
   rw [identity.shiftr] at H
   apply H; apply Hτ; rfl
   apply closed_impl_not_in_fv; apply Hclosed; omega
   apply closed.inc; apply Hclosed; omega
 
 theorem typing.shrinking :
-  ∀ Γ Δ 𝕊 e τ φ,
-    typing (Δ ++ Γ) 𝕊 e τ φ →
+  ∀ Γ Δ 𝕊 e τ ε,
+    typing (Δ ++ Γ) 𝕊 e τ ε →
     closed_at e Γ.length →
-    typing Γ 𝕊 e τ φ :=
+    typing Γ 𝕊 e τ ε :=
   by
-  intros Γ Δ 𝕊 e τ φ Hτ Hclosed
+  intros Γ Δ 𝕊 e τ ε Hτ Hclosed
   induction Δ
   case nil => apply Hτ
   case cons IH =>

@@ -75,12 +75,12 @@ lemma log_approx_value.antimono :
   case nat =>
     cases v₀ <;> cases v₁ <;> simp at *
     omega
-  case arrow τ𝕒 τ𝕓 φ =>
+  case arrow τ𝕒 τ𝕓 ε =>
     cases v₀ <;> try simp at Hsem_value
     case lam e₀ =>
     cases v₁ <;> try simp at Hsem_value
     case lam e₁ =>
-    cases φ
+    cases ε
     case reify => simp at Hsem_value
     case pure =>
       simp only [log_approx_value] at Hsem_value
@@ -118,8 +118,8 @@ lemma log_approx_value.syntactic.value :
     constructor
     apply value.lit
     apply value.lit
-  case arrow φ =>
-    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+  case arrow ε =>
+    cases v₀ <;> cases v₁ <;> cases ε <;> simp at Hsem_value
     have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
     constructor
     apply value.lam; apply typing.regular _ _ _ _ _ Hτ₀
@@ -136,8 +136,8 @@ lemma log_approx_value.syntactic.typing :
   case nat =>
     cases v₀ <;> cases v₁ <;> simp at Hsem_value
     constructor; apply typing.lit; apply typing.lit
-  case arrow φ =>
-    cases v₀ <;> cases v₁ <;> cases φ <;> simp at Hsem_value
+  case arrow ε =>
+    cases v₀ <;> cases v₁ <;> cases ε <;> simp at Hsem_value
     have ⟨Hτ₀, Hτ₁, _⟩ := Hsem_value
     constructor; apply Hτ₀; apply Hτ₁
   all_goals simp at Hsem_value

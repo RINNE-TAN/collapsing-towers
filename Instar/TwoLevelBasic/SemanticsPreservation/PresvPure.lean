@@ -9,14 +9,14 @@ import Instar.TwoLevelBasic.LogicalEquiv.Defs
 -- ———————  ———————————————  ——————————————  ——————————————————
 -- value n  value λ.γ₀(‖e‖)  value γ₀(x)     Binding Time Error
 lemma semantics_preservation.erase_value :
-  ∀ Γ v τ φ γ₀ γ₁,
+  ∀ Γ v τ ε γ₀ γ₁,
     value v →
     wbt 𝟙 τ →
-    typing Γ 𝟙 v τ φ →
+    typing Γ 𝟙 v τ ε →
     log_equiv_env γ₀ γ₁ (erase_env Γ) →
     value (msubst γ₀ ‖v‖) ∧ value (msubst γ₁ ‖v‖) :=
   by
-  intros Γ v τ φ γ₀ γ₁ Hvalue HwellBinds Hτ HsemΓ
+  intros Γ v τ ε γ₀ γ₁ Hvalue HwellBinds Hτ HsemΓ
   have ⟨Hmwf₀, Hmwf₁⟩ := log_equiv_env.mwf _ _ _ HsemΓ
   cases Hvalue
   case lam Hlc =>
@@ -37,13 +37,13 @@ lemma semantics_preservation.erase_value :
     apply HsemΓ; apply erase_env.binds; assumption
 
 lemma semantics_preservation.lets :
-  ∀ Γ e bᵥ τ φ₀ φ₁,
+  ∀ Γ e bᵥ τ ε₀ ε₁,
     value bᵥ →
-    typing Γ 𝟙 (.lets bᵥ e) τ φ₀ →
-    typing Γ 𝟙 (opening 0 bᵥ e) τ φ₁ →
+    typing Γ 𝟙 (.lets bᵥ e) τ ε₀ →
+    typing Γ 𝟙 (opening 0 bᵥ e) τ ε₁ →
     log_equiv (erase_env Γ) ‖.lets bᵥ e‖ ‖opening 0 bᵥ e‖ (erase_ty τ) :=
   by
-  intros Γ e bᵥ τ φ₀ φ₁ HvalueBind Hτ₀ Hτ₁
+  intros Γ e bᵥ τ ε₀ ε₁ HvalueBind Hτ₀ Hτ₁
   have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
   have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₁
   constructor; apply HEτ₀
@@ -86,13 +86,13 @@ lemma semantics_preservation.lets :
   . apply Hsem_value
 
 lemma semantics_preservation.app₁ :
-  ∀ Γ e argᵥ τ φ₀ φ₁,
+  ∀ Γ e argᵥ τ ε₀ ε₁,
     value argᵥ →
-    typing Γ 𝟙 (.app₁ (.lam e) argᵥ) τ φ₀ →
-    typing Γ 𝟙 (opening 0 argᵥ e) τ φ₁ →
+    typing Γ 𝟙 (.app₁ (.lam e) argᵥ) τ ε₀ →
+    typing Γ 𝟙 (opening 0 argᵥ e) τ ε₁ →
     log_equiv (erase_env Γ) ‖.app₁ (.lam e) argᵥ‖ ‖opening 0 argᵥ e‖ (erase_ty τ) :=
   by
-  intros Γ e argᵥ τ φ₀ φ₁ HvalueArg Hτ₀ Hτ₁
+  intros Γ e argᵥ τ ε₀ ε₁ HvalueArg Hτ₀ Hτ₁
   have HEτ₀ := typing.erase.safety _ _ _ _ _ Hτ₀
   have HEτ₁ := typing.erase.safety _ _ _ _ _ Hτ₁
   constructor; apply HEτ₀
@@ -147,24 +147,24 @@ lemma semantics_preservation.app₁ :
   . apply Hsem_value
 
 lemma semantics_preservation.lift_lam :
-  ∀ Γ e τ φ₀ φ₁,
-    typing Γ 𝟙 (.lift (.lam e)) τ φ₀ →
-    typing Γ 𝟙 (.lam𝕔 (codify 0 e)) τ φ₁ →
+  ∀ Γ e τ ε₀ ε₁,
+    typing Γ 𝟙 (.lift (.lam e)) τ ε₀ →
+    typing Γ 𝟙 (.lam𝕔 (codify 0 e)) τ ε₁ →
     log_equiv (erase_env Γ) ‖.lift (.lam e)‖ ‖.lam𝕔 (codify 0 e)‖ (erase_ty τ) :=
   by
-  intros Γ e τ φ₀ φ₁ Hτ₀ Hτ₁
+  intros Γ e τ ε₀ ε₁ Hτ₀ Hτ₁
   have HEq : ‖.lam𝕔 (codify 0 e)‖ = ‖.lift (.lam e)‖ :=
     by simp [identity.erase_codify]
   rw [HEq]
   apply log_equiv.fundamental; apply typing.erase.safety; apply Hτ₀
 
 theorem semantics_preservation.pure.head :
-  ∀ Γ e₀ e₁ τ φ,
+  ∀ Γ e₀ e₁ τ ε,
     e₀ ↝ e₁ →
-    typing Γ 𝟙 e₀ τ φ →
+    typing Γ 𝟙 e₀ τ ε →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros Γ e₀ e₁ τ φ Hhead Hτ₀
+  intros Γ e₀ e₁ τ ε Hhead Hτ₀
   have ⟨_, Hτ₁, _⟩ := preservation.pure.head _ _ _ _ _ Hhead Hτ₀
   cases Hhead
   case lets e bᵥ HvalueBind =>

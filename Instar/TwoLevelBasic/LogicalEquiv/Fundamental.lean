@@ -9,13 +9,13 @@ theorem log_equiv.fundamental :
     log_equiv Γ e e τ :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
-  generalize HEqφ : ⊥ = φ
+  generalize HEqε : ⊥ = ε
   intros Γ e τ Hτ
-  revert HEq𝕊 HEqφ
+  revert HEq𝕊 HEqε
   apply @typing.rec
-    (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
-      𝟚 = 𝕊 → ⊥ = φ → log_equiv Γ e e τ)
-    (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+    (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) =>
+      𝟚 = 𝕊 → ⊥ = ε → log_equiv Γ e e τ)
+    (fun Γ e τ ε (H : typing_reification Γ e τ ε) => true)
   <;> intros
   <;> (try contradiction)
   case fvar Hbinds Hwbt HEq𝕊 _ =>
@@ -25,27 +25,27 @@ theorem log_equiv.fundamental :
     . apply Hwbt
   case lam H Hwbt Hclosed IH HEq𝕊 _ =>
     rw [← HEq𝕊] at H IH Hwbt
-    have ⟨_, HEqφ⟩ := typing.dynamic_impl_pure _ _ _ _ H
-    rw [HEqφ]
+    have ⟨_, HEqε⟩ := typing.dynamic_impl_pure _ _ _ _ H
+    rw [HEqε]
     apply compatibility.lam
     . apply Hwbt
     . apply Hclosed
     . apply Hclosed
-    . apply IH; rfl; simp [HEqφ]
-  case app₁ φ₀ φ₁ φ₂ _ _ IH₀ IH₁ HEq𝕊 HEqφ =>
-    have ⟨Hφ₀, Hφ₁, Hφ₂⟩ : ⊥ = φ₀ ∧ ⊥ = φ₁ ∧ ⊥ = φ₂ :=
-      by cases φ₀ <;> cases φ₁ <;> cases φ₂ <;> simp at *
-    rw [← Hφ₀, ← Hφ₁] at IH₀
-    rw [← Hφ₂] at IH₁
+    . apply IH; rfl; simp [HEqε]
+  case app₁ ε₀ ε₁ ε₂ _ _ IH₀ IH₁ HEq𝕊 HEqε =>
+    have ⟨Hε₀, Hε₁, Hε₂⟩ : ⊥ = ε₀ ∧ ⊥ = ε₁ ∧ ⊥ = ε₂ :=
+      by cases ε₀ <;> cases ε₁ <;> cases ε₂ <;> simp at *
+    rw [← Hε₀, ← Hε₁] at IH₀
+    rw [← Hε₂] at IH₁
     apply compatibility.app₁
     . apply IH₀; apply HEq𝕊; rfl
     . apply IH₁; apply HEq𝕊; rfl
   case lit => apply compatibility.lit
-  case lets φ₀ φ₁ _ _ Hwbt Hclosed IH₀ IH₁ HEq𝕊 HEqφ =>
-    have ⟨Hφ₀, Hφ₁⟩ : ⊥ = φ₀ ∧ ⊥ = φ₁ :=
-      by cases φ₀ <;> cases φ₁ <;> simp at *
-    rw [← Hφ₀] at IH₀
-    rw [← Hφ₁] at IH₁
+  case lets ε₀ ε₁ _ _ Hwbt Hclosed IH₀ IH₁ HEq𝕊 HEqε =>
+    have ⟨Hε₀, Hε₁⟩ : ⊥ = ε₀ ∧ ⊥ = ε₁ :=
+      by cases ε₀ <;> cases ε₁ <;> simp at *
+    rw [← Hε₀] at IH₀
+    rw [← Hε₁] at IH₁
     rw [← HEq𝕊] at Hwbt IH₁
     apply compatibility.lets
     . apply Hwbt

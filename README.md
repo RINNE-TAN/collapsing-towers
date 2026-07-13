@@ -112,3 +112,24 @@ The mechanization covers **all theorems** stated in the paper.
 | Head reduction `t ↝ t'` | `e₀ ↝ e₁` (notation for `head e₀ e₁`) | `OperationalSemantics/SmallStep.lean` |
 | Single-step reduction `t ⭢ t'` | `e₀ ⭢ e₁` (notation for `step_lvl 0 e₀ e₁`) | same |
 | Multi-step reduction `t ⭢* t'` | `e₀ ⭢* e₁` (notation for `stepn`) | same |
+
+### Static Semantics: Types, Effects, Well-Formedness (Figs. 4-5)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| Type `τ` | `Ty` (inductive type) | `SyntacticTyping/Ty.lean` |
+| `nat`, `unit` | `.nat`, `.unit` | same |
+| `τ₁ →^ε τ₂` | `.arrow τ₁ τ₂ ε` | same |
+| `rep τ` | `.rep τ` | same |
+| `frag τ` | `.fragment τ` | same |
+| Effect `ε` ∈ {⊥, ⊤} | `Effect` enum (`⊥` / `⊤`) | `SyntacticTyping/Effect.lean` |
+| Effect lattice ⊑, ⊔ | `Effect.le` (≤), `Effect.union` (∪) | same |
+| Typing context `Γ` | `TEnv` (list of `Ty × Stage`) | `SyntacticTyping/Env.lean` |
+| Well-formed type `WF^s τ` | `wbt s τ` | `SyntacticTyping/Ty.lean` |
+
+### Typing Judgments (Fig. 6)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| `Γ ⊢ t : τ ∣ ε` | `typing_reification Γ e τ ε` | `SyntacticTyping/Typing.lean` |
+| `Γ ⊢ˢ t : τ ∣ ε` | `typing Γ 𝕊 e τ ε` | same |

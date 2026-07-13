@@ -1,15 +1,15 @@
 import Instar.TwoLevelFinal.LogicalEquiv.Defs
 
 lemma semantics_preservation.erase_ctx𝔼 :
-  ∀ E Γ e τ φ k γ₀ γ₁,
+  ∀ E Γ e τ ε k γ₀ γ₁,
     ctx𝔼 E →
-    typing Γ 𝟙 E⟦e⟧ τ φ →
+    typing Γ 𝟙 E⟦e⟧ τ ε →
     log_approx_env k γ₀ γ₁ (erase_env Γ) →
     (∃ E₀, ctx𝔼 E₀ ∧ (∀ e, msubst γ₀ ‖E⟦e⟧‖ = E₀⟦msubst γ₀ ‖e‖⟧)) ∧
     (∃ E₁, ctx𝔼 E₁ ∧ (∀ e, msubst γ₁ ‖E⟦e⟧‖ = E₁⟦msubst γ₁ ‖e‖⟧)) :=
   by
-  intros E Γ e τ φ k γ₀ γ₁ HE Hτ HsemΓ
-  induction HE generalizing τ φ
+  intros E Γ e τ ε k γ₀ γ₁ HE Hτ HsemΓ
+  induction HE generalizing τ ε
   case hole =>
     constructor
     . exists id; constructor; apply ctx𝔼.hole; simp
@@ -293,18 +293,18 @@ lemma semantics_preservation.erase_ctx𝔼 :
 -- ————————————————————————————————————————————————————————
 -- ‖Γ‖ ⊨ ‖E⟦reflect b⟧‖ ≈𝑙𝑜𝑔 ‖lets𝕔 x = b in E⟦code x⟧‖ : ‖τ‖
 theorem semantics_preservation.reflect.head :
-  ∀ Γ E b τ φ,
+  ∀ Γ E b τ ε,
     ctx𝔼 E →
-    typing Γ 𝟙 E⟦.reflect b⟧ τ φ →
+    typing Γ 𝟙 E⟦.reflect b⟧ τ ε →
     log_equiv (erase_env Γ) ‖E⟦.reflect b⟧‖ ‖.lets𝕔 b E⟦.code (.bvar 0)⟧‖ (erase_ty τ) :=
   by
-  intros Γ E b τ φ HE Hτ₀
-  have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr₀, HτE₀⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ₀
+  intros Γ E b τ ε HE Hτ₀
+  have ⟨τ𝕖, ε₀, ε₁, HEqε, Hτr₀, HτE₀⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ₀
   cases Hτr₀
   case reflect τ𝕖 Hτb₀ =>
-    have HτE₀ : typing ((.fragment τ𝕖, 𝟙) :: Γ) 𝟙 E⟦.fvar Γ.length⟧ τ φ₁ :=
+    have HτE₀ : typing ((.fragment τ𝕖, 𝟙) :: Γ) 𝟙 E⟦.fvar Γ.length⟧ τ ε₁ :=
       by
-      rw [← List.singleton_append, ← Effect.pure_union φ₁]
+      rw [← List.singleton_append, ← Effect.pure_union ε₁]
       apply HτE₀
       apply typing.fvar
       . simp

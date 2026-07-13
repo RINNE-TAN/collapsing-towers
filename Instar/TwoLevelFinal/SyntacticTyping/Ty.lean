@@ -2,7 +2,7 @@ import Instar.TwoLevelFinal.SyntacticTyping.Effect
 
 inductive Ty : Type where
   | nat
-  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (φ : Effect)
+  | arrow (τ𝕒 : Ty) (τ𝕓 : Ty) (ε : Effect)
   | fragment (τ : Ty)
   | rep (τ : Ty)
   | unit
@@ -34,7 +34,7 @@ def wbt : Stage → Ty → Prop
   | 𝟙, (.ref τ) => wbt 𝟙 τ
   | 𝟙, _ => false
   | 𝟚, .nat => true
-  | 𝟚, (.arrow τ𝕒 τ𝕓 φ) => φ = ⊥ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
+  | 𝟚, (.arrow τ𝕒 τ𝕓 ε) => ε = ⊥ ∧ wbt 𝟚 τ𝕒 ∧ wbt 𝟚 τ𝕓
   | 𝟚, .unit => true
   | 𝟚, (.ref τ) => wbt 𝟚 τ
   | 𝟚, _ => false

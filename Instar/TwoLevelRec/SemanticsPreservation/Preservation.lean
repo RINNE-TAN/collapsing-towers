@@ -7,17 +7,17 @@ import Instar.TwoLevelRec.SemanticsPreservation.PresvReflect
 -- ——————————————————————————
 -- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
 theorem semantics_preservation.strengthened :
-  ∀ Γ e₀ e₁ τ φ,
+  ∀ Γ e₀ e₁ τ ε,
     step_lvl Γ.length e₀ e₁ →
-    typing Γ 𝟙 e₀ τ φ →
+    typing Γ 𝟙 e₀ τ ε →
     log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros Γ e₀ e₁ τ φ
+  intros Γ e₀ e₁ τ ε
   generalize HEqlvl : Γ.length = lvl
   intros Hstep Hτ
   cases Hstep
   case pure HM Hlc Hhead =>
-    induction HM generalizing Γ τ φ
+    induction HM generalizing Γ τ ε
     case hole =>
       apply semantics_preservation.pure.head
       apply Hhead; apply Hτ
@@ -37,7 +37,7 @@ theorem semantics_preservation.strengthened :
     case hole =>
       apply semantics_preservation.reflect.head; apply HE; apply Hτ
     case consℚ HQ =>
-      induction HQ generalizing Γ τ φ
+      induction HQ generalizing Γ τ ε
       case holeℝ HR =>
         apply semantics_preservation.under_ctxℝ; rw [HEqlvl]; apply HR
         apply lc.under_ctx𝔼; apply HE; apply Hlc
@@ -58,12 +58,12 @@ theorem semantics_preservation.strengthened :
         omega; apply Hτ
 
 theorem semantics_preservation :
-  ∀ e₀ e₁ τ φ,
+  ∀ e₀ e₁ τ ε,
     (e₀ ⭢ e₁) →
-    typing_reification ⦰ e₀ τ φ →
+    typing_reification ⦰ e₀ τ ε →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros e₀ e₁ τ φ Hstep Hτ
+  intros e₀ e₁ τ ε Hstep Hτ
   cases Hτ
   all_goals next Hτ =>
     apply log_equiv.soundness
@@ -74,13 +74,13 @@ theorem semantics_preservation :
 -- ————————————————————————
 -- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
 theorem semantics_preservation.stepn :
-  ∀ e₀ e₁ τ φ,
+  ∀ e₀ e₁ τ ε,
     (e₀ ⭢* e₁) →
-    typing_reification ⦰ e₀ τ φ →
+    typing_reification ⦰ e₀ τ ε →
     ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
   by
-  intros e₀ e₁ τ φ Hstepn Hτ₀
-  induction Hstepn generalizing φ
+  intros e₀ e₁ τ ε Hstepn Hτ₀
+  induction Hstepn generalizing ε
   case refl =>
     cases Hτ₀
     all_goals next Hτ₀ =>
@@ -103,14 +103,14 @@ theorem semantics_preservation.stepn :
 -- v = code e₁
 -- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 e₁ : τ
 theorem semantics_preservation.stepn.rep :
-  ∀ e₀ v τ φ,
+  ∀ e₀ v τ ε,
     (e₀ ⭢* v) → value v →
-    typing_reification ⦰ e₀ (.rep τ) φ →
+    typing_reification ⦰ e₀ (.rep τ) ε →
     ∃ e₁,
       v = .code e₁ ∧
       ctx_equiv ⦰ ‖e₀‖ e₁ τ :=
   by
-  intros e₀ v τ φ Hstepn Hvalue Hτr₀
+  intros e₀ v τ ε Hstepn Hvalue Hτr₀
   have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ Hstepn Hτr₀
   cases Hvalue <;> try contradiction
   case code e₁ _ =>

@@ -276,9 +276,9 @@ lemma ciu_approx_respects_log_approx_value :
       rw [← termination.under_stepn]
       apply Htermination
       apply Hstep₂
-  case arrow τ𝕒 τ𝕓 φ IH𝕒 IH𝕓 =>
+  case arrow τ𝕒 τ𝕓 ε IH𝕒 IH𝕓 =>
     have ⟨Hτ₁, Hτ₂, Hciu_value⟩ := Hciu
-    cases φ <;> try simp at Hsem_value
+    cases ε <;> try simp at Hsem_value
     cases Hvalue₀ <;> try simp at Hsem_value
     case lam e₀ _ =>
     cases Hvalue₁ <;> try contradiction

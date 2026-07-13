@@ -1,18 +1,18 @@
 import Instar.TwoLevelMut.SyntacticSoundness.PresvCtx
 
 theorem preservation.reflect.head :
-  ∀ Γ E e τ φ,
+  ∀ Γ E e τ ε,
     ctx𝔼 E →
-    typing_reification Γ E⟦.reflect e⟧ τ φ →
+    typing_reification Γ E⟦.reflect e⟧ τ ε →
     typing_reification Γ (.lets𝕔 e E⟦.code (.bvar 0)⟧) τ ⊥ :=
   by
-  intros Γ E e τ φ HE Hτ
+  intros Γ E e τ ε HE Hτ
   cases Hτ
   case pure Hτ =>
-    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
-    cases Hτr; simp at HEqφ
+    have ⟨τ𝕖, ε₀, ε₁, HEqε, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
+    cases Hτr; simp at HEqε
   case reify Hτ =>
-    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
+    have ⟨τ𝕖, ε₀, ε₁, HEqε, Hτr, HτE⟩ := preservation.under_ctx𝔼 _ _ _ _ _ HE Hτ
     cases Hτr
     case reflect τ𝕖 Hτe =>
       have ⟨Hwbt, _⟩ := typing.dynamic_impl_pure _ _ _ _ Hτe
@@ -29,17 +29,17 @@ theorem preservation.reflect.head :
         simp
 
 theorem preservation.reflect :
-  ∀ Γ Q E e τ φ,
+  ∀ Γ Q E e τ ε,
     ctxℚ Γ.length Q →
     ctx𝔼 E →
     lc e →
-    typing Γ 𝟙 Q⟦E⟦.reflect e⟧⟧ τ φ →
-    typing Γ 𝟙 Q⟦.lets𝕔 e E⟦.code (.bvar 0)⟧⟧ τ φ :=
+    typing Γ 𝟙 Q⟦E⟦.reflect e⟧⟧ τ ε →
+    typing Γ 𝟙 Q⟦.lets𝕔 e E⟦.code (.bvar 0)⟧⟧ τ ε :=
   by
-  intros Γ Q E e τ φ HQ HE Hlc Hτ
+  intros Γ Q E e τ ε HQ HE Hlc Hτ
   generalize HEqlvl : Γ.length = lvl
   rw [HEqlvl] at HQ
-  induction HQ generalizing Γ τ φ
+  induction HQ generalizing Γ τ ε
   case holeℝ R HR =>
     have Hlc : lc E⟦.reflect e⟧ := lc.under_ctx𝔼 _ _ _ HE Hlc
     have Hsf : store_free E⟦.reflect e⟧ → store_free (.lets𝕔 e E⟦.code (.bvar 0)⟧) :=
@@ -54,11 +54,11 @@ theorem preservation.reflect :
       . apply fv.decompose_ctx𝔼 _ (.reflect e) HE
       . apply fv.under_ctx𝔼; apply HE; simp
     rw [← HEqlvl] at HR
-    have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
+    have ⟨Δ, τ𝕖, ε₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     apply IHτR _ _ Hsf Hfv (preservation.reflect.head _ _ _ _ _ HE Hτ)
   case cons𝔹 B Q HB HQ IH =>
-    have ⟨τ𝕖, φ₀, φ₁, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
-    rw [HEqφ]
+    have ⟨τ𝕖, ε₀, ε₁, HEqε, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
+    rw [HEqε]
     apply IHτB ⦰
     apply IH _ _ _ Hτ HEqlvl
   case consℝ R Q HR HQ IH =>
@@ -83,7 +83,7 @@ theorem preservation.reflect :
       simp; constructor
       . apply fv.decompose_ctx𝔼 _ (.reflect e) HE
       . apply fv.under_ctx𝔼; apply HE; simp
-    have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
+    have ⟨Δ, τ𝕖, ε₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     case pure Hτ =>
       have Hτ := IH _ _ _ Hτ HEqΓ

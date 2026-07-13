@@ -22,23 +22,23 @@ lemma fvar.weakening :
     apply Hbinds
 
 theorem typing.weakening.strengthened :
-    ∀ Γ Ψ Δ Φ 𝕊 e τ φ,
-      typing Γ 𝕊 e τ φ →
+    ∀ Γ Ψ Δ Φ 𝕊 e τ ε,
+      typing Γ 𝕊 e τ ε →
       Γ = Ψ ++ Φ →
-      typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ :=
+      typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ ε :=
   by
-  intros Γ Ψ Δ Φ 𝕊 e τ φ Hτ HEqΓ
+  intros Γ Ψ Δ Φ 𝕊 e τ ε Hτ HEqΓ
   revert Ψ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) =>
+      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ φ)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) =>
+          typing (Ψ ++ Δ ++ Φ) 𝕊 (shiftl Φ.length Δ.length e) τ ε)
+      (fun Γ e τ ε (H : typing_reification Γ e τ ε) =>
         ∀ Ψ,
           Γ = Ψ ++ Φ →
-          typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ φ)
+          typing_reification (Ψ ++ Δ ++ Φ) (shiftl Φ.length Δ.length e) τ ε)
   <;> intros
   case fvar Hbinds Hwbt Ψ HEqΓ =>
     rw [HEqΓ] at Hbinds
@@ -131,11 +131,11 @@ theorem typing.weakening.strengthened :
   apply Hτ
 
 theorem typing.weakening :
-  ∀ Γ Δ 𝕊 e τ φ,
-    typing Γ 𝕊 e τ φ →
-    typing (Δ ++ Γ) 𝕊 e τ φ :=
+  ∀ Γ Δ 𝕊 e τ ε,
+    typing Γ 𝕊 e τ ε →
+    typing (Δ ++ Γ) 𝕊 e τ ε :=
   by
-  intros Γ Δ 𝕊 e τ φ Hτ
+  intros Γ Δ 𝕊 e τ ε Hτ
   rw [← List.nil_append Δ]
   rw [← identity.shiftl _ e]
   apply typing.weakening.strengthened
@@ -143,20 +143,20 @@ theorem typing.weakening :
   apply typing.closed_at_env; apply Hτ
 
 theorem typing.weakening.singleton :
-  ∀ Γ Δ 𝕊 e τ φ,
-    typing Γ 𝕊 e τ φ →
-    typing (Δ :: Γ) 𝕊 e τ φ :=
+  ∀ Γ Δ 𝕊 e τ ε,
+    typing Γ 𝕊 e τ ε →
+    typing (Δ :: Γ) 𝕊 e τ ε :=
   by
-  intros Γ Δ 𝕊 e τ φ
+  intros Γ Δ 𝕊 e τ ε
   rw [← List.singleton_append]
   apply typing.weakening
 
 theorem typing_reification.weakening :
-  ∀ Γ Δ e τ φ,
-    typing_reification Γ e τ φ →
-    typing_reification (Δ ++ Γ) e τ φ :=
+  ∀ Γ Δ e τ ε,
+    typing_reification Γ e τ ε →
+    typing_reification (Δ ++ Γ) e τ ε :=
   by
-  intros Γ Δ e τ φ Hτ
+  intros Γ Δ e τ ε Hτ
   cases Hτ
   case pure Hτ =>
     apply typing_reification.pure

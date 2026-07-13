@@ -14,7 +14,7 @@ lemma log_approx_value.trans
     cases v₁ <;> try simp at Hsem_value₀
     cases v₂ <;> try simp at Hsem_value₁
     simp; omega
-  | .arrow τ𝕒 τ𝕓 φ =>
+  | .arrow τ𝕒 τ𝕓 ε =>
     by
     intros Hsem_value₀ Hsem_value₁
     cases v₀ <;> try simp at Hsem_value₀
@@ -23,7 +23,7 @@ lemma log_approx_value.trans
     case lam e₁ =>
     cases v₂ <;> try simp at Hsem_value₁
     case lam e₂ =>
-    cases φ <;> simp only [log_approx_value] at Hsem_value₀ Hsem_value₁ <;> try contradiction
+    cases ε <;> simp only [log_approx_value] at Hsem_value₀ Hsem_value₁ <;> try contradiction
     have ⟨Hτ₀, Hτ₁, Hsem_expr₀⟩ := Hsem_value₀
     have ⟨Hτ₁, Hτ₂, _⟩ := Hsem_value₁ 0
     simp only [log_approx_value]

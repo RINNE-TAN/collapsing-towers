@@ -3,17 +3,17 @@ import Instar.TwoLevelBasic.SyntacticSoundness.PresvSubst
 import Instar.TwoLevelBasic.SyntacticSoundness.PresvMaping
 
 lemma typing.escape.strengthened :
-  ∀ Γ e τ φ,
-    typing Γ 𝟚 e τ φ →
-    typing (escape_env Γ) 𝟙 e τ φ :=
+  ∀ Γ e τ ε,
+    typing Γ 𝟚 e τ ε →
+    typing (escape_env Γ) 𝟙 e τ ε :=
   by
   generalize HEq𝕊 : 𝟚 = 𝕊
-  intros Γ e τ φ Hτ
+  intros Γ e τ ε Hτ
   revert HEq𝕊
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => 𝟚 = 𝕊 → typing (escape_env Γ) 𝟙 e τ φ)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => true)
+      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) => 𝟚 = 𝕊 → typing (escape_env Γ) 𝟙 e τ ε)
+      (fun Γ e τ ε (H : typing_reification Γ e τ ε) => true)
   <;> (intros; try contradiction)
   case fvar x _ Hbinds Hwbt HEq𝕊 =>
     rw [← HEq𝕊] at Hwbt
@@ -47,44 +47,44 @@ lemma typing.escape.strengthened :
   apply Hτ
 
 theorem typing.escape :
-  ∀ e τ φ,
-    typing ⦰ 𝟚 e τ φ →
-    typing ⦰ 𝟙 e τ φ :=
+  ∀ e τ ε,
+    typing ⦰ 𝟚 e τ ε →
+    typing ⦰ 𝟙 e τ ε :=
   by
-  intros e τ φ Hτ
+  intros e τ ε Hτ
   apply typing.escape.strengthened _ _ _ _ Hτ
 
 theorem preservation.pure.head :
-  ∀ Γ e₀ e₁ τ φ₀,
+  ∀ Γ e₀ e₁ τ ε₀,
     e₀ ↝ e₁ →
-    typing Γ 𝟙 e₀ τ φ₀ →
-    ∃ φ₁,
-      typing Γ 𝟙 e₁ τ φ₁ ∧
-      φ₁ ≤ φ₀ :=
+    typing Γ 𝟙 e₀ τ ε₀ →
+    ∃ ε₁,
+      typing Γ 𝟙 e₁ τ ε₁ ∧
+      ε₁ ≤ ε₀ :=
   by
-  intros Γ e₀ e₁ τ φ₀ Hhead Hτ
+  intros Γ e₀ e₁ τ ε₀ Hhead Hτ
   have Hlc := typing.regular _ _ _ _ _ Hτ
   cases Hhead
   case lets Hvalue =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
-    case lets φ₀ φ₁ _ Hτv Hclosed Hτe =>
-      have Hpure : φ₀ = ⊥ := by cases Hvalue <;> cases Hτv <;> rfl
+    case lets ε₀ ε₁ _ Hτv Hclosed Hτe =>
+      have Hpure : ε₀ = ⊥ := by cases Hvalue <;> cases Hτv <;> rfl
       rw [Hpure] at Hτv; simp [Hpure]
       rw [← intro.subst _ _ _ _ Hclosed]
       apply preservation.subst _ _ _ _ _ _ _ Hτv Hτe
   case app₁ Hvalue =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
-    case app₁ φ₀ φ₁ φ₂ Hτv Hτf =>
+    case app₁ ε₀ ε₁ ε₂ Hτv Hτf =>
       cases Hτf
       case lam Hclosed _ Hτe =>
-        have Hpure : φ₂ = ⊥ := by cases Hvalue <;> cases Hτv <;> rfl
+        have Hpure : ε₂ = ⊥ := by cases Hvalue <;> cases Hτv <;> rfl
         rw [Hpure] at Hτv; simp [Hpure]
         rw [← intro.subst _ _ _ _ Hclosed]
         apply preservation.subst _ _ _ _ _ _ _ Hτv Hτe
   case app₂ =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case app₂ Hτ₀ Hτ₁ =>
       cases Hτ₀
@@ -97,14 +97,14 @@ theorem preservation.pure.head :
           . apply typing.fvar; apply Hbinds₀; apply Hwbt₀
           . apply typing.fvar; apply Hbinds₁; apply Hwbt₁
   case lift_lit =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case lift_lit Hτ =>
       apply typing.reflect
       apply typing.lit
     case lift_lam => contradiction
   case lift_lam =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case lift_lam Hτ =>
       cases Hτ
@@ -121,7 +121,7 @@ theorem preservation.pure.head :
         . rw [← closed.under_codify]; apply Hclosed
     case lift_lit => contradiction
   case lam𝕔 e =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case lam𝕔 Hwbt Hτ Hclosed =>
       apply typing.reflect
@@ -130,7 +130,7 @@ theorem preservation.pure.head :
       . apply Hwbt
       . apply Hclosed
   case lets𝕔 b e =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case lets𝕔 Hwbt Hτb Hτe Hclosed =>
       apply typing.code_rep
@@ -141,7 +141,7 @@ theorem preservation.pure.head :
       . apply Hwbt
       . apply Hclosed
   case run =>
-    exists φ₀; simp
+    exists ε₀; simp
     cases Hτ
     case run Hclosed Hτ =>
       rw [← List.append_nil Γ]
@@ -152,40 +152,40 @@ theorem preservation.pure.head :
       apply Hclosed
 
 theorem preservation.pure :
-  ∀ Γ M e₀ e₁ τ φ₀,
+  ∀ Γ M e₀ e₁ τ ε₀,
     ctx𝕄 Γ.length M →
     lc e₀ →
     e₀ ↝ e₁ →
-    typing Γ 𝟙 M⟦e₀⟧ τ φ₀ →
-    ∃ φ₁,
-      typing Γ 𝟙 M⟦e₁⟧ τ φ₁ ∧
-      φ₁ ≤ φ₀ :=
+    typing Γ 𝟙 M⟦e₀⟧ τ ε₀ →
+    ∃ ε₁,
+      typing Γ 𝟙 M⟦e₁⟧ τ ε₁ ∧
+      ε₁ ≤ ε₀ :=
   by
-  intros Γ M e₀ e₁ τ φ₀ HM Hlc Hhead Hτ
+  intros Γ M e₀ e₁ τ ε₀ HM Hlc Hhead Hτ
   generalize HEqlvl : Γ.length = lvl
   rw [HEqlvl] at HM
-  induction HM generalizing Γ τ φ₀
+  induction HM generalizing Γ τ ε₀
   case hole => apply preservation.pure.head _ _ _ _ _ Hhead Hτ
   case cons𝔹 B M HB HM IH =>
-    have ⟨τ𝕖, φ₁, φ₂, HEqφ, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
-    rw [HEqφ]
-    have ⟨φ₃, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqlvl
+    have ⟨τ𝕖, ε₁, ε₂, HEqε, Hτ, IHτB⟩ := preservation.under_ctx𝔹 _ _ _ _ _ HB Hτ
+    rw [HEqε]
+    have ⟨ε₃, Hτ, HLeε⟩ := IH _ _ _ Hτ HEqlvl
     have Hτ := IHτB ⦰ _ _ Hτ
-    exists φ₃ ∪ φ₂; constructor
+    exists ε₃ ∪ ε₂; constructor
     . apply Hτ
-    . cases φ₁ <;> cases φ₂ <;> cases φ₃ <;> simp at HLeφ <;> simp
+    . cases ε₁ <;> cases ε₂ <;> cases ε₃ <;> simp at HLeε <;> simp
   case consℝ R M HR HM IH =>
     rw [← HEqlvl] at HR IH
     have Hlc : lc M⟦e₀⟧ := lc.under_ctx𝕄 _ _ _ _ HM Hlc
     have Hfv : fv M⟦e₁⟧ ⊆ fv M⟦e₀⟧ := fv.under_ctx𝕄 _ _ _ _ HM (head.fv_shrink _ _ Hhead)
-    have ⟨Δ, τ𝕖, φ₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
+    have ⟨Δ, τ𝕖, ε₁, HEqΓ, Hτ, IHτR⟩ := preservation.under_ctxℝ _ _ _ _ _ _ HR Hlc Hτ
     cases Hτ
     case pure Hτ =>
-      have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
-      cases φ₂ <;> try contradiction
+      have ⟨ε₂, Hτ, HLeε⟩ := IH _ _ _ Hτ HEqΓ
+      cases ε₂ <;> try contradiction
       have Hτ := IHτR _ _ Hfv (typing_reification.pure _ _ _ Hτ)
-      exists φ₀
+      exists ε₀
     case reify Hτ =>
-      have ⟨φ₂, Hτ, HLeφ⟩ := IH _ _ _ Hτ HEqΓ
+      have ⟨ε₂, Hτ, HLeε⟩ := IH _ _ _ Hτ HEqΓ
       have Hτ := IHτR _ _ Hfv (typing_reification.reify _ _ _ _ Hτ)
-      exists φ₀
+      exists ε₀

@@ -18,16 +18,16 @@ lemma dyn_env.extend :
     apply HDyn; apply Hbinds
 
 theorem progress.strengthened :
-  ∀ Γ e₀ τ φ,
-    typing_reification Γ e₀ τ φ →
+  ∀ Γ e₀ τ ε,
+    typing_reification Γ e₀ τ ε →
     dyn_env Γ →
     (∃ e₁, step_lvl Γ.length e₀ e₁) ∨ value e₀ :=
   by
-  intros Γ e₀ τ φ Hτ
+  intros Γ e₀ τ ε Hτ
   apply @typing_reification.rec
-    (fun Γ 𝕊 e₀ τ φ (H : typing Γ 𝕊 e₀ τ φ) =>
+    (fun Γ 𝕊 e₀ τ ε (H : typing Γ 𝕊 e₀ τ ε) =>
       dyn_env Γ → 𝕊 = 𝟙 → (∃ e₁, step_lvl Γ.length e₀ e₁) ∨ value e₀)
-    (fun Γ e₀ τ φ (H : typing_reification Γ e₀ τ φ) =>
+    (fun Γ e₀ τ ε (H : typing_reification Γ e₀ τ ε) =>
       dyn_env Γ → (∃ e₁, step_lvl Γ.length e₀ e₁) ∨ value e₀)
   <;> intros
   case fvar x _ Hbinds Hwbt HDyn HEq𝕊 => simp [HDyn _ _ _ Hbinds] at HEq𝕊
@@ -296,8 +296,8 @@ theorem progress.strengthened :
   apply Hτ
 
 theorem progress :
-  ∀ e₀ τ φ,
-    typing_reification ⦰ e₀ τ φ →
+  ∀ e₀ τ ε,
+    typing_reification ⦰ e₀ τ ε →
     (∃ e₁, (e₀ ⭢ e₁)) ∨ value e₀ :=
   by
   intros _ _ _ Hτ

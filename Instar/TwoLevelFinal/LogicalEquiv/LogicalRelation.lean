@@ -165,12 +165,12 @@ lemma log_approx_value.antimono :
     cases v₁ <;> try simp at Hsem_value
     case lit n₁ =>
     simp; apply Hsem_value
-  case arrow τ𝕒 τ𝕓 φ =>
+  case arrow τ𝕒 τ𝕓 ε =>
     cases v₀ <;> try simp at Hsem_value
     case lam e₀ =>
     cases v₁ <;> try simp at Hsem_value
     case lam e₁ =>
-    cases φ <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
+    cases ε <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
     have ⟨Hwf₀, HG₀, Hwf₁, HG₁, Hsem_value⟩ := Hsem_value
     simp only [log_approx_value]
     constructor; apply Hwf₀
@@ -242,12 +242,12 @@ lemma log_approx_value.syntactic.value :
     constructor
     apply value.unit
     apply value.unit
-  case arrow τ𝕒 τ𝕓 φ =>
+  case arrow τ𝕒 τ𝕓 ε =>
     cases v₀ <;> try simp at Hsem_value
     case lam e₀ =>
     cases v₁ <;> try simp at Hsem_value
     case lam e₁ =>
-    cases φ <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
+    cases ε <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
     have ⟨Hwf₀, HG₀, Hwf₁, HG₁, Hsem_value⟩ := Hsem_value
     constructor
     apply value.lam; apply Hwf₀.left
@@ -277,12 +277,12 @@ lemma log_approx_value.syntactic.wf :
     cases v₁ <;> try simp at Hsem_value
     case lit n₁ =>
     simp
-  case arrow τ𝕒 τ𝕓 φ =>
+  case arrow τ𝕒 τ𝕓 ε =>
     cases v₀ <;> try simp at Hsem_value
     case lam e₀ =>
     cases v₁ <;> try simp at Hsem_value
     case lam e₁ =>
-    cases φ <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
+    cases ε <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
     have ⟨Hwf₀, HG₀, Hwf₁, HG₁, Hsem_value⟩ := Hsem_value
     constructor
     apply Hwf₀
@@ -316,12 +316,12 @@ lemma log_approx_value.syntactic.grounded :
     cases v₁ <;> try simp at Hsem_value
     case lit n₁ =>
     simp
-  case arrow τ𝕒 τ𝕓 φ =>
+  case arrow τ𝕒 τ𝕓 ε =>
     cases v₀ <;> try simp at Hsem_value
     case lam e₀ =>
     cases v₁ <;> try simp at Hsem_value
     case lam e₁ =>
-    cases φ <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
+    cases ε <;> simp only [log_approx_value] at Hsem_value <;> try contradiction
     have ⟨Hwf₀, HG₀, Hwf₁, HG₁, Hsem_value⟩ := Hsem_value
     constructor
     apply HG₀

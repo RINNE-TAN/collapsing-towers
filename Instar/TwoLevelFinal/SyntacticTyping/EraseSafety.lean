@@ -4,15 +4,15 @@ import Instar.TwoLevelFinal.SyntacticTyping.Typing
 -- ————————————————
 -- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
 theorem typing.erase.safety :
-  ∀ Γ 𝕊 e τ φ,
-    typing Γ 𝕊 e τ φ →
+  ∀ Γ 𝕊 e τ ε,
+    typing Γ 𝕊 e τ ε →
     typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
-  intros Γ 𝕊 e τ φ Hτ
+  intros Γ 𝕊 e τ ε Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ φ (H : typing Γ 𝕊 e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
-      (fun Γ e τ φ (H : typing_reification Γ e τ φ) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ e τ ε (H : typing_reification Γ e τ ε) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar
@@ -121,11 +121,11 @@ theorem typing.erase.safety :
   apply Hτ
 
 theorem typing_reification.erase.safety :
-  ∀ Γ e τ φ,
-    typing_reification Γ e τ φ →
+  ∀ Γ e τ ε,
+    typing_reification Γ e τ ε →
     typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
   by
-  intros Γ e τ φ Hτ
+  intros Γ e τ ε Hτ
   cases Hτ
   all_goals next Hτ =>
     apply typing.erase.safety _ _ _ _ _ Hτ
