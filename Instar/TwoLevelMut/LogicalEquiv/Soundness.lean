@@ -1,15 +1,15 @@
 import Instar.TwoLevelMut.LogicalEquiv.Fundamental
 import Instar.TwoLevelMut.CtxEquiv.Defs
 
-lemma log_equiv.congruence_under_ObsCtx𝔹 :
-  ∀ Δ Γ τδ τγ B e₀ e₁,
+lemma log_equiv.congruence_under_ObsCtx𝔽 :
+  ∀ Δ Γ τδ τγ F e₀ e₁,
     log_equiv Δ e₀ e₁ τδ →
-    ObsCtx𝔹 Δ τδ B Γ τγ →
-    log_equiv Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+    ObsCtx𝔽 Δ τδ F Γ τγ →
+    log_equiv Γ F⟦e₀⟧ F⟦e₁⟧ τγ :=
   by
-  intros Δ Γ τδ τγ B e₀ e₁ HX HB
+  intros Δ Γ τδ τγ F e₀ e₁ HX HF
   have ⟨Hτ₀, Hτ₁, Hsem_expr⟩ := HX
-  cases HB
+  cases HF
   case lam Hwbt =>
     apply compatibility.lam
     . apply Hwbt
@@ -74,10 +74,10 @@ lemma log_equiv.congruence_under_ObsCtxℂ :
   intros Δ Γ τδ τγ C e₀ e₁ Hsem HC
   induction HC generalizing e₀ e₁
   case hole => apply Hsem
-  case cons𝔹 HB IH =>
+  case cons𝔽 HF IH =>
     apply IH
-    apply log_equiv.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB
+    apply log_equiv.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF
 
 -- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
@@ -106,7 +106,7 @@ theorem log_equiv.soundness :
     exists σ₀, σ₁, .lit n₀
     constructor; apply value.lit
     constructor; apply Hstep₀; simp [Hsem_value]; apply Hstep₁
-  case cons𝔹 C B HC HB IH =>
+  case cons𝔽 C F HC HF IH =>
     apply IH
-    apply log_equiv.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB; apply HEqΔ; apply HEqτδ
+    apply log_equiv.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF; apply HEqΔ; apply HEqτδ

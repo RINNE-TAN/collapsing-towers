@@ -1,39 +1,39 @@
 import Instar.TwoLevelFinal.OperationalSemantics.Defs
 import Instar.TwoLevelFinal.SyntacticTyping.Defs
 
-inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
+inductive ObsCtx𝔽 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
   | lam :
     ∀ Γ τ𝕒 τ𝕓,
       wbt 𝟚 τ𝕒 →
-      ObsCtx𝔹
+      ObsCtx𝔽
         ((τ𝕒, 𝟚) :: Γ) τ𝕓
         (fun X => .lam ({0 ↤ Γ.length} X))
         Γ (.arrow τ𝕒 τ𝕓 ⊥)
   | appl₁ :
     ∀ Γ arg τ𝕒 τ𝕓,
       typing Γ 𝟚 arg τ𝕒 ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ (.arrow τ𝕒 τ𝕓 ⊥)
         (fun X => .app₁ X arg)
         Γ τ𝕓
   | appr₁ :
     ∀ Γ f τ𝕒 τ𝕓,
       typing Γ 𝟚 f (.arrow τ𝕒 τ𝕓 ⊥) ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ τ𝕒
         (fun X => .app₁ f X)
         Γ τ𝕓
   | binaryl₁ :
     ∀ Γ op r,
       typing Γ 𝟚 r .nat ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ .nat
         (fun X => .binary₁ op X r)
         Γ .nat
   | binaryr₁ :
     ∀ Γ op l,
       typing Γ 𝟚 l .nat ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ .nat
         (fun X => .binary₁ op l X)
         Γ .nat
@@ -41,46 +41,46 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
     ∀ Γ e τ𝕒 τ𝕓,
       closed_at e Γ.length →
       typing ((τ𝕒, 𝟚) :: Γ) 𝟚 ({0 ↦ Γ.length} e) τ𝕓 ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ τ𝕒
         (fun X => .lets X e)
         Γ τ𝕓
   | letsr :
     ∀ Γ b τ𝕒 τ𝕓,
       typing Γ 𝟚 b τ𝕒 ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         ((τ𝕒, 𝟚) :: Γ) τ𝕓
         (fun X => .lets b ({0 ↤ Γ.length} X))
         Γ τ𝕓
   | alloc₁ :
     ∀ Γ,
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ .nat
         (fun X => .alloc₁ X)
         Γ (.ref .nat)
   | load₁ :
     ∀ Γ,
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ (.ref .nat)
         (fun X => .load₁ X)
         Γ .nat
   | storel₁ :
     ∀ Γ r,
       typing Γ 𝟚 r .nat ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ (.ref .nat)
         (fun X => .store₁ X r)
         Γ .unit
   | storer₁ :
     ∀ Γ l,
       typing Γ 𝟚 l (.ref .nat) ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ .nat
         (fun X => .store₁ l X)
         Γ .unit
   | fix₁ :
     ∀ Γ τ𝕒 τ𝕓,
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ (.arrow (.arrow τ𝕒 τ𝕓 ⊥) (.arrow τ𝕒 τ𝕓 ⊥) ⊥)
         (fun X => .fix₁ X)
         Γ (.arrow τ𝕒 τ𝕓 ⊥)
@@ -88,7 +88,7 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
     ∀ Γ l r τ,
       typing Γ 𝟚 l τ ⊥ →
       typing Γ 𝟚 r τ ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ .nat
         (fun X => .ifz₁ X l r)
         Γ τ
@@ -96,7 +96,7 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
     ∀ Γ c r τ,
       typing Γ 𝟚 c .nat ⊥ →
       typing Γ 𝟚 r τ ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ τ
         (fun X => .ifz₁ c X r)
         Γ τ
@@ -104,7 +104,7 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
     ∀ Γ c l τ,
       typing Γ 𝟚 c .nat ⊥ →
       typing Γ 𝟚 l τ ⊥ →
-      ObsCtx𝔹
+      ObsCtx𝔽
         Γ τ
         (fun X => .ifz₁ c l X)
         Γ τ
@@ -112,19 +112,19 @@ inductive ObsCtx𝔹 : TEnv → Ty → Ctx → TEnv → Ty → Prop where
 -- Γ ⊢ C⟦Δ ⊢ τδ⟧ : τγ ≜ ∀ (Δ ⊢ X : τδ). Γ ⊢ C⟦X⟧ : τγ
 inductive ObsCtxℂ : TEnv → Ty → Ctx → TEnv → Ty → Prop where
   | hole : ∀ Γ τ, ObsCtxℂ Γ τ id Γ τ
-  | cons𝔹 :
-    ∀ Ψ Δ Γ τψ τδ τγ C B,
+  | cons𝔽 :
+    ∀ Ψ Δ Γ τψ τδ τγ C F,
       ObsCtxℂ Δ τδ C Γ τγ →
-      ObsCtx𝔹 Ψ τψ B Δ τδ →
-      ObsCtxℂ Ψ τψ (C ∘ B) Γ τγ
+      ObsCtx𝔽 Ψ τψ F Δ τδ →
+      ObsCtxℂ Ψ τψ (C ∘ F) Γ τγ
 
-lemma typing.congruence_under_ObsCtx𝔹 :
-  ∀ Δ Γ τδ τγ B X,
+lemma typing.congruence_under_ObsCtx𝔽 :
+  ∀ Δ Γ τδ τγ F X,
     typing Δ 𝟚 X τδ ⊥ →
-    ObsCtx𝔹 Δ τδ B Γ τγ →
-    typing Γ 𝟚 B⟦X⟧ τγ ⊥ :=
+    ObsCtx𝔽 Δ τδ F Γ τγ →
+    typing Γ 𝟚 F⟦X⟧ τγ ⊥ :=
   by
-  intros Δ Γ τδ τγ B X HX HC
+  intros Δ Γ τδ τγ F X HX HC
   induction HC generalizing X
   case lam Hwbt =>
     apply typing.lam
@@ -200,9 +200,9 @@ lemma typing.congruence_under_ObsCtxℂ :
   intros Δ Γ τδ τγ C X HX HC
   induction HC generalizing X
   case hole => apply HX
-  case cons𝔹 HB IH =>
-    apply IH; apply typing.congruence_under_ObsCtx𝔹
-    apply HX; apply HB
+  case cons𝔽 HF IH =>
+    apply IH; apply typing.congruence_under_ObsCtx𝔽
+    apply HX; apply HF
 
 -- Γ ⊧ e₀ ≤𝑐𝑡𝑥 e₁ : τ ≜
 --   Γ ⊢ e₀ : τ ∧

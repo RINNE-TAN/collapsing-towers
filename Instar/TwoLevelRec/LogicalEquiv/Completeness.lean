@@ -63,10 +63,10 @@ theorem ctx_approx_impl_ciu_approx :
       have Hτv := typing.weakening _ Γ _ _ _ _ Hτv
       simp at Hτv
       have HτC := ObsCtxℂ.hole Γ τ
-      have HτB := ObsCtx𝔹.appl₁ Γ argv τ𝕒 τ Hτv
-      have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
-      have HτB := ObsCtx𝔹.lam Γ τ𝕒 τ Hwbt
-      apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+      have HτB := ObsCtx𝔽.appl₁ Γ argv τ𝕒 τ Hτv
+      have HτC := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
+      have HτB := ObsCtx𝔽.lam Γ τ𝕒 τ Hwbt
+      apply ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
     have ⟨Hτ₀, Hτ₁, _⟩ := Hctx
     have ⟨HSτ₀, HSτ₁⟩ := log_approx_env.msubst.typing _ _ _ _ _ _ _ Hτ₀ Hτ₁ HsemΓ
     have HSτE₀ := typing.congruence_under_ObsCtxℂ _ _ _ _ _ _ HSτ₀ HτE
@@ -189,10 +189,10 @@ lemma ciu_approx_respects_log_approx_value :
       have HτE : ObsCtxℂ ⦰ .nat (fun X => .ifz₁ (.binary₁ .sub X (.lit n₁)) (.lit 0) diverge) ⦰ .nat :=
         by
         have HτC := ObsCtxℂ.hole ⦰ .nat
-        have HτB := ObsCtx𝔹.ifz₁ _ _ _ _ (typing.lit _ _ 0) typing_diverge
-        have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
-        have HτB := ObsCtx𝔹.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₁)
-        apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔽.ifz₁ _ _ _ _ (typing.lit _ _ 0) typing_diverge
+        have HτC := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔽.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₁)
+        apply ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
       --
       --
       -- E⟦n₁⟧⇓
@@ -256,10 +256,10 @@ lemma ciu_approx_respects_log_approx_value :
       have HτE : ObsCtxℂ ⦰ .nat (fun X => .ifz₁ (.binary₁ .sub X (.lit n₂)) diverge (.lit 0)) ⦰ .nat :=
         by
         have HτC := ObsCtxℂ.hole ⦰ .nat
-        have HτB := ObsCtx𝔹.ifz₁ _ _ _ _ typing_diverge (typing.lit _ _ 0)
-        have HτC := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
-        have HτB := ObsCtx𝔹.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₂)
-        apply ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔽.ifz₁ _ _ _ _ typing_diverge (typing.lit _ _ 0)
+        have HτC := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
+        have HτB := ObsCtx𝔽.binaryl₁ ⦰ .sub _ (typing.lit _ _ n₂)
+        apply ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτC HτB
       --
       --
       -- E⟦n₁⟧⇓
@@ -319,7 +319,7 @@ lemma ciu_approx_respects_log_approx_value :
     -- ———————————————————————————————————
     -- λx.e₂ @ argv₁ ⭢* v₂
     have HE : ctx𝔼 (fun X => .app₁ X argv₁) := ctx𝔼.cons𝔹 _ _ (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁)) ctx𝔼.hole
-    have HτE : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (fun X => .app₁ X argv₁) ⦰ τ𝕓 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ (ObsCtxℂ.hole _ _) (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
+    have HτE : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (fun X => .app₁ X argv₁) ⦰ τ𝕓 := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ (ObsCtxℂ.hole _ _) (ObsCtx𝔽.appl₁ _ _ _ _ HτArg₁)
     have ⟨v₂, Hvalue₂, Hstep₂⟩ := Hciu_value _ typing.subst.nil _ _ HE HτE (by exists v₁)
     --
     --
@@ -362,7 +362,7 @@ lemma ciu_approx_respects_log_approx_value :
       -- ———————————————————————————————————————————————
       -- ⦰ ⊢ (E ∘ fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕖
       have HEApp : ctx𝔼 (E ∘ fun X => .app₁ X argv₁) := compose.ctx𝔼_ctx𝔹 _ _ HE (ctx𝔹.appl₁ _ (lc.value _ HvalueArg₁))
-      have HτEApp : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (E ∘ fun X => .app₁ X argv₁) ⦰ τ𝕖 := ObsCtxℂ.cons𝔹 _ _ _ _ _ _ _ _ HτE (ObsCtx𝔹.appl₁ _ _ _ _ HτArg₁)
+      have HτEApp : ObsCtxℂ ⦰ (τ𝕒.arrow τ𝕓 ⊥) (E ∘ fun X => .app₁ X argv₁) ⦰ τ𝕖 := ObsCtxℂ.cons𝔽 _ _ _ _ _ _ _ _ HτE (ObsCtx𝔽.appl₁ _ _ _ _ HτArg₁)
       --
       --
       -- ⦰ ⊢ (E ∘ fun X => X @ argv₁)⟦⦰ ⊢ τ𝕒 → τ𝕓⟧ : τ𝕖

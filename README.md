@@ -141,3 +141,13 @@ The mechanization covers **all theorems** stated in the paper.
 | Term erasure `⎸t⎹` | `⎸e⎹` (notation for `erase`) | `Syntax/Transform.lean` |
 | Type erasure `⎸τ⎹` | `erase_ty τ` | `SyntacticTyping/Ty.lean` |
 | Environment erasure `⎸Γ⎹` | `erase_env Γ` | `SyntacticTyping/Env.lean` |
+
+### Contextual Equivalence (Fig. 9)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| Observational context `C` | `ObsCtxℂ` | `CtxEquiv/ObsCtx.lean` |
+| Basic observation frame `F` | `ObsCtx𝔹` | same |
+| Context typing `C : (Γ ⊢ τ) ⇒ (Γ' ⊢ τ')` | `ObsCtxℂ Γ τ C Γ' τ'` | same |
+| Contextual approx. `Γ ⊨ t₁ ≼𝑐𝑡𝑥 t₂ : τ` | `ctx_approx` | same |
+| Contextual equiv. `Γ ⊨ t₁ ≃𝑐𝑡𝑥 t₂ : τ` | `ctx_equiv` | same |

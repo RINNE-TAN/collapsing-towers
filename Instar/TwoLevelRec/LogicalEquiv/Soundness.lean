@@ -1,15 +1,15 @@
 import Instar.TwoLevelRec.LogicalEquiv.Fundamental
 import Instar.TwoLevelRec.CtxEquiv.Defs
 
-lemma log_approx.congruence_under_ObsCtx𝔹 :
-  ∀ Δ Γ τδ τγ B e₀ e₁,
+lemma log_approx.congruence_under_ObsCtx𝔽 :
+  ∀ Δ Γ τδ τγ F e₀ e₁,
     log_approx Δ e₀ e₁ τδ →
-    ObsCtx𝔹 Δ τδ B Γ τγ →
-    log_approx Γ B⟦e₀⟧ B⟦e₁⟧ τγ :=
+    ObsCtx𝔽 Δ τδ F Γ τγ →
+    log_approx Γ F⟦e₀⟧ F⟦e₁⟧ τγ :=
   by
-  intros Δ Γ τδ τγ B e₀ e₁ HX HB
+  intros Δ Γ τδ τγ F e₀ e₁ HX HF
   have ⟨Hτ₀, Hτ₁, Hsem_expr⟩ := HX
-  cases HB
+  cases HF
   case lam Hwbt =>
     apply compatibility.lam
     . apply Hwbt
@@ -86,10 +86,10 @@ lemma log_approx.congruence_under_ObsCtxℂ :
   intros Δ Γ τδ τγ C e₀ e₁ Hsem HC
   induction HC generalizing e₀ e₁
   case hole => apply Hsem
-  case cons𝔹 HB IH =>
+  case cons𝔽 HF IH =>
     apply IH
-    apply log_approx.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB
+    apply log_approx.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF
 
 -- Γ ⊧ e₀ ≤𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
@@ -114,10 +114,10 @@ theorem log_approx.soundness :
     have ⟨v₁, Hstep₁, Hsem_value⟩ := Hsem_expr (k + 1) _ _ (log_approx_env.nil _) k (by omega) _ Hvalue₀ Hstep₀
     have ⟨_, Hvalue₁⟩ := log_approx_value.syntactic.value _ _ _ _ Hsem_value
     exists v₁
-  case cons𝔹 C B HC HB IH =>
+  case cons𝔽 C F HC HF IH =>
     apply IH
-    apply log_approx.congruence_under_ObsCtx𝔹
-    apply Hsem; apply HB; apply HEqΔ; apply Htermination
+    apply log_approx.congruence_under_ObsCtx𝔽
+    apply Hsem; apply HF; apply HEqΔ; apply Htermination
 
 -- Γ ⊧ e₀ ≈𝑙𝑜𝑔 e₁ : τ
 -- ——————————————————
