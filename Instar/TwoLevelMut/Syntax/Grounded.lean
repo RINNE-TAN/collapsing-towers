@@ -30,7 +30,7 @@ def mgrounded : Subst → Prop
   | [] => true
   | v :: γ => grounded v ∧ mgrounded γ
 
-lemma grounded.under_erase : ∀ e, grounded ‖e‖ :=
+lemma grounded.under_erase : ∀ e, grounded ⎸e⎹ :=
   by
   intros e
   induction e with
@@ -54,31 +54,31 @@ lemma grounded.under_erase : ∀ e, grounded ‖e‖ :=
   | lets𝕔 _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
 
-lemma erasable.lift : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.lift e₁ :=
+lemma erasable.lift : ∀ e₀ e₁, ⎸e₀⎹ ≠ Expr.lift e₁ :=
   by
   intros e₀ e₁
   induction e₀ <;> simp
   all_goals next IH => apply IH
 
-lemma erasable.run : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.run e₁ :=
+lemma erasable.run : ∀ e₀ e₁, ⎸e₀⎹ ≠ Expr.run e₁ :=
   by
   intros e₀ e₁
   induction e₀ <;> simp
   all_goals next IH => apply IH
 
-lemma erasable.code : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.code e₁ :=
+lemma erasable.code : ∀ e₀ e₁, ⎸e₀⎹ ≠ Expr.code e₁ :=
   by
   intros e₀ e₁
   induction e₀ <;> simp
   all_goals next IH => apply IH
 
-lemma erasable.reflect : ∀ e₀ e₁, ‖e₀‖ ≠ Expr.reflect e₁ :=
+lemma erasable.reflect : ∀ e₀ e₁, ⎸e₀⎹ ≠ Expr.reflect e₁ :=
   by
   intros e₀ e₁
   induction e₀ <;> simp
   all_goals next IH => apply IH
 
-lemma grounded_iff_erase_identity : ∀ e, grounded e ↔ ‖e‖ = e :=
+lemma grounded_iff_erase_identity : ∀ e, grounded e ↔ ⎸e⎹ = e :=
   by
   intros e
   induction e with

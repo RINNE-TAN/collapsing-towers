@@ -136,7 +136,7 @@ lemma comm.shiftr_opening : ∀ x y e i, x < y → shiftr x ({i ↦ y} e) = {i �
   | store₂ _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
 
-lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
+lemma comm.erase_opening : ∀ i x e, ⎸{i ↦ x} e⎹ = {i ↦ x} ⎸e⎹ :=
   by
   intros i x e
   induction e generalizing i with
@@ -164,7 +164,7 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
   | store₂ _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
 
-lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
+lemma comm.erase_closing : ∀ i x e, ⎸{i ↤ x} e⎹ = {i ↤ x} ⎸e⎹ :=
   by
   intros i x e
   induction e generalizing i with
@@ -192,7 +192,7 @@ lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
   | store₂ _ _ IH₀ IH₁ =>
     simp [IH₀, IH₁]
 
-lemma comm.erase_opening_value : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
+lemma comm.erase_opening_value : ∀ i v e, ⎸opening i v e⎹ = opening i ⎸v⎹ ⎸e⎹ :=
   by
   intros i v e
   induction e generalizing i with

@@ -5,12 +5,12 @@ import Instar.TwoLevelMut.SemanticsPreservation.PresvReflect
 -- ⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩ (under Γ)
 -- Γ ⊢ e₀ : τ
 -- ——————————————————————————————
--- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 theorem semantics_preservation.strengthened :
   ∀ Γ σ₀ σ₁ e₀ e₁ τ ε,
     step_lvl Γ.length ⟨σ₀, e₀⟩ ⟨σ₁, e₁⟩ →
     typing Γ 𝟙 e₀ τ ε →
-    log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+    log_equiv (erase_env Γ) ⎸e₀⎹ ⎸e₁⎹ (erase_ty τ) :=
   by
   intros Γ σ₀ σ₁ e₀ e₁ τ ε
   generalize HEqlvl : Γ.length = lvl
@@ -64,7 +64,7 @@ theorem semantics_preservation :
   ∀ σ₀ σ₁ e₀ e₁ τ ε,
     (⟨σ₀, e₀⟩ ⭢ ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ ε →
-    ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+    ctx_equiv ⦰ ⎸e₀⎹ ⎸e₁⎹ (erase_ty τ) :=
   by
   intros σ₀ σ₁ e₀ e₁ τ ε Hstep Hτ
   cases Hτ
@@ -75,12 +75,12 @@ theorem semantics_preservation :
 -- ⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩
 -- ∅ ⊢ e₀ : τ
 -- ————————————————————————
--- ∅ ⊨ ‖e₀‖ ≈𝑐𝑡𝑥 ‖e₁‖ : ‖τ‖
+-- ∅ ⊨ ⎸e₀⎹ ≈𝑐𝑡𝑥 ⎸e₁⎹ : ⎸τ⎹
 theorem semantics_preservation.stepn :
   ∀ σ₀ σ₁ e₀ e₁ τ ε,
     (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, e₁⟩) →
     typing_reification ⦰ e₀ τ ε →
-    ctx_equiv ⦰ ‖e₀‖ ‖e₁‖ (erase_ty τ) :=
+    ctx_equiv ⦰ ⎸e₀⎹ ⎸e₁⎹ (erase_ty τ) :=
   by
   intro σ₀ σ₂ e₀ e₂ τ ε₀ Hstepn Hτ₀
   generalize HEq₀ : (σ₀, e₀) = st₀
@@ -107,14 +107,14 @@ theorem semantics_preservation.stepn :
 -- ∅ ⊢ e₀ : <τ>
 -- ————————————————————
 -- v = code e₁
--- ∅ ⊢ ‖e₀‖ ≈𝑐𝑡𝑥 e₁ : τ
+-- ∅ ⊢ ⎸e₀⎹ ≈𝑐𝑡𝑥 e₁ : τ
 theorem semantics_preservation.stepn.rep :
   ∀ σ₀ σ₁ e₀ v τ ε,
     (⟨σ₀, e₀⟩ ⭢* ⟨σ₁, v⟩) → value v →
     typing_reification ⦰ e₀ (.rep τ) ε →
     ∃ e₁,
       v = .code e₁ ∧
-      ctx_equiv ⦰ ‖e₀‖ e₁ τ :=
+      ctx_equiv ⦰ ⎸e₀⎹ e₁ τ :=
   by
   intros σ₀ σ₁ e₀ v τ ε Hstepn Hvalue Hτr₀
   have ⟨_, Hτr₁, _⟩ := preservation.stepn _ _ _ _ _ _ Hstepn Hτr₀

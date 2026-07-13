@@ -319,7 +319,7 @@ lemma opening.under_ctx𝔼 : ∀ E e i x, ctx𝔼 E → opening i x E⟦e⟧ = 
 lemma erase.under_ctx𝔹 :
   ∀ B e,
     ctx𝔹 B →
-    ‖B⟦‖e‖⟧‖ = ‖B⟦e⟧‖ :=
+    ⎸B⟦⎸e⎹⟧⎹ = ⎸B⟦e⟧⎹ :=
   by
   intros B e HB
   cases HB
@@ -330,7 +330,7 @@ lemma erase.under_ctx𝔹 :
 lemma erase.under_ctx𝔼 :
   ∀ E e,
     ctx𝔼 E →
-    ‖E⟦‖e‖⟧‖ = ‖E⟦e⟧‖ :=
+    ⎸E⟦⎸e⎹⟧⎹ = ⎸E⟦e⟧⎹ :=
   by
   intros E e HE
   induction HE generalizing e

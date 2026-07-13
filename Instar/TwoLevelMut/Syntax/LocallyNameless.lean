@@ -353,7 +353,7 @@ lemma closed.dec.under_shiftr :
       apply IH₀; apply HFv.left; apply Hclosed.left
       apply IH₁; apply HFv.right; apply Hclosed.right
 
-lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ‖e‖ x :=
+lemma closed.under_erase : ∀ e x, closed_at e x ↔ closed_at ⎸e⎹ x :=
   by
   intros e x
   induction e with
@@ -623,7 +623,7 @@ lemma lc.under_msubst : ∀ i γ e, mwf γ → lc_at e i → lc_at (msubst γ e)
     apply lc.under_subst; apply lc.inc
     apply Hγ.left.left; omega; apply He
 
-lemma lc.under_erase : ∀ e i, lc_at e i ↔ lc_at ‖e‖ i :=
+lemma lc.under_erase : ∀ e i, lc_at e i ↔ lc_at ⎸e⎹ i :=
   by
   intros e i
   induction e generalizing i with

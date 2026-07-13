@@ -215,7 +215,7 @@ def erase : Expr → Expr
   | .ifz₁ c l r => .ifz₁ (erase c) (erase l) (erase r)
   | .ifz₂ c l r => .ifz₁ (erase c) (erase l) (erase r)
 
-notation:max "‖" e "‖" => erase e
+notation:max "⎸" e "⎹" => erase e
 
 abbrev Subst :=
   List Expr

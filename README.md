@@ -9,9 +9,9 @@ Mechanized metatheory for
 | Paper Name | Lean Module | Description |
 |---|---|---|
 | - | `Instar.TwoLevelBasic` | Base two-stage calculus (pure, no side effects) |
-| λ∣2∣ | `Instar.TwoLevelRec` | Extended calculus with general recursion |
+| λ\|2\| | `Instar.TwoLevelRec` | Extended calculus with general recursion |
 | - | `Instar.TwoLevelMut` | Extended calculus with mutable references |
-| λ∣2∣^ref | `Instar.TwoLevelFinal` | Extended calculus with general recursion and mutable references |
+| λ\|2\|^ref | `Instar.TwoLevelFinal` | Extended calculus with general recursion and mutable references |
 
 `Instar.TwoLevelBasic` and `Instar.TwoLevelMut` are intermediate variants.
 
@@ -47,9 +47,9 @@ The `make all` command builds all four calculus variants. For individual builds:
 
 ```bash
 make basic    # Basic calculus
-make rec      # λ∣2∣, extended calculus with general recursion
+make rec      # λ|2|, extended calculus with general recursion
 make mut      # Extended calculus with mutable references
-make final    # λ∣2∣^ref, extended calculus with general recursion and mutable references
+make final    # λ|2|^ref, extended calculus with general recursion and mutable references
 ```
 
 ### Artifact Verification
@@ -87,7 +87,7 @@ PASS: No axioms, sorry, or admit found.
 
 The mechanization covers **all theorems** stated in the paper.
 
-### Surface Syntax of λ∣2∣ (Fig. 2)
+### Surface Syntax of λ|2| (Fig. 2)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -100,7 +100,7 @@ The mechanization covers **all theorems** stated in the paper.
 | `ifz^s t₁ t₂ t₃` | `.ifz₁ e₁ e₂ e₃` / `.ifz₂ e₁ e₂ e₃` | same |
 | `t₁ ⊕^s t₂` | `.binary₁ op e₁ e₂` / `.binary₂ op e₁ e₂` | same |
 
-### Administrative Syntax & Reduction of λ∣2∣ (Fig. 3)
+### Administrative Syntax & Reduction of λ|2| (Fig. 3)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -113,7 +113,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Single-step reduction `t ⭢ t'` | `e₀ ⭢ e₁` (notation for `step_lvl 0 e₀ e₁`) | same |
 | Multi-step reduction `t ⭢* t'` | `e₀ ⭢* e₁` (notation for `stepn`) | same |
 
-### Static Semantics: Types, Effects, Well-Formedness (Figs. 4-5)
+### Static Semantics: Types, Effects, Well-Formedness of λ|2| (Figs. 4-5)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -127,9 +127,17 @@ The mechanization covers **all theorems** stated in the paper.
 | Typing context `Γ` | `TEnv` (list of `Ty × Stage`) | `SyntacticTyping/Env.lean` |
 | Well-formed type `WF^s τ` | `wbt s τ` | `SyntacticTyping/Ty.lean` |
 
-### Typing Judgments (Fig. 6)
+### Typing Judgments of λ|2| (Figs. 6-7)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
 | `Γ ⊢ t : τ ∣ ε` | `typing_reification Γ e τ ε` | `SyntacticTyping/Typing.lean` |
-| `Γ ⊢ˢ t : τ ∣ ε` | `typing Γ 𝕊 e τ ε` | same |
+| `Γ ⊢^s t : τ ∣ ε` | `typing Γ s e τ ε` | same |
+
+### Erasure of λ|2| (Fig. 8)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| Term erasure `⎸t⎹` | `⎸e⎹` (notation for `erase`) | `Syntax/Transform.lean` |
+| Type erasure `⎸τ⎹` | `erase_ty τ` | `SyntacticTyping/Ty.lean` |
+| Environment erasure `⎸Γ⎹` | `erase_env Γ` | `SyntacticTyping/Env.lean` |

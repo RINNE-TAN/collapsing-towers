@@ -1,20 +1,20 @@
 import Instar.TwoLevelBasic.LogicalEquiv.Defs
 
 -- Γ ⊢ e₀ : τ →
--- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 -- ———————————————————————————————
 -- Γ ⊢ B⟦e₀⟧ : τ →
--- ‖Γ‖ ⊨ ‖B⟦e₀⟧‖ ≈𝑙𝑜𝑔 ‖B⟦e₁⟧‖ : ‖τ‖
+-- ⎸Γ⎹ ⊨ ⎸B⟦e₀⟧⎹ ≈𝑙𝑜𝑔 ⎸B⟦e₁⟧⎹ : ⎸τ⎹
 
 lemma semantics_preservation.under_ctx𝔹 :
   ∀ Γ B e₀ e₁ τ ε,
     ctx𝔹 B →
     (∀ τ ε,
       typing Γ 𝟙 e₀ τ ε →
-      log_equiv (erase_env Γ) ‖e₀‖ ‖e₁‖ (erase_ty τ)
+      log_equiv (erase_env Γ) ⎸e₀⎹ ⎸e₁⎹ (erase_ty τ)
     ) →
     typing Γ 𝟙 B⟦e₀⟧ τ ε →
-    log_equiv (erase_env Γ) ‖B⟦e₀⟧‖ ‖B⟦e₁⟧‖ (erase_ty τ) :=
+    log_equiv (erase_env Γ) ⎸B⟦e₀⟧⎹ ⎸B⟦e₁⟧⎹ (erase_ty τ) :=
   by
   intros Γ B e₀ e₁ τ ε HB IH Hτ
   cases HB
@@ -70,10 +70,10 @@ lemma semantics_preservation.under_ctx𝔹 :
         apply typing.erase.safety _ _ _ _ _ He
 
 -- Γ ⊢ e₀ : τ →
--- ‖Γ‖ ⊨ ‖e₀‖ ≈𝑙𝑜𝑔 ‖e₁‖ : ‖τ‖
+-- ⎸Γ⎹ ⊨ ⎸e₀⎹ ≈𝑙𝑜𝑔 ⎸e₁⎹ : ⎸τ⎹
 -- ————————————————————————————
 -- Γ ⊢ R⟦e₀⟧ : τ →
--- ‖Γ‖ ⊨ ‖R⟦e₀⟧‖ ≈𝑙𝑜𝑔 ‖R⟦e₁⟧‖ : ‖τ‖
+-- ⎸Γ⎹ ⊨ ⎸R⟦e₀⟧⎹ ≈𝑙𝑜𝑔 ⎸R⟦e₁⟧⎹ : ⎸τ⎹
 lemma semantics_preservation.under_ctxℝ :
   ∀ intro Γ R e₀ e₁ τ ε,
     ctxℝ intro Γ.length R →
@@ -81,10 +81,10 @@ lemma semantics_preservation.under_ctxℝ :
     (∀ Δ τ ε,
       Δ.length = Γ.length + intro →
       typing Δ 𝟙 e₀ τ ε →
-      log_equiv (erase_env Δ) ‖e₀‖ ‖e₁‖ (erase_ty τ)
+      log_equiv (erase_env Δ) ⎸e₀⎹ ⎸e₁⎹ (erase_ty τ)
     ) →
     typing Γ 𝟙 R⟦e₀⟧ τ ε →
-    log_equiv (erase_env Γ) ‖R⟦e₀⟧‖ ‖R⟦e₁⟧‖ (erase_ty τ) :=
+    log_equiv (erase_env Γ) ⎸R⟦e₀⟧⎹ ⎸R⟦e₁⟧⎹ (erase_ty τ) :=
   by
   intros intro Γ R e₀ e₁ τ ε HR Hlc IH Hτ
   cases HR

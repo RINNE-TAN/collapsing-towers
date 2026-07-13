@@ -173,7 +173,7 @@ def erase : Expr → Expr
   | .store₁ l r => .store₁ (erase l) (erase r)
   | .store₂ l r => .store₁ (erase l) (erase r)
 
-notation:max "‖" e "‖" => erase e
+notation:max "⎸" e "⎹" => erase e
 
 abbrev Subst :=
   List Expr

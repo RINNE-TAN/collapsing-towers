@@ -143,7 +143,7 @@ lemma comm.shiftr_opening : ∀ x y e i, x < y → shiftr x ({i ↦ y} e) = {i �
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp [IH₀, IH₁, IH₂]
 
-lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
+lemma comm.erase_opening : ∀ i x e, ⎸{i ↦ x} e⎹ = {i ↦ x} ⎸e⎹ :=
   by
   intros i x e
   induction e generalizing i with
@@ -172,7 +172,7 @@ lemma comm.erase_opening : ∀ i x e, ‖{i ↦ x} e‖ = {i ↦ x} ‖e‖ :=
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp [IH₀, IH₁, IH₂]
 
-lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
+lemma comm.erase_closing : ∀ i x e, ⎸{i ↤ x} e⎹ = {i ↤ x} ⎸e⎹ :=
   by
   intros i x e
   induction e generalizing i with
@@ -201,7 +201,7 @@ lemma comm.erase_closing : ∀ i x e, ‖{i ↤ x} e‖ = {i ↤ x} ‖e‖ :=
   | ifz₂ _ _ _ IH₀ IH₁ IH₂ =>
     simp [IH₀, IH₁, IH₂]
 
-lemma comm.erase_opening_value : ∀ i v e, ‖opening i v e‖ = opening i ‖v‖ ‖e‖ :=
+lemma comm.erase_opening_value : ∀ i v e, ⎸opening i v e⎹ = opening i ⎸v⎹ ⎸e⎹ :=
   by
   intros i v e
   induction e generalizing i with

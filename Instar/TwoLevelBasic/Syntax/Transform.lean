@@ -117,7 +117,7 @@ def erase : Expr → Expr
   | .lets b e => .lets (erase b) (erase e)
   | .lets𝕔 b e => .lets (erase b) (erase e)
 
-notation:max "‖" e "‖" => erase e
+notation:max "⎸" e "⎹" => erase e
 
 abbrev Subst :=
   List Expr

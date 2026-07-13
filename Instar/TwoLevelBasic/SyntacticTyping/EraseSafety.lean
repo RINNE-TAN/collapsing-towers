@@ -2,17 +2,17 @@ import Instar.TwoLevelBasic.SyntacticTyping.Typing
 
 -- Γ ⊢ e : τ
 -- ————————————————
--- ‖Γ‖ ⊢ ‖e‖ : ‖τ‖
+-- ⎸Γ⎹ ⊢ ⎸e⎹ : ⎸τ⎹
 theorem typing.erase.safety :
   ∀ Γ 𝕊 e τ ε,
     typing Γ 𝕊 e τ ε →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+    typing (erase_env Γ) 𝟚 ⎸e⎹ (erase_ty τ) ⊥ :=
   by
   intros Γ 𝕊 e τ ε Hτ
   apply
     @typing.rec
-      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
-      (fun Γ e τ ε (H : typing_reification Γ e τ ε) => typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥)
+      (fun Γ 𝕊 e τ ε (H : typing Γ 𝕊 e τ ε) => typing (erase_env Γ) 𝟚 ⎸e⎹ (erase_ty τ) ⊥)
+      (fun Γ e τ ε (H : typing_reification Γ e τ ε) => typing (erase_env Γ) 𝟚 ⎸e⎹ (erase_ty τ) ⊥)
   <;> intros
   case fvar Hbinds _ =>
     apply typing.fvar
@@ -77,7 +77,7 @@ theorem typing.erase.safety :
 theorem typing_reification.erase.safety :
   ∀ Γ e τ ε,
     typing_reification Γ e τ ε →
-    typing (erase_env Γ) 𝟚 ‖e‖ (erase_ty τ) ⊥ :=
+    typing (erase_env Γ) 𝟚 ⎸e⎹ (erase_ty τ) ⊥ :=
   by
   intros Γ e τ ε Hτ
   cases Hτ

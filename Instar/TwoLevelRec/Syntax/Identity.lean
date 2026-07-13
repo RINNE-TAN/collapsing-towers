@@ -208,7 +208,7 @@ lemma identity.msubst : ∀ γ e, closed e → msubst γ e = e :=
     rw [identity.subst]; apply Hclosed
     apply closed.inc; apply Hclosed; omega
 
-lemma identity.erase_codify : ∀ i e, ‖codify i e‖ = ‖e‖ :=
+lemma identity.erase_codify : ∀ i e, ⎸codify i e⎹ = ⎸e⎹ :=
   by
   intros i e
   induction e generalizing i with
