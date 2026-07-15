@@ -220,7 +220,7 @@ def store_free (e : Expr) : Prop :=
   | .lets b e => store_free b ∧ store_free e
   | .lets𝕔 b e => store_free b ∧ store_free e
   | .unit => true
-  | .loc _ => true
+  | .loc _ => false
   | .alloc₁ _ => false
   | .alloc₂ _ => false
   | .load₁ _ => false
@@ -294,8 +294,8 @@ lemma store_free.under_opening_value : ∀ e v i, store_free v → store_free e 
   by
   intros e v i Hsf₀ Hsf₁
   induction e generalizing i with
-  | alloc₁| alloc₂| load₁| load₂| store₁| store₂ => nomatch Hsf₁
-  | fvar| lit| unit| loc => simp
+  | alloc₁| alloc₂| load₁| load₂| store₁| store₂| loc => nomatch Hsf₁
+  | fvar| lit| unit => simp
   | bvar j =>
     by_cases HEq : j = i
     . simp [if_pos HEq]

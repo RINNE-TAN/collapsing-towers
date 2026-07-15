@@ -125,7 +125,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Value `v` | `value : Expr → Prop` (inductive predicate) | [`OperationalSemantics/Value.lean`](Instar/TwoLevelRec/OperationalSemantics/Value.lean) |
 | Pure frame `B`, Pure context `E` | `ctx𝔹`, `ctx𝔼` | [`OperationalSemantics/EvalCtx.lean`](Instar/TwoLevelRec/OperationalSemantics/EvalCtx.lean) |
 | Reification frame `R`, context `P` | `ctxℝ`, `ctxℙ` | same |
-| Full evaluation context `M` | `ctx𝕄` | same |
+| Evaluation context `M` | `ctx𝕄` | same |
 | Head reduction `t ↝ t'` | `e₀ ↝ e₁` (notation for `head e₀ e₁`) | [`OperationalSemantics/SmallStep.lean`](Instar/TwoLevelRec/OperationalSemantics/SmallStep.lean) |
 | Single-step reduction `t ⭢ t'` | `e₀ ⭢ e₁` (notation for `step_lvl 0 e₀ e₁`) | same |
 | Multi-step reduction `t ⭢* t'` | `e₀ ⭢* e₁` (notation for `stepn`) | same |
@@ -173,9 +173,9 @@ The mechanization covers **all theorems** stated in the paper.
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Value interpretation `(k, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value : ℕ → Expr → Expr → Ty → Prop` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelRec/LogicalEquiv/LogicalRelation.lean) |
-| Term interpretation `(k, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr : ℕ → Expr → Expr → Ty → Prop` | same |
-| Environment interpretation `(k, γ₀, γ₁) ∈ 𝒢⟦Γ⟧` | `log_approx_env : ℕ → Subst → Subst → TEnv → Prop` | same |
+| Value interpretation `(k, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value k v₀ v₁ τ` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelRec/LogicalEquiv/LogicalRelation.lean) |
+| Term interpretation `(k, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr k e₀ e₁ τ` | same |
+| Environment interpretation `(k, γ₀, γ₁) ∈ 𝒢⟦Γ⟧` | `log_approx_env k γ₀ γ₁ Γ` | same |
 | Logical approx. `Γ ⊨ t₁ ≼𝑙𝑜𝑔 t₂ : τ` | `log_approx Γ e₀ e₁ τ` | same |
 | Logical equiv. `Γ ⊨ t₁ ≃𝑙𝑜𝑔 t₂ : τ` | `log_equiv Γ e₀ e₁ τ` | same |
 
@@ -218,17 +218,17 @@ world model relates stores across two program runs in the logical relation.
 | Store `σ` | `Store` (list of `Expr`) | [`OperationalSemantics/Store.lean`](Instar/TwoLevelFinal/OperationalSemantics/Store.lean) |
 | Store-related reduction `⟨σ, t⟩ → ⟨σ', t'⟩` | `step_lvl` extended with store | [`OperationalSemantics/SmallStep.lean`](Instar/TwoLevelFinal/OperationalSemantics/SmallStep.lean) |
 | Reference type `ref τ` | `.ref τ` (constructor of `Ty`) | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelFinal/SyntacticTyping/Ty.lean) |
-| Store-free assertion | `store_free : Expr → Prop` | [`SyntacticTyping/Typing.lean`](Instar/TwoLevelFinal/SyntacticTyping/Typing.lean) |
+| Store-free assertion | `store_free : Expr → Prop` | [`Syntax/Grounded.lean`](Instar/TwoLevelFinal/Syntax/Grounded.lean) |
 
 #### World Model & Kripke Logical Relations (Fig. 12)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| World `W ⊆ ℕ × ℕ` | `World` (partial bijection on locations) | [`LogicalEquiv/World.lean`](Instar/TwoLevelFinal/LogicalEquiv/World.lean) |
-| World extension `W' ⊒ W` | `World.future` (notation `𝓦₁ ⊒ 𝓦₀`) | same |
-| Store agreement `(σ₁, σ₂) : W` | `log_well_store W σ₁ σ₂` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelFinal/LogicalEquiv/LogicalRelation.lean) |
-| Value interpretation `(k, W, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value` indexed by step and world | same |
-| Term interpretation `(k, W, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr` indexed by step and world | same |
+| World `𝓦 ⊆ ℕ × ℕ` | `World` (partial bijection on locations) | [`LogicalEquiv/World.lean`](Instar/TwoLevelFinal/LogicalEquiv/World.lean) |
+| World extension `𝓦' ⊒ 𝓦` | `World.future` (notation `𝓦' ⊒ 𝓦`) | same |
+| Store agreement `(σ₁, σ₂) : 𝓦` | `log_well_store 𝓦 σ₁ σ₂` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelFinal/LogicalEquiv/LogicalRelation.lean) |
+| Value interpretation `(k, 𝓦, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value (k, 𝓦) v₀ v₁ τ` | same |
+| Term interpretation `(k, 𝓦, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr (k, 𝓦) e₀ e₁ τ` | same |
 
 #### Theorems of λ|2|^ref
 
