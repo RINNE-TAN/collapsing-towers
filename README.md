@@ -203,6 +203,42 @@ The table below maps every theorem and key lemma from the paper to the Lean code
 | Theorem 5.9 | Strengthened Sem. Preservation | `semantics_preservation.stepn` | same |
 | Theorem 5.10 | Semantics Preservation | `semantics_preservation.stepn.rep` | same |
 
+### λ|2|^ref — Extension with Mutable References
+
+λ|2|^ref extends λ|2| with second-stage mutable references. The first stage
+remains store-pure; store effects are confined to generated code. A Kripke
+world model relates stores across two program runs in the logical relation.
+
+#### Extended Syntax & Dynamic Semantics & Static Semantics (Fig. 11)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| Location `ℓ` | `.loc n` (constructor of `Expr`) | [`Syntax/Basic.lean`](Instar/TwoLevelFinal/Syntax/Basic.lean) |
+| `alloc^s t`, `get^s t`, `put^s t₁ t₂` | `.alloc₁`, `.alloc₂`, `.get₁`, `.get₂`, `.put₁`, `.put₂` | same |
+| Store `σ` | `Store` (list of `Expr`) | [`OperationalSemantics/Store.lean`](Instar/TwoLevelFinal/OperationalSemantics/Store.lean) |
+| Store-related reduction `⟨σ, t⟩ → ⟨σ', t'⟩` | `step_lvl` extended with store | [`OperationalSemantics/SmallStep.lean`](Instar/TwoLevelFinal/OperationalSemantics/SmallStep.lean) |
+| Reference type `ref τ` | `.ref τ` (constructor of `Ty`) | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelFinal/SyntacticTyping/Ty.lean) |
+| Store-free assertion | `store_free : Expr → Prop` | [`SyntacticTyping/Typing.lean`](Instar/TwoLevelFinal/SyntacticTyping/Typing.lean) |
+
+#### World Model & Kripke Logical Relations (Fig. 12)
+
+| Paper Identifier | Lean Identifier | File |
+|---|---|---|
+| World `W ⊆ ℕ × ℕ` | `World` (partial bijection on locations) | [`LogicalEquiv/World.lean`](Instar/TwoLevelFinal/LogicalEquiv/World.lean) |
+| World extension `W' ⊒ W` | `World.future` (notation `𝓦₁ ⊒ 𝓦₀`) | same |
+| Store agreement `(σ₁, σ₂) : W` | `log_well_store W σ₁ σ₂` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelFinal/LogicalEquiv/LogicalRelation.lean) |
+| Value interpretation `(k, W, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value` indexed by step and world | same |
+| Term interpretation `(k, W, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr` indexed by step and world | same |
+
+#### Theorems of λ|2|^ref
+
+| # | Paper Theorem / Lemma | Lean Identifier | File (TwoLevelFinal) |
+|---|---|---|---|
+| Theorem 6.1 | Progress | `progress` | [`SyntacticSoundness/Progress.lean`](Instar/TwoLevelFinal/SyntacticSoundness/Progress.lean) |
+| Theorem 6.2 | Preservation | `preservation` | [`SyntacticSoundness/Preservation.lean`](Instar/TwoLevelFinal/SyntacticSoundness/Preservation.lean) |
+| Theorem 6.3 | Syntactic Erasure Soundness | `typing.erase.safety` | [`SyntacticTyping/EraseSafety.lean`](Instar/TwoLevelFinal/SyntacticTyping/EraseSafety.lean) |
+| Theorem 6.4 | Semantics Preservation | `semantics_preservation.stepn.rep` | [`SemanticsPreservation/Preservation.lean`](Instar/TwoLevelFinal/SemanticsPreservation/Preservation.lean) |
+
 ---
 
 ## 3. Key Design Choices
