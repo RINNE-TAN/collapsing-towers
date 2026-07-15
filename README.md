@@ -108,7 +108,7 @@ The mechanization covers **all theorems** stated in the paper.
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Term `t` | `Expr` (inductive type) | `Syntax/Basic.lean` |
+| Term `t` | `Expr` (inductive type) | [`Syntax/Basic.lean`](Instar/TwoLevelRec/Syntax/Basic.lean) |
 | `()`, `n`, `x`, `λx.t`, `let x = t₁ in t₂` | `.unit`, `.lit n`, `.fvar x`, `.lam e`, `.lets b e` | same |
 | `lift t` | `.lift e` | same |
 | `run t` | `.run e` | same |
@@ -121,12 +121,12 @@ The mechanization covers **all theorems** stated in the paper.
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Administrative term `g` | Constructors of `Expr` (`code`, `reflect`, `lam𝕔`, `lets𝕔`) | `Syntax/Basic.lean` |
-| Value `v` | `value : Expr → Prop` (inductive predicate) | `OperationalSemantics/Value.lean` |
-| Pure frame `B`, Pure context `E` | `ctx𝔹`, `ctx𝔼` | `OperationalSemantics/EvalCtx.lean` |
+| Administrative term `g` | Constructors of `Expr` (`code`, `reflect`, `lam𝕔`, `lets𝕔`) | [`Syntax/Basic.lean`](Instar/TwoLevelRec/Syntax/Basic.lean) |
+| Value `v` | `value : Expr → Prop` (inductive predicate) | [`OperationalSemantics/Value.lean`](Instar/TwoLevelRec/OperationalSemantics/Value.lean) |
+| Pure frame `B`, Pure context `E` | `ctx𝔹`, `ctx𝔼` | [`OperationalSemantics/EvalCtx.lean`](Instar/TwoLevelRec/OperationalSemantics/EvalCtx.lean) |
 | Reification frame `R`, context `P` | `ctxℝ`, `ctxℙ` | same |
 | Full evaluation context `M` | `ctx𝕄` | same |
-| Head reduction `t ↝ t'` | `e₀ ↝ e₁` (notation for `head e₀ e₁`) | `OperationalSemantics/SmallStep.lean` |
+| Head reduction `t ↝ t'` | `e₀ ↝ e₁` (notation for `head e₀ e₁`) | [`OperationalSemantics/SmallStep.lean`](Instar/TwoLevelRec/OperationalSemantics/SmallStep.lean) |
 | Single-step reduction `t ⭢ t'` | `e₀ ⭢ e₁` (notation for `step_lvl 0 e₀ e₁`) | same |
 | Multi-step reduction `t ⭢* t'` | `e₀ ⭢* e₁` (notation for `stepn`) | same |
 
@@ -134,36 +134,36 @@ The mechanization covers **all theorems** stated in the paper.
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Type `τ` | `Ty` (inductive type) | `SyntacticTyping/Ty.lean` |
+| Type `τ` | `Ty` (inductive type) | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelRec/SyntacticTyping/Ty.lean) |
 | `nat`, `unit` | `.nat`, `.unit` | same |
 | `τ₁ →^ε τ₂` | `.arrow τ₁ τ₂ ε` | same |
 | `rep τ` | `.rep τ` | same |
 | `frag τ` | `.fragment τ` | same |
-| Effect `ε` ∈ {⊥, ⊤} | `Effect` enum (`⊥` / `⊤`) | `SyntacticTyping/Effect.lean` |
+| Effect `ε` ∈ {⊥, ⊤} | `Effect` enum (`⊥` / `⊤`) | [`SyntacticTyping/Effect.lean`](Instar/TwoLevelRec/SyntacticTyping/Effect.lean) |
 | Effect lattice ⊑, ⊔ | `Effect.le` (≤), `Effect.union` (∪) | same |
-| Typing context `Γ` | `TEnv` (list of `Ty × Stage`) | `SyntacticTyping/Env.lean` |
-| Well-formed type `WF^s τ` | `wbt s τ` | `SyntacticTyping/Ty.lean` |
+| Typing context `Γ` | `TEnv` (list of `Ty × Stage`) | [`SyntacticTyping/Env.lean`](Instar/TwoLevelRec/SyntacticTyping/Env.lean) |
+| Well-formed type `WF^s τ` | `wbt s τ` | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelRec/SyntacticTyping/Ty.lean) |
 
 ### Typing Judgments of λ|2| (Figs. 6-7)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| `Γ ⊢ t : τ ∣ ε` | `typing_reification Γ e τ ε` | `SyntacticTyping/Typing.lean` |
+| `Γ ⊢ t : τ ∣ ε` | `typing_reification Γ e τ ε` | [`SyntacticTyping/Typing.lean`](Instar/TwoLevelRec/SyntacticTyping/Typing.lean) |
 | `Γ ⊢^s t : τ ∣ ε` | `typing Γ s e τ ε` | same |
 
 ### Erasure of λ|2| (Fig. 8)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Term erasure `⎸t⎹` | `⎸e⎹` (notation for `erase`) | `Syntax/Transform.lean` |
-| Type erasure `⎸τ⎹` | `erase_ty τ` | `SyntacticTyping/Ty.lean` |
-| Environment erasure `⎸Γ⎹` | `erase_env Γ` | `SyntacticTyping/Env.lean` |
+| Term erasure `⎸t⎹` | `⎸e⎹` (notation for `erase`) | [`Syntax/Transform.lean`](Instar/TwoLevelRec/Syntax/Transform.lean) |
+| Type erasure `⎸τ⎹` | `erase_ty τ` | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelRec/SyntacticTyping/Ty.lean) |
+| Environment erasure `⎸Γ⎹` | `erase_env Γ` | [`SyntacticTyping/Env.lean`](Instar/TwoLevelRec/SyntacticTyping/Env.lean) |
 
 ### Contextual Equivalence of λ|2|↓ (Fig. 9)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Observational context `C` | `ObsCtxℂ` | `CtxEquiv/ObsCtx.lean` |
+| Observational context `C` | `ObsCtxℂ` | [`CtxEquiv/ObsCtx.lean`](Instar/TwoLevelRec/CtxEquiv/ObsCtx.lean) |
 | Basic observation frame `F` | `ObsCtx𝔽` | same |
 | Context typing `C : (Γ ⊢ τ) ⇒ (Γ' ⊢ τ')` | `ObsCtxℂ Γ τ C Γ' τ'` | same |
 | Contextual approx. `Γ ⊨ t₁ ≼𝑐𝑡𝑥 t₂ : τ` | `ctx_approx` | same |
@@ -173,7 +173,7 @@ The mechanization covers **all theorems** stated in the paper.
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
-| Value interpretation `(k, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value : ℕ → Expr → Expr → Ty → Prop` | `LogicalEquiv/LogicalRelation.lean` |
+| Value interpretation `(k, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value : ℕ → Expr → Expr → Ty → Prop` | [`LogicalEquiv/LogicalRelation.lean`](Instar/TwoLevelRec/LogicalEquiv/LogicalRelation.lean) |
 | Term interpretation `(k, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr : ℕ → Expr → Expr → Ty → Prop` | same |
 | Environment interpretation `(k, γ₀, γ₁) ∈ 𝒢⟦Γ⟧` | `log_approx_env : ℕ → Subst → Subst → TEnv → Prop` | same |
 | Logical approx. `Γ ⊨ t₁ ≼𝑙𝑜𝑔 t₂ : τ` | `log_approx Γ e₀ e₁ τ` | same |
@@ -183,67 +183,53 @@ The mechanization covers **all theorems** stated in the paper.
 
 The table below maps every theorem and key lemma from the paper to the Lean code.
 
-| # | Paper Theorem / Lemma | Lean Identifier | File (TwoLevelBasic) |
+| # | Paper Theorem / Lemma | Lean Identifier | File (TwoLevelRec) |
 |---|---|---|---|
-| Lemma 3.1 | Deterministic Decomposition | `deterministic.decomposition_ctxℙ` | `OperationalSemantics/Deterministic.lean` |
-| Theorem 3.2 | Determinism | `deterministic` | `OperationalSemantics/Deterministic.lean` |
-| Lemma 3.3 | Strengthened Progress | `progress.strengthened` | `SyntacticSoundness/Progress.lean` |
-| Theorem 3.4 | Progress | `progress` | `SyntacticSoundness/Progress.lean` |
-| Theorem 3.5 | Preservation | `preservation` | `SyntacticSoundness/Preservation.lean` |
-| — | Multi-step Preservation | `preservation.stepn` | `SyntacticSoundness/Preservation.lean` |
-| — | Type Soundness | `soundness` | `SyntacticSoundness/Soundness.lean` |
-| Theorem 4.1 | Syntactic Erasure Soundness | `typing.erase.safety` | `SyntacticTyping/EraseSafety.lean` |
-| Theorem 5.3 | Transitivity of Contextual Equiv. | `ctx_equiv.trans` | `CtxEquiv/Transitivity.lean` |
-| Theorem 5.4 | Fundamental Property | `log_equiv.fundamental` | `LogicalEquiv/Fundamental.lean` |
-| Theorem 5.5 | Soundness of Logical Relations | `log_equiv.soundness` | `LogicalEquiv/Soundness.lean` |
-| — | Completeness of Logical Relations | `log_equiv.completeness` | `LogicalEquiv/Completeness.lean` |
-| Lemma 5.6 | Sem. Pres. of Substitution | `semantics_preservation.lets` | `SemanticsPreservation/PresvPure.lean` |
-| Lemma 5.7 | Sem. Pres. of Let-Insertion | `semantics_preservation.reflect.head` | `SemanticsPreservation/PresvReflect.lean` |
-| Theorem 5.8 | Sem. Pres. of Single-Step Reduction | `semantics_preservation` | `SemanticsPreservation/Preservation.lean` |
-| Theorem 5.9 | Strengthened Sem. Preservation | `semantics_preservation.stepn` | `SemanticsPreservation/Preservation.lean` |
-| Theorem 5.10 | Semantics Preservation | `semantics_preservation.stepn.rep` | `SemanticsPreservation/Preservation.lean` |
+| Lemma 3.1 | Deterministic Decomposition | `deterministic.decomposition_ctxℙ` | [`OperationalSemantics/Deterministic.lean`](Instar/TwoLevelRec/OperationalSemantics/Deterministic.lean) |
+| Theorem 3.2 | Determinism | `deterministic` | same |
+| Lemma 3.3 | Strengthened Progress | `progress.strengthened` | [`SyntacticSoundness/Progress.lean`](Instar/TwoLevelRec/SyntacticSoundness/Progress.lean) |
+| Theorem 3.4 | Progress | `progress` | same |
+| Theorem 3.5 | Preservation | `preservation` | [`SyntacticSoundness/Preservation.lean`](Instar/TwoLevelRec/SyntacticSoundness/Preservation.lean) |
+| — | Multi-step Preservation | `preservation.stepn` | same |
+| — | Type Soundness | `soundness` | [`SyntacticSoundness/Soundness.lean`](Instar/TwoLevelRec/SyntacticSoundness/Soundness.lean) |
+| Theorem 4.1 | Syntactic Erasure Soundness | `typing.erase.safety` | [`SyntacticTyping/EraseSafety.lean`](Instar/TwoLevelRec/SyntacticTyping/EraseSafety.lean) |
+| Theorem 5.3 | Transitivity of Contextual Equiv. | `ctx_equiv.trans` | [`CtxEquiv/Transitivity.lean`](Instar/TwoLevelRec/CtxEquiv/Transitivity.lean) |
+| Theorem 5.4 | Fundamental Property | `log_equiv.fundamental` | [`LogicalEquiv/Fundamental.lean`](Instar/TwoLevelRec/LogicalEquiv/Fundamental.lean) |
+| Theorem 5.5 | Soundness of Logical Relations | `log_equiv.soundness` | [`LogicalEquiv/Soundness.lean`](Instar/TwoLevelRec/LogicalEquiv/Soundness.lean) |
+| — | Completeness of Logical Relations | `log_equiv.completeness` | [`LogicalEquiv/Completeness.lean`](Instar/TwoLevelRec/LogicalEquiv/Completeness.lean) |
+| Lemma 5.6 | Sem. Pres. of Substitution | `semantics_preservation.lets` | [`SemanticsPreservation/PresvPure.lean`](Instar/TwoLevelRec/SemanticsPreservation/PresvPure.lean) |
+| Lemma 5.7 | Sem. Pres. of Let-Insertion | `semantics_preservation.reflect.head` | [`SemanticsPreservation/PresvReflect.lean`](Instar/TwoLevelRec/SemanticsPreservation/PresvReflect.lean) |
+| Theorem 5.8 | Sem. Pres. of Single-Step Reduction | `semantics_preservation` | [`SemanticsPreservation/Preservation.lean`](Instar/TwoLevelRec/SemanticsPreservation/Preservation.lean) |
+| Theorem 5.9 | Strengthened Sem. Preservation | `semantics_preservation.stepn` | same |
+| Theorem 5.10 | Semantics Preservation | `semantics_preservation.stepn.rep` | same |
 
 ---
 
-## 3. Libraries & Frameworks Overview
+## 3. Key Design Choices
 
-### Proof Assistant
+### Locally Nameless Representation
 
-The mechanization uses **Lean 4** (v4.29.0-rc2), a dependently typed
-proof assistant and functional programming language based on the
-Calculus of Inductive Constructions (CIC).
+Free variables use de Bruijn levels; bound variables use de Bruijn
+indices. This follows Charguéraud (2012) and is chosen to simplify
+fresh variable generation during let-insertion and avoid α-equivalence.
 
-### External Dependencies
+### Level-Indexed Reduction
 
-| Dependency | Purpose |
-|---|---|
-| **mathlib4** (`leanprover-community/mathlib`) | Standard library: `Nat`, `List`, `Fin`, `Omega` (for `omega` tactic) |
-| **Std** / **Batteries** | Extended standard library (transitive via mathlib) |
-| **Aesop** | Automation tactic (transitive via mathlib) |
+Because reification contexts introduce second-stage bindings, the
+reduction relation is indexed by the current de Bruijn level.
+Evaluation contexts track this level.
 
-The mechanization makes **minimal use of external libraries** beyond the
-standard mathlib4 data structures. The proofs are largely self-contained
-and rely on structural induction rather than advanced automation.
+### Step-Indexed Logical Relations
 
-### Key Design Choices
+Following Ahmed (2006) and Ahmed, Dreyer, Rossberg (POPL 2009), the
+logical relation is step-indexed to handle divergence without
+requiring domain-theoretic constructions.
 
-1. **Locally Nameless Representation**: Free variables use de Bruijn
-   levels; bound variables use de Bruijn indices. This follows Charguéraud
-   (2012) and is chosen to simplify fresh variable generation during
-   let-insertion and avoid α-equivalence.
+### World Model (λ|2|^ref only)
 
-2. **Level-Indexed Reduction**: Because reification contexts introduce
-   second-stage bindings, the reduction relation is indexed by the current
-   de Bruijn level. Evaluation contexts track this level.
-
-3. **Step-Indexed Logical Relations**: Following Ahmed (2006) and
-   Ahmed, Dreyer, Rossberg (POPL 2009), the logical relation is
-   step-indexed to handle divergence without requiring domain-theoretic
-   constructions.
-
-4. **World Model** (λ|2|^ref only): A partial bijection on locations
-   relates stores across two program runs. Since stores contain only
-   natural numbers (first-order), worlds need not be recursively indexed.
+A partial bijection on locations relates stores across two program
+runs. Since stores contain only natural numbers (first-order), worlds
+need not be recursively indexed.
 
 ---
 
@@ -358,18 +344,5 @@ The development does **not** rely on any logic-extending axioms such as:
 
 The entire development is constructive and compatible with the standard
 Calculus of Inductive Constructions.
-
-### Trusted Code Base
-
-The trusted computing base consists of:
-
-1. **Lean 4 kernel** (type checker) — the standard trust base for all
-   Lean developments
-2. **mathlib4** — standard library, widely used and reviewed
-3. **The definitions in this artifact** — all theorems proved relative
-   to these definitions
-
-No custom tactics or automation are used that would expand the TCB
-beyond these standard components.
 
 ---
