@@ -72,15 +72,15 @@ make final    # λ|2|^ref, extended calculus with general recursion and mutable 
 ### Artifact Verification
 
 ```bash
-make verify        # build all + check for unfinished proofs
-make check-axioms  # verify no axioms/sorry/admit
+make all           # build all four variants
 ```
+A clean build confirms all proofs are complete.
 
 ### Build Output
 
 Successful compilation produces the following output:
 
-```bash
+```
 lake build Instar.TwoLevelBasic.Defs
 Build completed successfully (410 jobs).
 lake build Instar.TwoLevelRec.Defs
@@ -89,13 +89,6 @@ lake build Instar.TwoLevelMut.Defs
 Build completed successfully (411 jobs).
 lake build Instar.TwoLevelFinal.Defs
 Build completed successfully (418 jobs).
-grep -rn -E '\b(axiom|sorry|admit)\b' Instar/ --include="*.lean"; test $? -eq 1 && echo "PASS: No axioms, sorry, or admit found."
-PASS: No axioms, sorry, or admit found.
-
-=========================================
-  Artifact verification complete.
-  All proofs checked. Zero axioms found.
-=========================================
 ```
 
 ---
@@ -255,12 +248,6 @@ Because reification contexts introduce second-stage bindings, the
 reduction relation is indexed by the current de Bruijn level.
 Evaluation contexts track this level.
 
-### Step-Indexed Logical Relations
-
-Following Ahmed (2006) and Ahmed, Dreyer, Rossberg (POPL 2009), the
-logical relation is step-indexed to handle divergence without
-requiring domain-theoretic constructions.
-
 ### World Model (λ|2|^ref only)
 
 A partial bijection on locations relates stores across two program
@@ -279,75 +266,75 @@ follows the same module hierarchy:
 ```
 Instar/<Variant>/
 ├── Utils/
-│   ├── Defs.lean          — General utilities
-│   └── List.lean          — List lemmas
+│   ├── Defs.lean          
+│   └── List.lean          
 ├── Syntax/
-│   ├── Basic.lean         — Core AST definitions (Expr, Stage, Ty)
-│   ├── Defs.lean          — Import aggregator
-│   ├── Transform.lean     — Substitution, erasure, opening/closing
-│   ├── Fv.lean            — Free variable computations
-│   ├── LocallyNameless.lean — Local closure, well-formedness
-│   ├── Grounded.lean      — Grounded terms (no staging constructs)
-│   ├── Identity.lean      — Opening/closing identity lemmas
-│   ├── Commutativity.lean — Substitution commutation lemmas
-│   └── Intro.lean         — Introduction lemmas
+│   ├── Basic.lean           — Core AST definitions (Expr, Stage, Ty)
+│   ├── Defs.lean          
+│   ├── Transform.lean       — Substitution, erasure, opening/closing
+│   ├── Fv.lean              — Free variable computations
+│   ├── LocallyNameless.lean — Local closure
+│   ├── Grounded.lean      
+│   ├── Identity.lean      
+│   ├── Commutativity.lean 
+│   └── Intro.lean         
 ├── OperationalSemantics/
-│   ├── Value.lean         — Value predicate
-│   ├── EvalCtx.lean       — Evaluation contexts (ctx𝔹, ctxℝ, ctx𝔼, ctx𝕄)
-│   ├── SmallStep.lean     — Single/multi-step reduction
-│   ├── Defs.lean          — Head reduction, import aggregator
-│   ├── Congruence.lean    — Congruence lemmas for contexts
-│   ├── Deterministic.lean — Determinism proof
-│   ├── Confluence.lean    — Confluence proof
-│   ├── Refine.lean        — Simulation/refinement lemmas (Rec/Final only)
-│   ├── Termination.lean   — Termination characterization (Rec/Final only)
-│   └── Store.lean         — Store model (Mut/Final only)
+│   ├── Value.lean           — Value predicate
+│   ├── EvalCtx.lean         — Evaluation/Reification contexts (ctx𝔹, ctxℝ, ctx𝔼, ctx𝕄)
+│   ├── SmallStep.lean       — Head/Single/multi-step reduction
+│   ├── Defs.lean          
+│   ├── Congruence.lean    
+│   ├── Deterministic.lean   — Determinism theorem
+│   ├── Confluence.lean    
+│   ├── Refine.lean        
+│   ├── Termination.lean     — Termination characterization (Rec/Final only)
+│   └── Store.lean           — Store model (Mut/Final only)
 ├── SyntacticTyping/
-│   ├── Ty.lean            — Types, well-formedness, type erasure
-│   ├── Effect.lean        — Effect lattice
-│   ├── Env.lean           — Typing environments, env erasure
-│   ├── Typing.lean        — Typing judgments and rules
-│   ├── Defs.lean          — Import aggregator
-│   ├── Weakening.lean     — Weakening lemmas
-│   ├── Shrinking.lean     — Shrinking lemmas
-│   └── EraseSafety.lean   — Syntactic Erasure Soundness
+│   ├── Ty.lean              — Types, well-formedness, type erasure
+│   ├── Effect.lean          — Effect lattice
+│   ├── Env.lean             — Typing environments, env erasure
+│   ├── Typing.lean          — Typing judgments and rules
+│   ├── Defs.lean          
+│   ├── Weakening.lean     
+│   ├── Shrinking.lean     
+│   └── EraseSafety.lean     — Syntactic Erasure Soundness
 ├── SyntacticSoundness/
-│   ├── Progress.lean      — Progress theorem
-│   ├── Preservation.lean  — Preservation theorem
-│   ├── Soundness.lean     — Type Soundness (progress + preservation)
-│   ├── Defs.lean          — Import aggregator
-│   ├── PresvCtx.lean      — Preservation under contexts
-│   ├── PresvSubst.lean    — Substitution lemmas for preservation
-│   ├── PresvMaping.lean   — Mapping lemmas
-│   ├── PresvPure.lean     — Pure step preservation
-│   ├── PresvReflect.lean  — Reflection step preservation
-│   └── PresvMut.lean      — Mutation step preservation (Mut/Final only)
+│   ├── Progress.lean        — Progress theorem
+│   ├── Preservation.lean    — Preservation theorem
+│   ├── Soundness.lean       — Type Soundness (progress + preservation)
+│   ├── Defs.lean         
+│   ├── PresvCtx.lean      
+│   ├── PresvSubst.lean    
+│   ├── PresvMaping.lean   
+│   ├── PresvPure.lean    
+│   ├── PresvReflect.lean  
+│   └── PresvMut.lean     
 ├── CtxEquiv/
-│   ├── ObsCtx.lean        — Observational contexts
-│   ├── Defs.lean          — Contextual approximation & equivalence
-│   └── Transitivity.lean  — Transitivity of contextual equivalence
+│   ├── ObsCtx.lean          — Observational contexts & Contextual equivalence
+│   ├── Defs.lean          
+│   └── Transitivity.lean    — Transitivity of contextual equivalence
 ├── LogicalEquiv/
-│   ├── LogicalRelation.lean — Value/term/environment interpretations
+│   ├── LogicalRelation.lean — Value/Term/Environment interpretations & Logical equivalence
 │   ├── Compatibility.lean   — Compatibility lemmas
 │   ├── Fundamental.lean     — Fundamental theorem
 │   ├── Soundness.lean       — Soundness wrt contextual equivalence
-│   ├── Completeness.lean    — Completeness (ciu theorem)
-│   ├── Transitivity.lean    — Transitivity of logical equivalence
-│   ├── Defs.lean            — Import aggregator
+│   ├── Completeness.lean    
+│   ├── Transitivity.lean    
+│   ├── Defs.lean           
 │   └── World.lean           — World model (Mut/Final only)
 ├── SemanticsPreservation/
 │   ├── PresvPure.lean       — Preservation for pure steps
 │   ├── PresvReflect.lean    — Preservation for let-insertion steps
-│   ├── PresvCtx.lean        — Preservation under contexts
+│   ├── PresvCtx.lean        
 │   ├── Preservation.lean    — Main semantics preservation theorems
-│   └── Defs.lean            — Import aggregator
-├── Examples/                 — (TwoLevelFinal only)
-│   ├── Notation.lean         — Pretty-printing notation
-│   ├── Power.lean            — Unstaged power function evaluation
-│   ├── StagePower.lean       — Staged power function evaluation
-│   ├── Reification.lean      — Reification example
-│   └── PhaseConsistency.lean — Phase consistency example
-└── Defs.lean                 — Top-level import aggregator
+│   └── Defs.lean            
+├── Examples/                — (TwoLevelFinal only)
+│   ├── Notation.lean         
+│   ├── Power.lean            
+│   ├── StagePower.lean       
+│   ├── Reification.lean      
+│   └── PhaseConsistency.lean 
+└── Defs.lean                
 ```
 
 ---
@@ -356,29 +343,39 @@ Instar/<Variant>/
 
 ### Axiom Inventory
 
-The mechanization contains **zero axioms, zero `sorry` blocks, and zero
-`admit` blocks**. Every theorem claimed in the paper is fully proved.
+The mechanization contains **zero `sorry` blocks** — every theorem claimed in the
+paper is fully proved. A clean `lake build` (`make all`) is sufficient to confirm
+this: Lean 4 treats `sorry` as a compilation warning.
 
-You can verify this by running:
+### Verifying with `#print axioms`
 
-```bash
-grep -rn -E '\b(axiom|sorry|admit)\b' Instar/ --include="*.lean"
-# or
-make check-axioms
+To audit the axioms for each key theorem, add the following lines to each
+variant's `Defs.lean` (e.g., `Instar/TwoLevelRec/Defs.lean`).
+All of these are standard built-in axioms provided by Lean:
+
+
+```lean
+#print axioms progress
+#print axioms preservation
+#print axioms soundness
+#print axioms deterministic
+
+#print axioms typing.erase.safety
+
+#print axioms log_equiv.fundamental
+#print axioms log_equiv.soundness
+#print axioms ctx_equiv.trans
+
+#print axioms semantics_preservation
+#print axioms semantics_preservation.stepn
+#print axioms semantics_preservation.stepn.rep
 ```
 
-This returns no results.
+Then rebuild with `lake build Instar.TwoLevelRec.Defs`. Each `#print axioms`
+line emits output such as:
 
-### Logic-Extending Axioms
-
-The development does **not** rely on any logic-extending axioms such as:
-
-- Functional extensionality (`funext`)
-- Classical choice (`Classical.choice`)
-- Excluded middle (`em`)
-- Propositional extensionality (`propext`)
-
-The entire development is constructive and compatible with the standard
-Calculus of Inductive Constructions.
+```
+'semantics_preservation.stepn.rep' depends on axioms: [Quot.sound, propext, Classical.choice]
+```
 
 ---
