@@ -189,7 +189,6 @@ The table below maps every theorem and key lemma from the paper to the Lean code
 | Theorem 5.3 | Transitivity of Contextual Equiv. | `ctx_equiv.trans` | [`CtxEquiv/Transitivity.lean`](Instar/TwoLevelRec/CtxEquiv/Transitivity.lean) |
 | Theorem 5.4 | Fundamental Property | `log_equiv.fundamental` | [`LogicalEquiv/Fundamental.lean`](Instar/TwoLevelRec/LogicalEquiv/Fundamental.lean) |
 | Theorem 5.5 | Soundness of Logical Relations | `log_equiv.soundness` | [`LogicalEquiv/Soundness.lean`](Instar/TwoLevelRec/LogicalEquiv/Soundness.lean) |
-| — | Completeness of Logical Relations | `log_equiv.completeness` | [`LogicalEquiv/Completeness.lean`](Instar/TwoLevelRec/LogicalEquiv/Completeness.lean) |
 | Lemma 5.6 | Sem. Pres. of Substitution | `semantics_preservation.lets` | [`SemanticsPreservation/PresvPure.lean`](Instar/TwoLevelRec/SemanticsPreservation/PresvPure.lean) |
 | Lemma 5.7 | Sem. Pres. of Let-Insertion | `semantics_preservation.reflect.head` | [`SemanticsPreservation/PresvReflect.lean`](Instar/TwoLevelRec/SemanticsPreservation/PresvReflect.lean) |
 | Theorem 5.8 | Sem. Pres. of Single-Step Reduction | `semantics_preservation` | [`SemanticsPreservation/Preservation.lean`](Instar/TwoLevelRec/SemanticsPreservation/Preservation.lean) |
