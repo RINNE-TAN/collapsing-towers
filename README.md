@@ -49,14 +49,17 @@ Dependency versions are pinned in `lake-manifest.json`.
 ### Quick Start (from Scratch)
 
 ```bash
-# 1. Install Lean 4.29.0-rc2 via elan
+# 1. Install elan
+curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+
+# 2. Install Lean 4.29.0-rc2 via elan
 elan toolchain install leanprover/lean4:v4.29.0-rc2
 elan default leanprover/lean4:v4.29.0-rc2
 
-# 2. Enter the directory
+# 3. Enter the directory
 cd artifact
 
-# 3. Fetch and build dependencies (mathlib4), then build all formalizations
+# 4. Fetch and build dependencies (mathlib4), then build all formalizations
 lake build Instar.TwoLevelBasic.Defs Instar.TwoLevelRec.Defs Instar.TwoLevelMut.Defs Instar.TwoLevelFinal.Defs
 ```
 
