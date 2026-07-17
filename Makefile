@@ -3,11 +3,13 @@
 ARTIFACT_NAME := artifact
 
 artifact:
-	rm -f $(ARTIFACT_NAME).zip
-	zip -r $(ARTIFACT_NAME).zip \
-		Instar/ Instar.lean Main.lean \
+	rm -rf .artifact-tmp $(ARTIFACT_NAME).zip
+	mkdir -p .artifact-tmp/$(ARTIFACT_NAME)
+	cp -r Instar/ Instar.lean Main.lean \
 		lakefile.toml lake-manifest.json lean-toolchain \
-		-x "*.md"
+		.artifact-tmp/$(ARTIFACT_NAME)/
+	cd .artifact-tmp && zip -r ../$(ARTIFACT_NAME).zip $(ARTIFACT_NAME)/ -x "*.md"
+	rm -rf .artifact-tmp
 
 clean:
 	rm -f $(ARTIFACT_NAME).zip

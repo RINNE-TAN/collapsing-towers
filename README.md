@@ -54,7 +54,7 @@ elan toolchain install leanprover/lean4:v4.29.0-rc2
 elan default leanprover/lean4:v4.29.0-rc2
 
 # 2. Enter the directory
-cd collapsing-towers
+cd artifact
 
 # 3. Fetch and build dependencies (mathlib4), then build all formalizations
 lake build Instar.TwoLevelBasic.Defs Instar.TwoLevelRec.Defs Instar.TwoLevelMut.Defs Instar.TwoLevelFinal.Defs
