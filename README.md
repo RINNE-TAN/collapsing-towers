@@ -57,24 +57,24 @@ elan default leanprover/lean4:v4.29.0-rc2
 cd collapsing-towers
 
 # 3. Fetch and build dependencies (mathlib4), then build all formalizations
-make all             
+lake build Instar.TwoLevelBasic.Defs Instar.TwoLevelRec.Defs Instar.TwoLevelMut.Defs Instar.TwoLevelFinal.Defs
 ```
 
-The `make all` command builds all four calculus variants. For individual builds:
+For individual builds:
 
 ```bash
-make basic    # Basic calculus
-make rec      # λ|2|, extended calculus with general recursion
-make mut      # Extended calculus with mutable references
-make final    # λ|2|^ref, extended calculus with general recursion and mutable references
+lake build Instar.TwoLevelBasic.Defs    # Basic calculus
+lake build Instar.TwoLevelRec.Defs      # λ|2|, extended calculus with general recursion
+lake build Instar.TwoLevelMut.Defs      # Extended calculus with mutable references
+lake build Instar.TwoLevelFinal.Defs    # λ|2|^ref, extended calculus with general recursion and mutable references
 ```
 
 ### Artifact Verification
 
 ```bash
-make all           # build all four variants
+lake build Instar.TwoLevelBasic.Defs Instar.TwoLevelRec.Defs Instar.TwoLevelMut.Defs Instar.TwoLevelFinal.Defs
 ```
-A clean build confirms all proofs are complete.
+A clean build of all four variants confirms all proofs are complete.
 
 ### Build Output
 
@@ -354,7 +354,7 @@ Instar/<Variant>/
 ### Axiom Inventory
 
 The mechanization contains **zero `sorry` blocks** — every theorem claimed in the
-paper is fully proved. A clean `lake build` (`make all`) is sufficient to confirm
+paper is fully proved. A clean `lake build` is sufficient to confirm
 this: Lean 4 treats `sorry` as a compilation warning.
 
 ### Verifying with `#print axioms`
