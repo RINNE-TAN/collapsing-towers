@@ -78,17 +78,28 @@ A clean build confirms all proofs are complete.
 
 ### Build Output
 
-Successful compilation produces the following output:
+Each variant's `Defs.lean` contains `#check` commands that print the type
+signature of every key theorem during compilation:
 
 ```
 lake build Instar.TwoLevelBasic.Defs
+info: Instar/TwoLevelBasic/Defs.lean:14:0: progress ...
+info: Instar/TwoLevelBasic/Defs.lean:15:0: preservation ...
+...
+info: Instar/TwoLevelBasic/Defs.lean:29:0: semantics_preservation.stepn.rep ...
 Build completed successfully (410 jobs).
+
 lake build Instar.TwoLevelRec.Defs
+...
 Build completed successfully (412 jobs).
+
 lake build Instar.TwoLevelMut.Defs
+...
 Build completed successfully (411 jobs).
+
 lake build Instar.TwoLevelFinal.Defs
-Build completed successfully (418 jobs).
+...
+Build completed successfully (419 jobs).
 ```
 
 ---
@@ -354,17 +365,23 @@ All of these are standard built-in axioms provided by Lean:
 
 
 ```lean
+#print axioms deterministic.decomposition_ctxℙ
+#print axioms deterministic
+
+#print axioms progress.strengthened
 #print axioms progress
 #print axioms preservation
+#print axioms preservation.stepn
 #print axioms soundness
-#print axioms deterministic
 
 #print axioms typing.erase.safety
 
+#print axioms ctx_equiv.trans
 #print axioms log_equiv.fundamental
 #print axioms log_equiv.soundness
-#print axioms ctx_equiv.trans
 
+#print axioms semantics_preservation.lets
+#print axioms semantics_preservation.reflect.head
 #print axioms semantics_preservation
 #print axioms semantics_preservation.stepn
 #print axioms semantics_preservation.stepn.rep
