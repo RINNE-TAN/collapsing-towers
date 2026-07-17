@@ -46,11 +46,12 @@ stage-erased original. This is proved via step-indexed binary logical relations.
 
 Dependency versions are pinned in `lake-manifest.json`.
 
-### Quick Start (from Scratch)
+### Quick Start
 
 ```bash
 # 1. Install elan
 curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+source $HOME/.elan/env
 
 # 2. Install Lean 4.29.0-rc2 via elan
 elan toolchain install leanprover/lean4:v4.29.0-rc2
