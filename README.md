@@ -36,6 +36,25 @@ stage-erased original. This is proved via step-indexed binary logical relations.
 
 ## 1. Build & Compilation Instructions
 
+### VirtualBox VM (Recommended)
+
+We provide a VirtualBox virtual machine image (OVA 1.0 standard) with
+everything pre-installed:
+
+| Item | Value |
+|---|---|
+| Guest OS | Ubuntu 22.04 |
+| Username | `artifact` |
+| Password | `artifact` |
+
+The VM contains the full Lean / mathlib4 environment together with the
+source code of this artifact, so no additional setup is required —
+after importing the OVA and logging in, you can build and verify the
+artifact directly.
+
+If you prefer to set up the environment manually, follow the
+instructions below.
+
 ### Verified Environment
 
 | Component | Version |
