@@ -216,7 +216,8 @@ The table below maps every theorem and key lemma from the paper to the Lean code
 | Theorem 3.2 | Determinism | `deterministic` | same |
 | Lemma 3.3 | Strengthened Progress | `progress.strengthened` | [`SyntacticSoundness/Progress.lean`](Instar/TwoLevelRec/SyntacticSoundness/Progress.lean) |
 | Theorem 3.4 | Progress | `progress` | same |
-| Theorem 3.5 | Preservation | `preservation` | [`SyntacticSoundness/Preservation.lean`](Instar/TwoLevelRec/SyntacticSoundness/Preservation.lean) |
+| Theorem 3.5 | Open Substitution | `preservation.open_subst` | [`SyntacticSoundness/PresvOpenSubst.lean`](Instar/TwoLevelRec/SyntacticSoundness/PresvOpenSubst.lean) |
+| Theorem 3.6 | Preservation | `preservation` | [`SyntacticSoundness/Preservation.lean`](Instar/TwoLevelRec/SyntacticSoundness/Preservation.lean) |
 | — | Multi-step Preservation | `preservation.stepn` | same |
 | — | Type Soundness | `soundness` | [`SyntacticSoundness/Soundness.lean`](Instar/TwoLevelRec/SyntacticSoundness/Soundness.lean) |
 | Theorem 4.1 | Syntactic Erasure Soundness | `typing.erase.safety` | [`SyntacticTyping/EraseSafety.lean`](Instar/TwoLevelRec/SyntacticTyping/EraseSafety.lean) |
@@ -338,7 +339,7 @@ Instar/<Variant>/
 │   ├── Defs.lean         
 │   ├── PresvCtx.lean      
 │   ├── PresvSubst.lean    
-│   ├── PresvMaping.lean   
+│   ├── PresvOpenSubst.lean   
 │   ├── PresvPure.lean    
 │   ├── PresvReflect.lean  
 │   └── PresvMut.lean     
@@ -393,6 +394,7 @@ All of these are standard built-in axioms provided by Lean:
 
 #print axioms progress.strengthened
 #print axioms progress
+#print axioms preservation.open_subst
 #print axioms preservation
 #print axioms preservation.stepn
 #print axioms soundness

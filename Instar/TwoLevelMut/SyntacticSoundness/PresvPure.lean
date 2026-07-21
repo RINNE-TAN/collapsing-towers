@@ -1,5 +1,5 @@
 import Instar.TwoLevelMut.SyntacticSoundness.PresvSubst
-import Instar.TwoLevelMut.SyntacticSoundness.PresvMaping
+import Instar.TwoLevelMut.SyntacticSoundness.PresvOpenSubst
 import Instar.TwoLevelMut.SyntacticSoundness.PresvCtx
 
 lemma typing.escape.strengthened :
@@ -120,7 +120,7 @@ theorem preservation.pure.head :
         apply typing.lam𝕔
         . apply typing_reification.reify
           rw [← intro.codify _ _ _ Hclosed, identity.opening_closing]
-          apply preservation.maping _ _ _ _ _ _ _ _ Hτe
+          apply preservation.open_subst _ _ _ _ _ _ _ _ Hτe
           apply typing.code_fragment; simp; apply Hwbt
           apply lc.under_subst
           . simp

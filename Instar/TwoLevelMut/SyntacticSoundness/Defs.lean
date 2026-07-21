@@ -1,5 +1,5 @@
 import Instar.TwoLevelMut.SyntacticSoundness.PresvSubst
-import Instar.TwoLevelMut.SyntacticSoundness.PresvMaping
+import Instar.TwoLevelMut.SyntacticSoundness.PresvOpenSubst
 import Instar.TwoLevelMut.SyntacticSoundness.PresvCtx
 import Instar.TwoLevelMut.SyntacticSoundness.PresvPure
 import Instar.TwoLevelMut.SyntacticSoundness.PresvMut

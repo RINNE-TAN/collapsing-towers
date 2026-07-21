@@ -13,6 +13,7 @@ import Instar.TwoLevelFinal.Examples.Defs
 
 #check progress.strengthened
 #check progress
+#check preservation.open_subst
 #check preservation
 #check preservation.stepn
 #check soundness

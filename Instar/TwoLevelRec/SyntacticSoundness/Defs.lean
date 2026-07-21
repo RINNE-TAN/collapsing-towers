@@ -1,5 +1,5 @@
 import Instar.TwoLevelRec.SyntacticSoundness.PresvSubst
-import Instar.TwoLevelRec.SyntacticSoundness.PresvMaping
+import Instar.TwoLevelRec.SyntacticSoundness.PresvOpenSubst
 import Instar.TwoLevelRec.SyntacticSoundness.PresvCtx
 import Instar.TwoLevelRec.SyntacticSoundness.PresvPure
 import Instar.TwoLevelRec.SyntacticSoundness.PresvReflect

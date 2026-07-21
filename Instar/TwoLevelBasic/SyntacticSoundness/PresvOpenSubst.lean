@@ -1,6 +1,6 @@
-import Instar.TwoLevelMut.SyntacticTyping.Defs
+import Instar.TwoLevelBasic.SyntacticTyping.Defs
 
-lemma preservation.maping.strengthened :
+lemma preservation.open_subst.strengthened :
   ∀ Γ Δ Φ v e τ𝕒 τ𝕓 τ𝕔 𝕊𝕒 𝕊𝕓 ε,
     typing Γ 𝕊𝕓 e τ𝕓 ε →
     Γ = Δ ++ (τ𝕔, 𝟙) :: Φ →
@@ -161,40 +161,12 @@ lemma preservation.maping.strengthened :
     . apply closed.under_subst
       . apply typing.closed_at_env _ _ _ _ _ Hτv
       . simp; apply Hclosed
-  case run Hsf Hclosed IH Δ HEqΓ Hτv =>
+  case run Hclosed IH Δ HEqΓ Hτv =>
     apply typing.run
     . apply IH; apply HEqΓ; apply Hτv
     . rw [identity.subst]
-      apply Hsf
-      apply closed.inc; apply Hclosed; omega
-    . rw [identity.subst]
       apply Hclosed
       apply closed.inc; apply Hclosed; omega
-  case unit =>
-    apply typing.unit
-  case lift_unit IH Δ HEqΓ Hτv =>
-    apply typing.lift_unit
-    apply IH; apply HEqΓ; apply Hτv
-  case load₁ IH Δ HEqΓ Hτv =>
-    apply typing.load₁
-    apply IH; apply HEqΓ; apply Hτv
-  case load₂ IH Δ HEqΓ Hτv =>
-    apply typing.load₂
-    apply IH; apply HEqΓ; apply Hτv
-  case alloc₁ IH Δ HEqΓ Hτv =>
-    apply typing.alloc₁
-    apply IH; apply HEqΓ; apply Hτv
-  case alloc₂ IH Δ HEqΓ Hτv =>
-    apply typing.alloc₂
-    apply IH; apply HEqΓ; apply Hτv
-  case store₁ IHl IHr Δ HEqΓ Hτv =>
-    apply typing.store₁
-    . apply IHl; apply HEqΓ; apply Hτv
-    . apply IHr; apply HEqΓ; apply Hτv
-  case store₂ IHl IHr Δ HEqΓ Hτv =>
-    apply typing.store₂
-    . apply IHl; apply HEqΓ; apply Hτv
-    . apply IHr; apply HEqΓ; apply Hτv
   case pure IH Δ HEqΓ Hτv =>
     apply typing_reification.pure
     apply IH; apply HEqΓ; apply Hτv
@@ -203,11 +175,11 @@ lemma preservation.maping.strengthened :
     apply IH; apply HEqΓ; apply Hτv
   apply Hτe
 
-theorem preservation.maping :
+theorem preservation.open_subst :
   ∀ Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 ε,
     typing ((τ𝕔, 𝟙) :: Γ) 𝟙 e τ𝕓 ε →
     typing ((τ𝕒, 𝕊) :: Γ) 𝟙 v τ𝕔 ⊥ →
     typing ((τ𝕒, 𝕊) :: Γ) 𝟙 (subst Γ.length v e) τ𝕓 ε :=
   by
   intros Γ v e τ𝕒 τ𝕓 τ𝕔 𝕊 ε Hτe Hτv
-  apply preservation.maping.strengthened _ ⦰ _ _ _ _ _ _ _ _ _ Hτe rfl Hτv
+  apply preservation.open_subst.strengthened _ ⦰ _ _ _ _ _ _ _ _ _ Hτe rfl Hτv
