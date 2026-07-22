@@ -1,5 +1,6 @@
 name = "instar-mechanization"
 version = "0.1.0"
+license = "MIT"
 defaultTargets = ["instar-mechanization"]
 
 [[lean_lib]]

@@ -35,9 +35,11 @@ logical relations.
 
 ---
 
-## 1. Build & Compilation Instructions
+## Reproducibility
 
-### VirtualBox VM (Recommended)
+### 1. Build & Compilation Instructions
+
+#### VirtualBox VM (Recommended)
 
 We provide a VirtualBox virtual machine image (OVA 1.0 standard) with
 everything pre-installed:
@@ -56,7 +58,7 @@ artifact directly.
 If you prefer to set up the environment manually, follow the
 instructions below.
 
-### Verified Environment
+#### Verified Environment
 
 | Component | Version |
 |---|---|
@@ -66,7 +68,7 @@ instructions below.
 
 Dependency versions are pinned in `lake-manifest.json`.
 
-### Quick Start
+#### Quick Start
 
 ```bash
 # 1. Install elan
@@ -93,14 +95,14 @@ lake build Instar.TwoLevelMut.Defs      # Extended calculus with mutable referen
 lake build Instar.TwoLevelFinal.Defs    # λ|2|^ref, extended calculus with general recursion and mutable references
 ```
 
-### Artifact Verification
+#### Artifact Verification
 
 ```bash
 lake build Instar.TwoLevelBasic.Defs Instar.TwoLevelRec.Defs Instar.TwoLevelMut.Defs Instar.TwoLevelFinal.Defs
 ```
 A clean build of all four variants confirms all proofs are complete.
 
-### Build Output
+#### Build Output
 
 Each variant's `Defs.lean` contains `#check` commands that print the type
 signature of every key theorem during compilation:
@@ -128,11 +130,11 @@ Build completed successfully (419 jobs).
 
 ---
 
-## 2. Paper-to-Artifact Correspondence
+### 2. Paper-to-Artifact Correspondence
 
 The mechanization covers **all theorems** stated in the paper.
 
-### Surface Syntax of λ|2| (Fig. 2)
+#### Surface Syntax of λ|2| (Fig. 2)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -145,7 +147,7 @@ The mechanization covers **all theorems** stated in the paper.
 | `ifz^s t₁ t₂ t₃` | `.ifz₁ e₁ e₂ e₃` / `.ifz₂ e₁ e₂ e₃` | same |
 | `t₁ ⊕^s t₂` | `.binary₁ op e₁ e₂` / `.binary₂ op e₁ e₂` | same |
 
-### Administrative Syntax & Reduction of λ|2| (Fig. 3)
+#### Administrative Syntax & Reduction of λ|2| (Fig. 3)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -158,7 +160,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Single-step reduction `t ⭢ t'` | `e₀ ⭢ e₁` (notation for `step_lvl 0 e₀ e₁`) | same |
 | Multi-step reduction `t ⭢* t'` | `e₀ ⭢* e₁` (notation for `stepn`) | same |
 
-### Static Semantics: Types, Effects, Well-Formedness of λ|2| (Figs. 4-5)
+#### Static Semantics: Types, Effects, Well-Formedness of λ|2| (Figs. 4-5)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -172,14 +174,14 @@ The mechanization covers **all theorems** stated in the paper.
 | Typing context `Γ` | `TEnv` (list of `Ty × Stage`) | [`SyntacticTyping/Env.lean`](Instar/TwoLevelRec/SyntacticTyping/Env.lean) |
 | Well-formed type `WF^s τ` | `wbt s τ` | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelRec/SyntacticTyping/Ty.lean) |
 
-### Typing Judgments of λ|2| (Figs. 6-7)
+#### Typing Judgments of λ|2| (Figs. 6-7)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
 | `Γ ⊢ t : τ ∣ ε` | `typing_reification Γ e τ ε` | [`SyntacticTyping/Typing.lean`](Instar/TwoLevelRec/SyntacticTyping/Typing.lean) |
 | `Γ ⊢^s t : τ ∣ ε` | `typing Γ s e τ ε` | same |
 
-### Erasure of λ|2| (Fig. 8)
+#### Erasure of λ|2| (Fig. 8)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -187,7 +189,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Type erasure `⎸τ⎹` | `erase_ty τ` | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelRec/SyntacticTyping/Ty.lean) |
 | Environment erasure `⎸Γ⎹` | `erase_env Γ` | [`SyntacticTyping/Env.lean`](Instar/TwoLevelRec/SyntacticTyping/Env.lean) |
 
-### Contextual Equivalence of λ|2|↓ (Fig. 9)
+#### Contextual Equivalence of λ|2|↓ (Fig. 9)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -197,7 +199,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Contextual approx. `Γ ⊨ t₁ ≼𝑐𝑡𝑥 t₂ : τ` | `ctx_approx` | same |
 | Contextual equiv. `Γ ⊨ t₁ ≃𝑐𝑡𝑥 t₂ : τ` | `ctx_equiv` | same |
 
-### Binary Logical Relations of λ|2|↓ (Fig. 10)
+#### Binary Logical Relations of λ|2|↓ (Fig. 10)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -207,7 +209,7 @@ The mechanization covers **all theorems** stated in the paper.
 | Logical approx. `Γ ⊨ t₁ ≼𝑙𝑜𝑔 t₂ : τ` | `log_approx Γ e₀ e₁ τ` | same |
 | Logical equiv. `Γ ⊨ t₁ ≃𝑙𝑜𝑔 t₂ : τ` | `log_equiv Γ e₀ e₁ τ` | same |
 
-### Theorems of λ|2|
+#### Theorems of λ|2|
 
 The table below maps every theorem and key lemma from the paper to the Lean code.
 
@@ -231,13 +233,13 @@ The table below maps every theorem and key lemma from the paper to the Lean code
 | Theorem 5.9 | Strengthened Sem. Preservation | `semantics_preservation.stepn` | same |
 | Theorem 5.10 | Semantics Preservation | `semantics_preservation.stepn.rep` | same |
 
-### λ|2|^ref — Extension with Mutable References
+#### λ|2|^ref — Extension with Mutable References
 
 λ|2|^ref extends λ|2| with second-stage mutable references. The first stage
 remains store-pure; store effects are confined to generated code. A Kripke
 world model relates stores across two program runs in the logical relation.
 
-#### Extended Syntax & Dynamic Semantics & Static Semantics (Fig. 11)
+##### Extended Syntax & Dynamic Semantics & Static Semantics (Fig. 11)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -248,7 +250,7 @@ world model relates stores across two program runs in the logical relation.
 | Reference type `ref τ` | `.ref τ` (constructor of `Ty`) | [`SyntacticTyping/Ty.lean`](Instar/TwoLevelFinal/SyntacticTyping/Ty.lean) |
 | Store-free assertion | `store_free : Expr → Prop` | [`Syntax/Grounded.lean`](Instar/TwoLevelFinal/Syntax/Grounded.lean) |
 
-#### World Model & Kripke Logical Relations (Fig. 12)
+##### World Model & Kripke Logical Relations (Fig. 12)
 
 | Paper Identifier | Lean Identifier | File |
 |---|---|---|
@@ -258,7 +260,7 @@ world model relates stores across two program runs in the logical relation.
 | Value interpretation `(k, 𝓦, v₀, v₁) ∈ 𝒱⟦τ⟧` | `log_approx_value (k, 𝓦) v₀ v₁ τ` | same |
 | Term interpretation `(k, 𝓦, e₀, e₁) ∈ ℰ⟦τ⟧` | `log_approx_expr (k, 𝓦) e₀ e₁ τ` | same |
 
-#### Theorems of λ|2|^ref
+##### Theorems of λ|2|^ref
 
 | # | Paper Theorem / Lemma | Lean Identifier | File (TwoLevelFinal) |
 |---|---|---|---|
@@ -269,21 +271,21 @@ world model relates stores across two program runs in the logical relation.
 
 ---
 
-## 3. Key Design Choices
+### 3. Key Design Choices
 
-### Locally Nameless Representation
+#### Locally Nameless Representation
 
 Free variables use de Bruijn levels; bound variables use de Bruijn
 indices. This follows Charguéraud (2012) and is chosen to simplify
 fresh variable generation during let-insertion and avoid α-equivalence.
 
-### Level-Indexed Reduction
+#### Level-Indexed Reduction
 
 Because reification contexts introduce second-stage bindings, the
 reduction relation is indexed by the current de Bruijn level.
 Evaluation contexts track this level.
 
-### World Model (λ|2|^ref only)
+#### World Model (λ|2|^ref only)
 
 A partial bijection on locations relates stores across two program
 runs. Since stores contain only natural numbers (first-order), worlds
@@ -291,9 +293,9 @@ need not be recursively indexed.
 
 ---
 
-## 4. Proof Structure & Organization
+### 4. Proof Structure & Organization
 
-### File Organization
+#### File Organization
 
 Each calculus variant (`TwoLevelBasic`, `TwoLevelRec`, `TwoLevelMut`, `TwoLevelFinal`)
 follows the same module hierarchy:
@@ -374,15 +376,15 @@ Instar/<Variant>/
 
 ---
 
-## 5. Axioms, Assumptions & Incomplete Proofs
+### 5. Axioms, Assumptions & Incomplete Proofs
 
-### Axiom Inventory
+#### Axiom Inventory
 
 The mechanization contains **zero `sorry` blocks** — every theorem claimed 
 in the paper is fully proved. A clean `lake build` is sufficient to confirm
 this: Lean 4 treats `sorry` as a compilation warning.
 
-### Verifying with `#print axioms`
+#### Verifying with `#print axioms`
 
 To audit the axioms for each key theorem, add the following lines to each
 variant's `Defs.lean` (e.g., `Instar/TwoLevelRec/Defs.lean`).
@@ -422,5 +424,34 @@ line emits output such as:
 All of these are standard built-in axioms (such as the propositional 
 extensionality) provided by Lean.
 
-
 ---
+
+## Reusability
+
+### 1. License
+
+This artifact is released under the **MIT License** (OSI-approved). You are free
+to use, modify, and redistribute the code for any purpose, including in other
+open-source or proprietary projects.
+
+### 2. Extending the Formalization
+
+The modular structure of each calculus variant makes it straightforward to
+extend the formalization with new language features.
+
+**Recommended workflow for adding a feature**:
+
+1. Start from the simplest variant (`TwoLevelBasic`) and extend it first.
+2. Add syntax constructors to `Expr` and `Ty`.
+3. Extend substitution, erasure, and free-variable computation in `Syntax/`.
+4. Add reduction rules and extend evaluation contexts in `OperationalSemantics/`.
+5. Add typing rules in `SyntacticTyping/Typing.lean`.
+6. Prove Progress and Preservation in `SyntacticSoundness/`.
+7. Extend the logical relation in `LogicalEquiv/LogicalRelation.lean`.
+8. Prove Semantics Preservation in `SemanticsPreservation/`.
+9. Port the feature to richer variants (`TwoLevelRec`, `TwoLevelMut`).
+
+### 3. Documentation
+
+- **Paper**: See the accompanying OOPSLA 2026 paper for the full formal development and proofs.
+- **Theorem inventory**: See [Section 2](#2-paper-to-artifact-correspondence) for a complete mapping from every paper theorem to its Lean identifier.
