@@ -50,6 +50,12 @@ everything pre-installed:
 | Username | `artifact` |
 | Password | `artifact` |
 
+> ⚠️ **Architecture Requirement**: The virtual machine image is built for
+> **x86-64 (amd64)** only. It will **not** run on ARM-based machines
+> (Apple Silicon Macs, AWS Graviton, Raspberry Pi, etc.). If you are
+> using an ARM machine, please follow the manual setup instructions below
+> — Lean 4 and mathlib4 both support ARM natively.
+
 The VM contains the full Lean / mathlib4 environment together with the
 source code of this artifact, so no additional setup is required —
 after importing the OVA and logging in, you can build and verify the
