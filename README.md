@@ -15,11 +15,12 @@ To answer this, the paper develops two typed two-stage calculi:
 - **λ|2|** — a calculus with general recursion and automatic let-insertion, where a lightweight
   type-and-effect system tracks code-generation effects.
 - **λ|2|^ref** — an extension with second-stage mutable references, using a
-  Kripke world model to relate stores across runs
+  Kripke world model to relate stores across runs.
 
-The key result is **semantics preservation**: if a well-typed two-stage program
-evaluates to a code value, the generated code is contextually equivalent to the
-stage-erased original. This is proved via step-indexed binary logical relations.
+The key result is the guarantee of **semantics preservation**: if a well-typed 
+two-stage program evaluates to a code value, the generated code is contextually 
+equivalent to the stage-erased original. This is proved via step-indexed binary 
+logical relations.
 
 ## Calculus Variants
 
@@ -377,16 +378,15 @@ Instar/<Variant>/
 
 ### Axiom Inventory
 
-The mechanization contains **zero `sorry` blocks** — every theorem claimed in the
-paper is fully proved. A clean `lake build` is sufficient to confirm
+The mechanization contains **zero `sorry` blocks** — every theorem claimed 
+in the paper is fully proved. A clean `lake build` is sufficient to confirm
 this: Lean 4 treats `sorry` as a compilation warning.
 
 ### Verifying with `#print axioms`
 
 To audit the axioms for each key theorem, add the following lines to each
 variant's `Defs.lean` (e.g., `Instar/TwoLevelRec/Defs.lean`).
-All of these are standard built-in axioms provided by Lean:
-
+They can be used to audit the assumptions a theorem relies on.
 
 ```lean
 #print axioms deterministic.decomposition_ctxℙ
@@ -418,5 +418,9 @@ line emits output such as:
 ```
 'semantics_preservation.stepn.rep' depends on axioms: [Quot.sound, propext, Classical.choice]
 ```
+
+All of these are standard built-in axioms (such as the propositional 
+extensionality) provided by Lean.
+
 
 ---
